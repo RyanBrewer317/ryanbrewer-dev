@@ -5186,6 +5186,15 @@ var $author$project$Main$update = F2(
 		return {};
 	});
 var $elm$html$Html$div = _VirtualDom_node('div');
+var $elm$json$Json$Encode$string = _Json_wrap;
+var $elm$html$Html$Attributes$stringProperty = F2(
+	function (key, string) {
+		return A2(
+			_VirtualDom_property,
+			key,
+			$elm$json$Json$Encode$string(string));
+	});
+var $elm$html$Html$Attributes$id = $elm$html$Html$Attributes$stringProperty('id');
 var $elm$html$Html$nav = _VirtualDom_node('nav');
 var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
 var $elm$html$Html$text = $elm$virtual_dom$VirtualDom$text;
@@ -5202,7 +5211,16 @@ var $author$project$Main$view = function (_v0) {
 					[
 						$elm$html$Html$text('Ryan Brewer')
 					])),
-				$elm$html$Html$text('hello elm')
+				A2(
+				$elm$html$Html$div,
+				_List_fromArray(
+					[
+						$elm$html$Html$Attributes$id('body')
+					]),
+				_List_fromArray(
+					[
+						$elm$html$Html$text('hello elm')
+					]))
 			]));
 };
 var $author$project$Main$main = $elm$browser$Browser$sandbox(
