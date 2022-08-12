@@ -20,10 +20,13 @@ init = {}
 type Update = Unit
 
 update : Update -> Model -> Model
-update msg model = case msg of
+update msg _ = case msg of
     Unit -> {}
 
 view : Model -> Html Update
-view _ = div [] [ 
-        div [] [text "hello elm!"]
+view _ = div [] 
+    [ nav [] 
+        [ text "Ryan Brewer" 
+        ]
+    , text "hello elm"
     ]
