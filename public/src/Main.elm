@@ -28,5 +28,6 @@ view _ = div []
     [ nav [] 
         [ text "Ryan Brewer" 
         ]
-    , text "hello elm"
+    , div [ id "body" ] 
+        [ text "hello elm" ]
     ]
