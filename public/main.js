@@ -5182,10 +5182,11 @@ var $elm$browser$Browser$sandbox = function (impl) {
 		});
 };
 var $author$project$Main$update = F2(
-	function (msg, model) {
+	function (msg, _v0) {
 		return {};
 	});
 var $elm$html$Html$div = _VirtualDom_node('div');
+var $elm$html$Html$nav = _VirtualDom_node('nav');
 var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
 var $elm$html$Html$text = $elm$virtual_dom$VirtualDom$text;
 var $author$project$Main$view = function (_v0) {
@@ -5195,12 +5196,13 @@ var $author$project$Main$view = function (_v0) {
 		_List_fromArray(
 			[
 				A2(
-				$elm$html$Html$div,
+				$elm$html$Html$nav,
 				_List_Nil,
 				_List_fromArray(
 					[
-						$elm$html$Html$text('hello elm!')
-					]))
+						$elm$html$Html$text('Ryan Brewer')
+					])),
+				$elm$html$Html$text('hello elm')
 			]));
 };
 var $author$project$Main$main = $elm$browser$Browser$sandbox(
