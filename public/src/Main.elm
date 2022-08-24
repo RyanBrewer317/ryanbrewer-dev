@@ -74,16 +74,21 @@ parseLiteral : Parser Expr
 parseLiteral = oneOf [parseInt, parseVar, parseLambda, parenthetical (lazy (\_->parseExpr))]
 
 parseExpr : Parser Expr
-parseExpr = parseLiteral |> andThen (\expr->
-        Parser.loop expr (\lit->
-            oneOf 
-                [ Parser.map (LCall lit) (parenthetical (lazy (\_->parseExpr))) 
-                    |. spaces
+parseExpr = succeed identity
+    |. spaces
+    |= parseLiteral 
+    |. spaces 
+    |> andThen (\lit->
+        Parser.loop lit (\expr->
+            succeed identity
+            |= oneOf 
+                [ parenthetical (lazy (\_->parseExpr))
+                    |> Parser.map (LCall lit)
                     |> Parser.map Loop
-                , succeed lit 
-                    |. spaces
+                , succeed expr 
                     |> Parser.map Done
                 ]
+            |. spaces
         )
     )
 
