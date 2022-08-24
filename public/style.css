@@ -23,7 +23,8 @@ nav {
     background-color: black;
     color: limegreen;
     font-family: 'Courier New', Courier, monospace;
-    width: 60%;
-    height: 150pt;
+    width: 200pt;
+    height: 50pt;
     font-size: 14pt;
+    border: none;
 }
