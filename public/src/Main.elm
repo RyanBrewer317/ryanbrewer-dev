@@ -121,4 +121,5 @@ toString expr = case expr of
     LLambda v e -> "\\" ++ v ++ "." ++ toString e
     LCall foo bar -> "(" ++ toString foo ++ ")(" ++ toString bar ++ ")"
 
-go code = run parseExpr code |> Result.mapError (\_->"parse error!") |> Result.andThen (\expr -> eval Dict.empty expr) |> Result.map (toString) |> resToString
+go : String -> String
+go code = run (parseExpr |. end) code |> Result.mapError (\_->"parse error!") |> Result.andThen (\expr -> eval Dict.empty expr) |> Result.map (toString) |> resToString

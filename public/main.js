@@ -5322,6 +5322,8 @@ var $author$project$Main$NewCode = function (a) {
 	return {$: 'NewCode', a: a};
 };
 var $elm$html$Html$a = _VirtualDom_node('a');
+var $elm$html$Html$br = _VirtualDom_node('br');
+var $elm$html$Html$div = _VirtualDom_node('div');
 var $elm$core$Result$andThen = F2(
 	function (callback, result) {
 		if (result.$ === 'Ok') {
@@ -5332,10 +5334,52 @@ var $elm$core$Result$andThen = F2(
 			return $elm$core$Result$Err(msg);
 		}
 	});
-var $elm$html$Html$br = _VirtualDom_node('br');
-var $elm$html$Html$div = _VirtualDom_node('div');
 var $elm$core$Dict$RBEmpty_elm_builtin = {$: 'RBEmpty_elm_builtin'};
 var $elm$core$Dict$empty = $elm$core$Dict$RBEmpty_elm_builtin;
+var $elm$parser$Parser$ExpectingEnd = {$: 'ExpectingEnd'};
+var $elm$parser$Parser$Advanced$Bad = F2(
+	function (a, b) {
+		return {$: 'Bad', a: a, b: b};
+	});
+var $elm$parser$Parser$Advanced$Good = F3(
+	function (a, b, c) {
+		return {$: 'Good', a: a, b: b, c: c};
+	});
+var $elm$parser$Parser$Advanced$Parser = function (a) {
+	return {$: 'Parser', a: a};
+};
+var $elm$parser$Parser$Advanced$AddRight = F2(
+	function (a, b) {
+		return {$: 'AddRight', a: a, b: b};
+	});
+var $elm$parser$Parser$Advanced$DeadEnd = F4(
+	function (row, col, problem, contextStack) {
+		return {col: col, contextStack: contextStack, problem: problem, row: row};
+	});
+var $elm$parser$Parser$Advanced$Empty = {$: 'Empty'};
+var $elm$parser$Parser$Advanced$fromState = F2(
+	function (s, x) {
+		return A2(
+			$elm$parser$Parser$Advanced$AddRight,
+			$elm$parser$Parser$Advanced$Empty,
+			A4($elm$parser$Parser$Advanced$DeadEnd, s.row, s.col, x, s.context));
+	});
+var $elm$parser$Parser$Advanced$end = function (x) {
+	return $elm$parser$Parser$Advanced$Parser(
+		function (s) {
+			return _Utils_eq(
+				$elm$core$String$length(s.src),
+				s.offset) ? A3($elm$parser$Parser$Advanced$Good, false, _Utils_Tuple0, s) : A2(
+				$elm$parser$Parser$Advanced$Bad,
+				false,
+				A2($elm$parser$Parser$Advanced$fromState, s, x));
+		});
+};
+var $elm$parser$Parser$end = $elm$parser$Parser$Advanced$end($elm$parser$Parser$ExpectingEnd);
+var $author$project$Main$LLambda = F2(
+	function (a, b) {
+		return {$: 'LLambda', a: a, b: b};
+	});
 var $elm$core$Result$fromMaybe = F2(
 	function (err, maybe) {
 		if (maybe.$ === 'Just') {
@@ -5485,6 +5529,46 @@ var $elm$core$Dict$insert = F3(
 			return x;
 		}
 	});
+var $author$project$Main$LCall = F2(
+	function (a, b) {
+		return {$: 'LCall', a: a, b: b};
+	});
+var $elm$core$Maybe$withDefault = F2(
+	function (_default, maybe) {
+		if (maybe.$ === 'Just') {
+			var value = maybe.a;
+			return value;
+		} else {
+			return _default;
+		}
+	});
+var $author$project$Main$sub = F2(
+	function (scope, expr) {
+		switch (expr.$) {
+			case 'LVar':
+				var v = expr.a;
+				return A2(
+					$elm$core$Maybe$withDefault,
+					expr,
+					A2($elm$core$Dict$get, v, scope));
+			case 'LCall':
+				var foo = expr.a;
+				var bar = expr.b;
+				return A2(
+					$author$project$Main$LCall,
+					A2($author$project$Main$sub, scope, foo),
+					A2($author$project$Main$sub, scope, bar));
+			case 'LLambda':
+				var v = expr.a;
+				var e = expr.b;
+				return A2(
+					$author$project$Main$LLambda,
+					v,
+					A2($author$project$Main$sub, scope, e));
+			default:
+				return expr;
+		}
+	});
 var $author$project$Main$eval = F2(
 	function (scope, ast) {
 		_eval:
@@ -5510,26 +5594,61 @@ var $author$project$Main$eval = F2(
 					} else {
 						return $elm$core$Result$Err('calling nonfunction!');
 					}
+				case 'LLambda':
+					var v = ast.a;
+					var e = ast.b;
+					return $elm$core$Result$Ok(
+						A2(
+							$author$project$Main$LLambda,
+							v,
+							A2($author$project$Main$sub, scope, e)));
 				default:
 					return $elm$core$Result$Ok(ast);
 			}
 		}
 	});
-var $elm$json$Json$Encode$string = _Json_wrap;
-var $elm$html$Html$Attributes$stringProperty = F2(
-	function (key, string) {
-		return A2(
-			_VirtualDom_property,
-			key,
-			$elm$json$Json$Encode$string(string));
+var $elm$core$Basics$always = F2(
+	function (a, _v0) {
+		return a;
 	});
-var $elm$html$Html$Attributes$href = function (url) {
-	return A2(
-		$elm$html$Html$Attributes$stringProperty,
-		'href',
-		_VirtualDom_noJavaScriptUri(url));
-};
-var $elm$html$Html$Attributes$id = $elm$html$Html$Attributes$stringProperty('id');
+var $elm$parser$Parser$Advanced$map2 = F3(
+	function (func, _v0, _v1) {
+		var parseA = _v0.a;
+		var parseB = _v1.a;
+		return $elm$parser$Parser$Advanced$Parser(
+			function (s0) {
+				var _v2 = parseA(s0);
+				if (_v2.$ === 'Bad') {
+					var p = _v2.a;
+					var x = _v2.b;
+					return A2($elm$parser$Parser$Advanced$Bad, p, x);
+				} else {
+					var p1 = _v2.a;
+					var a = _v2.b;
+					var s1 = _v2.c;
+					var _v3 = parseB(s1);
+					if (_v3.$ === 'Bad') {
+						var p2 = _v3.a;
+						var x = _v3.b;
+						return A2($elm$parser$Parser$Advanced$Bad, p1 || p2, x);
+					} else {
+						var p2 = _v3.a;
+						var b = _v3.b;
+						var s2 = _v3.c;
+						return A3(
+							$elm$parser$Parser$Advanced$Good,
+							p1 || p2,
+							A2(func, a, b),
+							s2);
+					}
+				}
+			});
+	});
+var $elm$parser$Parser$Advanced$ignorer = F2(
+	function (keepParser, ignoreParser) {
+		return A3($elm$parser$Parser$Advanced$map2, $elm$core$Basics$always, keepParser, ignoreParser);
+	});
+var $elm$parser$Parser$ignorer = $elm$parser$Parser$Advanced$ignorer;
 var $elm$core$Result$map = F2(
 	function (func, ra) {
 		if (ra.$ === 'Ok') {
@@ -5552,65 +5671,11 @@ var $elm$core$Result$mapError = F2(
 				f(e));
 		}
 	});
-var $elm$html$Html$nav = _VirtualDom_node('nav');
-var $elm$html$Html$Events$alwaysStop = function (x) {
-	return _Utils_Tuple2(x, true);
-};
-var $elm$virtual_dom$VirtualDom$MayStopPropagation = function (a) {
-	return {$: 'MayStopPropagation', a: a};
-};
-var $elm$virtual_dom$VirtualDom$on = _VirtualDom_on;
-var $elm$html$Html$Events$stopPropagationOn = F2(
-	function (event, decoder) {
-		return A2(
-			$elm$virtual_dom$VirtualDom$on,
-			event,
-			$elm$virtual_dom$VirtualDom$MayStopPropagation(decoder));
-	});
-var $elm$json$Json$Decode$field = _Json_decodeField;
-var $elm$json$Json$Decode$at = F2(
-	function (fields, decoder) {
-		return A3($elm$core$List$foldr, $elm$json$Json$Decode$field, decoder, fields);
-	});
-var $elm$json$Json$Decode$string = _Json_decodeString;
-var $elm$html$Html$Events$targetValue = A2(
-	$elm$json$Json$Decode$at,
-	_List_fromArray(
-		['target', 'value']),
-	$elm$json$Json$Decode$string);
-var $elm$html$Html$Events$onInput = function (tagger) {
-	return A2(
-		$elm$html$Html$Events$stopPropagationOn,
-		'input',
-		A2(
-			$elm$json$Json$Decode$map,
-			$elm$html$Html$Events$alwaysStop,
-			A2($elm$json$Json$Decode$map, tagger, $elm$html$Html$Events$targetValue)));
-};
 var $elm$parser$Parser$Done = function (a) {
 	return {$: 'Done', a: a};
 };
-var $author$project$Main$LCall = F2(
-	function (a, b) {
-		return {$: 'LCall', a: a, b: b};
-	});
-var $author$project$Main$LLambda = F2(
-	function (a, b) {
-		return {$: 'LLambda', a: a, b: b};
-	});
 var $elm$parser$Parser$Loop = function (a) {
 	return {$: 'Loop', a: a};
-};
-var $elm$parser$Parser$Advanced$Bad = F2(
-	function (a, b) {
-		return {$: 'Bad', a: a, b: b};
-	});
-var $elm$parser$Parser$Advanced$Good = F3(
-	function (a, b, c) {
-		return {$: 'Good', a: a, b: b, c: c};
-	});
-var $elm$parser$Parser$Advanced$Parser = function (a) {
-	return {$: 'Parser', a: a};
 };
 var $elm$parser$Parser$Advanced$andThen = F2(
 	function (callback, _v0) {
@@ -5656,48 +5721,6 @@ var $elm$core$Set$insert = F2(
 var $elm$core$Set$fromList = function (list) {
 	return A3($elm$core$List$foldl, $elm$core$Set$insert, $elm$core$Set$empty, list);
 };
-var $elm$core$Basics$always = F2(
-	function (a, _v0) {
-		return a;
-	});
-var $elm$parser$Parser$Advanced$map2 = F3(
-	function (func, _v0, _v1) {
-		var parseA = _v0.a;
-		var parseB = _v1.a;
-		return $elm$parser$Parser$Advanced$Parser(
-			function (s0) {
-				var _v2 = parseA(s0);
-				if (_v2.$ === 'Bad') {
-					var p = _v2.a;
-					var x = _v2.b;
-					return A2($elm$parser$Parser$Advanced$Bad, p, x);
-				} else {
-					var p1 = _v2.a;
-					var a = _v2.b;
-					var s1 = _v2.c;
-					var _v3 = parseB(s1);
-					if (_v3.$ === 'Bad') {
-						var p2 = _v3.a;
-						var x = _v3.b;
-						return A2($elm$parser$Parser$Advanced$Bad, p1 || p2, x);
-					} else {
-						var p2 = _v3.a;
-						var b = _v3.b;
-						var s2 = _v3.c;
-						return A3(
-							$elm$parser$Parser$Advanced$Good,
-							p1 || p2,
-							A2(func, a, b),
-							s2);
-					}
-				}
-			});
-	});
-var $elm$parser$Parser$Advanced$ignorer = F2(
-	function (keepParser, ignoreParser) {
-		return A3($elm$parser$Parser$Advanced$map2, $elm$core$Basics$always, keepParser, ignoreParser);
-	});
-var $elm$parser$Parser$ignorer = $elm$parser$Parser$Advanced$ignorer;
 var $elm$parser$Parser$Advanced$keeper = F2(
 	function (parseFunc, parseArg) {
 		return A3($elm$parser$Parser$Advanced$map2, $elm$core$Basics$apL, parseFunc, parseArg);
@@ -5802,7 +5825,6 @@ var $elm$parser$Parser$loop = F2(
 					callback(s));
 			});
 	});
-var $elm$parser$Parser$Advanced$Empty = {$: 'Empty'};
 var $elm$parser$Parser$Advanced$Append = F2(
 	function (a, b) {
 		return {$: 'Append', a: a, b: b};
@@ -5859,21 +5881,6 @@ var $elm$parser$Parser$ExpectingSymbol = function (a) {
 var $elm$parser$Parser$Advanced$Token = F2(
 	function (a, b) {
 		return {$: 'Token', a: a, b: b};
-	});
-var $elm$parser$Parser$Advanced$AddRight = F2(
-	function (a, b) {
-		return {$: 'AddRight', a: a, b: b};
-	});
-var $elm$parser$Parser$Advanced$DeadEnd = F4(
-	function (row, col, problem, contextStack) {
-		return {col: col, contextStack: contextStack, problem: problem, row: row};
-	});
-var $elm$parser$Parser$Advanced$fromState = F2(
-	function (s, x) {
-		return A2(
-			$elm$parser$Parser$Advanced$AddRight,
-			$elm$parser$Parser$Advanced$Empty,
-			A4($elm$parser$Parser$Advanced$DeadEnd, s.row, s.col, x, s.context));
 	});
 var $elm$parser$Parser$Advanced$isSubString = _Parser_isSubString;
 var $elm$core$Basics$negate = function (n) {
@@ -6251,39 +6258,48 @@ var $elm$parser$Parser$spaces = $elm$parser$Parser$Advanced$spaces;
 function $author$project$Main$cyclic$parseExpr() {
 	return A2(
 		$elm$parser$Parser$andThen,
-		function (expr) {
+		function (lit) {
 			return A2(
 				$elm$parser$Parser$loop,
-				expr,
-				function (lit) {
-					return $elm$parser$Parser$oneOf(
-						_List_fromArray(
-							[
-								A2(
-								$elm$parser$Parser$map,
-								$elm$parser$Parser$Loop,
-								A2(
-									$elm$parser$Parser$ignorer,
-									A2(
+				lit,
+				function (expr) {
+					return A2(
+						$elm$parser$Parser$keeper,
+						$elm$parser$Parser$succeed($elm$core$Basics$identity),
+						A2(
+							$elm$parser$Parser$ignorer,
+							$elm$parser$Parser$oneOf(
+								_List_fromArray(
+									[
+										A2(
 										$elm$parser$Parser$map,
-										$author$project$Main$LCall(lit),
-										$author$project$Main$parenthetical(
-											$elm$parser$Parser$lazy(
-												function (_v2) {
-													return $author$project$Main$cyclic$parseExpr();
-												}))),
-									$elm$parser$Parser$spaces)),
-								A2(
-								$elm$parser$Parser$map,
-								$elm$parser$Parser$Done,
-								A2(
-									$elm$parser$Parser$ignorer,
-									$elm$parser$Parser$succeed(lit),
-									$elm$parser$Parser$spaces))
-							]));
+										$elm$parser$Parser$Loop,
+										A2(
+											$elm$parser$Parser$map,
+											$author$project$Main$LCall(lit),
+											$author$project$Main$parenthetical(
+												$elm$parser$Parser$lazy(
+													function (_v2) {
+														return $author$project$Main$cyclic$parseExpr();
+													})))),
+										A2(
+										$elm$parser$Parser$map,
+										$elm$parser$Parser$Done,
+										$elm$parser$Parser$succeed(expr))
+									])),
+							$elm$parser$Parser$spaces));
 				});
 		},
-		$author$project$Main$cyclic$parseLiteral());
+		A2(
+			$elm$parser$Parser$keeper,
+			A2(
+				$elm$parser$Parser$ignorer,
+				$elm$parser$Parser$succeed($elm$core$Basics$identity),
+				$elm$parser$Parser$spaces),
+			A2(
+				$elm$parser$Parser$ignorer,
+				$author$project$Main$cyclic$parseLiteral(),
+				$elm$parser$Parser$spaces)));
 }
 function $author$project$Main$cyclic$parseLiteral() {
 	return $elm$parser$Parser$oneOf(
@@ -6346,7 +6362,15 @@ try {
 	};
 } catch ($) {
 	throw 'Some top-level definitions from `Main` are causing infinite recursion:\n\n  ┌─────┐\n  │    parseExpr\n  │     ↓\n  │    parseLiteral\n  │     ↓\n  │    parseLambda\n  └─────┘\n\nThese errors are very tricky, so read https://elm-lang.org/0.19.1/bad-recursion to learn how to fix it!';}
-var $elm$html$Html$Attributes$placeholder = $elm$html$Html$Attributes$stringProperty('placeholder');
+var $author$project$Main$resToString = function (res) {
+	if (res.$ === 'Ok') {
+		var s = res.a;
+		return s;
+	} else {
+		var s = res.a;
+		return s;
+	}
+};
 var $elm$parser$Parser$DeadEnd = F3(
 	function (row, col, problem) {
 		return {col: col, problem: problem, row: row};
@@ -6406,9 +6430,6 @@ var $elm$parser$Parser$run = F2(
 				A2($elm$core$List$map, $elm$parser$Parser$problemToDeadEnd, problems));
 		}
 	});
-var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
-var $elm$html$Html$text = $elm$virtual_dom$VirtualDom$text;
-var $elm$html$Html$textarea = _VirtualDom_node('textarea');
 var $author$project$Main$toString = function (expr) {
 	switch (expr.$) {
 		case 'LVar':
@@ -6427,15 +6448,80 @@ var $author$project$Main$toString = function (expr) {
 			return '(' + ($author$project$Main$toString(foo) + (')(' + ($author$project$Main$toString(bar) + ')')));
 	}
 };
-var $elm$core$Result$withDefault = F2(
-	function (def, result) {
-		if (result.$ === 'Ok') {
-			var a = result.a;
-			return a;
-		} else {
-			return def;
-		}
+var $author$project$Main$go = function (code) {
+	return $author$project$Main$resToString(
+		A2(
+			$elm$core$Result$map,
+			$author$project$Main$toString,
+			A2(
+				$elm$core$Result$andThen,
+				function (expr) {
+					return A2($author$project$Main$eval, $elm$core$Dict$empty, expr);
+				},
+				A2(
+					$elm$core$Result$mapError,
+					function (_v0) {
+						return 'parse error!';
+					},
+					A2(
+						$elm$parser$Parser$run,
+						A2($elm$parser$Parser$ignorer, $author$project$Main$parseExpr, $elm$parser$Parser$end),
+						code)))));
+};
+var $elm$json$Json$Encode$string = _Json_wrap;
+var $elm$html$Html$Attributes$stringProperty = F2(
+	function (key, string) {
+		return A2(
+			_VirtualDom_property,
+			key,
+			$elm$json$Json$Encode$string(string));
 	});
+var $elm$html$Html$Attributes$href = function (url) {
+	return A2(
+		$elm$html$Html$Attributes$stringProperty,
+		'href',
+		_VirtualDom_noJavaScriptUri(url));
+};
+var $elm$html$Html$Attributes$id = $elm$html$Html$Attributes$stringProperty('id');
+var $elm$html$Html$nav = _VirtualDom_node('nav');
+var $elm$html$Html$Events$alwaysStop = function (x) {
+	return _Utils_Tuple2(x, true);
+};
+var $elm$virtual_dom$VirtualDom$MayStopPropagation = function (a) {
+	return {$: 'MayStopPropagation', a: a};
+};
+var $elm$virtual_dom$VirtualDom$on = _VirtualDom_on;
+var $elm$html$Html$Events$stopPropagationOn = F2(
+	function (event, decoder) {
+		return A2(
+			$elm$virtual_dom$VirtualDom$on,
+			event,
+			$elm$virtual_dom$VirtualDom$MayStopPropagation(decoder));
+	});
+var $elm$json$Json$Decode$field = _Json_decodeField;
+var $elm$json$Json$Decode$at = F2(
+	function (fields, decoder) {
+		return A3($elm$core$List$foldr, $elm$json$Json$Decode$field, decoder, fields);
+	});
+var $elm$json$Json$Decode$string = _Json_decodeString;
+var $elm$html$Html$Events$targetValue = A2(
+	$elm$json$Json$Decode$at,
+	_List_fromArray(
+		['target', 'value']),
+	$elm$json$Json$Decode$string);
+var $elm$html$Html$Events$onInput = function (tagger) {
+	return A2(
+		$elm$html$Html$Events$stopPropagationOn,
+		'input',
+		A2(
+			$elm$json$Json$Decode$map,
+			$elm$html$Html$Events$alwaysStop,
+			A2($elm$json$Json$Decode$map, tagger, $elm$html$Html$Events$targetValue)));
+};
+var $elm$html$Html$Attributes$placeholder = $elm$html$Html$Attributes$stringProperty('placeholder');
+var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
+var $elm$html$Html$text = $elm$virtual_dom$VirtualDom$text;
+var $elm$html$Html$textarea = _VirtualDom_node('textarea');
 var $author$project$Main$view = function (model) {
 	return A2(
 		$elm$html$Html$div,
@@ -6480,23 +6566,7 @@ var $author$project$Main$view = function (model) {
 						_List_Nil),
 						A2($elm$html$Html$br, _List_Nil, _List_Nil),
 						$elm$html$Html$text(
-						A2(
-							$elm$core$Result$withDefault,
-							'parsing error!',
-							A2(
-								$elm$core$Result$map,
-								$author$project$Main$toString,
-								A2(
-									$elm$core$Result$andThen,
-									function (expr) {
-										return A2($author$project$Main$eval, $elm$core$Dict$empty, expr);
-									},
-									A2(
-										$elm$core$Result$mapError,
-										function (_v0) {
-											return '';
-										},
-										A2($elm$parser$Parser$run, $author$project$Main$parseExpr, model.output))))))
+						$author$project$Main$go(model.output))
 					]))
 			]));
 };
