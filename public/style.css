@@ -16,3 +16,14 @@ nav {
 #body {
     padding: 12pt;
 }
+
+#code {
+    margin: 10pt;
+    padding: 5pt;
+    background-color: black;
+    color: limegreen;
+    font-family: 'Courier New', Courier, monospace;
+    width: 60%;
+    height: 150pt;
+    font-size: 14pt;
+}

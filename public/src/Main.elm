@@ -37,9 +37,13 @@ view model = div []
         , a [ href "https://github.com/RyanBrewer317/ryanbrewer-dev" ] [ text "my github" ]
         , text "."
         , br [] []
-        , textarea [ placeholder "Write some lambda calculus code! Example: (\\x.\\y.x)(\\x.x)", onInput NewCode ] []
+        , textarea 
+            [ id "code"
+            , placeholder "Write some lambda calculus code! Example: (\\x.\\y.x)(\\x.x)(3)"
+            , onInput NewCode 
+            ] []
         , br [] []
-        , text (go model.output)
+        , text (if model.output == "" then "" else go model.output)
         ]
     ]
 

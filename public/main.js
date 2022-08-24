@@ -6566,13 +6566,14 @@ var $author$project$Main$view = function (model) {
 						$elm$html$Html$textarea,
 						_List_fromArray(
 							[
-								$elm$html$Html$Attributes$placeholder('Write some lambda calculus code! Example: (\\x.\\y.x)(\\x.x)'),
+								$elm$html$Html$Attributes$id('code'),
+								$elm$html$Html$Attributes$placeholder('Write some lambda calculus code! Example: (\\x.\\y.x)(\\x.x)(3)'),
 								$elm$html$Html$Events$onInput($author$project$Main$NewCode)
 							]),
 						_List_Nil),
 						A2($elm$html$Html$br, _List_Nil, _List_Nil),
 						$elm$html$Html$text(
-						$author$project$Main$go(model.output))
+						(model.output === '') ? '' : $author$project$Main$go(model.output))
 					]))
 			]));
 };
