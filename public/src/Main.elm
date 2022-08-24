@@ -94,7 +94,15 @@ eval scope ast = case ast of
         case foo of
             LLambda v e -> eval (Dict.insert v bar scope) e
             _ -> Err "calling nonfunction!"
+    LLambda v e -> Ok <| LLambda v (sub scope e)
     _ -> Ok ast
+
+sub : Dict.Dict String Expr -> Expr -> Expr
+sub scope expr = case expr of
+    LVar v -> Maybe.withDefault expr (Dict.get v scope)
+    LCall foo bar -> LCall (sub scope foo) (sub scope bar)
+    LLambda v e -> LLambda v (sub scope e)
+    _ -> expr
 
 toString : Expr -> String
 toString expr = case expr of
