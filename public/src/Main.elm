@@ -39,9 +39,14 @@ view model = div []
         , br [] []
         , textarea [ placeholder "Write some lambda calculus code! Example: (\\x.\\y.x)(\\x.x)", onInput NewCode ] []
         , br [] []
-        , text (run parseExpr model.output |> Result.mapError (\_->"") |> Result.andThen (\expr -> eval Dict.empty expr) |> Result.map (toString) |> Result.withDefault "parsing error!")
+        , text (go model.output)
         ]
     ]
+
+resToString : Result String String -> String
+resToString res = case res of
+    Ok s -> s
+    Err s -> s
 
 type Expr = LInt Int
           | LVar String
@@ -115,3 +120,5 @@ toString expr = case expr of
     LInt i -> String.fromInt i
     LLambda v e -> "\\" ++ v ++ "." ++ toString e
     LCall foo bar -> "(" ++ toString foo ++ ")(" ++ toString bar ++ ")"
+
+go code = run parseExpr code |> Result.mapError (\_->"parse error!") |> Result.andThen (\expr -> eval Dict.empty expr) |> Result.map (toString) |> resToString
