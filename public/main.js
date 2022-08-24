@@ -6282,7 +6282,7 @@ function $author$project$Main$cyclic$parseExpr() {
 										$elm$parser$Parser$Loop,
 										A2(
 											$elm$parser$Parser$map,
-											$author$project$Main$LCall(lit),
+											$author$project$Main$LCall(expr),
 											$author$project$Main$parenthetical(
 												$elm$parser$Parser$lazy(
 													function (_v2) {

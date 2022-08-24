@@ -88,7 +88,7 @@ parseExpr = succeed identity
             succeed identity
             |= oneOf 
                 [ parenthetical (lazy (\_->parseExpr))
-                    |> Parser.map (LCall lit)
+                    |> Parser.map (LCall expr)
                     |> Parser.map Loop
                 , succeed expr 
                     |> Parser.map Done
