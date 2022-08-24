@@ -5571,40 +5571,46 @@ var $author$project$Main$sub = F2(
 	});
 var $author$project$Main$eval = F2(
 	function (scope, ast) {
-		_eval:
-		while (true) {
-			switch (ast.$) {
-				case 'LVar':
-					var v = ast.a;
-					return A2(
-						$elm$core$Result$fromMaybe,
-						v + ' used out of scope!',
-						A2($elm$core$Dict$get, v, scope));
-				case 'LCall':
-					var foo = ast.a;
-					var bar = ast.b;
-					if (foo.$ === 'LLambda') {
-						var v = foo.a;
-						var e = foo.b;
-						var $temp$scope = A3($elm$core$Dict$insert, v, bar, scope),
-							$temp$ast = e;
-						scope = $temp$scope;
-						ast = $temp$ast;
-						continue _eval;
-					} else {
-						return $elm$core$Result$Err('calling nonfunction!');
-					}
-				case 'LLambda':
-					var v = ast.a;
-					var e = ast.b;
-					return $elm$core$Result$Ok(
-						A2(
-							$author$project$Main$LLambda,
-							v,
-							A2($author$project$Main$sub, scope, e)));
-				default:
-					return $elm$core$Result$Ok(ast);
-			}
+		switch (ast.$) {
+			case 'LVar':
+				var v = ast.a;
+				return A2(
+					$elm$core$Result$fromMaybe,
+					v + ' used out of scope!',
+					A2($elm$core$Dict$get, v, scope));
+			case 'LCall':
+				var fooRes = ast.a;
+				var barRes = ast.b;
+				return A2(
+					$elm$core$Result$andThen,
+					function (foo) {
+						return A2(
+							$elm$core$Result$andThen,
+							function (bar) {
+								if (foo.$ === 'LLambda') {
+									var v = foo.a;
+									var e = foo.b;
+									return A2(
+										$author$project$Main$eval,
+										A3($elm$core$Dict$insert, v, bar, scope),
+										e);
+								} else {
+									return $elm$core$Result$Err('calling nonfunction!');
+								}
+							},
+							A2($author$project$Main$eval, scope, barRes));
+					},
+					A2($author$project$Main$eval, scope, fooRes));
+			case 'LLambda':
+				var v = ast.a;
+				var e = ast.b;
+				return $elm$core$Result$Ok(
+					A2(
+						$author$project$Main$LLambda,
+						v,
+						A2($author$project$Main$sub, scope, e)));
+			default:
+				return $elm$core$Result$Ok(ast);
 		}
 	});
 var $elm$core$Basics$always = F2(
