@@ -100,10 +100,12 @@ parseExpr = succeed identity
 eval : Dict.Dict String Expr -> Expr -> Result String Expr
 eval scope ast = case ast of
     LVar v -> Result.fromMaybe (v ++ " used out of scope!") <| Dict.get v scope
-    LCall foo bar -> 
+    LCall fooRes barRes -> 
+        eval scope fooRes |> Result.andThen (\foo->
+        eval scope barRes |> Result.andThen (\bar->
         case foo of
             LLambda v e -> eval (Dict.insert v bar scope) e
-            _ -> Err "calling nonfunction!"
+            _ -> Err "calling nonfunction!"))
     LLambda v e -> Ok <| LLambda v (sub scope e)
     _ -> Ok ast
 
