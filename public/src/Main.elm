@@ -160,7 +160,7 @@ eval gen scope expr = case expr of
         eval gen4 scope foo |> Result.andThen (\(gen5, foo2)->
         eval gen5 scope bar |> Result.andThen (\(gen6, bar2)->
         case foo2 of
-            LLambda v e -> eval gen6 (Dict.insert ("x_"++var) bar2 scope) (rename v ("x_"++var) e)
+            LLambda v e -> eval gen6 (Dict.insert ("x_"++var) bar2 scope) (rename v ("x_"++var) (beta scope e))
             _ -> Err "calling nonfunction!")))))
     LLambda v e -> Ok (gen, LLambda v (beta scope e))
     _ -> Ok (gen, expr)
