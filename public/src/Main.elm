@@ -162,7 +162,15 @@ eval gen scope expr = case expr of
                 eval gen5 scope bar |> Result.andThen (\(gen6, bar2)->
                 eval gen6 (Dict.insert v bar2 scope) e)))
             _ -> Err "calling nonfunction!"))
+    LLambda v e -> Ok (gen, LLambda v (beta scope e))
     _ -> Ok (gen, expr)
+
+beta :Dict.Dict String Expr -> Expr -> Expr
+beta scope expr = case expr of
+    LVar v -> Maybe.withDefault expr (Dict.get v scope)
+    LCall foo bar -> LCall (beta scope foo) (beta scope bar)
+    LLambda v e -> LLambda v (beta scope e)
+    _ -> expr
 
 rename : String -> String -> Expr -> Expr
 rename old new expr = case expr of
