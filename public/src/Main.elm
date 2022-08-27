@@ -156,12 +156,12 @@ eval gen scope expr = case expr of
     LCall fooRes barRes -> 
         eval gen scope fooRes |> Result.andThen (\(gen2, foo)->
         eval gen2 scope barRes |> Result.andThen (\(gen3, bar)->
-        case foo of
-            LLambda v e -> withFreshRes gen (\gen4 var->
-                eval gen4 scope (rename v ("x_"++var) foo) |> Result.andThen (\(gen5, foo2)->
-                eval gen5 scope bar |> Result.andThen (\(gen6, bar2)->
-                eval gen6 (Dict.insert v bar2 scope) e)))
-            _ -> Err "calling nonfunction!"))
+        withFreshRes gen3 (\gen4 var->
+        eval gen4 scope foo |> Result.andThen (\(gen5, foo2)->
+        eval gen5 scope bar |> Result.andThen (\(gen6, bar2)->
+        case foo2 of
+            LLambda v e -> eval gen6 (Dict.insert ("x_"++var) bar2 scope) (rename v ("x_"++var) e)
+            _ -> Err "calling nonfunction!")))))
     LLambda v e -> Ok (gen, LLambda v (beta scope e))
     _ -> Ok (gen, expr)
 
