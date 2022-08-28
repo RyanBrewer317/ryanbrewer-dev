@@ -6738,6 +6738,7 @@ var $author$project$Main$parseOutputHelp = function (revHtml) {
 };
 var $author$project$Main$parseOutput = A2($elm$parser$Parser$loop, _List_Nil, $author$project$Main$parseOutputHelp);
 var $elm$html$Html$Attributes$placeholder = $elm$html$Html$Attributes$stringProperty('placeholder');
+var $elm$html$Html$strong = _VirtualDom_node('strong');
 var $elm$html$Html$textarea = _VirtualDom_node('textarea');
 var $elm$core$Result$withDefault = F2(
 	function (def, result) {
@@ -6795,16 +6796,31 @@ var $author$project$Main$view = function (model) {
 						(model.output === '') ? $elm$html$Html$text('') : A2(
 						$elm$html$Html$div,
 						_List_Nil,
-						A2(
-							$elm$core$Result$withDefault,
-							_List_fromArray(
-								[
-									$elm$html$Html$text('internal parser error!')
-								]),
+						function (l) {
+							return A2(
+								$elm$core$List$cons,
+								A2(
+									$elm$html$Html$strong,
+									_List_fromArray(
+										[
+											A2($elm$html$Html$Attributes$style, 'margin-right', '1em')
+										]),
+									_List_fromArray(
+										[
+											$elm$html$Html$text('output (variables may be renamed):')
+										])),
+								l);
+						}(
 							A2(
-								$elm$parser$Parser$run,
-								$author$project$Main$parseOutput,
-								$author$project$Main$go(model.output))))
+								$elm$core$Result$withDefault,
+								_List_fromArray(
+									[
+										$elm$html$Html$text('internal parser error!')
+									]),
+								A2(
+									$elm$parser$Parser$run,
+									$author$project$Main$parseOutput,
+									$author$project$Main$go(model.output)))))
 					]))
 			]));
 };
