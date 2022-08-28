@@ -6631,10 +6631,118 @@ var $elm$html$Html$Events$onInput = function (tagger) {
 			$elm$html$Html$Events$alwaysStop,
 			A2($elm$json$Json$Decode$map, tagger, $elm$html$Html$Events$targetValue)));
 };
-var $elm$html$Html$Attributes$placeholder = $elm$html$Html$Attributes$stringProperty('placeholder');
+var $elm$parser$Parser$chompWhile = $elm$parser$Parser$Advanced$chompWhile;
+var $elm$parser$Parser$Advanced$mapChompedString = F2(
+	function (func, _v0) {
+		var parse = _v0.a;
+		return $elm$parser$Parser$Advanced$Parser(
+			function (s0) {
+				var _v1 = parse(s0);
+				if (_v1.$ === 'Bad') {
+					var p = _v1.a;
+					var x = _v1.b;
+					return A2($elm$parser$Parser$Advanced$Bad, p, x);
+				} else {
+					var p = _v1.a;
+					var a = _v1.b;
+					var s1 = _v1.c;
+					return A3(
+						$elm$parser$Parser$Advanced$Good,
+						p,
+						A2(
+							func,
+							A3($elm$core$String$slice, s0.offset, s1.offset, s0.src),
+							a),
+						s1);
+				}
+			});
+	});
+var $elm$parser$Parser$Advanced$getChompedString = function (parser) {
+	return A2($elm$parser$Parser$Advanced$mapChompedString, $elm$core$Basics$always, parser);
+};
+var $elm$parser$Parser$getChompedString = $elm$parser$Parser$Advanced$getChompedString;
+var $elm$core$Basics$neq = _Utils_notEqual;
 var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
 var $elm$html$Html$text = $elm$virtual_dom$VirtualDom$text;
+var $author$project$Main$normalParser = A2(
+	$elm$parser$Parser$map,
+	$elm$html$Html$text,
+	$elm$parser$Parser$getChompedString(
+		A2(
+			$elm$parser$Parser$ignorer,
+			$elm$parser$Parser$succeed(_Utils_Tuple0),
+			$elm$parser$Parser$chompWhile(
+				function (c) {
+					return !_Utils_eq(
+						c,
+						_Utils_chr('_'));
+				}))));
+var $elm$html$Html$sub = _VirtualDom_node('sub');
+var $author$project$Main$subscriptParser = A2(
+	$elm$parser$Parser$keeper,
+	A2(
+		$elm$parser$Parser$ignorer,
+		$elm$parser$Parser$succeed($elm$core$Basics$identity),
+		$elm$parser$Parser$symbol('_')),
+	$elm$parser$Parser$number(
+		{
+			binary: $elm$core$Maybe$Nothing,
+			_float: $elm$core$Maybe$Nothing,
+			hex: $elm$core$Maybe$Nothing,
+			_int: $elm$core$Maybe$Just(
+				function (i) {
+					return A2(
+						$elm$html$Html$sub,
+						_List_Nil,
+						_List_fromArray(
+							[
+								$elm$html$Html$text(
+								$elm$core$String$fromInt(i))
+							]));
+				}),
+			octal: $elm$core$Maybe$Nothing
+		}));
+var $author$project$Main$parseOutputHelp = function (revHtml) {
+	return $elm$parser$Parser$oneOf(
+		_List_fromArray(
+			[
+				A2(
+				$elm$parser$Parser$keeper,
+				$elm$parser$Parser$succeed(
+					function (sub) {
+						return $elm$parser$Parser$Loop(
+							A2($elm$core$List$cons, sub, revHtml));
+					}),
+				$author$project$Main$subscriptParser),
+				A2(
+				$elm$parser$Parser$keeper,
+				$elm$parser$Parser$succeed(
+					function (t) {
+						return $elm$parser$Parser$Loop(
+							A2($elm$core$List$cons, t, revHtml));
+					}),
+				$author$project$Main$normalParser),
+				A2(
+				$elm$parser$Parser$map,
+				function (_v0) {
+					return $elm$parser$Parser$Done(
+						$elm$core$List$reverse(revHtml));
+				},
+				$elm$parser$Parser$succeed(_Utils_Tuple0))
+			]));
+};
+var $author$project$Main$parseOutput = A2($elm$parser$Parser$loop, _List_Nil, $author$project$Main$parseOutputHelp);
+var $elm$html$Html$Attributes$placeholder = $elm$html$Html$Attributes$stringProperty('placeholder');
 var $elm$html$Html$textarea = _VirtualDom_node('textarea');
+var $elm$core$Result$withDefault = F2(
+	function (def, result) {
+		if (result.$ === 'Ok') {
+			var a = result.a;
+			return a;
+		} else {
+			return def;
+		}
+	});
 var $author$project$Main$view = function (model) {
 	return A2(
 		$elm$html$Html$div,
@@ -6679,8 +6787,19 @@ var $author$project$Main$view = function (model) {
 							]),
 						_List_Nil),
 						A2($elm$html$Html$br, _List_Nil, _List_Nil),
-						$elm$html$Html$text(
-						(model.output === '') ? '' : $author$project$Main$go(model.output))
+						(model.output === '') ? $elm$html$Html$text('') : A2(
+						$elm$html$Html$div,
+						_List_Nil,
+						A2(
+							$elm$core$Result$withDefault,
+							_List_fromArray(
+								[
+									$elm$html$Html$text('internal parser error!')
+								]),
+							A2(
+								$elm$parser$Parser$run,
+								$author$project$Main$parseOutput,
+								$author$project$Main$go(model.output))))
 					]))
 			]));
 };

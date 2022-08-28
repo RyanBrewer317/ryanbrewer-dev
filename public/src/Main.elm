@@ -43,9 +43,22 @@ view model = div []
             , onInput NewCode 
             ] []
         , br [] []
-        , text (if model.output == "" then "" else go model.output)
+        , if model.output == "" then text "" else div [] (go model.output |> run parseOutput |> Result.withDefault [text "internal parser error!"])
         ]
     ]
+
+subscriptParser : Parser (Html msg)
+subscriptParser = succeed identity
+               |. symbol "_"
+               |= number {int= Just (\i->sub [] [text <| String.fromInt i]), hex=Nothing, octal=Nothing, binary=Nothing, float=Nothing}
+
+normalParser : Parser (Html msg)
+normalParser = succeed () |. chompWhile (\c->c/='_') |> getChompedString |> Parser.map text
+
+parseOutput : Parser (List (Html msg))
+parseOutput = Parser.loop [] parseOutputHelp
+parseOutputHelp : List (Html msg) -> Parser (Step (List (Html msg)) (List (Html msg)))
+parseOutputHelp revHtml = oneOf [succeed (\sub->Loop (sub::revHtml)) |= subscriptParser, succeed (\t->Loop (t::revHtml)) |= normalParser, succeed () |> Parser.map (\_->Done(List.reverse revHtml))]
 
 resToString : Result String String -> String
 resToString res = case res of
