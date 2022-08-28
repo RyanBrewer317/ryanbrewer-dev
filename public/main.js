@@ -6789,7 +6789,6 @@ var $author$project$Main$view = function (model) {
 									])),
 								$elm$html$Html$text('.')
 							])),
-						A2($elm$html$Html$br, _List_Nil, _List_Nil),
 						A2(
 						$elm$html$Html$p,
 						_List_Nil,
@@ -6822,11 +6821,8 @@ var $author$project$Main$view = function (model) {
 										])),
 								A2(
 									$elm$core$List$cons,
-									$elm$html$Html$text(' (variables may be renamed):'),
-									A2(
-										$elm$core$List$cons,
-										A2($elm$html$Html$br, _List_Nil, _List_Nil),
-										l)));
+									$elm$html$Html$text(' (variables may be renamed): '),
+									l));
 						}(
 							A2(
 								$elm$core$Result$withDefault,

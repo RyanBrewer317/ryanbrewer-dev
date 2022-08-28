@@ -39,7 +39,6 @@ view model = div []
             , a [ href "https://github.com/RyanBrewer317/ryanbrewer-dev" ] [ text "my github" ]
             , text "."
             ]
-        , br [] []
         , p [] [text "Here's a lambda calculus implementation I made, try writing some expressions!"]
         , textarea 
             [ id "code"
@@ -47,7 +46,7 @@ view model = div []
             , onInput NewCode 
             ] []
         , br [] []
-        , if model.output == "" then text "" else div [] (go model.output |> run parseOutput |> Result.withDefault [text "internal parser error!"] |> (\l->strong [] [text "output "]::text " (variables may be renamed):"::br [] []::l))
+        , if model.output == "" then text "" else div [] (go model.output |> run parseOutput |> Result.withDefault [text "internal parser error!"] |> (\l->strong [] [text "output "]::text " (variables may be renamed): "::l))
         ]
     ]
 
