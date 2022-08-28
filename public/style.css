@@ -10,7 +10,7 @@ html,
 nav {
     padding: 10pt;
     width: 100%;
-    background-color: rgb(255, 102, 0);
+    background-color: orangered;
 }
 
 #body {
@@ -27,6 +27,7 @@ nav {
     height: 50pt;
     font-size: 14pt;
     border: none;
+    outline-color: orangered;
 }
 
 a {
