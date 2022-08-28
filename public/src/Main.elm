@@ -46,7 +46,7 @@ view model = div []
             , onInput NewCode 
             ] []
         , br [] []
-        , if model.output == "" then text "" else div [] (go model.output |> run parseOutput |> Result.withDefault [text "internal parser error!"] |> (\l->strong [] [text "output "]::text " (variables may be renamed): "::l))
+        , if model.output == "" then text "" else div [] (go model.output |> run parseOutput |> Result.withDefault [text "internal parser error!"] |> (\l->[strong [] [text "output "], text " (variables may be renamed): ", div [style "margin" "4pt 2pt"] l]))
         ]
     ]
 
