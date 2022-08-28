@@ -6771,18 +6771,24 @@ var $author$project$Main$view = function (model) {
 					]),
 				_List_fromArray(
 					[
-						$elm$html$Html$text('This is my website. It\'s hosted by Firebase and written mostly in Elm, and the code is up on '),
 						A2(
-						$elm$html$Html$a,
+						$elm$html$Html$p,
+						_List_Nil,
 						_List_fromArray(
 							[
-								$elm$html$Html$Attributes$href('https://github.com/RyanBrewer317/ryanbrewer-dev')
-							]),
-						_List_fromArray(
-							[
-								$elm$html$Html$text('my github')
+								$elm$html$Html$text('This is my website. It\'s hosted by Firebase and written mostly in Elm, and the code is up on '),
+								A2(
+								$elm$html$Html$a,
+								_List_fromArray(
+									[
+										$elm$html$Html$Attributes$href('https://github.com/RyanBrewer317/ryanbrewer-dev')
+									]),
+								_List_fromArray(
+									[
+										$elm$html$Html$text('my github')
+									])),
+								$elm$html$Html$text('.')
 							])),
-						$elm$html$Html$text('.'),
 						A2($elm$html$Html$br, _List_Nil, _List_Nil),
 						A2(
 						$elm$html$Html$p,
@@ -6809,15 +6815,18 @@ var $author$project$Main$view = function (model) {
 								$elm$core$List$cons,
 								A2(
 									$elm$html$Html$strong,
+									_List_Nil,
 									_List_fromArray(
 										[
-											A2($elm$html$Html$Attributes$style, 'margin-right', '1em')
-										]),
-									_List_fromArray(
-										[
-											$elm$html$Html$text('output (variables may be renamed):')
+											$elm$html$Html$text('output ')
 										])),
-								l);
+								A2(
+									$elm$core$List$cons,
+									$elm$html$Html$text(' (variables may be renamed):'),
+									A2(
+										$elm$core$List$cons,
+										A2($elm$html$Html$br, _List_Nil, _List_Nil),
+										l)));
 						}(
 							A2(
 								$elm$core$Result$withDefault,
