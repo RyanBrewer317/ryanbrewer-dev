@@ -46,7 +46,7 @@ view model = div []
             , onInput NewCode 
             ] []
         , br [] []
-        , if model.output == "" then text "" else div [] (go model.output |> run parseOutput |> Result.withDefault [text "internal parser error!"] |> (\l->[strong [] [text "output "], text " (variables may be renamed): ", div [style "margin" "4pt 2pt"] l]))
+        , if model.output == "" then text "" else div [] (go model.output |> run parseOutput |> Result.withDefault [text "internal parser error!"] |> (\l->[strong [] [text "output "], text " (variables may be renamed): ", div [style "margin" "4pt 2pt", style "font-size" "15pt", style "font-family" "FreeMono, monospace"] l]))
         ]
     ]
 
@@ -55,7 +55,7 @@ subscriptParser = succeed identity
                |. symbol "_"
                |. chompWhile isDigit 
                |> getChompedString
-               |> Parser.map (\i->sub [style "font-size" "7pt", style "margin-right" "1px"] [text (String.dropLeft 1 i)])
+               |> Parser.map (\i->sub [style "font-size" "9pt", style "margin-right" "1px"] [text (String.dropLeft 1 i)])
 
 normalParser : Parser (Html msg)
 normalParser = succeed () |. chompWhile (\c->c/='_') |> getChompedString |> Parser.map text

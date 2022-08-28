@@ -6688,7 +6688,7 @@ var $author$project$Main$subscriptParser = A2(
 			$elm$html$Html$sub,
 			_List_fromArray(
 				[
-					A2($elm$html$Html$Attributes$style, 'font-size', '7pt'),
+					A2($elm$html$Html$Attributes$style, 'font-size', '9pt'),
 					A2($elm$html$Html$Attributes$style, 'margin-right', '1px')
 				]),
 			_List_fromArray(
@@ -6824,7 +6824,9 @@ var $author$project$Main$view = function (model) {
 									$elm$html$Html$div,
 									_List_fromArray(
 										[
-											A2($elm$html$Html$Attributes$style, 'margin', '4pt 2pt')
+											A2($elm$html$Html$Attributes$style, 'margin', '4pt 2pt'),
+											A2($elm$html$Html$Attributes$style, 'font-size', '15pt'),
+											A2($elm$html$Html$Attributes$style, 'font-family', 'FreeMono, monospace')
 										]),
 									l)
 								]);
