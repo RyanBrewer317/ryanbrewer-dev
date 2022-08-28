@@ -6810,19 +6810,24 @@ var $author$project$Main$view = function (model) {
 						$elm$html$Html$div,
 						_List_Nil,
 						function (l) {
-							return A2(
-								$elm$core$List$cons,
-								A2(
+							return _List_fromArray(
+								[
+									A2(
 									$elm$html$Html$strong,
 									_List_Nil,
 									_List_fromArray(
 										[
 											$elm$html$Html$text('output ')
 										])),
-								A2(
-									$elm$core$List$cons,
 									$elm$html$Html$text(' (variables may be renamed): '),
-									l));
+									A2(
+									$elm$html$Html$div,
+									_List_fromArray(
+										[
+											A2($elm$html$Html$Attributes$style, 'margin', '4pt 2pt')
+										]),
+									l)
+								]);
 						}(
 							A2(
 								$elm$core$Result$withDefault,
