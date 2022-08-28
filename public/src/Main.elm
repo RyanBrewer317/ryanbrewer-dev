@@ -177,8 +177,8 @@ eval gen scope expr = case expr of
         eval gen3 scope bar |> Result.andThen (\(gen4, bar2)->
         case foo2 of
             LLambda v e -> 
-                let (v2, e2) = (Debug.log "" ("x_"++var), Debug.log "" (rename v ("x_"++var) (beta scope e))) in
-                eval gen4 (Dict.insert v2 (Debug.log "" bar2) scope) e2
+                let (v2, e2) = ("x_"++var, rename v ("x_"++var) (beta scope e)) in
+                eval gen4 (Dict.insert v2 bar2 scope) e2
             _ -> Err "calling nonfunction!")))
     LLambda v e -> 
         Ok <| withFresh gen (\gen2 var->

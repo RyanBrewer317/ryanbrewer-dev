@@ -5572,7 +5572,6 @@ var $elm$core$Dict$insert = F3(
 			return x;
 		}
 	});
-var $elm$core$Debug$log = _Debug_log;
 var $elm$core$Maybe$map = F2(
 	function (f, maybe) {
 		if (maybe.$ === 'Just') {
@@ -5662,25 +5661,18 @@ var $author$project$Main$eval = F3(
 												var v = foo2.a;
 												var e = foo2.b;
 												var _v4 = _Utils_Tuple2(
-													A2($elm$core$Debug$log, '', 'x_' + _var),
-													A2(
-														$elm$core$Debug$log,
-														'',
-														A3(
-															$author$project$Main$rename,
-															v,
-															'x_' + _var,
-															A2($author$project$Main$beta, scope, e))));
+													'x_' + _var,
+													A3(
+														$author$project$Main$rename,
+														v,
+														'x_' + _var,
+														A2($author$project$Main$beta, scope, e)));
 												var v2 = _v4.a;
 												var e2 = _v4.b;
 												return A3(
 													$author$project$Main$eval,
 													gen4,
-													A3(
-														$elm$core$Dict$insert,
-														v2,
-														A2($elm$core$Debug$log, '', bar2),
-														scope),
+													A3($elm$core$Dict$insert, v2, bar2, scope),
 													e2);
 											} else {
 												return $elm$core$Result$Err('calling nonfunction!');

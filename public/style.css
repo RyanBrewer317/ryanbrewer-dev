@@ -26,8 +26,13 @@ nav {
     width: 200pt;
     height: 50pt;
     font-size: 14pt;
-    border: none;
-    outline-color: orangered;
+    border: 1pt solid black;
+    border-radius: 3pt;
+}
+
+#code:focus {
+    outline: none !important;
+    border: 1pt solid orangered;
 }
 
 a {
