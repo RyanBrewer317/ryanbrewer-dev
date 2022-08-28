@@ -38,6 +38,7 @@ view model = div []
         , a [ href "https://github.com/RyanBrewer317/ryanbrewer-dev" ] [ text "my github" ]
         , text "."
         , br [] []
+        , p [] [text "Here's a lambda calculus implementation I made, try writing some expressions!"]
         , textarea 
             [ id "code"
             , placeholder "Write some lambda calculus code! Example: (\\x.\\y.x)(\\x.x)(3)"
