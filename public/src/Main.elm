@@ -34,9 +34,11 @@ view model = div []
         [ text "Ryan Brewer" 
         ]
     , div [ id "body" ] 
-        [ text "This is my website. It's hosted by Firebase and written mostly in Elm, and the code is up on " 
-        , a [ href "https://github.com/RyanBrewer317/ryanbrewer-dev" ] [ text "my github" ]
-        , text "."
+        [ p [] 
+            [ text "This is my website. It's hosted by Firebase and written mostly in Elm, and the code is up on "
+            , a [ href "https://github.com/RyanBrewer317/ryanbrewer-dev" ] [ text "my github" ]
+            , text "."
+            ]
         , br [] []
         , p [] [text "Here's a lambda calculus implementation I made, try writing some expressions!"]
         , textarea 
@@ -45,7 +47,7 @@ view model = div []
             , onInput NewCode 
             ] []
         , br [] []
-        , if model.output == "" then text "" else div [] (go model.output |> run parseOutput |> Result.withDefault [text "internal parser error!"] |> (\l->strong [style "margin-right" "1em"] [text "output (variables may be renamed):"]::l))
+        , if model.output == "" then text "" else div [] (go model.output |> run parseOutput |> Result.withDefault [text "internal parser error!"] |> (\l->strong [] [text "output "]::text " (variables may be renamed):"::br [] []::l))
         ]
     ]
 
