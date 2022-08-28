@@ -6677,16 +6677,22 @@ var $author$project$Main$normalParser = A2(
 						c,
 						_Utils_chr('_'));
 				}))));
+var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
+var $elm$html$Html$Attributes$style = $elm$virtual_dom$VirtualDom$style;
 var $elm$html$Html$sub = _VirtualDom_node('sub');
 var $author$project$Main$subscriptParser = A2(
 	$elm$parser$Parser$map,
 	function (i) {
 		return A2(
 			$elm$html$Html$sub,
-			_List_Nil,
 			_List_fromArray(
 				[
-					$elm$html$Html$text(i)
+					A2($elm$html$Html$Attributes$style, 'font-size', '7pt')
+				]),
+			_List_fromArray(
+				[
+					$elm$html$Html$text(
+					A2($elm$core$String$dropLeft, 1, i))
 				]));
 	},
 	$elm$parser$Parser$getChompedString(

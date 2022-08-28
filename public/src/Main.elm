@@ -53,7 +53,7 @@ subscriptParser = succeed identity
                |. symbol "_"
                |. chompWhile isDigit 
                |> getChompedString
-               |> Parser.map (\i->sub [] [text i])
+               |> Parser.map (\i->sub [style "font-size" "7pt"] [text (String.dropLeft 1 i)])
 
 normalParser : Parser (Html msg)
 normalParser = succeed () |. chompWhile (\c->c/='_') |> getChompedString |> Parser.map text
