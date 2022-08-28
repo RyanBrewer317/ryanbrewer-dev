@@ -6631,6 +6631,7 @@ var $elm$html$Html$Events$onInput = function (tagger) {
 			$elm$html$Html$Events$alwaysStop,
 			A2($elm$json$Json$Decode$map, tagger, $elm$html$Html$Events$targetValue)));
 };
+var $elm$html$Html$p = _VirtualDom_node('p');
 var $elm$parser$Parser$chompWhile = $elm$parser$Parser$Advanced$chompWhile;
 var $elm$parser$Parser$Advanced$mapChompedString = F2(
 	function (func, _v0) {
@@ -6783,6 +6784,13 @@ var $author$project$Main$view = function (model) {
 							])),
 						$elm$html$Html$text('.'),
 						A2($elm$html$Html$br, _List_Nil, _List_Nil),
+						A2(
+						$elm$html$Html$p,
+						_List_Nil,
+						_List_fromArray(
+							[
+								$elm$html$Html$text('Here\'s a lambda calculus implementation I made, try writing some expressions!')
+							])),
 						A2(
 						$elm$html$Html$textarea,
 						_List_fromArray(
