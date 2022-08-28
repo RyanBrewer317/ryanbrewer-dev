@@ -8,6 +8,7 @@ import Parser exposing (..)
 import Set
 import Dict
 import Result exposing (Result(..))
+import Char exposing (isDigit)
 
 main : Program () Model Update
 main = Browser.sandbox { 
@@ -50,7 +51,9 @@ view model = div []
 subscriptParser : Parser (Html msg)
 subscriptParser = succeed identity
                |. symbol "_"
-               |= number {int= Just (\i->sub [] [text <| String.fromInt i]), hex=Nothing, octal=Nothing, binary=Nothing, float=Nothing}
+               |. chompWhile isDigit 
+               |> getChompedString
+               |> Parser.map (\i->sub [] [text i])
 
 normalParser : Parser (Html msg)
 normalParser = succeed () |. chompWhile (\c->c/='_') |> getChompedString |> Parser.map text

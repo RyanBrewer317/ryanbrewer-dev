@@ -6679,29 +6679,24 @@ var $author$project$Main$normalParser = A2(
 				}))));
 var $elm$html$Html$sub = _VirtualDom_node('sub');
 var $author$project$Main$subscriptParser = A2(
-	$elm$parser$Parser$keeper,
-	A2(
-		$elm$parser$Parser$ignorer,
-		$elm$parser$Parser$succeed($elm$core$Basics$identity),
-		$elm$parser$Parser$symbol('_')),
-	$elm$parser$Parser$number(
-		{
-			binary: $elm$core$Maybe$Nothing,
-			_float: $elm$core$Maybe$Nothing,
-			hex: $elm$core$Maybe$Nothing,
-			_int: $elm$core$Maybe$Just(
-				function (i) {
-					return A2(
-						$elm$html$Html$sub,
-						_List_Nil,
-						_List_fromArray(
-							[
-								$elm$html$Html$text(
-								$elm$core$String$fromInt(i))
-							]));
-				}),
-			octal: $elm$core$Maybe$Nothing
-		}));
+	$elm$parser$Parser$map,
+	function (i) {
+		return A2(
+			$elm$html$Html$sub,
+			_List_Nil,
+			_List_fromArray(
+				[
+					$elm$html$Html$text(i)
+				]));
+	},
+	$elm$parser$Parser$getChompedString(
+		A2(
+			$elm$parser$Parser$ignorer,
+			A2(
+				$elm$parser$Parser$ignorer,
+				$elm$parser$Parser$succeed($elm$core$Basics$identity),
+				$elm$parser$Parser$symbol('_')),
+			$elm$parser$Parser$chompWhile($elm$core$Char$isDigit))));
 var $author$project$Main$parseOutputHelp = function (revHtml) {
 	return $elm$parser$Parser$oneOf(
 		_List_fromArray(
