@@ -6715,20 +6715,23 @@ var $author$project$Main$parseOutputHelp = function (revHtml) {
 					}),
 				$author$project$Main$subscriptParser),
 				A2(
+				$elm$parser$Parser$map,
+				function (_v0) {
+					return $elm$parser$Parser$Done(
+						$elm$core$List$reverse(revHtml));
+				},
+				A2(
+					$elm$parser$Parser$ignorer,
+					$elm$parser$Parser$succeed(_Utils_Tuple0),
+					$elm$parser$Parser$end)),
+				A2(
 				$elm$parser$Parser$keeper,
 				$elm$parser$Parser$succeed(
 					function (t) {
 						return $elm$parser$Parser$Loop(
 							A2($elm$core$List$cons, t, revHtml));
 					}),
-				$author$project$Main$normalParser),
-				A2(
-				$elm$parser$Parser$map,
-				function (_v0) {
-					return $elm$parser$Parser$Done(
-						$elm$core$List$reverse(revHtml));
-				},
-				$elm$parser$Parser$succeed(_Utils_Tuple0))
+				$author$project$Main$normalParser)
 			]));
 };
 var $author$project$Main$parseOutput = A2($elm$parser$Parser$loop, _List_Nil, $author$project$Main$parseOutputHelp);

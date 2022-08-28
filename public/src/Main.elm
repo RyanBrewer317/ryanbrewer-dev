@@ -58,7 +58,7 @@ normalParser = succeed () |. chompWhile (\c->c/='_') |> getChompedString |> Pars
 parseOutput : Parser (List (Html msg))
 parseOutput = Parser.loop [] parseOutputHelp
 parseOutputHelp : List (Html msg) -> Parser (Step (List (Html msg)) (List (Html msg)))
-parseOutputHelp revHtml = oneOf [succeed (\sub->Loop (sub::revHtml)) |= subscriptParser, succeed (\t->Loop (t::revHtml)) |= normalParser, succeed () |> Parser.map (\_->Done(List.reverse revHtml))]
+parseOutputHelp revHtml = oneOf [succeed (\sub->Loop (sub::revHtml)) |= subscriptParser, succeed () |. end |> Parser.map (\_->Done(List.reverse revHtml)), succeed (\t->Loop (t::revHtml)) |= normalParser]
 
 resToString : Result String String -> String
 resToString res = case res of
