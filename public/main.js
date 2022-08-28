@@ -6546,7 +6546,7 @@ var $author$project$Main$toString = function (expr) {
 		case 'LLambda':
 			var v = expr.a;
 			var e = expr.b;
-			return '\\' + (v + ('.' + $author$project$Main$toString(e)));
+			return 'λ' + (v + ('.' + $author$project$Main$toString(e)));
 		default:
 			var foo = expr.a;
 			var bar = expr.b;
@@ -6687,7 +6687,8 @@ var $author$project$Main$subscriptParser = A2(
 			$elm$html$Html$sub,
 			_List_fromArray(
 				[
-					A2($elm$html$Html$Attributes$style, 'font-size', '7pt')
+					A2($elm$html$Html$Attributes$style, 'font-size', '7pt'),
+					A2($elm$html$Html$Attributes$style, 'margin-right', '1px')
 				]),
 			_List_fromArray(
 				[

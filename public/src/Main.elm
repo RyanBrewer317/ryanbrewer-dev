@@ -53,7 +53,7 @@ subscriptParser = succeed identity
                |. symbol "_"
                |. chompWhile isDigit 
                |> getChompedString
-               |> Parser.map (\i->sub [style "font-size" "7pt"] [text (String.dropLeft 1 i)])
+               |> Parser.map (\i->sub [style "font-size" "7pt", style "margin-right" "1px"] [text (String.dropLeft 1 i)])
 
 normalParser : Parser (Html msg)
 normalParser = succeed () |. chompWhile (\c->c/='_') |> getChompedString |> Parser.map text
@@ -201,7 +201,7 @@ toString : Expr -> String
 toString expr = case expr of
     LVar v -> v
     LInt i -> String.fromInt i
-    LLambda v e -> "\\" ++ v ++ "." ++ toString e
+    LLambda v e -> "λ" ++ v ++ "." ++ toString e
     LCall foo bar -> "(" ++ toString foo ++ ")(" ++ toString bar ++ ")"
 
 go : String -> String
