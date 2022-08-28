@@ -153,16 +153,18 @@ typeOf ann = case ann of
 eval : Gen -> Dict.Dict String Expr -> Expr -> Result String (Gen, Expr)
 eval gen scope expr = case expr of
     LVar v -> Result.fromMaybe (v ++ " used out of scope!") <| Maybe.map (\val->(gen, val)) <| Dict.get v scope
-    LCall fooRes barRes -> 
-        eval gen scope fooRes |> Result.andThen (\(gen2, foo)->
-        eval gen2 scope barRes |> Result.andThen (\(gen3, bar)->
-        withFreshRes gen3 (\gen4 var->
-        eval gen4 scope foo |> Result.andThen (\(gen5, foo2)->
-        eval gen5 scope bar |> Result.andThen (\(gen6, bar2)->
+    LCall foo bar ->
+        withFreshRes gen (\gen2 var->
+        eval gen2 scope foo |> Result.andThen (\(gen3, foo2)->
+        eval gen3 scope bar |> Result.andThen (\(gen4, bar2)->
         case foo2 of
-            LLambda v e -> eval gen6 (Dict.insert ("x_"++var) bar2 scope) (rename v ("x_"++var) (beta scope e))
-            _ -> Err "calling nonfunction!")))))
-    LLambda v e -> Ok (gen, LLambda v (beta scope e))
+            LLambda v e -> 
+                let (v2, e2) = (Debug.log "" ("x_"++var), Debug.log "" (rename v ("x_"++var) (beta scope e))) in
+                eval gen4 (Dict.insert v2 (Debug.log "" bar2) scope) e2
+            _ -> Err "calling nonfunction!")))
+    LLambda v e -> 
+        Ok <| withFresh gen (\gen2 var->
+        (gen2, LLambda ("x_"++var) (rename v ("x_"++var) (beta scope e))))
     _ -> Ok (gen, expr)
 
 beta :Dict.Dict String Expr -> Expr -> Expr
@@ -187,4 +189,4 @@ toString expr = case expr of
     LCall foo bar -> "(" ++ toString foo ++ ")(" ++ toString bar ++ ")"
 
 go : String -> String
-go code = run (parseExpr |. end) code |> Result.mapError (\_->"parse error!") |> Result.andThen (\expr -> eval (Gen -1) Dict.empty expr) |> Result.map (\(gen, x)->toString x) |> resToString
+go code = run (parseExpr |. end) code |> Result.mapError (\_->"parse error!") |> Result.andThen (\expr -> eval (Gen 0) Dict.empty expr) |> Result.map (\(gen, x)->toString x) |> resToString

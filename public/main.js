@@ -5572,6 +5572,7 @@ var $elm$core$Dict$insert = F3(
 			return x;
 		}
 	});
+var $elm$core$Debug$log = _Debug_log;
 var $elm$core$Maybe$map = F2(
 	function (f, maybe) {
 		if (maybe.$ === 'Just') {
@@ -5609,6 +5610,14 @@ var $author$project$Main$rename = F3(
 				return expr;
 		}
 	});
+var $author$project$Main$withFresh = F2(
+	function (_v0, f) {
+		var i = _v0.a;
+		return A2(
+			f,
+			$author$project$Main$Gen(i + 1),
+			$elm$core$String$fromInt(i));
+	});
 var $author$project$Main$withFreshRes = F2(
 	function (_v0, f) {
 		var i = _v0.a;
@@ -5632,67 +5641,75 @@ var $author$project$Main$eval = F3(
 						},
 						A2($elm$core$Dict$get, v, scope)));
 			case 'LCall':
-				var fooRes = expr.a;
-				var barRes = expr.b;
+				var foo = expr.a;
+				var bar = expr.b;
 				return A2(
-					$elm$core$Result$andThen,
-					function (_v1) {
-						var gen2 = _v1.a;
-						var foo = _v1.b;
-						return A2(
-							$elm$core$Result$andThen,
-							function (_v2) {
-								var gen3 = _v2.a;
-								var bar = _v2.b;
-								return A2(
-									$author$project$Main$withFreshRes,
-									gen3,
-									F2(
-										function (gen4, _var) {
-											return A2(
-												$elm$core$Result$andThen,
-												function (_v3) {
-													var gen5 = _v3.a;
-													var foo2 = _v3.b;
-													return A2(
-														$elm$core$Result$andThen,
-														function (_v4) {
-															var gen6 = _v4.a;
-															var bar2 = _v4.b;
-															if (foo2.$ === 'LLambda') {
-																var v = foo2.a;
-																var e = foo2.b;
-																return A3(
-																	$author$project$Main$eval,
-																	gen6,
-																	A3($elm$core$Dict$insert, 'x_' + _var, bar2, scope),
-																	A3(
-																		$author$project$Main$rename,
-																		v,
-																		'x_' + _var,
-																		A2($author$project$Main$beta, scope, e)));
-															} else {
-																return $elm$core$Result$Err('calling nonfunction!');
-															}
-														},
-														A3($author$project$Main$eval, gen5, scope, bar));
-												},
-												A3($author$project$Main$eval, gen4, scope, foo));
-										}));
-							},
-							A3($author$project$Main$eval, gen2, scope, barRes));
-					},
-					A3($author$project$Main$eval, gen, scope, fooRes));
+					$author$project$Main$withFreshRes,
+					gen,
+					F2(
+						function (gen2, _var) {
+							return A2(
+								$elm$core$Result$andThen,
+								function (_v1) {
+									var gen3 = _v1.a;
+									var foo2 = _v1.b;
+									return A2(
+										$elm$core$Result$andThen,
+										function (_v2) {
+											var gen4 = _v2.a;
+											var bar2 = _v2.b;
+											if (foo2.$ === 'LLambda') {
+												var v = foo2.a;
+												var e = foo2.b;
+												var _v4 = _Utils_Tuple2(
+													A2($elm$core$Debug$log, '', 'x_' + _var),
+													A2(
+														$elm$core$Debug$log,
+														'',
+														A3(
+															$author$project$Main$rename,
+															v,
+															'x_' + _var,
+															A2($author$project$Main$beta, scope, e))));
+												var v2 = _v4.a;
+												var e2 = _v4.b;
+												return A3(
+													$author$project$Main$eval,
+													gen4,
+													A3(
+														$elm$core$Dict$insert,
+														v2,
+														A2($elm$core$Debug$log, '', bar2),
+														scope),
+													e2);
+											} else {
+												return $elm$core$Result$Err('calling nonfunction!');
+											}
+										},
+										A3($author$project$Main$eval, gen3, scope, bar));
+								},
+								A3($author$project$Main$eval, gen2, scope, foo));
+						}));
 			case 'LLambda':
 				var v = expr.a;
 				var e = expr.b;
 				return $elm$core$Result$Ok(
-					_Utils_Tuple2(
+					A2(
+						$author$project$Main$withFresh,
 						gen,
-						A2(
-							$author$project$Main$LLambda,
-							v,
-							A2($author$project$Main$beta, scope, e))));
+						F2(
+							function (gen2, _var) {
+								return _Utils_Tuple2(
+									gen2,
+									A2(
+										$author$project$Main$LLambda,
+										'x_' + _var,
+										A3(
+											$author$project$Main$rename,
+											v,
+											'x_' + _var,
+											A2($author$project$Main$beta, scope, e))));
+							})));
 			default:
 				return $elm$core$Result$Ok(
 					_Utils_Tuple2(gen, expr));
@@ -5762,9 +5779,6 @@ var $elm$core$Result$mapError = F2(
 				f(e));
 		}
 	});
-var $elm$core$Basics$negate = function (n) {
-	return -n;
-};
 var $elm$parser$Parser$Done = function (a) {
 	return {$: 'Done', a: a};
 };
@@ -5977,6 +5991,9 @@ var $elm$parser$Parser$Advanced$Token = F2(
 		return {$: 'Token', a: a, b: b};
 	});
 var $elm$parser$Parser$Advanced$isSubString = _Parser_isSubString;
+var $elm$core$Basics$negate = function (n) {
+	return -n;
+};
 var $elm$core$Basics$not = _Basics_not;
 var $elm$parser$Parser$Advanced$token = function (_v0) {
 	var str = _v0.a;
@@ -6550,7 +6567,7 @@ var $author$project$Main$go = function (code) {
 				function (expr) {
 					return A3(
 						$author$project$Main$eval,
-						$author$project$Main$Gen(-1),
+						$author$project$Main$Gen(0),
 						$elm$core$Dict$empty,
 						expr);
 				},
