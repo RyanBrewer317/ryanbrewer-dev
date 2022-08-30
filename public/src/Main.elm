@@ -144,8 +144,8 @@ type Subst = Subst String Type
 typeToStringHelper : Type -> String
 typeToStringHelper t = case t of
     TInt -> "Int"
-    TLambda u v -> typeToStringHelper u ++ "->" ++ typeToStringHelper v
-    TVar n -> n
+    TLambda u v -> typeToStringHelper u ++ " -> " ++ typeToStringHelper v
+    TVar n -> "some " ++ n
     Forall vars u -> case vars of
         [] -> typeToStringHelper u
         _ -> 
@@ -204,7 +204,7 @@ solve constraints substitutions skipped = case constraints of
     const::rest -> case const of
         Eq t1 t2 ->
             let continue = \_->solve rest substitutions (const::skipped) in
-            let err = \_-> Err <| typeToString t1 ++ " can't equal " ++ typeToString t2 in
+            let err = \_-> Err <| "Type error, " ++ (typeToString t1 ++ " can't equal " ++ typeToString t2) ++ "!" in
             let removeAndContinue = \_->solve rest substitutions skipped in
             let handleVarIsolationAndContinue = \v->solve (substituteAll rest t2 t1) (Subst v t1::substitutions) (substituteAll skipped t2 t1) in
             if t1 == t2 then
