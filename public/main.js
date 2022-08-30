@@ -5760,6 +5760,709 @@ var $elm$core$Result$map = F2(
 			return $elm$core$Result$Err(e);
 		}
 	});
+var $author$project$Main$Forall = F2(
+	function (a, b) {
+		return {$: 'Forall', a: a, b: b};
+	});
+var $author$project$Main$TVar = function (a) {
+	return {$: 'TVar', a: a};
+};
+var $elm$core$List$any = F2(
+	function (isOkay, list) {
+		any:
+		while (true) {
+			if (!list.b) {
+				return false;
+			} else {
+				var x = list.a;
+				var xs = list.b;
+				if (isOkay(x)) {
+					return true;
+				} else {
+					var $temp$isOkay = isOkay,
+						$temp$list = xs;
+					isOkay = $temp$isOkay;
+					list = $temp$list;
+					continue any;
+				}
+			}
+		}
+	});
+var $elm$core$List$member = F2(
+	function (x, xs) {
+		return A2(
+			$elm$core$List$any,
+			function (a) {
+				return _Utils_eq(a, x);
+			},
+			xs);
+	});
+var $author$project$Main$occurs = F2(
+	function (_var, t) {
+		switch (t.$) {
+			case 'TVar':
+				return _Utils_eq(t, _var);
+			case 'TInt':
+				return false;
+			case 'TLambda':
+				var a = t.a;
+				var b = t.b;
+				return A2($author$project$Main$occurs, _var, a) && A2($author$project$Main$occurs, _var, b);
+			default:
+				var vars = t.a;
+				var u = t.b;
+				return A2(
+					$elm$core$List$any,
+					function (v) {
+						return _Utils_eq(v, _var);
+					},
+					vars) || A2($author$project$Main$occurs, _var, u);
+		}
+	});
+var $author$project$Main$occursInScope = F2(
+	function (scope, _var) {
+		return A2(
+			$elm$core$List$any,
+			function (_v0) {
+				var t = _v0.b;
+				return A2(
+					$author$project$Main$occurs,
+					$author$project$Main$TVar(_var),
+					t);
+			},
+			$elm$core$Dict$toList(scope));
+	});
+var $author$project$Main$schemeFrom = function (t) {
+	if (t.$ === 'Forall') {
+		var vars = t.a;
+		var u = t.b;
+		return $elm$core$Maybe$Just(
+			_Utils_Tuple2(vars, u));
+	} else {
+		return $elm$core$Maybe$Nothing;
+	}
+};
+var $author$project$Main$generalize = F3(
+	function (scope, t, scheme) {
+		if (scheme.$ === 'Forall') {
+			var vars = scheme.a;
+			var typ = scheme.b;
+			switch (t.$) {
+				case 'TVar':
+					var x = t.a;
+					return (A2($author$project$Main$occursInScope, scope, x) || A2($elm$core$List$member, t, vars)) ? scheme : A2(
+						$author$project$Main$Forall,
+						A2($elm$core$List$cons, t, vars),
+						typ);
+				case 'TInt':
+					return scheme;
+				case 'TLambda':
+					var a = t.a;
+					var b = t.b;
+					var _v2 = A2(
+						$elm$core$Maybe$withDefault,
+						_Utils_Tuple2(_List_Nil, a),
+						$author$project$Main$schemeFrom(
+							A3($author$project$Main$generalize, scope, a, scheme)));
+					var varsA = _v2.a;
+					var _v3 = A2(
+						$elm$core$Maybe$withDefault,
+						_Utils_Tuple2(_List_Nil, b),
+						$author$project$Main$schemeFrom(
+							A3($author$project$Main$generalize, scope, b, scheme)));
+					var varsB = _v3.a;
+					var set = A3(
+						$elm$core$List$foldr,
+						F2(
+							function (item, l) {
+								return A2($elm$core$List$member, item, l) ? l : A2($elm$core$List$cons, item, l);
+							}),
+						_List_Nil,
+						_Utils_ap(
+							vars,
+							_Utils_ap(varsA, varsB)));
+					return A2($author$project$Main$Forall, set, typ);
+				default:
+					return t;
+			}
+		} else {
+			return A2($author$project$Main$Forall, _List_Nil, t);
+		}
+	});
+var $elm$core$Dict$map = F2(
+	function (func, dict) {
+		if (dict.$ === 'RBEmpty_elm_builtin') {
+			return $elm$core$Dict$RBEmpty_elm_builtin;
+		} else {
+			var color = dict.a;
+			var key = dict.b;
+			var value = dict.c;
+			var left = dict.d;
+			var right = dict.e;
+			return A5(
+				$elm$core$Dict$RBNode_elm_builtin,
+				color,
+				key,
+				A2(func, key, value),
+				A2($elm$core$Dict$map, func, left),
+				A2($elm$core$Dict$map, func, right));
+		}
+	});
+var $author$project$Main$Eq = F2(
+	function (a, b) {
+		return {$: 'Eq', a: a, b: b};
+	});
+var $author$project$Main$Subst = F2(
+	function (a, b) {
+		return {$: 'Subst', a: a, b: b};
+	});
+var $elm$core$List$isEmpty = function (xs) {
+	if (!xs.b) {
+		return true;
+	} else {
+		return false;
+	}
+};
+var $author$project$Main$TLambda = F2(
+	function (a, b) {
+		return {$: 'TLambda', a: a, b: b};
+	});
+var $author$project$Main$sub = F3(
+	function (_var, val, t) {
+		switch (t.$) {
+			case 'TVar':
+				return _Utils_eq(t, _var) ? val : t;
+			case 'TInt':
+				return t;
+			case 'TLambda':
+				var a = t.a;
+				var b = t.b;
+				return A2(
+					$author$project$Main$TLambda,
+					A3($author$project$Main$sub, _var, val, a),
+					A3($author$project$Main$sub, _var, val, b));
+			default:
+				var vars = t.a;
+				var u = t.b;
+				return A2(
+					$author$project$Main$Forall,
+					vars,
+					A3($author$project$Main$sub, _var, val, u));
+		}
+	});
+var $author$project$Main$substituteAll = F3(
+	function (constraints, _var, val) {
+		if (!constraints.b) {
+			return _List_Nil;
+		} else {
+			var _const = constraints.a;
+			var rest = constraints.b;
+			var u = _const.a;
+			var v = _const.b;
+			var u2 = A3($author$project$Main$sub, _var, val, u);
+			var v2 = A3($author$project$Main$sub, _var, val, v);
+			return A2(
+				$elm$core$List$cons,
+				A2($author$project$Main$Eq, u2, v2),
+				A3($author$project$Main$substituteAll, rest, _var, val));
+		}
+	});
+var $elm$core$String$cons = _String_cons;
+var $elm$core$String$fromChar = function (_char) {
+	return A2($elm$core$String$cons, _char, '');
+};
+var $elm$core$String$foldr = _String_foldr;
+var $elm$core$String$toList = function (string) {
+	return A3($elm$core$String$foldr, $elm$core$List$cons, _List_Nil, string);
+};
+var $author$project$Main$typeToStringHelper = function (t) {
+	typeToStringHelper:
+	while (true) {
+		switch (t.$) {
+			case 'TInt':
+				return 'Int';
+			case 'TLambda':
+				var u = t.a;
+				var v = t.b;
+				return $author$project$Main$typeToStringHelper(u) + ('->' + $author$project$Main$typeToStringHelper(v));
+			case 'TVar':
+				var n = t.a;
+				return n;
+			default:
+				var vars = t.a;
+				var u = t.b;
+				if (!vars.b) {
+					var $temp$t = u;
+					t = $temp$t;
+					continue typeToStringHelper;
+				} else {
+					var _v2 = A3(
+						$elm$core$List$foldr,
+						F2(
+							function (tvar, _v3) {
+								var showvars = _v3.a;
+								var typ = _v3.b;
+								var supply = _v3.c;
+								if (tvar.$ === 'TVar') {
+									if (!supply.b) {
+										return _Utils_Tuple3(
+											A2($elm$core$List$cons, 'ba', showvars),
+											A3(
+												$author$project$Main$sub,
+												tvar,
+												$author$project$Main$TVar('ba'),
+												typ),
+											_List_Nil);
+									} else {
+										var x = supply.a;
+										var xs = supply.b;
+										return _Utils_Tuple3(
+											A2($elm$core$List$cons, x, showvars),
+											A3(
+												$author$project$Main$sub,
+												tvar,
+												$author$project$Main$TVar(x),
+												typ),
+											xs);
+									}
+								} else {
+									return _Utils_Tuple3(
+										A2($elm$core$List$cons, '', showvars),
+										typ,
+										supply);
+								}
+							}),
+						_Utils_Tuple3(
+							_List_Nil,
+							u,
+							A2(
+								$elm$core$List$map,
+								$elm$core$String$fromChar,
+								$elm$core$String$toList('abcdefghijklmnopqrstuvwxyz'))),
+						vars);
+					var showVars = _v2.a;
+					var showType = _v2.b;
+					var $temp$t = showType;
+					t = $temp$t;
+					continue typeToStringHelper;
+				}
+		}
+	}
+};
+var $author$project$Main$typeToString = function (t) {
+	if (t.$ === 'Forall') {
+		return $author$project$Main$typeToStringHelper(t);
+	} else {
+		return $author$project$Main$typeToStringHelper(
+			A3(
+				$author$project$Main$generalize,
+				$elm$core$Dict$empty,
+				t,
+				A2($author$project$Main$Forall, _List_Nil, t)));
+	}
+};
+var $author$project$Main$solve = F3(
+	function (constraints, substitutions, skipped) {
+		solve:
+		while (true) {
+			if (constraints.b) {
+				var _const = constraints.a;
+				var rest = constraints.b;
+				var t1 = _const.a;
+				var t2 = _const.b;
+				var _continue = function (_v7) {
+					return A3(
+						$author$project$Main$solve,
+						rest,
+						substitutions,
+						A2($elm$core$List$cons, _const, skipped));
+				};
+				var err = function (_v6) {
+					return $elm$core$Result$Err(
+						$author$project$Main$typeToString(t1) + (' can\'t equal ' + $author$project$Main$typeToString(t2)));
+				};
+				var removeAndContinue = function (_v5) {
+					return A3($author$project$Main$solve, rest, substitutions, skipped);
+				};
+				var handleVarIsolationAndContinue = function (v) {
+					return A3(
+						$author$project$Main$solve,
+						A3($author$project$Main$substituteAll, rest, t2, t1),
+						A2(
+							$elm$core$List$cons,
+							A2($author$project$Main$Subst, v, t1),
+							substitutions),
+						A3($author$project$Main$substituteAll, skipped, t2, t1));
+				};
+				if (_Utils_eq(t1, t2)) {
+					var $temp$constraints = rest,
+						$temp$substitutions = substitutions,
+						$temp$skipped = skipped;
+					constraints = $temp$constraints;
+					substitutions = $temp$substitutions;
+					skipped = $temp$skipped;
+					continue solve;
+				} else {
+					switch (t1.$) {
+						case 'TInt':
+							switch (t2.$) {
+								case 'TVar':
+									var v = t2.a;
+									return handleVarIsolationAndContinue(v);
+								case 'TInt':
+									return removeAndContinue(_Utils_Tuple0);
+								default:
+									return err(_Utils_Tuple0);
+							}
+						case 'TLambda':
+							var a = t1.a;
+							var b = t1.b;
+							switch (t2.$) {
+								case 'TLambda':
+									var c = t2.a;
+									var d = t2.b;
+									var $temp$constraints = A2(
+										$elm$core$List$cons,
+										A2($author$project$Main$Eq, a, c),
+										A2(
+											$elm$core$List$cons,
+											A2($author$project$Main$Eq, b, d),
+											rest)),
+										$temp$substitutions = substitutions,
+										$temp$skipped = skipped;
+									constraints = $temp$constraints;
+									substitutions = $temp$substitutions;
+									skipped = $temp$skipped;
+									continue solve;
+								case 'TVar':
+									var x = t2.a;
+									if (A2($author$project$Main$occurs, t2, t1)) {
+										return _continue(_Utils_Tuple0);
+									} else {
+										var $temp$constraints = A3($author$project$Main$substituteAll, rest, t2, t1),
+											$temp$substitutions = A2(
+											$elm$core$List$cons,
+											A2($author$project$Main$Subst, x, t1),
+											substitutions),
+											$temp$skipped = A3($author$project$Main$substituteAll, skipped, t2, t1);
+										constraints = $temp$constraints;
+										substitutions = $temp$substitutions;
+										skipped = $temp$skipped;
+										continue solve;
+									}
+								default:
+									return err(_Utils_Tuple0);
+							}
+						case 'TVar':
+							var x = t1.a;
+							if (A2($author$project$Main$occurs, t1, t2)) {
+								return _continue(_Utils_Tuple0);
+							} else {
+								var $temp$constraints = A3($author$project$Main$substituteAll, rest, t1, t2),
+									$temp$substitutions = A2(
+									$elm$core$List$cons,
+									A2($author$project$Main$Subst, x, t2),
+									substitutions),
+									$temp$skipped = A3($author$project$Main$substituteAll, skipped, t1, t2);
+								constraints = $temp$constraints;
+								substitutions = $temp$substitutions;
+								skipped = $temp$skipped;
+								continue solve;
+							}
+						default:
+							return $elm$core$Result$Err('something went wrong, Forall found after it should be instantiated');
+					}
+				}
+			} else {
+				if ($elm$core$List$isEmpty(skipped)) {
+					return $elm$core$Result$Ok(substitutions);
+				} else {
+					var $temp$constraints = skipped,
+						$temp$substitutions = substitutions,
+						$temp$skipped = _List_Nil;
+					constraints = $temp$constraints;
+					substitutions = $temp$substitutions;
+					skipped = $temp$skipped;
+					continue solve;
+				}
+			}
+		}
+	});
+var $author$project$Main$AnnCall = F3(
+	function (a, b, c) {
+		return {$: 'AnnCall', a: a, b: b, c: c};
+	});
+var $author$project$Main$AnnLambda = F3(
+	function (a, b, c) {
+		return {$: 'AnnLambda', a: a, b: b, c: c};
+	});
+var $author$project$Main$AnnVar = F2(
+	function (a, b) {
+		return {$: 'AnnVar', a: a, b: b};
+	});
+var $author$project$Main$updateType = F2(
+	function (f, ann) {
+		switch (ann.$) {
+			case 'AnnInt':
+				return ann;
+			case 'AnnLambda':
+				var arg = ann.a;
+				var bod = ann.b;
+				var typ = ann.c;
+				return A3(
+					$author$project$Main$AnnLambda,
+					arg,
+					bod,
+					f(typ));
+			case 'AnnCall':
+				var foo = ann.a;
+				var bar = ann.b;
+				var typ = ann.c;
+				return A3(
+					$author$project$Main$AnnCall,
+					foo,
+					bar,
+					f(typ));
+			default:
+				var s = ann.a;
+				var t = ann.b;
+				return A2(
+					$author$project$Main$AnnVar,
+					s,
+					f(t));
+		}
+	});
+var $author$project$Main$updateTypes = F2(
+	function (f, ann) {
+		switch (ann.$) {
+			case 'AnnInt':
+				return ann;
+			case 'AnnLambda':
+				var arg = ann.a;
+				var bod = ann.b;
+				var typ = ann.c;
+				return A3(
+					$author$project$Main$AnnLambda,
+					arg,
+					A2($author$project$Main$updateTypes, f, bod),
+					f(typ));
+			case 'AnnCall':
+				var foo = ann.a;
+				var bar = ann.b;
+				var typ = ann.c;
+				return A3(
+					$author$project$Main$AnnCall,
+					A2($author$project$Main$updateTypes, f, foo),
+					A2($author$project$Main$updateTypes, f, bar),
+					f(typ));
+			default:
+				var s = ann.a;
+				var t = ann.b;
+				return A2(
+					$author$project$Main$AnnVar,
+					s,
+					f(t));
+		}
+	});
+var $author$project$Main$preGeneralize = F3(
+	function (scope, constraints, annotLoc) {
+		return A2(
+			$elm$core$Result$map,
+			function (substitutions) {
+				var env = A3(
+					$elm$core$List$foldr,
+					F2(
+						function (_v1, scop) {
+							var x = _v1.a;
+							var u = _v1.b;
+							return A2(
+								$elm$core$Dict$map,
+								F2(
+									function (_v2, v) {
+										return A3(
+											$author$project$Main$sub,
+											$author$project$Main$TVar(x),
+											u,
+											v);
+									}),
+								scop);
+						}),
+					scope,
+					substitutions);
+				var annot2 = A3(
+					$elm$core$List$foldr,
+					F2(
+						function (_v0, annotx) {
+							var x = _v0.a;
+							var u = _v0.b;
+							return A2(
+								$author$project$Main$updateTypes,
+								function (t) {
+									return A3(
+										$author$project$Main$sub,
+										$author$project$Main$TVar(x),
+										u,
+										t);
+								},
+								annotx);
+						}),
+					annotLoc,
+					substitutions);
+				var scheme = A2(
+					$author$project$Main$updateType,
+					function (t) {
+						return A3(
+							$author$project$Main$generalize,
+							scope,
+							t,
+							A2($author$project$Main$Forall, _List_Nil, t));
+					},
+					annot2);
+				return _Utils_Tuple2(env, scheme);
+			},
+			A3($author$project$Main$solve, constraints, _List_Nil, _List_Nil));
+	});
+var $author$project$Main$AnnInt = function (a) {
+	return {$: 'AnnInt', a: a};
+};
+var $author$project$Main$TInt = {$: 'TInt'};
+var $author$project$Main$typeOf = function (ann) {
+	switch (ann.$) {
+		case 'AnnVar':
+			var t = ann.b;
+			return t;
+		case 'AnnInt':
+			return $author$project$Main$TInt;
+		case 'AnnLambda':
+			var t = ann.c;
+			return t;
+		default:
+			var t = ann.c;
+			return t;
+	}
+};
+var $author$project$Main$typecheck = F3(
+	function (scope, gen, expr) {
+		switch (expr.$) {
+			case 'LVar':
+				var v = expr.a;
+				var _v1 = A2($elm$core$Dict$get, v, scope);
+				if (_v1.$ === 'Nothing') {
+					return $elm$core$Result$Err(v + ' used out of scope!');
+				} else {
+					var t = _v1.a;
+					return $elm$core$Result$Ok(
+						_Utils_Tuple3(
+							gen,
+							A2($author$project$Main$AnnVar, v, t),
+							_List_Nil));
+				}
+			case 'LCall':
+				var foo = expr.a;
+				var bar = expr.b;
+				return A2(
+					$elm$core$Result$andThen,
+					function (_v2) {
+						var gen2 = _v2.a;
+						var annFoo = _v2.b;
+						var fooConsts = _v2.c;
+						return A2(
+							$elm$core$Result$map,
+							function (_v3) {
+								var gen3 = _v3.a;
+								var annBar = _v3.b;
+								var barConsts = _v3.c;
+								return function (_v4) {
+									var gen5 = _v4.a;
+									var _v5 = _v4.b;
+									var annCall = _v5.a;
+									var consts = _v5.b;
+									return _Utils_Tuple3(gen5, annCall, consts);
+								}(
+									A2(
+										$author$project$Main$withFresh,
+										gen3,
+										F2(
+											function (gen4, v) {
+												var exprType = $author$project$Main$TVar(v);
+												var fooType = $author$project$Main$typeOf(annFoo);
+												var barType = $author$project$Main$typeOf(annBar);
+												return _Utils_Tuple2(
+													gen4,
+													_Utils_Tuple2(
+														A3($author$project$Main$AnnCall, annFoo, annBar, exprType),
+														A2(
+															$elm$core$List$cons,
+															A2(
+																$author$project$Main$Eq,
+																A2($author$project$Main$TLambda, barType, exprType),
+																fooType),
+															_Utils_ap(fooConsts, barConsts))));
+											})));
+							},
+							A3($author$project$Main$typecheck, scope, gen2, bar));
+					},
+					A3($author$project$Main$typecheck, scope, gen, foo));
+			case 'LLambda':
+				var v = expr.a;
+				var e = expr.b;
+				var _v6 = A2(
+					$author$project$Main$withFresh,
+					gen,
+					F2(
+						function (gen2, v2) {
+							return _Utils_Tuple2(
+								gen2,
+								$author$project$Main$TVar(v2));
+						}));
+				var gen3 = _v6.a;
+				var argType = _v6.b;
+				return A2(
+					$elm$core$Result$map,
+					function (_v7) {
+						var gen4 = _v7.a;
+						var annE = _v7.b;
+						var eConsts = _v7.c;
+						var bodyType = $author$project$Main$typeOf(annE);
+						var exprType = A2($author$project$Main$TLambda, argType, bodyType);
+						return _Utils_Tuple3(
+							gen4,
+							A3($author$project$Main$AnnLambda, v, annE, exprType),
+							eConsts);
+					},
+					A3(
+						$author$project$Main$typecheck,
+						A3($elm$core$Dict$insert, v, argType, scope),
+						gen3,
+						e));
+			default:
+				var i = expr.a;
+				return $elm$core$Result$Ok(
+					_Utils_Tuple3(
+						gen,
+						$author$project$Main$AnnInt(i),
+						_List_Nil));
+		}
+	});
+var $author$project$Main$letTypeOf = F3(
+	function (scope, gen, expr) {
+		return A2(
+			$elm$core$Result$andThen,
+			function (_v0) {
+				var gen2 = _v0.a;
+				var annotLoc = _v0.b;
+				var constraints = _v0.c;
+				return A2(
+					$elm$core$Result$map,
+					function (_v1) {
+						var s = _v1.a;
+						var a = _v1.b;
+						return _Utils_Tuple3(s, gen2, a);
+					},
+					A3($author$project$Main$preGeneralize, scope, constraints, annotLoc));
+			},
+			A3($author$project$Main$typecheck, scope, gen, expr));
+	});
 var $elm$core$Result$mapError = F2(
 	function (f, result) {
 		if (result.$ === 'Ok') {
@@ -6549,19 +7252,25 @@ var $author$project$Main$go = function (code) {
 	return $author$project$Main$resToString(
 		A2(
 			$elm$core$Result$map,
-			function (_v1) {
-				var gen = _v1.a;
-				var x = _v1.b;
+			function (_v2) {
+				var gen = _v2.a;
+				var x = _v2.b;
 				return $author$project$Main$toString(x);
 			},
 			A2(
 				$elm$core$Result$andThen,
 				function (expr) {
-					return A3(
-						$author$project$Main$eval,
-						$author$project$Main$Gen(0),
-						$elm$core$Dict$empty,
-						expr);
+					return A2(
+						$elm$core$Result$andThen,
+						function (_v1) {
+							var gen = _v1.b;
+							return A3($author$project$Main$eval, gen, $elm$core$Dict$empty, expr);
+						},
+						A3(
+							$author$project$Main$letTypeOf,
+							$elm$core$Dict$empty,
+							$author$project$Main$Gen(0),
+							expr));
 				},
 				A2(
 					$elm$core$Result$mapError,
@@ -6704,9 +7413,9 @@ var $author$project$Main$parseOutputHelp = function (revHtml) {
 				A2(
 				$elm$parser$Parser$keeper,
 				$elm$parser$Parser$succeed(
-					function (sub) {
+					function (sbscrpt) {
 						return $elm$parser$Parser$Loop(
-							A2($elm$core$List$cons, sub, revHtml));
+							A2($elm$core$List$cons, sbscrpt, revHtml));
 					}),
 				$author$project$Main$subscriptParser),
 				A2(

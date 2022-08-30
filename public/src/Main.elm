@@ -55,7 +55,7 @@ subscriptParser = succeed identity
                |. symbol "_"
                |. chompWhile isDigit 
                |> getChompedString
-               |> Parser.map (\i->sub [style "font-size" "9pt", style "margin-right" "1px"] [text (String.dropLeft 1 i)])
+               |> Parser.map (\i->Html.sub [style "font-size" "9pt", style "margin-right" "1px"] [text (String.dropLeft 1 i)])
 
 normalParser : Parser (Html msg)
 normalParser = succeed () |. chompWhile (\c->c/='_') |> getChompedString |> Parser.map text
@@ -63,7 +63,7 @@ normalParser = succeed () |. chompWhile (\c->c/='_') |> getChompedString |> Pars
 parseOutput : Parser (List (Html msg))
 parseOutput = Parser.loop [] parseOutputHelp
 parseOutputHelp : List (Html msg) -> Parser (Step (List (Html msg)) (List (Html msg)))
-parseOutputHelp revHtml = oneOf [succeed (\sub->Loop (sub::revHtml)) |= subscriptParser, succeed () |. end |> Parser.map (\_->Done(List.reverse revHtml)), succeed (\t->Loop (t::revHtml)) |= normalParser]
+parseOutputHelp revHtml = oneOf [succeed (\sbscrpt->Loop (sbscrpt::revHtml)) |= subscriptParser, succeed () |. end |> Parser.map (\_->Done(List.reverse revHtml)), succeed (\t->Loop (t::revHtml)) |= normalParser]
 
 resToString : Result String String -> String
 resToString res = case res of
@@ -130,6 +130,7 @@ withFreshRes (Gen i) f = f (Gen (i + 1)) (String.fromInt i)
 type Type = TInt
           | TLambda Type Type
           | TVar String
+          | Forall (List Type) Type
 
 type AnnExpr = AnnVar String Type
              | AnnInt Int
@@ -137,6 +138,29 @@ type AnnExpr = AnnVar String Type
              | AnnCall AnnExpr AnnExpr Type
 
 type Constraint = Eq Type Type
+
+type Subst = Subst String Type
+
+typeToStringHelper : Type -> String
+typeToStringHelper t = case t of
+    TInt -> "Int"
+    TLambda u v -> typeToStringHelper u ++ "->" ++ typeToStringHelper v
+    TVar n -> n
+    Forall vars u -> case vars of
+        [] -> typeToStringHelper u
+        _ -> 
+            let (showVars, showType, _) = List.foldr (\tvar (showvars, typ, supply)->
+                    case tvar of 
+                        TVar _->case supply of
+                            [] -> ("ba"::showvars, sub tvar (TVar "ba") typ, [])
+                            x::xs -> (x :: showvars, sub tvar (TVar x) typ, xs)
+                        _->("" :: showvars, typ, supply)) ([], u, String.toList "abcdefghijklmnopqrstuvwxyz" |> List.map String.fromChar) vars in
+            typeToStringHelper showType
+
+typeToString : Type -> String
+typeToString t = case t of
+    Forall _ _ -> typeToStringHelper t
+    _ -> typeToStringHelper <| generalize (Dict.empty) t (Forall [] t)
 
 typecheck : Dict.Dict String Type -> Gen -> Expr -> Result String (Gen, AnnExpr, List Constraint)
 typecheck scope gen expr = case expr of
@@ -167,6 +191,113 @@ typeOf ann = case ann of
     AnnInt _ -> TInt
     AnnLambda _ _ t -> t
     AnnCall _ _ t -> t
+
+occurs : Type -> Type -> Bool
+occurs var t = case t of
+    TVar _ -> t == var
+    TInt -> False
+    TLambda a b -> occurs var a && occurs var b
+    Forall vars u -> List.any (\v->v==var) vars || occurs var u
+
+solve : List Constraint -> List Subst -> List Constraint -> Result String (List Subst)
+solve constraints substitutions skipped = case constraints of
+    const::rest -> case const of
+        Eq t1 t2 ->
+            let continue = \_->solve rest substitutions (const::skipped) in
+            let err = \_-> Err <| typeToString t1 ++ " can't equal " ++ typeToString t2 in
+            let removeAndContinue = \_->solve rest substitutions skipped in
+            let handleVarIsolationAndContinue = \v->solve (substituteAll rest t2 t1) (Subst v t1::substitutions) (substituteAll skipped t2 t1) in
+            if t1 == t2 then
+                solve rest substitutions skipped
+            else case t1 of
+                TInt ->
+                    case t2 of
+                        TVar v -> handleVarIsolationAndContinue v
+                        TInt -> removeAndContinue()
+                        _ -> err()
+                TLambda a b ->
+                    case t2 of
+                        TLambda c d -> solve (Eq a c :: Eq b d :: rest) substitutions skipped
+                        TVar x -> 
+                            if occurs t2 t1 then
+                                continue()
+                            else
+                                solve (substituteAll rest t2 t1) (Subst x t1::substitutions) (substituteAll skipped t2 t1)
+                        _ -> err()
+                TVar x ->
+                    if occurs t1 t2 then
+                        continue()
+                    else
+                        solve (substituteAll rest t1 t2) (Subst x t2::substitutions) (substituteAll skipped t1 t2)
+                Forall _ _ -> Err "something went wrong, Forall found after it should be instantiated"
+    [] -> if List.isEmpty skipped then Ok substitutions else solve skipped substitutions []
+
+substituteAll : List Constraint -> Type -> Type -> List Constraint
+substituteAll constraints var val = case constraints of
+    [] -> []
+    const::rest -> case const of
+        Eq u v ->
+            let u2 = sub var val u in
+            let v2 = sub var val v in
+            Eq u2 v2::substituteAll rest var val
+
+sub : Type -> Type -> Type -> Type
+sub var val t = case t of
+    TVar _ -> if t == var then val else t
+    TInt -> t
+    TLambda a b -> TLambda (sub var val a) (sub var val b)
+    Forall vars u -> Forall vars (sub var val u)
+
+generalize scope t scheme =
+    case scheme of
+        Forall vars typ ->
+            case t of
+                TVar x -> 
+                    if occursInScope scope x || List.member t vars then 
+                        scheme 
+                    else 
+                        Forall (t::vars) typ
+                TInt -> scheme
+                TLambda a b -> 
+                    let (varsA, _) = Maybe.withDefault ([], a) <| schemeFrom <| generalize scope a scheme in 
+                    let (varsB, _) = Maybe.withDefault ([], b) <| schemeFrom <| generalize scope b scheme in 
+                    let set = List.foldr (\item l->if List.member item l then l else item :: l) [] (vars++varsA++varsB) in
+                    Forall set typ
+                Forall _ _ -> t
+        _ -> Forall [] t -- this shouldn't happen...
+
+schemeFrom : Type -> Maybe (List Type, Type)
+schemeFrom t = case t of
+    Forall vars u -> Just (vars, u)
+    _ -> Nothing
+
+occursInScope : Dict.Dict String Type -> String -> Bool
+occursInScope scope var = Dict.toList scope |> List.any (\(_, t)->occurs (TVar var) t)
+
+preGeneralize : Dict.Dict String Type -> List Constraint -> AnnExpr -> Result String (Dict.Dict String Type, AnnExpr)
+preGeneralize scope constraints annotLoc = 
+    solve constraints [] [] |> Result.map(\substitutions->
+    let env = List.foldr (\(Subst x u) scop->Dict.map (\_ v->sub (TVar x) u v) scop) scope substitutions in
+    let annot2 = List.foldr (\(Subst x u) annotx->updateTypes (\t->sub (TVar x) u t) annotx) annotLoc substitutions in 
+    let scheme = updateType (\t->generalize scope t (Forall [] t)) annot2 in
+    (env, scheme))
+
+updateType : (Type -> Type) -> AnnExpr -> AnnExpr
+updateType f ann = case ann of
+    AnnInt    _ -> ann
+    AnnLambda arg bod typ -> AnnLambda arg bod (f typ)
+    AnnCall   foo bar typ -> AnnCall foo bar (f typ)
+    AnnVar s t -> AnnVar s (f t)
+
+updateTypes : (Type -> Type) -> AnnExpr -> AnnExpr
+updateTypes f ann = case ann of
+    AnnInt    _ -> ann
+    AnnLambda arg bod typ -> AnnLambda arg (updateTypes f bod) (f typ)
+    AnnCall   foo bar typ -> AnnCall (updateTypes f foo) (updateTypes f bar) (f typ)
+    AnnVar s t -> AnnVar s (f t)
+
+letTypeOf : Dict.Dict String Type -> Gen -> Expr -> Result String (Dict.Dict String Type, Gen, AnnExpr)
+letTypeOf scope gen expr = typecheck scope gen expr |> Result.andThen (\(gen2, annotLoc, constraints)->preGeneralize scope constraints annotLoc|>Result.map(\(s, a)->(s, gen2, a)))
 
 eval : Gen -> Dict.Dict String Expr -> Expr -> Result String (Gen, Expr)
 eval gen scope expr = case expr of
@@ -207,4 +338,4 @@ toString expr = case expr of
     LCall foo bar -> "(" ++ toString foo ++ ")(" ++ toString bar ++ ")"
 
 go : String -> String
-go code = run (parseExpr |. end) code |> Result.mapError (\_->"parse error!") |> Result.andThen (\expr -> eval (Gen 0) Dict.empty expr) |> Result.map (\(gen, x)->toString x) |> resToString
+go code = run (parseExpr |. end) code |> Result.mapError (\_->"parse error!") |> Result.andThen (\expr -> letTypeOf Dict.empty (Gen 0) expr |> Result.andThen (\(_, gen, _)-> eval gen Dict.empty expr)) |> Result.map (\(gen, x)->toString x) |> resToString
