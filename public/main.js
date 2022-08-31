@@ -5984,7 +5984,7 @@ var $author$project$Main$typeToStringHelper = function (t) {
 			case 'TLambda':
 				var u = t.a;
 				var v = t.b;
-				return $author$project$Main$typeToStringHelper(u) + (' -> ' + $author$project$Main$typeToStringHelper(v));
+				return '(' + ($author$project$Main$typeToStringHelper(u) + (' -> ' + ($author$project$Main$typeToStringHelper(v) + ')')));
 			case 'TVar':
 				var n = t.a;
 				return 'some ' + n;
@@ -6079,7 +6079,7 @@ var $author$project$Main$solve = F3(
 				};
 				var err = function (_v6) {
 					return $elm$core$Result$Err(
-						'Type error, ' + (($author$project$Main$typeToString(t1) + (' can\'t equal ' + $author$project$Main$typeToString(t2))) + '!'));
+						'Type error, ' + (($author$project$Main$typeToString(t1) + (' can\'t be ' + $author$project$Main$typeToString(t2))) + '!'));
 				};
 				var removeAndContinue = function (_v5) {
 					return A3($author$project$Main$solve, rest, substitutions, skipped);
@@ -7496,6 +7496,13 @@ var $author$project$Main$view = function (model) {
 						_List_fromArray(
 							[
 								$elm$html$Html$text('Here\'s a lambda calculus implementation I made, try writing some expressions!')
+							])),
+						A2(
+						$elm$html$Html$p,
+						_List_Nil,
+						_List_fromArray(
+							[
+								$elm$html$Html$text('It\'s completely statically type-checked (Hindley-Milner) due to the decidability of the typability of the STLC.')
 							])),
 						A2(
 						$elm$html$Html$textarea,

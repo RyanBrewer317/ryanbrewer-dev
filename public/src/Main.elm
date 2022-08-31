@@ -40,6 +40,7 @@ view model = div []
             , text "."
             ]
         , p [] [text "Here's a lambda calculus implementation I made, try writing some expressions!"]
+        , p [] [text "It's completely statically type-checked (Hindley-Milner) due to the decidability of the typability of the STLC."]
         , textarea 
             [ id "code"
             , placeholder "Write some lambda calculus code! Example: (\\x.\\y.x)(\\x.x)(3)"
@@ -144,7 +145,7 @@ type Subst = Subst String Type
 typeToStringHelper : Type -> String
 typeToStringHelper t = case t of
     TInt -> "Int"
-    TLambda u v -> typeToStringHelper u ++ " -> " ++ typeToStringHelper v
+    TLambda u v -> "(" ++ typeToStringHelper u ++ " -> " ++ typeToStringHelper v ++ ")"
     TVar n -> "some " ++ n
     Forall vars u -> case vars of
         [] -> typeToStringHelper u
@@ -204,7 +205,7 @@ solve constraints substitutions skipped = case constraints of
     const::rest -> case const of
         Eq t1 t2 ->
             let continue = \_->solve rest substitutions (const::skipped) in
-            let err = \_-> Err <| "Type error, " ++ (typeToString t1 ++ " can't equal " ++ typeToString t2) ++ "!" in
+            let err = \_-> Err <| "Type error, " ++ (typeToString t1 ++ " can't be " ++ typeToString t2) ++ "!" in
             let removeAndContinue = \_->solve rest substitutions skipped in
             let handleVarIsolationAndContinue = \v->solve (substituteAll rest t2 t1) (Subst v t1::substitutions) (substituteAll skipped t2 t1) in
             if t1 == t2 then
