@@ -197,7 +197,7 @@ occurs : Type -> Type -> Bool
 occurs var t = case t of
     TVar _ -> t == var
     TInt -> False
-    TLambda a b -> occurs var a && occurs var b
+    TLambda a b -> occurs var a || occurs var b
     Forall vars u -> List.any (\v->v==var) vars || occurs var u
 
 solve : List Constraint -> List Subst -> List Constraint -> Result String (List Subst)
@@ -221,7 +221,7 @@ solve constraints substitutions skipped = case constraints of
                         TLambda c d -> solve (Eq a c :: Eq b d :: rest) substitutions skipped
                         TVar x -> 
                             if occurs t2 t1 then
-                                continue()
+                                err()
                             else
                                 solve (substituteAll rest t2 t1) (Subst x t1::substitutions) (substituteAll skipped t2 t1)
                         _ -> err()
@@ -249,6 +249,7 @@ sub var val t = case t of
     TLambda a b -> TLambda (sub var val a) (sub var val b)
     Forall vars u -> Forall vars (sub var val u)
 
+generalize : Dict.Dict String Type -> Type -> Type -> Type
 generalize scope t scheme =
     case scheme of
         Forall vars typ ->
@@ -339,4 +340,8 @@ toString expr = case expr of
     LCall foo bar -> "(" ++ toString foo ++ ")(" ++ toString bar ++ ")"
 
 go : String -> String
-go code = run (parseExpr |. end) code |> Result.mapError (\_->"parse error!") |> Result.andThen (\expr -> letTypeOf Dict.empty (Gen 0) expr |> Result.andThen (\(_, gen, _)-> eval gen Dict.empty expr)) |> Result.map (\(gen, x)->toString x) |> resToString
+go code = run (parseExpr |. end) code |> Result.mapError (\_->"parse error!") |> Result.andThen (\expr -> letTypeOf Dict.empty (Gen 0) expr |> Result.andThen (\(_, gen, _)-> eval gen Dict.empty expr)) |> Result.map (\(_, x)->toString x) |> resToString
+typeit : String -> Result String (Dict.Dict String Type, Gen, AnnExpr)
+typeit code =run (parseExpr |. end) code |> Result.mapError (\_->"parse error!") |> Result.andThen (\expr -> letTypeOf Dict.empty (Gen 0) expr)
+constraintit : String -> Result String (Gen, AnnExpr, List Constraint)
+constraintit code = run (parseExpr |. end) code |> Result.mapError (\_->"parse error!") |> Result.andThen (\expr->typecheck Dict.empty (Gen 0) expr)

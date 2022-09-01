@@ -5807,7 +5807,7 @@ var $author$project$Main$occurs = F2(
 			case 'TLambda':
 				var a = t.a;
 				var b = t.b;
-				return A2($author$project$Main$occurs, _var, a) && A2($author$project$Main$occurs, _var, b);
+				return A2($author$project$Main$occurs, _var, a) || A2($author$project$Main$occurs, _var, b);
 			default:
 				var vars = t.a;
 				var u = t.b;
@@ -6137,7 +6137,7 @@ var $author$project$Main$solve = F3(
 								case 'TVar':
 									var x = t2.a;
 									if (A2($author$project$Main$occurs, t2, t1)) {
-										return _continue(_Utils_Tuple0);
+										return err(_Utils_Tuple0);
 									} else {
 										var $temp$constraints = A3($author$project$Main$substituteAll, rest, t2, t1),
 											$temp$substitutions = A2(
@@ -7253,7 +7253,6 @@ var $author$project$Main$go = function (code) {
 		A2(
 			$elm$core$Result$map,
 			function (_v2) {
-				var gen = _v2.a;
 				var x = _v2.b;
 				return $author$project$Main$toString(x);
 			},
