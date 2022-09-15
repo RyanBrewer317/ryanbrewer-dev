@@ -5808,6 +5808,79 @@ var $author$project$Main$TLambda = F2(
 var $author$project$Main$TVar = function (a) {
 	return {$: 'TVar', a: a};
 };
+var $author$project$Main$Forall = F2(
+	function (a, b) {
+		return {$: 'Forall', a: a, b: b};
+	});
+var $author$project$Main$sub = F3(
+	function (_var, val, t) {
+		switch (t.$) {
+			case 'TVar':
+				return _Utils_eq(t, _var) ? val : t;
+			case 'TInt':
+				return t;
+			case 'TLambda':
+				var a = t.a;
+				var b = t.b;
+				return A2(
+					$author$project$Main$TLambda,
+					A3($author$project$Main$sub, _var, val, a),
+					A3($author$project$Main$sub, _var, val, b));
+			default:
+				var vars = t.a;
+				var u = t.b;
+				return A2(
+					$author$project$Main$Forall,
+					vars,
+					A3($author$project$Main$sub, _var, val, u));
+		}
+	});
+var $author$project$Main$instantiate = F2(
+	function (gen, t) {
+		switch (t.$) {
+			case 'TInt':
+				return _Utils_Tuple2(gen, t);
+			case 'TLambda':
+				var a = t.a;
+				var b = t.b;
+				var _v1 = A2($author$project$Main$instantiate, gen, a);
+				var gen2 = _v1.a;
+				var a2 = _v1.b;
+				var _v2 = A2($author$project$Main$instantiate, gen2, b);
+				var gen3 = _v2.a;
+				var b2 = _v2.b;
+				return _Utils_Tuple2(
+					gen3,
+					A2($author$project$Main$TLambda, a2, b2));
+			case 'TVar':
+				return _Utils_Tuple2(gen, t);
+			default:
+				var vars = t.a;
+				var u = t.b;
+				return A3(
+					$elm$core$List$foldr,
+					F2(
+						function (_var, _v3) {
+							var genx = _v3.a;
+							var typ = _v3.b;
+							return A2(
+								$author$project$Main$withFresh,
+								genx,
+								F2(
+									function (genx2, v) {
+										return _Utils_Tuple2(
+											genx2,
+											A3(
+												$author$project$Main$sub,
+												_var,
+												$author$project$Main$TVar(v),
+												typ));
+									}));
+						}),
+					_Utils_Tuple2(gen, u),
+					vars);
+		}
+	});
 var $elm$core$Result$map = F2(
 	function (func, ra) {
 		if (ra.$ === 'Ok') {
@@ -5818,10 +5891,6 @@ var $elm$core$Result$map = F2(
 			var e = ra.a;
 			return $elm$core$Result$Err(e);
 		}
-	});
-var $author$project$Main$Forall = F2(
-	function (a, b) {
-		return {$: 'Forall', a: a, b: b};
 	});
 var $elm$core$List$any = F2(
 	function (isOkay, list) {
@@ -5975,29 +6044,6 @@ var $elm$core$List$isEmpty = function (xs) {
 		return false;
 	}
 };
-var $author$project$Main$sub = F3(
-	function (_var, val, t) {
-		switch (t.$) {
-			case 'TVar':
-				return _Utils_eq(t, _var) ? val : t;
-			case 'TInt':
-				return t;
-			case 'TLambda':
-				var a = t.a;
-				var b = t.b;
-				return A2(
-					$author$project$Main$TLambda,
-					A3($author$project$Main$sub, _var, val, a),
-					A3($author$project$Main$sub, _var, val, b));
-			default:
-				var vars = t.a;
-				var u = t.b;
-				return A2(
-					$author$project$Main$Forall,
-					vars,
-					A3($author$project$Main$sub, _var, val, u));
-		}
-	});
 var $author$project$Main$substituteAll = F3(
 	function (constraints, _var, val) {
 		if (!constraints.b) {
@@ -6403,15 +6449,15 @@ var $author$project$Main$letTypeOf = F3(
 	function (scope, gen, expr) {
 		return A2(
 			$elm$core$Result$andThen,
-			function (_v10) {
-				var gen2 = _v10.a;
-				var annotLoc = _v10.b;
-				var constraints = _v10.c;
+			function (_v11) {
+				var gen2 = _v11.a;
+				var annotLoc = _v11.b;
+				var constraints = _v11.c;
 				return A2(
 					$elm$core$Result$map,
-					function (_v11) {
-						var s = _v11.a;
-						var a = _v11.b;
+					function (_v12) {
+						var s = _v12.a;
+						var a = _v12.b;
 						return _Utils_Tuple3(s, gen2, a);
 					},
 					A3($author$project$Main$preGeneralize, scope, constraints, annotLoc));
@@ -6428,32 +6474,37 @@ var $author$project$Main$typecheck = F3(
 					return $elm$core$Result$Err(v + ' used out of scope!');
 				} else {
 					var t = _v1.a;
-					return $elm$core$Result$Ok(
-						_Utils_Tuple3(
-							gen,
-							A2($author$project$Main$AnnVar, v, t),
-							_List_Nil));
+					return function (_v2) {
+						var gen2 = _v2.a;
+						var t2 = _v2.b;
+						return $elm$core$Result$Ok(
+							_Utils_Tuple3(
+								gen2,
+								A2($author$project$Main$AnnVar, v, t2),
+								_List_Nil));
+					}(
+						A2($author$project$Main$instantiate, gen, t));
 				}
 			case 'LCall':
 				var foo = expr.a;
 				var bar = expr.b;
 				return A2(
 					$elm$core$Result$andThen,
-					function (_v2) {
-						var gen2 = _v2.a;
-						var annFoo = _v2.b;
-						var fooConsts = _v2.c;
+					function (_v3) {
+						var gen2 = _v3.a;
+						var annFoo = _v3.b;
+						var fooConsts = _v3.c;
 						return A2(
 							$elm$core$Result$map,
-							function (_v3) {
-								var gen3 = _v3.a;
-								var annBar = _v3.b;
-								var barConsts = _v3.c;
-								return function (_v4) {
-									var gen5 = _v4.a;
-									var _v5 = _v4.b;
-									var annCall = _v5.a;
-									var consts = _v5.b;
+							function (_v4) {
+								var gen3 = _v4.a;
+								var annBar = _v4.b;
+								var barConsts = _v4.c;
+								return function (_v5) {
+									var gen5 = _v5.a;
+									var _v6 = _v5.b;
+									var annCall = _v6.a;
+									var consts = _v6.b;
 									return _Utils_Tuple3(gen5, annCall, consts);
 								}(
 									A2(
@@ -6483,7 +6534,7 @@ var $author$project$Main$typecheck = F3(
 			case 'LLambda':
 				var v = expr.a;
 				var e = expr.b;
-				var _v6 = A2(
+				var _v7 = A2(
 					$author$project$Main$withFresh,
 					gen,
 					F2(
@@ -6492,14 +6543,14 @@ var $author$project$Main$typecheck = F3(
 								gen2,
 								$author$project$Main$TVar(v2));
 						}));
-				var gen3 = _v6.a;
-				var argType = _v6.b;
+				var gen3 = _v7.a;
+				var argType = _v7.b;
 				return A2(
 					$elm$core$Result$map,
-					function (_v7) {
-						var gen4 = _v7.a;
-						var annE = _v7.b;
-						var eConsts = _v7.c;
+					function (_v8) {
+						var gen4 = _v8.a;
+						var annE = _v8.b;
+						var eConsts = _v8.c;
 						var bodyType = $author$project$Main$typeOf(annE);
 						var exprType = A2($author$project$Main$TLambda, argType, bodyType);
 						return _Utils_Tuple3(
@@ -6525,16 +6576,16 @@ var $author$project$Main$typecheck = F3(
 				var e = expr.c;
 				return A2(
 					$elm$core$Result$andThen,
-					function (_v8) {
-						var scope2 = _v8.a;
-						var gen2 = _v8.b;
-						var annotV = _v8.c;
+					function (_v9) {
+						var scope2 = _v9.a;
+						var gen2 = _v9.b;
+						var annotV = _v9.c;
 						return A2(
 							$elm$core$Result$map,
-							function (_v9) {
-								var gen3 = _v9.a;
-								var annotE = _v9.b;
-								var eConsts = _v9.c;
+							function (_v10) {
+								var gen3 = _v10.a;
+								var annotE = _v10.b;
+								var eConsts = _v10.c;
 								return _Utils_Tuple3(
 									gen3,
 									A4(

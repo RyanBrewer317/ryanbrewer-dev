@@ -180,7 +180,7 @@ typecheck scope gen expr = case expr of
     LVar v -> 
         case Dict.get v scope of
             Nothing -> Err (v ++ " used out of scope!")
-            Just t -> Ok (gen, AnnVar v t, [])
+            Just t -> instantiate gen t |> (\(gen2, t2)->Ok (gen2, AnnVar v t2, []))
     LCall foo bar ->
         typecheck scope gen foo  |> Result.andThen (\(gen2, annFoo, fooConsts)->
         typecheck scope gen2 bar |> Result.map (\(gen3, annBar, barConsts)->
@@ -246,6 +246,16 @@ solve constraints substitutions skipped = case constraints of
                         solve (substituteAll rest t1 t2) (Subst x t2::substitutions) (substituteAll skipped t1 t2)
                 Forall _ _ -> Err "something went wrong, Forall found after it should be instantiated"
     [] -> if List.isEmpty skipped then Ok substitutions else solve skipped substitutions []
+
+instantiate : Gen  -> Type -> (Gen, Type)
+instantiate gen t = case t of
+    TInt -> (gen, t)
+    TLambda a b -> 
+        let (gen2, a2) = instantiate gen a in 
+        let (gen3, b2) = instantiate gen2 b in
+            (gen3, (TLambda a2 b2))
+    TVar _ -> (gen, t)
+    Forall vars u -> List.foldr (\var (genx, typ)->withFresh genx (\genx2 v->(genx2, sub var (TVar v) typ))) (gen, u) vars
 
 substituteAll : List Constraint -> Type -> Type -> List Constraint
 substituteAll constraints var val = case constraints of
