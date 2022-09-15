@@ -7626,6 +7626,7 @@ var $author$project$Main$parseOutputHelp = function (revHtml) {
 };
 var $author$project$Main$parseOutput = A2($elm$parser$Parser$loop, _List_Nil, $author$project$Main$parseOutputHelp);
 var $elm$html$Html$Attributes$placeholder = $elm$html$Html$Attributes$stringProperty('placeholder');
+var $elm$html$Html$pre = _VirtualDom_node('pre');
 var $elm$html$Html$strong = _VirtualDom_node('strong');
 var $elm$html$Html$textarea = _VirtualDom_node('textarea');
 var $elm$core$Result$withDefault = F2(
@@ -7734,7 +7735,30 @@ var $author$project$Main$view = function (model) {
 								A2(
 									$elm$parser$Parser$run,
 									$author$project$Main$parseOutput,
-									$author$project$Main$go(model.output)))))
+									$author$project$Main$go(model.output))))),
+						A2(
+						$elm$html$Html$p,
+						_List_Nil,
+						_List_fromArray(
+							[
+								$elm$html$Html$text('let-binding notation in the above box is '),
+								A2(
+								$elm$html$Html$pre,
+								_List_Nil,
+								_List_fromArray(
+									[
+										$elm$html$Html$text('a = b; c')
+									])),
+								$elm$html$Html$text(', if the usual notation is '),
+								A2(
+								$elm$html$Html$pre,
+								_List_Nil,
+								_List_fromArray(
+									[
+										$elm$html$Html$text('let a = b in c')
+									])),
+								$elm$html$Html$text('.')
+							]))
 					]))
 			]));
 };
