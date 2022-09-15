@@ -75,12 +75,23 @@ type Expr = LInt Int
           | LVar String
           | LLambda String Expr
           | LCall Expr Expr
+          | LBinding String Expr Expr
 
 parseInt : Parser Expr
 parseInt = number {int = Just LInt, hex = Nothing, octal = Nothing, binary = Nothing, float = Nothing}
 
 parseVar : Parser Expr
-parseVar = variable {start = Char.isLower, inner = Char.isAlphaNum, reserved = Set.fromList([])} |> Parser.map LVar
+parseVar = variable {start = Char.isLower, inner = Char.isAlphaNum, reserved = Set.fromList([])} 
+        |> andThen (\var->
+            oneOf 
+                [ succeed (LBinding var) 
+                    |. spaces 
+                    |. symbol "=" 
+                    |= lazy (\_->parseExpr) 
+                    |. symbol ";" 
+                    |= lazy (\_->parseExpr)
+                , succeed (LVar var)
+                ])
 
 parseLambda : Parser Expr
 parseLambda = succeed LLambda
@@ -137,6 +148,7 @@ type AnnExpr = AnnVar String Type
              | AnnInt Int
              | AnnLambda String AnnExpr Type
              | AnnCall AnnExpr AnnExpr Type
+             | AnnBinding String AnnExpr AnnExpr Type
 
 type Constraint = Eq Type Type
 
@@ -185,6 +197,7 @@ typecheck scope gen expr = case expr of
         let exprType = TLambda argType bodyType in
         (gen4, AnnLambda v annE exprType, eConsts))
     LInt i -> Ok (gen, AnnInt i, [])
+    LBinding n v e -> letTypeOf scope gen v |> Result.andThen (\(scope2, gen2, annotV)->typecheck (Dict.insert n (typeOf annotV) scope2) gen2 e |> Result.map (\(gen3, annotE, eConsts)->(gen3, AnnBinding n annotV annotE (typeOf annotE), eConsts)))
 
 typeOf : AnnExpr -> Type
 typeOf ann = case ann of
@@ -192,6 +205,7 @@ typeOf ann = case ann of
     AnnInt _ -> TInt
     AnnLambda _ _ t -> t
     AnnCall _ _ t -> t
+    AnnBinding _ _ _ t -> t
 
 occurs : Type -> Type -> Bool
 occurs var t = case t of
@@ -286,24 +300,26 @@ preGeneralize scope constraints annotLoc =
 
 updateType : (Type -> Type) -> AnnExpr -> AnnExpr
 updateType f ann = case ann of
-    AnnInt    _ -> ann
-    AnnLambda arg bod typ -> AnnLambda arg bod (f typ)
-    AnnCall   foo bar typ -> AnnCall foo bar (f typ)
-    AnnVar s t -> AnnVar s (f t)
+    AnnInt     _ -> ann
+    AnnLambda  arg bod typ -> AnnLambda arg bod (f typ)
+    AnnCall    foo bar typ -> AnnCall foo bar (f typ)
+    AnnVar     s t         -> AnnVar s (f t)
+    AnnBinding n v e t    -> AnnBinding n v e (f t)
 
 updateTypes : (Type -> Type) -> AnnExpr -> AnnExpr
 updateTypes f ann = case ann of
-    AnnInt    _ -> ann
-    AnnLambda arg bod typ -> AnnLambda arg (updateTypes f bod) (f typ)
-    AnnCall   foo bar typ -> AnnCall (updateTypes f foo) (updateTypes f bar) (f typ)
-    AnnVar s t -> AnnVar s (f t)
+    AnnInt     _ -> ann
+    AnnLambda  arg bod typ -> AnnLambda arg (updateTypes f bod) (f typ)
+    AnnCall    foo bar typ -> AnnCall (updateTypes f foo) (updateTypes f bar) (f typ)
+    AnnVar     s t         -> AnnVar s (f t)
+    AnnBinding n v e t     -> AnnBinding n (updateTypes f v) (updateTypes f e) (f t)
 
 letTypeOf : Dict.Dict String Type -> Gen -> Expr -> Result String (Dict.Dict String Type, Gen, AnnExpr)
 letTypeOf scope gen expr = typecheck scope gen expr |> Result.andThen (\(gen2, annotLoc, constraints)->preGeneralize scope constraints annotLoc|>Result.map(\(s, a)->(s, gen2, a)))
 
 eval : Gen -> Dict.Dict String Expr -> Expr -> Result String (Gen, Expr)
 eval gen scope expr = case expr of
-    LVar v -> Result.fromMaybe (v ++ " used out of scope!") <| Maybe.map (\val->(gen, val)) <| Dict.get v scope
+    LVar v -> Result.fromMaybe ("internal typechecker error! (nonexistent "++v++")") <| Maybe.map (\val->(gen, val)) <| Dict.get v scope
     LCall foo bar ->
         withFreshRes gen (\gen2 var->
         eval gen2 scope foo |> Result.andThen (\(gen3, foo2)->
@@ -312,11 +328,12 @@ eval gen scope expr = case expr of
             LLambda v e -> 
                 let (v2, e2) = ("x_"++var, rename v ("x_"++var) (beta scope e)) in
                 eval gen4 (Dict.insert v2 bar2 scope) e2
-            _ -> Err "calling nonfunction!")))
+            _ -> Err "internal typechecker error! (calling nonfunction)")))
     LLambda v e -> 
         Ok <| withFresh gen (\gen2 var->
         (gen2, LLambda ("x_"++var) (rename v ("x_"++var) (beta scope e))))
-    _ -> Ok (gen, expr)
+    LInt _ -> Ok (gen, expr)
+    LBinding n v e -> eval gen scope v |> Result.andThen (\(gen2, val)->eval gen2 (Dict.insert n val scope) e)
 
 beta :Dict.Dict String Expr -> Expr -> Expr
 beta scope expr = case expr of
@@ -331,6 +348,7 @@ rename old new expr = case expr of
     LCall foo bar -> LCall (rename old new foo) (rename old new bar)
     LLambda v e -> LLambda (if v == old then new else v) (rename old new e)
     LInt _ -> expr
+    LBinding n v e -> LBinding (if n == old then new else n) (rename old new v) (rename old new e)
 
 toString : Expr -> String
 toString expr = case expr of
@@ -338,6 +356,7 @@ toString expr = case expr of
     LInt i -> String.fromInt i
     LLambda v e -> "λ" ++ v ++ "." ++ toString e
     LCall foo bar -> "(" ++ toString foo ++ ")(" ++ toString bar ++ ")"
+    LBinding n v e -> "internal compiler error, unevaluated binding! (let "++n++" = "++toString v++" in "++toString e++")"
 
 go : String -> String
 go code = run (parseExpr |. end) code |> Result.mapError (\_->"parse error!") |> Result.andThen (\expr -> letTypeOf Dict.empty (Gen 0) expr |> Result.andThen (\(_, gen, _)-> eval gen Dict.empty expr)) |> Result.map (\(_, x)->toString x) |> resToString

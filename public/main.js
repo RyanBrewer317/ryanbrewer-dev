@@ -5582,6 +5582,10 @@ var $elm$core$Maybe$map = F2(
 			return $elm$core$Maybe$Nothing;
 		}
 	});
+var $author$project$Main$LBinding = F3(
+	function (a, b, c) {
+		return {$: 'LBinding', a: a, b: b, c: c};
+	});
 var $author$project$Main$LVar = function (a) {
 	return {$: 'LVar', a: a};
 };
@@ -5605,8 +5609,17 @@ var $author$project$Main$rename = F3(
 					$author$project$Main$LLambda,
 					_Utils_eq(v, old) ? _new : v,
 					A3($author$project$Main$rename, old, _new, e));
-			default:
+			case 'LInt':
 				return expr;
+			default:
+				var n = expr.a;
+				var v = expr.b;
+				var e = expr.c;
+				return A3(
+					$author$project$Main$LBinding,
+					_Utils_eq(n, old) ? _new : n,
+					A3($author$project$Main$rename, old, _new, v),
+					A3($author$project$Main$rename, old, _new, e));
 		}
 	});
 var $author$project$Main$withFresh = F2(
@@ -5632,7 +5645,7 @@ var $author$project$Main$eval = F3(
 				var v = expr.a;
 				return A2(
 					$elm$core$Result$fromMaybe,
-					v + ' used out of scope!',
+					'internal typechecker error! (nonexistent ' + (v + ')'),
 					A2(
 						$elm$core$Maybe$map,
 						function (val) {
@@ -5675,7 +5688,7 @@ var $author$project$Main$eval = F3(
 													A3($elm$core$Dict$insert, v2, bar2, scope),
 													e2);
 											} else {
-												return $elm$core$Result$Err('calling nonfunction!');
+												return $elm$core$Result$Err('internal typechecker error! (calling nonfunction)');
 											}
 										},
 										A3($author$project$Main$eval, gen3, scope, bar));
@@ -5702,9 +5715,25 @@ var $author$project$Main$eval = F3(
 											'x_' + _var,
 											A2($author$project$Main$beta, scope, e))));
 							})));
-			default:
+			case 'LInt':
 				return $elm$core$Result$Ok(
 					_Utils_Tuple2(gen, expr));
+			default:
+				var n = expr.a;
+				var v = expr.b;
+				var e = expr.c;
+				return A2(
+					$elm$core$Result$andThen,
+					function (_v5) {
+						var gen2 = _v5.a;
+						var val = _v5.b;
+						return A3(
+							$author$project$Main$eval,
+							gen2,
+							A3($elm$core$Dict$insert, n, val, scope),
+							e);
+					},
+					A3($author$project$Main$eval, gen, scope, v));
 		}
 	});
 var $elm$core$Basics$always = F2(
@@ -5749,6 +5778,36 @@ var $elm$parser$Parser$Advanced$ignorer = F2(
 		return A3($elm$parser$Parser$Advanced$map2, $elm$core$Basics$always, keepParser, ignoreParser);
 	});
 var $elm$parser$Parser$ignorer = $elm$parser$Parser$Advanced$ignorer;
+var $author$project$Main$AnnBinding = F4(
+	function (a, b, c, d) {
+		return {$: 'AnnBinding', a: a, b: b, c: c, d: d};
+	});
+var $author$project$Main$AnnCall = F3(
+	function (a, b, c) {
+		return {$: 'AnnCall', a: a, b: b, c: c};
+	});
+var $author$project$Main$AnnInt = function (a) {
+	return {$: 'AnnInt', a: a};
+};
+var $author$project$Main$AnnLambda = F3(
+	function (a, b, c) {
+		return {$: 'AnnLambda', a: a, b: b, c: c};
+	});
+var $author$project$Main$AnnVar = F2(
+	function (a, b) {
+		return {$: 'AnnVar', a: a, b: b};
+	});
+var $author$project$Main$Eq = F2(
+	function (a, b) {
+		return {$: 'Eq', a: a, b: b};
+	});
+var $author$project$Main$TLambda = F2(
+	function (a, b) {
+		return {$: 'TLambda', a: a, b: b};
+	});
+var $author$project$Main$TVar = function (a) {
+	return {$: 'TVar', a: a};
+};
 var $elm$core$Result$map = F2(
 	function (func, ra) {
 		if (ra.$ === 'Ok') {
@@ -5764,9 +5823,6 @@ var $author$project$Main$Forall = F2(
 	function (a, b) {
 		return {$: 'Forall', a: a, b: b};
 	});
-var $author$project$Main$TVar = function (a) {
-	return {$: 'TVar', a: a};
-};
 var $elm$core$List$any = F2(
 	function (isOkay, list) {
 		any:
@@ -5908,10 +5964,6 @@ var $elm$core$Dict$map = F2(
 				A2($elm$core$Dict$map, func, right));
 		}
 	});
-var $author$project$Main$Eq = F2(
-	function (a, b) {
-		return {$: 'Eq', a: a, b: b};
-	});
 var $author$project$Main$Subst = F2(
 	function (a, b) {
 		return {$: 'Subst', a: a, b: b};
@@ -5923,10 +5975,6 @@ var $elm$core$List$isEmpty = function (xs) {
 		return false;
 	}
 };
-var $author$project$Main$TLambda = F2(
-	function (a, b) {
-		return {$: 'TLambda', a: a, b: b};
-	});
 var $author$project$Main$sub = F3(
 	function (_var, val, t) {
 		switch (t.$) {
@@ -6188,18 +6236,6 @@ var $author$project$Main$solve = F3(
 			}
 		}
 	});
-var $author$project$Main$AnnCall = F3(
-	function (a, b, c) {
-		return {$: 'AnnCall', a: a, b: b, c: c};
-	});
-var $author$project$Main$AnnLambda = F3(
-	function (a, b, c) {
-		return {$: 'AnnLambda', a: a, b: b, c: c};
-	});
-var $author$project$Main$AnnVar = F2(
-	function (a, b) {
-		return {$: 'AnnVar', a: a, b: b};
-	});
 var $author$project$Main$updateType = F2(
 	function (f, ann) {
 		switch (ann.$) {
@@ -6223,12 +6259,23 @@ var $author$project$Main$updateType = F2(
 					foo,
 					bar,
 					f(typ));
-			default:
+			case 'AnnVar':
 				var s = ann.a;
 				var t = ann.b;
 				return A2(
 					$author$project$Main$AnnVar,
 					s,
+					f(t));
+			default:
+				var n = ann.a;
+				var v = ann.b;
+				var e = ann.c;
+				var t = ann.d;
+				return A4(
+					$author$project$Main$AnnBinding,
+					n,
+					v,
+					e,
 					f(t));
 		}
 	});
@@ -6255,12 +6302,23 @@ var $author$project$Main$updateTypes = F2(
 					A2($author$project$Main$updateTypes, f, foo),
 					A2($author$project$Main$updateTypes, f, bar),
 					f(typ));
-			default:
+			case 'AnnVar':
 				var s = ann.a;
 				var t = ann.b;
 				return A2(
 					$author$project$Main$AnnVar,
 					s,
+					f(t));
+			default:
+				var n = ann.a;
+				var v = ann.b;
+				var e = ann.c;
+				var t = ann.d;
+				return A4(
+					$author$project$Main$AnnBinding,
+					n,
+					A2($author$project$Main$updateTypes, f, v),
+					A2($author$project$Main$updateTypes, f, e),
 					f(t));
 		}
 	});
@@ -6322,9 +6380,6 @@ var $author$project$Main$preGeneralize = F3(
 			},
 			A3($author$project$Main$solve, constraints, _List_Nil, _List_Nil));
 	});
-var $author$project$Main$AnnInt = function (a) {
-	return {$: 'AnnInt', a: a};
-};
 var $author$project$Main$TInt = {$: 'TInt'};
 var $author$project$Main$typeOf = function (ann) {
 	switch (ann.$) {
@@ -6336,11 +6391,33 @@ var $author$project$Main$typeOf = function (ann) {
 		case 'AnnLambda':
 			var t = ann.c;
 			return t;
-		default:
+		case 'AnnCall':
 			var t = ann.c;
+			return t;
+		default:
+			var t = ann.d;
 			return t;
 	}
 };
+var $author$project$Main$letTypeOf = F3(
+	function (scope, gen, expr) {
+		return A2(
+			$elm$core$Result$andThen,
+			function (_v10) {
+				var gen2 = _v10.a;
+				var annotLoc = _v10.b;
+				var constraints = _v10.c;
+				return A2(
+					$elm$core$Result$map,
+					function (_v11) {
+						var s = _v11.a;
+						var a = _v11.b;
+						return _Utils_Tuple3(s, gen2, a);
+					},
+					A3($author$project$Main$preGeneralize, scope, constraints, annotLoc));
+			},
+			A3($author$project$Main$typecheck, scope, gen, expr));
+	});
 var $author$project$Main$typecheck = F3(
 	function (scope, gen, expr) {
 		switch (expr.$) {
@@ -6435,33 +6512,51 @@ var $author$project$Main$typecheck = F3(
 						A3($elm$core$Dict$insert, v, argType, scope),
 						gen3,
 						e));
-			default:
+			case 'LInt':
 				var i = expr.a;
 				return $elm$core$Result$Ok(
 					_Utils_Tuple3(
 						gen,
 						$author$project$Main$AnnInt(i),
 						_List_Nil));
-		}
-	});
-var $author$project$Main$letTypeOf = F3(
-	function (scope, gen, expr) {
-		return A2(
-			$elm$core$Result$andThen,
-			function (_v0) {
-				var gen2 = _v0.a;
-				var annotLoc = _v0.b;
-				var constraints = _v0.c;
+			default:
+				var n = expr.a;
+				var v = expr.b;
+				var e = expr.c;
 				return A2(
-					$elm$core$Result$map,
-					function (_v1) {
-						var s = _v1.a;
-						var a = _v1.b;
-						return _Utils_Tuple3(s, gen2, a);
+					$elm$core$Result$andThen,
+					function (_v8) {
+						var scope2 = _v8.a;
+						var gen2 = _v8.b;
+						var annotV = _v8.c;
+						return A2(
+							$elm$core$Result$map,
+							function (_v9) {
+								var gen3 = _v9.a;
+								var annotE = _v9.b;
+								var eConsts = _v9.c;
+								return _Utils_Tuple3(
+									gen3,
+									A4(
+										$author$project$Main$AnnBinding,
+										n,
+										annotV,
+										annotE,
+										$author$project$Main$typeOf(annotE)),
+									eConsts);
+							},
+							A3(
+								$author$project$Main$typecheck,
+								A3(
+									$elm$core$Dict$insert,
+									n,
+									$author$project$Main$typeOf(annotV),
+									scope2),
+								gen2,
+								e));
 					},
-					A3($author$project$Main$preGeneralize, scope, constraints, annotLoc));
-			},
-			A3($author$project$Main$typecheck, scope, gen, expr));
+					A3($author$project$Main$letTypeOf, scope, gen, v));
+		}
 	});
 var $elm$core$Result$mapError = F2(
 	function (f, result) {
@@ -6906,8 +7001,65 @@ var $author$project$Main$parseInt = $elm$parser$Parser$number(
 		_int: $elm$core$Maybe$Just($author$project$Main$LInt),
 		octal: $elm$core$Maybe$Nothing
 	});
-var $elm$parser$Parser$ExpectingVariable = {$: 'ExpectingVariable'};
 var $elm$parser$Parser$Advanced$isSubChar = _Parser_isSubChar;
+var $elm$parser$Parser$Advanced$chompWhileHelp = F5(
+	function (isGood, offset, row, col, s0) {
+		chompWhileHelp:
+		while (true) {
+			var newOffset = A3($elm$parser$Parser$Advanced$isSubChar, isGood, offset, s0.src);
+			if (_Utils_eq(newOffset, -1)) {
+				return A3(
+					$elm$parser$Parser$Advanced$Good,
+					_Utils_cmp(s0.offset, offset) < 0,
+					_Utils_Tuple0,
+					{col: col, context: s0.context, indent: s0.indent, offset: offset, row: row, src: s0.src});
+			} else {
+				if (_Utils_eq(newOffset, -2)) {
+					var $temp$isGood = isGood,
+						$temp$offset = offset + 1,
+						$temp$row = row + 1,
+						$temp$col = 1,
+						$temp$s0 = s0;
+					isGood = $temp$isGood;
+					offset = $temp$offset;
+					row = $temp$row;
+					col = $temp$col;
+					s0 = $temp$s0;
+					continue chompWhileHelp;
+				} else {
+					var $temp$isGood = isGood,
+						$temp$offset = newOffset,
+						$temp$row = row,
+						$temp$col = col + 1,
+						$temp$s0 = s0;
+					isGood = $temp$isGood;
+					offset = $temp$offset;
+					row = $temp$row;
+					col = $temp$col;
+					s0 = $temp$s0;
+					continue chompWhileHelp;
+				}
+			}
+		}
+	});
+var $elm$parser$Parser$Advanced$chompWhile = function (isGood) {
+	return $elm$parser$Parser$Advanced$Parser(
+		function (s) {
+			return A5($elm$parser$Parser$Advanced$chompWhileHelp, isGood, s.offset, s.row, s.col, s);
+		});
+};
+var $elm$parser$Parser$Advanced$spaces = $elm$parser$Parser$Advanced$chompWhile(
+	function (c) {
+		return _Utils_eq(
+			c,
+			_Utils_chr(' ')) || (_Utils_eq(
+			c,
+			_Utils_chr('\n')) || _Utils_eq(
+			c,
+			_Utils_chr('\r')));
+	});
+var $elm$parser$Parser$spaces = $elm$parser$Parser$Advanced$spaces;
+var $elm$parser$Parser$ExpectingVariable = {$: 'ExpectingVariable'};
 var $elm$core$Dict$member = F2(
 	function (key, dict) {
 		var _v0 = A2($elm$core$Dict$get, key, dict);
@@ -6989,72 +7141,6 @@ var $elm$parser$Parser$variable = function (i) {
 	return $elm$parser$Parser$Advanced$variable(
 		{expecting: $elm$parser$Parser$ExpectingVariable, inner: i.inner, reserved: i.reserved, start: i.start});
 };
-var $author$project$Main$parseVar = A2(
-	$elm$parser$Parser$map,
-	$author$project$Main$LVar,
-	$elm$parser$Parser$variable(
-		{
-			inner: $elm$core$Char$isAlphaNum,
-			reserved: $elm$core$Set$fromList(_List_Nil),
-			start: $elm$core$Char$isLower
-		}));
-var $elm$parser$Parser$Advanced$chompWhileHelp = F5(
-	function (isGood, offset, row, col, s0) {
-		chompWhileHelp:
-		while (true) {
-			var newOffset = A3($elm$parser$Parser$Advanced$isSubChar, isGood, offset, s0.src);
-			if (_Utils_eq(newOffset, -1)) {
-				return A3(
-					$elm$parser$Parser$Advanced$Good,
-					_Utils_cmp(s0.offset, offset) < 0,
-					_Utils_Tuple0,
-					{col: col, context: s0.context, indent: s0.indent, offset: offset, row: row, src: s0.src});
-			} else {
-				if (_Utils_eq(newOffset, -2)) {
-					var $temp$isGood = isGood,
-						$temp$offset = offset + 1,
-						$temp$row = row + 1,
-						$temp$col = 1,
-						$temp$s0 = s0;
-					isGood = $temp$isGood;
-					offset = $temp$offset;
-					row = $temp$row;
-					col = $temp$col;
-					s0 = $temp$s0;
-					continue chompWhileHelp;
-				} else {
-					var $temp$isGood = isGood,
-						$temp$offset = newOffset,
-						$temp$row = row,
-						$temp$col = col + 1,
-						$temp$s0 = s0;
-					isGood = $temp$isGood;
-					offset = $temp$offset;
-					row = $temp$row;
-					col = $temp$col;
-					s0 = $temp$s0;
-					continue chompWhileHelp;
-				}
-			}
-		}
-	});
-var $elm$parser$Parser$Advanced$chompWhile = function (isGood) {
-	return $elm$parser$Parser$Advanced$Parser(
-		function (s) {
-			return A5($elm$parser$Parser$Advanced$chompWhileHelp, isGood, s.offset, s.row, s.col, s);
-		});
-};
-var $elm$parser$Parser$Advanced$spaces = $elm$parser$Parser$Advanced$chompWhile(
-	function (c) {
-		return _Utils_eq(
-			c,
-			_Utils_chr(' ')) || (_Utils_eq(
-			c,
-			_Utils_chr('\n')) || _Utils_eq(
-			c,
-			_Utils_chr('\r')));
-	});
-var $elm$parser$Parser$spaces = $elm$parser$Parser$Advanced$spaces;
 function $author$project$Main$cyclic$parseExpr() {
 	return A2(
 		$elm$parser$Parser$andThen,
@@ -7079,7 +7165,7 @@ function $author$project$Main$cyclic$parseExpr() {
 											$author$project$Main$LCall(expr),
 											$author$project$Main$parenthetical(
 												$elm$parser$Parser$lazy(
-													function (_v2) {
+													function (_v4) {
 														return $author$project$Main$cyclic$parseExpr();
 													})))),
 										A2(
@@ -7106,11 +7192,11 @@ function $author$project$Main$cyclic$parseLiteral() {
 		_List_fromArray(
 			[
 				$author$project$Main$parseInt,
-				$author$project$Main$parseVar,
+				$author$project$Main$cyclic$parseVar(),
 				$author$project$Main$cyclic$parseLambda(),
 				$author$project$Main$parenthetical(
 				$elm$parser$Parser$lazy(
-					function (_v1) {
+					function (_v3) {
 						return $author$project$Main$cyclic$parseExpr();
 					}))
 			]));
@@ -7143,8 +7229,49 @@ function $author$project$Main$cyclic$parseLambda() {
 					$elm$parser$Parser$symbol('.')),
 				$elm$parser$Parser$spaces)),
 		$elm$parser$Parser$lazy(
-			function (_v0) {
+			function (_v2) {
 				return $author$project$Main$cyclic$parseExpr();
+			}));
+}
+function $author$project$Main$cyclic$parseVar() {
+	return A2(
+		$elm$parser$Parser$andThen,
+		function (_var) {
+			return $elm$parser$Parser$oneOf(
+				_List_fromArray(
+					[
+						A2(
+						$elm$parser$Parser$keeper,
+						A2(
+							$elm$parser$Parser$keeper,
+							A2(
+								$elm$parser$Parser$ignorer,
+								A2(
+									$elm$parser$Parser$ignorer,
+									$elm$parser$Parser$succeed(
+										$author$project$Main$LBinding(_var)),
+									$elm$parser$Parser$spaces),
+								$elm$parser$Parser$symbol('=')),
+							A2(
+								$elm$parser$Parser$ignorer,
+								$elm$parser$Parser$lazy(
+									function (_v0) {
+										return $author$project$Main$cyclic$parseExpr();
+									}),
+								$elm$parser$Parser$symbol(';'))),
+						$elm$parser$Parser$lazy(
+							function (_v1) {
+								return $author$project$Main$cyclic$parseExpr();
+							})),
+						$elm$parser$Parser$succeed(
+						$author$project$Main$LVar(_var))
+					]));
+		},
+		$elm$parser$Parser$variable(
+			{
+				inner: $elm$core$Char$isAlphaNum,
+				reserved: $elm$core$Set$fromList(_List_Nil),
+				start: $elm$core$Char$isLower
 			}));
 }
 try {
@@ -7160,8 +7287,12 @@ try {
 	$author$project$Main$cyclic$parseLambda = function () {
 		return $author$project$Main$parseLambda;
 	};
+	var $author$project$Main$parseVar = $author$project$Main$cyclic$parseVar();
+	$author$project$Main$cyclic$parseVar = function () {
+		return $author$project$Main$parseVar;
+	};
 } catch ($) {
-	throw 'Some top-level definitions from `Main` are causing infinite recursion:\n\n  ┌─────┐\n  │    parseExpr\n  │     ↓\n  │    parseLiteral\n  │     ↓\n  │    parseLambda\n  └─────┘\n\nThese errors are very tricky, so read https://elm-lang.org/0.19.1/bad-recursion to learn how to fix it!';}
+	throw 'Some top-level definitions from `Main` are causing infinite recursion:\n\n  ┌─────┐\n  │    parseExpr\n  │     ↓\n  │    parseLiteral\n  │     ↓\n  │    parseLambda\n  │     ↓\n  │    parseVar\n  └─────┘\n\nThese errors are very tricky, so read https://elm-lang.org/0.19.1/bad-recursion to learn how to fix it!';}
 var $author$project$Main$resToString = function (res) {
 	if (res.$ === 'Ok') {
 		var s = res.a;
@@ -7242,10 +7373,15 @@ var $author$project$Main$toString = function (expr) {
 			var v = expr.a;
 			var e = expr.b;
 			return 'λ' + (v + ('.' + $author$project$Main$toString(e)));
-		default:
+		case 'LCall':
 			var foo = expr.a;
 			var bar = expr.b;
 			return '(' + ($author$project$Main$toString(foo) + (')(' + ($author$project$Main$toString(bar) + ')')));
+		default:
+			var n = expr.a;
+			var v = expr.b;
+			var e = expr.c;
+			return 'internal compiler error, unevaluated binding! (let ' + (n + (' = ' + ($author$project$Main$toString(v) + (' in ' + ($author$project$Main$toString(e) + ')')))));
 	}
 };
 var $author$project$Main$go = function (code) {
