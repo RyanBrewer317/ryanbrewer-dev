@@ -39,8 +39,10 @@ view model = div []
             , a [ href "https://github.com/RyanBrewer317/ryanbrewer-dev" ] [ text "my github" ]
             , text "."
             ]
+        , br [] []
+        , h4 [] [text "An embedded lambda calculus"]
         , p [] [text "Here's a lambda calculus implementation I made, try writing some expressions!"]
-        , p [] [text "It's completely statically type-checked (Hindley-Milner) due to the decidability of the typability of the STLC."]
+        , p [] [text "It's completely statically type-checked (via Hindley-Milner type inference) due to the decidability of type inference for the STLC."]
         , textarea 
             [ id "code"
             , placeholder "Write some lambda calculus code! Example: (\\x.\\y.x)(\\x.x)(3)"

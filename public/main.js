@@ -7468,6 +7468,7 @@ var $author$project$Main$go = function (code) {
 						A2($elm$parser$Parser$ignorer, $author$project$Main$parseExpr, $elm$parser$Parser$end),
 						code)))));
 };
+var $elm$html$Html$h4 = _VirtualDom_node('h4');
 var $elm$json$Json$Encode$string = _Json_wrap;
 var $elm$html$Html$Attributes$stringProperty = F2(
 	function (key, string) {
@@ -7677,6 +7678,14 @@ var $author$project$Main$view = function (model) {
 									])),
 								$elm$html$Html$text('.')
 							])),
+						A2($elm$html$Html$br, _List_Nil, _List_Nil),
+						A2(
+						$elm$html$Html$h4,
+						_List_Nil,
+						_List_fromArray(
+							[
+								$elm$html$Html$text('An embedded lambda calculus')
+							])),
 						A2(
 						$elm$html$Html$p,
 						_List_Nil,
@@ -7689,7 +7698,7 @@ var $author$project$Main$view = function (model) {
 						_List_Nil,
 						_List_fromArray(
 							[
-								$elm$html$Html$text('It\'s completely statically type-checked (Hindley-Milner) due to the decidability of the typability of the STLC.')
+								$elm$html$Html$text('It\'s completely statically type-checked (via Hindley-Milner type inference) due to the decidability of type inference for the STLC.')
 							])),
 						A2(
 						$elm$html$Html$textarea,
