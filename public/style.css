@@ -2,8 +2,7 @@ body,
 html,
 #app {
     padding: 0;
-    margin: 0 auto;
-    width: 400pt;
+    margin: 0;
     background: rgb(43, 43, 43);
     color: white;
 }
@@ -16,6 +15,8 @@ nav {
 
 #body {
     padding: 12pt;
+    width: 600pt;
+    margin: 0 auto;
 }
 
 #code {
