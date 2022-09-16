@@ -7749,15 +7749,14 @@ var $author$project$Main$view = function (model) {
 									[
 										$elm$html$Html$text('a = b; c')
 									])),
-								$elm$html$Html$text(', if the usual notation is '),
+								$elm$html$Html$text('where the usual notation is '),
 								A2(
 								$elm$html$Html$pre,
 								_List_Nil,
 								_List_fromArray(
 									[
 										$elm$html$Html$text('let a = b in c')
-									])),
-								$elm$html$Html$text('.')
+									]))
 							]))
 					]))
 			]));

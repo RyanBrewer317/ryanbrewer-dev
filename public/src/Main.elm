@@ -48,7 +48,7 @@ view model = div []
             ] []
         , br [] []
         , if model.output == "" then text "" else div [] (go model.output |> run parseOutput |> Result.withDefault [text "internal parser error!"] |> (\l->[strong [] [text "output "], text " (variables may be renamed): ", div [style "margin" "4pt 2pt", style "font-size" "15pt", style "font-family" "FreeMono, monospace"] l]))
-        , p [] [text "let-binding notation in the above box is ", pre [] [text "a = b; c"], text ", if the usual notation is ", pre [] [text "let a = b in c"], text "."]
+        , p [] [text "let-binding notation in the above box is ", pre [] [text "a = b; c"], text "where the usual notation is ", pre [] [text "let a = b in c"]]
         ]
     ]
 
