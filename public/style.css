@@ -2,7 +2,8 @@ body,
 html,
 #app {
     padding: 0;
-    margin: 0;
+    margin: 0 auto;
+    width: 400pt;
     background: rgb(43, 43, 43);
     color: white;
 }
