@@ -5324,7 +5324,7 @@ var $author$project$Main$NewCode = function (a) {
 var $elm$html$Html$a = _VirtualDom_node('a');
 var $elm$html$Html$br = _VirtualDom_node('br');
 var $elm$html$Html$div = _VirtualDom_node('div');
-var $author$project$Main$Gen = function (a) {
+var $author$project$Lang$Gen = function (a) {
 	return {$: 'Gen', a: a};
 };
 var $elm$core$Result$andThen = F2(
@@ -5379,11 +5379,11 @@ var $elm$parser$Parser$Advanced$end = function (x) {
 		});
 };
 var $elm$parser$Parser$end = $elm$parser$Parser$Advanced$end($elm$parser$Parser$ExpectingEnd);
-var $author$project$Main$LLambda = F2(
+var $author$project$Lang$LLambda = F2(
 	function (a, b) {
 		return {$: 'LLambda', a: a, b: b};
 	});
-var $author$project$Main$LCall = F2(
+var $author$project$Lang$LCall = F2(
 	function (a, b) {
 		return {$: 'LCall', a: a, b: b};
 	});
@@ -5428,7 +5428,7 @@ var $elm$core$Maybe$withDefault = F2(
 			return _default;
 		}
 	});
-var $author$project$Main$beta = F2(
+var $author$project$Lang$beta = F2(
 	function (scope, expr) {
 		switch (expr.$) {
 			case 'LVar':
@@ -5441,16 +5441,16 @@ var $author$project$Main$beta = F2(
 				var foo = expr.a;
 				var bar = expr.b;
 				return A2(
-					$author$project$Main$LCall,
-					A2($author$project$Main$beta, scope, foo),
-					A2($author$project$Main$beta, scope, bar));
+					$author$project$Lang$LCall,
+					A2($author$project$Lang$beta, scope, foo),
+					A2($author$project$Lang$beta, scope, bar));
 			case 'LLambda':
 				var v = expr.a;
 				var e = expr.b;
 				return A2(
-					$author$project$Main$LLambda,
+					$author$project$Lang$LLambda,
 					v,
-					A2($author$project$Main$beta, scope, e));
+					A2($author$project$Lang$beta, scope, e));
 			default:
 				return expr;
 		}
@@ -5582,33 +5582,33 @@ var $elm$core$Maybe$map = F2(
 			return $elm$core$Maybe$Nothing;
 		}
 	});
-var $author$project$Main$LBinding = F3(
+var $author$project$Lang$LBinding = F3(
 	function (a, b, c) {
 		return {$: 'LBinding', a: a, b: b, c: c};
 	});
-var $author$project$Main$LVar = function (a) {
+var $author$project$Lang$LVar = function (a) {
 	return {$: 'LVar', a: a};
 };
-var $author$project$Main$rename = F3(
+var $author$project$Lang$rename = F3(
 	function (old, _new, expr) {
 		switch (expr.$) {
 			case 'LVar':
 				var v = expr.a;
-				return _Utils_eq(v, old) ? $author$project$Main$LVar(_new) : expr;
+				return _Utils_eq(v, old) ? $author$project$Lang$LVar(_new) : expr;
 			case 'LCall':
 				var foo = expr.a;
 				var bar = expr.b;
 				return A2(
-					$author$project$Main$LCall,
-					A3($author$project$Main$rename, old, _new, foo),
-					A3($author$project$Main$rename, old, _new, bar));
+					$author$project$Lang$LCall,
+					A3($author$project$Lang$rename, old, _new, foo),
+					A3($author$project$Lang$rename, old, _new, bar));
 			case 'LLambda':
 				var v = expr.a;
 				var e = expr.b;
 				return A2(
-					$author$project$Main$LLambda,
+					$author$project$Lang$LLambda,
 					_Utils_eq(v, old) ? _new : v,
-					A3($author$project$Main$rename, old, _new, e));
+					A3($author$project$Lang$rename, old, _new, e));
 			case 'LInt':
 				return expr;
 			default:
@@ -5616,29 +5616,29 @@ var $author$project$Main$rename = F3(
 				var v = expr.b;
 				var e = expr.c;
 				return A3(
-					$author$project$Main$LBinding,
+					$author$project$Lang$LBinding,
 					_Utils_eq(n, old) ? _new : n,
-					A3($author$project$Main$rename, old, _new, v),
-					A3($author$project$Main$rename, old, _new, e));
+					A3($author$project$Lang$rename, old, _new, v),
+					A3($author$project$Lang$rename, old, _new, e));
 		}
 	});
-var $author$project$Main$withFresh = F2(
+var $author$project$Lang$withFresh = F2(
 	function (_v0, f) {
 		var i = _v0.a;
 		return A2(
 			f,
-			$author$project$Main$Gen(i + 1),
+			$author$project$Lang$Gen(i + 1),
 			$elm$core$String$fromInt(i));
 	});
-var $author$project$Main$withFreshRes = F2(
+var $author$project$Lang$withFreshRes = F2(
 	function (_v0, f) {
 		var i = _v0.a;
 		return A2(
 			f,
-			$author$project$Main$Gen(i + 1),
+			$author$project$Lang$Gen(i + 1),
 			$elm$core$String$fromInt(i));
 	});
-var $author$project$Main$eval = F3(
+var $author$project$Lang$eval = F3(
 	function (gen, scope, expr) {
 		switch (expr.$) {
 			case 'LVar':
@@ -5656,7 +5656,7 @@ var $author$project$Main$eval = F3(
 				var foo = expr.a;
 				var bar = expr.b;
 				return A2(
-					$author$project$Main$withFreshRes,
+					$author$project$Lang$withFreshRes,
 					gen,
 					F2(
 						function (gen2, _var) {
@@ -5676,14 +5676,14 @@ var $author$project$Main$eval = F3(
 												var _v4 = _Utils_Tuple2(
 													'x_' + _var,
 													A3(
-														$author$project$Main$rename,
+														$author$project$Lang$rename,
 														v,
 														'x_' + _var,
-														A2($author$project$Main$beta, scope, e)));
+														A2($author$project$Lang$beta, scope, e)));
 												var v2 = _v4.a;
 												var e2 = _v4.b;
 												return A3(
-													$author$project$Main$eval,
+													$author$project$Lang$eval,
 													gen4,
 													A3($elm$core$Dict$insert, v2, bar2, scope),
 													e2);
@@ -5691,29 +5691,29 @@ var $author$project$Main$eval = F3(
 												return $elm$core$Result$Err('internal typechecker error! (calling nonfunction)');
 											}
 										},
-										A3($author$project$Main$eval, gen3, scope, bar));
+										A3($author$project$Lang$eval, gen3, scope, bar));
 								},
-								A3($author$project$Main$eval, gen2, scope, foo));
+								A3($author$project$Lang$eval, gen2, scope, foo));
 						}));
 			case 'LLambda':
 				var v = expr.a;
 				var e = expr.b;
 				return $elm$core$Result$Ok(
 					A2(
-						$author$project$Main$withFresh,
+						$author$project$Lang$withFresh,
 						gen,
 						F2(
 							function (gen2, _var) {
 								return _Utils_Tuple2(
 									gen2,
 									A2(
-										$author$project$Main$LLambda,
+										$author$project$Lang$LLambda,
 										'x_' + _var,
 										A3(
-											$author$project$Main$rename,
+											$author$project$Lang$rename,
 											v,
 											'x_' + _var,
-											A2($author$project$Main$beta, scope, e))));
+											A2($author$project$Lang$beta, scope, e))));
 							})));
 			case 'LInt':
 				return $elm$core$Result$Ok(
@@ -5728,12 +5728,12 @@ var $author$project$Main$eval = F3(
 						var gen2 = _v5.a;
 						var val = _v5.b;
 						return A3(
-							$author$project$Main$eval,
+							$author$project$Lang$eval,
 							gen2,
 							A3($elm$core$Dict$insert, n, val, scope),
 							e);
 					},
-					A3($author$project$Main$eval, gen, scope, v));
+					A3($author$project$Lang$eval, gen, scope, v));
 		}
 	});
 var $elm$core$Basics$always = F2(
@@ -5778,41 +5778,41 @@ var $elm$parser$Parser$Advanced$ignorer = F2(
 		return A3($elm$parser$Parser$Advanced$map2, $elm$core$Basics$always, keepParser, ignoreParser);
 	});
 var $elm$parser$Parser$ignorer = $elm$parser$Parser$Advanced$ignorer;
-var $author$project$Main$AnnBinding = F4(
+var $author$project$Lang$AnnBinding = F4(
 	function (a, b, c, d) {
 		return {$: 'AnnBinding', a: a, b: b, c: c, d: d};
 	});
-var $author$project$Main$AnnCall = F3(
+var $author$project$Lang$AnnCall = F3(
 	function (a, b, c) {
 		return {$: 'AnnCall', a: a, b: b, c: c};
 	});
-var $author$project$Main$AnnInt = function (a) {
+var $author$project$Lang$AnnInt = function (a) {
 	return {$: 'AnnInt', a: a};
 };
-var $author$project$Main$AnnLambda = F3(
+var $author$project$Lang$AnnLambda = F3(
 	function (a, b, c) {
 		return {$: 'AnnLambda', a: a, b: b, c: c};
 	});
-var $author$project$Main$AnnVar = F2(
+var $author$project$Lang$AnnVar = F2(
 	function (a, b) {
 		return {$: 'AnnVar', a: a, b: b};
 	});
-var $author$project$Main$Eq = F2(
+var $author$project$Lang$Eq = F2(
 	function (a, b) {
 		return {$: 'Eq', a: a, b: b};
 	});
-var $author$project$Main$TLambda = F2(
+var $author$project$Lang$TLambda = F2(
 	function (a, b) {
 		return {$: 'TLambda', a: a, b: b};
 	});
-var $author$project$Main$TVar = function (a) {
+var $author$project$Lang$TVar = function (a) {
 	return {$: 'TVar', a: a};
 };
-var $author$project$Main$Forall = F2(
+var $author$project$Lang$Forall = F2(
 	function (a, b) {
 		return {$: 'Forall', a: a, b: b};
 	});
-var $author$project$Main$sub = F3(
+var $author$project$Lang$sub = F3(
 	function (_var, val, t) {
 		switch (t.$) {
 			case 'TVar':
@@ -5823,19 +5823,19 @@ var $author$project$Main$sub = F3(
 				var a = t.a;
 				var b = t.b;
 				return A2(
-					$author$project$Main$TLambda,
-					A3($author$project$Main$sub, _var, val, a),
-					A3($author$project$Main$sub, _var, val, b));
+					$author$project$Lang$TLambda,
+					A3($author$project$Lang$sub, _var, val, a),
+					A3($author$project$Lang$sub, _var, val, b));
 			default:
 				var vars = t.a;
 				var u = t.b;
 				return A2(
-					$author$project$Main$Forall,
+					$author$project$Lang$Forall,
 					vars,
-					A3($author$project$Main$sub, _var, val, u));
+					A3($author$project$Lang$sub, _var, val, u));
 		}
 	});
-var $author$project$Main$instantiate = F2(
+var $author$project$Lang$instantiate = F2(
 	function (gen, t) {
 		switch (t.$) {
 			case 'TInt':
@@ -5843,15 +5843,15 @@ var $author$project$Main$instantiate = F2(
 			case 'TLambda':
 				var a = t.a;
 				var b = t.b;
-				var _v1 = A2($author$project$Main$instantiate, gen, a);
+				var _v1 = A2($author$project$Lang$instantiate, gen, a);
 				var gen2 = _v1.a;
 				var a2 = _v1.b;
-				var _v2 = A2($author$project$Main$instantiate, gen2, b);
+				var _v2 = A2($author$project$Lang$instantiate, gen2, b);
 				var gen3 = _v2.a;
 				var b2 = _v2.b;
 				return _Utils_Tuple2(
 					gen3,
-					A2($author$project$Main$TLambda, a2, b2));
+					A2($author$project$Lang$TLambda, a2, b2));
 			case 'TVar':
 				return _Utils_Tuple2(gen, t);
 			default:
@@ -5864,16 +5864,16 @@ var $author$project$Main$instantiate = F2(
 							var genx = _v3.a;
 							var typ = _v3.b;
 							return A2(
-								$author$project$Main$withFresh,
+								$author$project$Lang$withFresh,
 								genx,
 								F2(
 									function (genx2, v) {
 										return _Utils_Tuple2(
 											genx2,
 											A3(
-												$author$project$Main$sub,
+												$author$project$Lang$sub,
 												_var,
-												$author$project$Main$TVar(v),
+												$author$project$Lang$TVar(v),
 												typ));
 									}));
 						}),
@@ -5922,7 +5922,7 @@ var $elm$core$List$member = F2(
 			},
 			xs);
 	});
-var $author$project$Main$occurs = F2(
+var $author$project$Lang$occurs = F2(
 	function (_var, t) {
 		switch (t.$) {
 			case 'TVar':
@@ -5932,7 +5932,7 @@ var $author$project$Main$occurs = F2(
 			case 'TLambda':
 				var a = t.a;
 				var b = t.b;
-				return A2($author$project$Main$occurs, _var, a) || A2($author$project$Main$occurs, _var, b);
+				return A2($author$project$Lang$occurs, _var, a) || A2($author$project$Lang$occurs, _var, b);
 			default:
 				var vars = t.a;
 				var u = t.b;
@@ -5941,23 +5941,23 @@ var $author$project$Main$occurs = F2(
 					function (v) {
 						return _Utils_eq(v, _var);
 					},
-					vars) || A2($author$project$Main$occurs, _var, u);
+					vars) || A2($author$project$Lang$occurs, _var, u);
 		}
 	});
-var $author$project$Main$occursInScope = F2(
+var $author$project$Lang$occursInScope = F2(
 	function (scope, _var) {
 		return A2(
 			$elm$core$List$any,
 			function (_v0) {
 				var t = _v0.b;
 				return A2(
-					$author$project$Main$occurs,
-					$author$project$Main$TVar(_var),
+					$author$project$Lang$occurs,
+					$author$project$Lang$TVar(_var),
 					t);
 			},
 			$elm$core$Dict$toList(scope));
 	});
-var $author$project$Main$schemeFrom = function (t) {
+var $author$project$Lang$schemeFrom = function (t) {
 	if (t.$ === 'Forall') {
 		var vars = t.a;
 		var u = t.b;
@@ -5967,7 +5967,7 @@ var $author$project$Main$schemeFrom = function (t) {
 		return $elm$core$Maybe$Nothing;
 	}
 };
-var $author$project$Main$generalize = F3(
+var $author$project$Lang$generalize = F3(
 	function (scope, t, scheme) {
 		if (scheme.$ === 'Forall') {
 			var vars = scheme.a;
@@ -5975,8 +5975,8 @@ var $author$project$Main$generalize = F3(
 			switch (t.$) {
 				case 'TVar':
 					var x = t.a;
-					return (A2($author$project$Main$occursInScope, scope, x) || A2($elm$core$List$member, t, vars)) ? scheme : A2(
-						$author$project$Main$Forall,
+					return (A2($author$project$Lang$occursInScope, scope, x) || A2($elm$core$List$member, t, vars)) ? scheme : A2(
+						$author$project$Lang$Forall,
 						A2($elm$core$List$cons, t, vars),
 						typ);
 				case 'TInt':
@@ -5987,14 +5987,14 @@ var $author$project$Main$generalize = F3(
 					var _v2 = A2(
 						$elm$core$Maybe$withDefault,
 						_Utils_Tuple2(_List_Nil, a),
-						$author$project$Main$schemeFrom(
-							A3($author$project$Main$generalize, scope, a, scheme)));
+						$author$project$Lang$schemeFrom(
+							A3($author$project$Lang$generalize, scope, a, scheme)));
 					var varsA = _v2.a;
 					var _v3 = A2(
 						$elm$core$Maybe$withDefault,
 						_Utils_Tuple2(_List_Nil, b),
-						$author$project$Main$schemeFrom(
-							A3($author$project$Main$generalize, scope, b, scheme)));
+						$author$project$Lang$schemeFrom(
+							A3($author$project$Lang$generalize, scope, b, scheme)));
 					var varsB = _v3.a;
 					var set = A3(
 						$elm$core$List$foldr,
@@ -6006,12 +6006,12 @@ var $author$project$Main$generalize = F3(
 						_Utils_ap(
 							vars,
 							_Utils_ap(varsA, varsB)));
-					return A2($author$project$Main$Forall, set, typ);
+					return A2($author$project$Lang$Forall, set, typ);
 				default:
 					return t;
 			}
 		} else {
-			return A2($author$project$Main$Forall, _List_Nil, t);
+			return A2($author$project$Lang$Forall, _List_Nil, t);
 		}
 	});
 var $elm$core$Dict$map = F2(
@@ -6033,7 +6033,7 @@ var $elm$core$Dict$map = F2(
 				A2($elm$core$Dict$map, func, right));
 		}
 	});
-var $author$project$Main$Subst = F2(
+var $author$project$Lang$Subst = F2(
 	function (a, b) {
 		return {$: 'Subst', a: a, b: b};
 	});
@@ -6044,7 +6044,7 @@ var $elm$core$List$isEmpty = function (xs) {
 		return false;
 	}
 };
-var $author$project$Main$substituteAll = F3(
+var $author$project$Lang$substituteAll = F3(
 	function (constraints, _var, val) {
 		if (!constraints.b) {
 			return _List_Nil;
@@ -6053,12 +6053,12 @@ var $author$project$Main$substituteAll = F3(
 			var rest = constraints.b;
 			var u = _const.a;
 			var v = _const.b;
-			var u2 = A3($author$project$Main$sub, _var, val, u);
-			var v2 = A3($author$project$Main$sub, _var, val, v);
+			var u2 = A3($author$project$Lang$sub, _var, val, u);
+			var v2 = A3($author$project$Lang$sub, _var, val, v);
 			return A2(
 				$elm$core$List$cons,
-				A2($author$project$Main$Eq, u2, v2),
-				A3($author$project$Main$substituteAll, rest, _var, val));
+				A2($author$project$Lang$Eq, u2, v2),
+				A3($author$project$Lang$substituteAll, rest, _var, val));
 		}
 	});
 var $elm$core$String$cons = _String_cons;
@@ -6069,7 +6069,7 @@ var $elm$core$String$foldr = _String_foldr;
 var $elm$core$String$toList = function (string) {
 	return A3($elm$core$String$foldr, $elm$core$List$cons, _List_Nil, string);
 };
-var $author$project$Main$typeToStringHelper = function (t) {
+var $author$project$Lang$typeToStringHelper = function (t) {
 	typeToStringHelper:
 	while (true) {
 		switch (t.$) {
@@ -6078,7 +6078,7 @@ var $author$project$Main$typeToStringHelper = function (t) {
 			case 'TLambda':
 				var u = t.a;
 				var v = t.b;
-				return '(' + ($author$project$Main$typeToStringHelper(u) + (' -> ' + ($author$project$Main$typeToStringHelper(v) + ')')));
+				return '(' + ($author$project$Lang$typeToStringHelper(u) + (' -> ' + ($author$project$Lang$typeToStringHelper(v) + ')')));
 			case 'TVar':
 				var n = t.a;
 				return 'some ' + n;
@@ -6102,9 +6102,9 @@ var $author$project$Main$typeToStringHelper = function (t) {
 										return _Utils_Tuple3(
 											A2($elm$core$List$cons, 'ba', showvars),
 											A3(
-												$author$project$Main$sub,
+												$author$project$Lang$sub,
 												tvar,
-												$author$project$Main$TVar('ba'),
+												$author$project$Lang$TVar('ba'),
 												typ),
 											_List_Nil);
 									} else {
@@ -6113,9 +6113,9 @@ var $author$project$Main$typeToStringHelper = function (t) {
 										return _Utils_Tuple3(
 											A2($elm$core$List$cons, x, showvars),
 											A3(
-												$author$project$Main$sub,
+												$author$project$Lang$sub,
 												tvar,
-												$author$project$Main$TVar(x),
+												$author$project$Lang$TVar(x),
 												typ),
 											xs);
 									}
@@ -6134,7 +6134,6 @@ var $author$project$Main$typeToStringHelper = function (t) {
 								$elm$core$String$fromChar,
 								$elm$core$String$toList('abcdefghijklmnopqrstuvwxyz'))),
 						vars);
-					var showVars = _v2.a;
 					var showType = _v2.b;
 					var $temp$t = showType;
 					t = $temp$t;
@@ -6143,19 +6142,19 @@ var $author$project$Main$typeToStringHelper = function (t) {
 		}
 	}
 };
-var $author$project$Main$typeToString = function (t) {
+var $author$project$Lang$typeToString = function (t) {
 	if (t.$ === 'Forall') {
-		return $author$project$Main$typeToStringHelper(t);
+		return $author$project$Lang$typeToStringHelper(t);
 	} else {
-		return $author$project$Main$typeToStringHelper(
+		return $author$project$Lang$typeToStringHelper(
 			A3(
-				$author$project$Main$generalize,
+				$author$project$Lang$generalize,
 				$elm$core$Dict$empty,
 				t,
-				A2($author$project$Main$Forall, _List_Nil, t)));
+				A2($author$project$Lang$Forall, _List_Nil, t)));
 	}
 };
-var $author$project$Main$solve = F3(
+var $author$project$Lang$solve = F3(
 	function (constraints, substitutions, skipped) {
 		solve:
 		while (true) {
@@ -6166,27 +6165,27 @@ var $author$project$Main$solve = F3(
 				var t2 = _const.b;
 				var _continue = function (_v7) {
 					return A3(
-						$author$project$Main$solve,
+						$author$project$Lang$solve,
 						rest,
 						substitutions,
 						A2($elm$core$List$cons, _const, skipped));
 				};
 				var err = function (_v6) {
 					return $elm$core$Result$Err(
-						'Type error, ' + (($author$project$Main$typeToString(t1) + (' can\'t be ' + $author$project$Main$typeToString(t2))) + '!'));
+						'Type error, ' + (($author$project$Lang$typeToString(t1) + (' can\'t be ' + $author$project$Lang$typeToString(t2))) + '!'));
 				};
 				var removeAndContinue = function (_v5) {
-					return A3($author$project$Main$solve, rest, substitutions, skipped);
+					return A3($author$project$Lang$solve, rest, substitutions, skipped);
 				};
 				var handleVarIsolationAndContinue = function (v) {
 					return A3(
-						$author$project$Main$solve,
-						A3($author$project$Main$substituteAll, rest, t2, t1),
+						$author$project$Lang$solve,
+						A3($author$project$Lang$substituteAll, rest, t2, t1),
 						A2(
 							$elm$core$List$cons,
-							A2($author$project$Main$Subst, v, t1),
+							A2($author$project$Lang$Subst, v, t1),
 							substitutions),
-						A3($author$project$Main$substituteAll, skipped, t2, t1));
+						A3($author$project$Lang$substituteAll, skipped, t2, t1));
 				};
 				if (_Utils_eq(t1, t2)) {
 					var $temp$constraints = rest,
@@ -6217,10 +6216,10 @@ var $author$project$Main$solve = F3(
 									var d = t2.b;
 									var $temp$constraints = A2(
 										$elm$core$List$cons,
-										A2($author$project$Main$Eq, a, c),
+										A2($author$project$Lang$Eq, a, c),
 										A2(
 											$elm$core$List$cons,
-											A2($author$project$Main$Eq, b, d),
+											A2($author$project$Lang$Eq, b, d),
 											rest)),
 										$temp$substitutions = substitutions,
 										$temp$skipped = skipped;
@@ -6230,15 +6229,15 @@ var $author$project$Main$solve = F3(
 									continue solve;
 								case 'TVar':
 									var x = t2.a;
-									if (A2($author$project$Main$occurs, t2, t1)) {
+									if (A2($author$project$Lang$occurs, t2, t1)) {
 										return err(_Utils_Tuple0);
 									} else {
-										var $temp$constraints = A3($author$project$Main$substituteAll, rest, t2, t1),
+										var $temp$constraints = A3($author$project$Lang$substituteAll, rest, t2, t1),
 											$temp$substitutions = A2(
 											$elm$core$List$cons,
-											A2($author$project$Main$Subst, x, t1),
+											A2($author$project$Lang$Subst, x, t1),
 											substitutions),
-											$temp$skipped = A3($author$project$Main$substituteAll, skipped, t2, t1);
+											$temp$skipped = A3($author$project$Lang$substituteAll, skipped, t2, t1);
 										constraints = $temp$constraints;
 										substitutions = $temp$substitutions;
 										skipped = $temp$skipped;
@@ -6249,15 +6248,15 @@ var $author$project$Main$solve = F3(
 							}
 						case 'TVar':
 							var x = t1.a;
-							if (A2($author$project$Main$occurs, t1, t2)) {
+							if (A2($author$project$Lang$occurs, t1, t2)) {
 								return _continue(_Utils_Tuple0);
 							} else {
-								var $temp$constraints = A3($author$project$Main$substituteAll, rest, t1, t2),
+								var $temp$constraints = A3($author$project$Lang$substituteAll, rest, t1, t2),
 									$temp$substitutions = A2(
 									$elm$core$List$cons,
-									A2($author$project$Main$Subst, x, t2),
+									A2($author$project$Lang$Subst, x, t2),
 									substitutions),
-									$temp$skipped = A3($author$project$Main$substituteAll, skipped, t1, t2);
+									$temp$skipped = A3($author$project$Lang$substituteAll, skipped, t1, t2);
 								constraints = $temp$constraints;
 								substitutions = $temp$substitutions;
 								skipped = $temp$skipped;
@@ -6282,7 +6281,7 @@ var $author$project$Main$solve = F3(
 			}
 		}
 	});
-var $author$project$Main$updateType = F2(
+var $author$project$Lang$updateType = F2(
 	function (f, ann) {
 		switch (ann.$) {
 			case 'AnnInt':
@@ -6292,7 +6291,7 @@ var $author$project$Main$updateType = F2(
 				var bod = ann.b;
 				var typ = ann.c;
 				return A3(
-					$author$project$Main$AnnLambda,
+					$author$project$Lang$AnnLambda,
 					arg,
 					bod,
 					f(typ));
@@ -6301,7 +6300,7 @@ var $author$project$Main$updateType = F2(
 				var bar = ann.b;
 				var typ = ann.c;
 				return A3(
-					$author$project$Main$AnnCall,
+					$author$project$Lang$AnnCall,
 					foo,
 					bar,
 					f(typ));
@@ -6309,7 +6308,7 @@ var $author$project$Main$updateType = F2(
 				var s = ann.a;
 				var t = ann.b;
 				return A2(
-					$author$project$Main$AnnVar,
+					$author$project$Lang$AnnVar,
 					s,
 					f(t));
 			default:
@@ -6318,14 +6317,14 @@ var $author$project$Main$updateType = F2(
 				var e = ann.c;
 				var t = ann.d;
 				return A4(
-					$author$project$Main$AnnBinding,
+					$author$project$Lang$AnnBinding,
 					n,
 					v,
 					e,
 					f(t));
 		}
 	});
-var $author$project$Main$updateTypes = F2(
+var $author$project$Lang$updateTypes = F2(
 	function (f, ann) {
 		switch (ann.$) {
 			case 'AnnInt':
@@ -6335,24 +6334,24 @@ var $author$project$Main$updateTypes = F2(
 				var bod = ann.b;
 				var typ = ann.c;
 				return A3(
-					$author$project$Main$AnnLambda,
+					$author$project$Lang$AnnLambda,
 					arg,
-					A2($author$project$Main$updateTypes, f, bod),
+					A2($author$project$Lang$updateTypes, f, bod),
 					f(typ));
 			case 'AnnCall':
 				var foo = ann.a;
 				var bar = ann.b;
 				var typ = ann.c;
 				return A3(
-					$author$project$Main$AnnCall,
-					A2($author$project$Main$updateTypes, f, foo),
-					A2($author$project$Main$updateTypes, f, bar),
+					$author$project$Lang$AnnCall,
+					A2($author$project$Lang$updateTypes, f, foo),
+					A2($author$project$Lang$updateTypes, f, bar),
 					f(typ));
 			case 'AnnVar':
 				var s = ann.a;
 				var t = ann.b;
 				return A2(
-					$author$project$Main$AnnVar,
+					$author$project$Lang$AnnVar,
 					s,
 					f(t));
 			default:
@@ -6361,14 +6360,14 @@ var $author$project$Main$updateTypes = F2(
 				var e = ann.c;
 				var t = ann.d;
 				return A4(
-					$author$project$Main$AnnBinding,
+					$author$project$Lang$AnnBinding,
 					n,
-					A2($author$project$Main$updateTypes, f, v),
-					A2($author$project$Main$updateTypes, f, e),
+					A2($author$project$Lang$updateTypes, f, v),
+					A2($author$project$Lang$updateTypes, f, e),
 					f(t));
 		}
 	});
-var $author$project$Main$preGeneralize = F3(
+var $author$project$Lang$preGeneralize = F3(
 	function (scope, constraints, annotLoc) {
 		return A2(
 			$elm$core$Result$map,
@@ -6384,8 +6383,8 @@ var $author$project$Main$preGeneralize = F3(
 								F2(
 									function (_v2, v) {
 										return A3(
-											$author$project$Main$sub,
-											$author$project$Main$TVar(x),
+											$author$project$Lang$sub,
+											$author$project$Lang$TVar(x),
 											u,
 											v);
 									}),
@@ -6400,11 +6399,11 @@ var $author$project$Main$preGeneralize = F3(
 							var x = _v0.a;
 							var u = _v0.b;
 							return A2(
-								$author$project$Main$updateTypes,
+								$author$project$Lang$updateTypes,
 								function (t) {
 									return A3(
-										$author$project$Main$sub,
-										$author$project$Main$TVar(x),
+										$author$project$Lang$sub,
+										$author$project$Lang$TVar(x),
 										u,
 										t);
 								},
@@ -6413,27 +6412,27 @@ var $author$project$Main$preGeneralize = F3(
 					annotLoc,
 					substitutions);
 				var scheme = A2(
-					$author$project$Main$updateType,
+					$author$project$Lang$updateType,
 					function (t) {
 						return A3(
-							$author$project$Main$generalize,
+							$author$project$Lang$generalize,
 							scope,
 							t,
-							A2($author$project$Main$Forall, _List_Nil, t));
+							A2($author$project$Lang$Forall, _List_Nil, t));
 					},
 					annot2);
 				return _Utils_Tuple2(env, scheme);
 			},
-			A3($author$project$Main$solve, constraints, _List_Nil, _List_Nil));
+			A3($author$project$Lang$solve, constraints, _List_Nil, _List_Nil));
 	});
-var $author$project$Main$TInt = {$: 'TInt'};
-var $author$project$Main$typeOf = function (ann) {
+var $author$project$Lang$TInt = {$: 'TInt'};
+var $author$project$Lang$typeOf = function (ann) {
 	switch (ann.$) {
 		case 'AnnVar':
 			var t = ann.b;
 			return t;
 		case 'AnnInt':
-			return $author$project$Main$TInt;
+			return $author$project$Lang$TInt;
 		case 'AnnLambda':
 			var t = ann.c;
 			return t;
@@ -6445,7 +6444,7 @@ var $author$project$Main$typeOf = function (ann) {
 			return t;
 	}
 };
-var $author$project$Main$letTypeOf = F3(
+var $author$project$Lang$letTypeOf = F3(
 	function (scope, gen, expr) {
 		return A2(
 			$elm$core$Result$andThen,
@@ -6460,11 +6459,11 @@ var $author$project$Main$letTypeOf = F3(
 						var a = _v12.b;
 						return _Utils_Tuple3(s, gen2, a);
 					},
-					A3($author$project$Main$preGeneralize, scope, constraints, annotLoc));
+					A3($author$project$Lang$preGeneralize, scope, constraints, annotLoc));
 			},
-			A3($author$project$Main$typecheck, scope, gen, expr));
+			A3($author$project$Lang$typecheck, scope, gen, expr));
 	});
-var $author$project$Main$typecheck = F3(
+var $author$project$Lang$typecheck = F3(
 	function (scope, gen, expr) {
 		switch (expr.$) {
 			case 'LVar':
@@ -6480,10 +6479,10 @@ var $author$project$Main$typecheck = F3(
 						return $elm$core$Result$Ok(
 							_Utils_Tuple3(
 								gen2,
-								A2($author$project$Main$AnnVar, v, t2),
+								A2($author$project$Lang$AnnVar, v, t2),
 								_List_Nil));
 					}(
-						A2($author$project$Main$instantiate, gen, t));
+						A2($author$project$Lang$instantiate, gen, t));
 				}
 			case 'LCall':
 				var foo = expr.a;
@@ -6508,40 +6507,40 @@ var $author$project$Main$typecheck = F3(
 									return _Utils_Tuple3(gen5, annCall, consts);
 								}(
 									A2(
-										$author$project$Main$withFresh,
+										$author$project$Lang$withFresh,
 										gen3,
 										F2(
 											function (gen4, v) {
-												var exprType = $author$project$Main$TVar(v);
-												var fooType = $author$project$Main$typeOf(annFoo);
-												var barType = $author$project$Main$typeOf(annBar);
+												var exprType = $author$project$Lang$TVar(v);
+												var fooType = $author$project$Lang$typeOf(annFoo);
+												var barType = $author$project$Lang$typeOf(annBar);
 												return _Utils_Tuple2(
 													gen4,
 													_Utils_Tuple2(
-														A3($author$project$Main$AnnCall, annFoo, annBar, exprType),
+														A3($author$project$Lang$AnnCall, annFoo, annBar, exprType),
 														A2(
 															$elm$core$List$cons,
 															A2(
-																$author$project$Main$Eq,
-																A2($author$project$Main$TLambda, barType, exprType),
+																$author$project$Lang$Eq,
+																A2($author$project$Lang$TLambda, barType, exprType),
 																fooType),
 															_Utils_ap(fooConsts, barConsts))));
 											})));
 							},
-							A3($author$project$Main$typecheck, scope, gen2, bar));
+							A3($author$project$Lang$typecheck, scope, gen2, bar));
 					},
-					A3($author$project$Main$typecheck, scope, gen, foo));
+					A3($author$project$Lang$typecheck, scope, gen, foo));
 			case 'LLambda':
 				var v = expr.a;
 				var e = expr.b;
 				var _v7 = A2(
-					$author$project$Main$withFresh,
+					$author$project$Lang$withFresh,
 					gen,
 					F2(
 						function (gen2, v2) {
 							return _Utils_Tuple2(
 								gen2,
-								$author$project$Main$TVar(v2));
+								$author$project$Lang$TVar(v2));
 						}));
 				var gen3 = _v7.a;
 				var argType = _v7.b;
@@ -6551,15 +6550,15 @@ var $author$project$Main$typecheck = F3(
 						var gen4 = _v8.a;
 						var annE = _v8.b;
 						var eConsts = _v8.c;
-						var bodyType = $author$project$Main$typeOf(annE);
-						var exprType = A2($author$project$Main$TLambda, argType, bodyType);
+						var bodyType = $author$project$Lang$typeOf(annE);
+						var exprType = A2($author$project$Lang$TLambda, argType, bodyType);
 						return _Utils_Tuple3(
 							gen4,
-							A3($author$project$Main$AnnLambda, v, annE, exprType),
+							A3($author$project$Lang$AnnLambda, v, annE, exprType),
 							eConsts);
 					},
 					A3(
-						$author$project$Main$typecheck,
+						$author$project$Lang$typecheck,
 						A3($elm$core$Dict$insert, v, argType, scope),
 						gen3,
 						e));
@@ -6568,7 +6567,7 @@ var $author$project$Main$typecheck = F3(
 				return $elm$core$Result$Ok(
 					_Utils_Tuple3(
 						gen,
-						$author$project$Main$AnnInt(i),
+						$author$project$Lang$AnnInt(i),
 						_List_Nil));
 			default:
 				var n = expr.a;
@@ -6589,24 +6588,24 @@ var $author$project$Main$typecheck = F3(
 								return _Utils_Tuple3(
 									gen3,
 									A4(
-										$author$project$Main$AnnBinding,
+										$author$project$Lang$AnnBinding,
 										n,
 										annotV,
 										annotE,
-										$author$project$Main$typeOf(annotE)),
+										$author$project$Lang$typeOf(annotE)),
 									eConsts);
 							},
 							A3(
-								$author$project$Main$typecheck,
+								$author$project$Lang$typecheck,
 								A3(
 									$elm$core$Dict$insert,
 									n,
-									$author$project$Main$typeOf(annotV),
+									$author$project$Lang$typeOf(annotV),
 									scope2),
 								gen2,
 								e));
 					},
-					A3($author$project$Main$letTypeOf, scope, gen, v));
+					A3($author$project$Lang$letTypeOf, scope, gen, v));
 		}
 	});
 var $elm$core$Result$mapError = F2(
@@ -6864,7 +6863,7 @@ var $elm$parser$Parser$symbol = function (str) {
 			str,
 			$elm$parser$Parser$ExpectingSymbol(str)));
 };
-var $author$project$Main$parenthetical = function (p) {
+var $author$project$Lang$parenthetical = function (p) {
 	return A2(
 		$elm$parser$Parser$keeper,
 		A2(
@@ -6876,7 +6875,7 @@ var $author$project$Main$parenthetical = function (p) {
 			p,
 			$elm$parser$Parser$symbol(')')));
 };
-var $author$project$Main$LInt = function (a) {
+var $author$project$Lang$LInt = function (a) {
 	return {$: 'LInt', a: a};
 };
 var $elm$parser$Parser$ExpectingBinary = {$: 'ExpectingBinary'};
@@ -7044,12 +7043,12 @@ var $elm$parser$Parser$number = function (i) {
 			octal: A2($elm$core$Result$fromMaybe, $elm$parser$Parser$ExpectingOctal, i.octal)
 		});
 };
-var $author$project$Main$parseInt = $elm$parser$Parser$number(
+var $author$project$Lang$parseInt = $elm$parser$Parser$number(
 	{
 		binary: $elm$core$Maybe$Nothing,
 		_float: $elm$core$Maybe$Nothing,
 		hex: $elm$core$Maybe$Nothing,
-		_int: $elm$core$Maybe$Just($author$project$Main$LInt),
+		_int: $elm$core$Maybe$Just($author$project$Lang$LInt),
 		octal: $elm$core$Maybe$Nothing
 	});
 var $elm$parser$Parser$Advanced$isSubChar = _Parser_isSubChar;
@@ -7192,7 +7191,7 @@ var $elm$parser$Parser$variable = function (i) {
 	return $elm$parser$Parser$Advanced$variable(
 		{expecting: $elm$parser$Parser$ExpectingVariable, inner: i.inner, reserved: i.reserved, start: i.start});
 };
-function $author$project$Main$cyclic$parseExpr() {
+function $author$project$Lang$cyclic$parseExpr() {
 	return A2(
 		$elm$parser$Parser$andThen,
 		function (lit) {
@@ -7213,11 +7212,11 @@ function $author$project$Main$cyclic$parseExpr() {
 										$elm$parser$Parser$Loop,
 										A2(
 											$elm$parser$Parser$map,
-											$author$project$Main$LCall(expr),
-											$author$project$Main$parenthetical(
+											$author$project$Lang$LCall(expr),
+											$author$project$Lang$parenthetical(
 												$elm$parser$Parser$lazy(
 													function (_v4) {
-														return $author$project$Main$cyclic$parseExpr();
+														return $author$project$Lang$cyclic$parseExpr();
 													})))),
 										A2(
 										$elm$parser$Parser$map,
@@ -7235,24 +7234,24 @@ function $author$project$Main$cyclic$parseExpr() {
 				$elm$parser$Parser$spaces),
 			A2(
 				$elm$parser$Parser$ignorer,
-				$author$project$Main$cyclic$parseLiteral(),
+				$author$project$Lang$cyclic$parseLiteral(),
 				$elm$parser$Parser$spaces)));
 }
-function $author$project$Main$cyclic$parseLiteral() {
+function $author$project$Lang$cyclic$parseLiteral() {
 	return $elm$parser$Parser$oneOf(
 		_List_fromArray(
 			[
-				$author$project$Main$parseInt,
-				$author$project$Main$cyclic$parseVar(),
-				$author$project$Main$cyclic$parseLambda(),
-				$author$project$Main$parenthetical(
+				$author$project$Lang$parseInt,
+				$author$project$Lang$cyclic$parseVar(),
+				$author$project$Lang$cyclic$parseLambda(),
+				$author$project$Lang$parenthetical(
 				$elm$parser$Parser$lazy(
 					function (_v3) {
-						return $author$project$Main$cyclic$parseExpr();
+						return $author$project$Lang$cyclic$parseExpr();
 					}))
 			]));
 }
-function $author$project$Main$cyclic$parseLambda() {
+function $author$project$Lang$cyclic$parseLambda() {
 	return A2(
 		$elm$parser$Parser$keeper,
 		A2(
@@ -7261,7 +7260,7 @@ function $author$project$Main$cyclic$parseLambda() {
 				$elm$parser$Parser$ignorer,
 				A2(
 					$elm$parser$Parser$ignorer,
-					$elm$parser$Parser$succeed($author$project$Main$LLambda),
+					$elm$parser$Parser$succeed($author$project$Lang$LLambda),
 					$elm$parser$Parser$symbol('\\')),
 				$elm$parser$Parser$spaces),
 			A2(
@@ -7281,10 +7280,10 @@ function $author$project$Main$cyclic$parseLambda() {
 				$elm$parser$Parser$spaces)),
 		$elm$parser$Parser$lazy(
 			function (_v2) {
-				return $author$project$Main$cyclic$parseExpr();
+				return $author$project$Lang$cyclic$parseExpr();
 			}));
 }
-function $author$project$Main$cyclic$parseVar() {
+function $author$project$Lang$cyclic$parseVar() {
 	return A2(
 		$elm$parser$Parser$andThen,
 		function (_var) {
@@ -7300,22 +7299,22 @@ function $author$project$Main$cyclic$parseVar() {
 								A2(
 									$elm$parser$Parser$ignorer,
 									$elm$parser$Parser$succeed(
-										$author$project$Main$LBinding(_var)),
+										$author$project$Lang$LBinding(_var)),
 									$elm$parser$Parser$spaces),
 								$elm$parser$Parser$symbol('=')),
 							A2(
 								$elm$parser$Parser$ignorer,
 								$elm$parser$Parser$lazy(
 									function (_v0) {
-										return $author$project$Main$cyclic$parseExpr();
+										return $author$project$Lang$cyclic$parseExpr();
 									}),
 								$elm$parser$Parser$symbol(';'))),
 						$elm$parser$Parser$lazy(
 							function (_v1) {
-								return $author$project$Main$cyclic$parseExpr();
+								return $author$project$Lang$cyclic$parseExpr();
 							})),
 						$elm$parser$Parser$succeed(
-						$author$project$Main$LVar(_var))
+						$author$project$Lang$LVar(_var))
 					]));
 		},
 		$elm$parser$Parser$variable(
@@ -7326,25 +7325,25 @@ function $author$project$Main$cyclic$parseVar() {
 			}));
 }
 try {
-	var $author$project$Main$parseExpr = $author$project$Main$cyclic$parseExpr();
-	$author$project$Main$cyclic$parseExpr = function () {
-		return $author$project$Main$parseExpr;
+	var $author$project$Lang$parseExpr = $author$project$Lang$cyclic$parseExpr();
+	$author$project$Lang$cyclic$parseExpr = function () {
+		return $author$project$Lang$parseExpr;
 	};
-	var $author$project$Main$parseLiteral = $author$project$Main$cyclic$parseLiteral();
-	$author$project$Main$cyclic$parseLiteral = function () {
-		return $author$project$Main$parseLiteral;
+	var $author$project$Lang$parseLiteral = $author$project$Lang$cyclic$parseLiteral();
+	$author$project$Lang$cyclic$parseLiteral = function () {
+		return $author$project$Lang$parseLiteral;
 	};
-	var $author$project$Main$parseLambda = $author$project$Main$cyclic$parseLambda();
-	$author$project$Main$cyclic$parseLambda = function () {
-		return $author$project$Main$parseLambda;
+	var $author$project$Lang$parseLambda = $author$project$Lang$cyclic$parseLambda();
+	$author$project$Lang$cyclic$parseLambda = function () {
+		return $author$project$Lang$parseLambda;
 	};
-	var $author$project$Main$parseVar = $author$project$Main$cyclic$parseVar();
-	$author$project$Main$cyclic$parseVar = function () {
-		return $author$project$Main$parseVar;
+	var $author$project$Lang$parseVar = $author$project$Lang$cyclic$parseVar();
+	$author$project$Lang$cyclic$parseVar = function () {
+		return $author$project$Lang$parseVar;
 	};
 } catch ($) {
-	throw 'Some top-level definitions from `Main` are causing infinite recursion:\n\n  ┌─────┐\n  │    parseExpr\n  │     ↓\n  │    parseLiteral\n  │     ↓\n  │    parseLambda\n  │     ↓\n  │    parseVar\n  └─────┘\n\nThese errors are very tricky, so read https://elm-lang.org/0.19.1/bad-recursion to learn how to fix it!';}
-var $author$project$Main$resToString = function (res) {
+	throw 'Some top-level definitions from `Lang` are causing infinite recursion:\n\n  ┌─────┐\n  │    parseExpr\n  │     ↓\n  │    parseLiteral\n  │     ↓\n  │    parseLambda\n  │     ↓\n  │    parseVar\n  └─────┘\n\nThese errors are very tricky, so read https://elm-lang.org/0.19.1/bad-recursion to learn how to fix it!';}
+var $author$project$Lang$resToString = function (res) {
 	if (res.$ === 'Ok') {
 		var s = res.a;
 		return s;
@@ -7412,7 +7411,7 @@ var $elm$parser$Parser$run = F2(
 				A2($elm$core$List$map, $elm$parser$Parser$problemToDeadEnd, problems));
 		}
 	});
-var $author$project$Main$toString = function (expr) {
+var $author$project$Lang$toString = function (expr) {
 	switch (expr.$) {
 		case 'LVar':
 			var v = expr.a;
@@ -7423,25 +7422,25 @@ var $author$project$Main$toString = function (expr) {
 		case 'LLambda':
 			var v = expr.a;
 			var e = expr.b;
-			return 'λ' + (v + ('.' + $author$project$Main$toString(e)));
+			return 'λ' + (v + ('.' + $author$project$Lang$toString(e)));
 		case 'LCall':
 			var foo = expr.a;
 			var bar = expr.b;
-			return '(' + ($author$project$Main$toString(foo) + (')(' + ($author$project$Main$toString(bar) + ')')));
+			return '(' + ($author$project$Lang$toString(foo) + (')(' + ($author$project$Lang$toString(bar) + ')')));
 		default:
 			var n = expr.a;
 			var v = expr.b;
 			var e = expr.c;
-			return 'internal compiler error, unevaluated binding! (let ' + (n + (' = ' + ($author$project$Main$toString(v) + (' in ' + ($author$project$Main$toString(e) + ')')))));
+			return 'internal compiler error, unevaluated binding! (let ' + (n + (' = ' + ($author$project$Lang$toString(v) + (' in ' + ($author$project$Lang$toString(e) + ')')))));
 	}
 };
-var $author$project$Main$go = function (code) {
-	return $author$project$Main$resToString(
+var $author$project$Lang$go = function (code) {
+	return $author$project$Lang$resToString(
 		A2(
 			$elm$core$Result$map,
 			function (_v2) {
 				var x = _v2.b;
-				return $author$project$Main$toString(x);
+				return $author$project$Lang$toString(x);
 			},
 			A2(
 				$elm$core$Result$andThen,
@@ -7450,12 +7449,12 @@ var $author$project$Main$go = function (code) {
 						$elm$core$Result$andThen,
 						function (_v1) {
 							var gen = _v1.b;
-							return A3($author$project$Main$eval, gen, $elm$core$Dict$empty, expr);
+							return A3($author$project$Lang$eval, gen, $elm$core$Dict$empty, expr);
 						},
 						A3(
-							$author$project$Main$letTypeOf,
+							$author$project$Lang$letTypeOf,
 							$elm$core$Dict$empty,
-							$author$project$Main$Gen(0),
+							$author$project$Lang$Gen(0),
 							expr));
 				},
 				A2(
@@ -7465,7 +7464,7 @@ var $author$project$Main$go = function (code) {
 					},
 					A2(
 						$elm$parser$Parser$run,
-						A2($elm$parser$Parser$ignorer, $author$project$Main$parseExpr, $elm$parser$Parser$end),
+						A2($elm$parser$Parser$ignorer, $author$project$Lang$parseExpr, $elm$parser$Parser$end),
 						code)))));
 };
 var $elm$html$Html$h4 = _VirtualDom_node('h4');
@@ -7744,7 +7743,7 @@ var $author$project$Main$view = function (model) {
 								A2(
 									$elm$parser$Parser$run,
 									$author$project$Main$parseOutput,
-									$author$project$Main$go(model.output))))),
+									$author$project$Lang$go(model.output))))),
 						A2(
 						$elm$html$Html$p,
 						_List_Nil,
