@@ -12,6 +12,10 @@ pub fn homepage() -> Element(Nil) {
         [
           html.script(
             [attribute.attribute("type", "module")],
+            "import '../public/style.css';",
+          ),
+          html.script(
+            [attribute.attribute("type", "module")],
             "import { main } from \"../src/ryanbrewerdev.gleam\";
  document.addEventListener(\"DOMContentLoaded\", () => {
    const dispatch = main({});

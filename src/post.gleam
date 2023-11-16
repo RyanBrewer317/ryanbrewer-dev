@@ -133,14 +133,6 @@ pub fn head(title: String, extra: List(Element(Nil))) -> Element(Nil) {
             "https://fonts.googleapis.com/css2?family=Roboto&display=swap",
           ),
         ]),
-        html.link([
-          attribute.attribute("rel", "stylesheet"),
-          attribute.attribute("type", "text/css"),
-        ]),
-        html.script(
-          [attribute.attribute("type", "module")],
-          "import '../assets/style.css';",
-        ),
       ],
       extra,
     ),
@@ -150,6 +142,17 @@ pub fn head(title: String, extra: List(Element(Nil))) -> Element(Nil) {
 pub fn render(post: Post) -> Element(Nil) {
   html.html(
     [attribute.attribute("lang", "en")],
-    [head(post.title, []), html.body([], render_as_list(post))],
+    [
+      head(
+        post.title,
+        [
+          html.script(
+            [attribute.attribute("type", "module")],
+            "import '../../public/style.css';",
+          ),
+        ],
+      ),
+      html.body([], render_as_list(post)),
+    ],
   )
 }
