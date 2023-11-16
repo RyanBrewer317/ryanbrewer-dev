@@ -13,7 +13,7 @@
     <item>
       <title>First Post!</title>
       <pubDate>Thurs 16 Nov 2023 12:30</pubDate>
-      <link>https://ryanbrewer.dev/posts/first-post</link>
+      <link>https://ryanbrewer.dev/posts/first-post.html</link>
       <description><![CDATA[Visit this <a href="ryanbrewer.dev">link</a> to my website!]]></description>
     </item>
   </channel>
