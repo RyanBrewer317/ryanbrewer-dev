@@ -135,7 +135,7 @@ pub fn head(title: String, extra: List(Element(Nil))) -> Element(Nil) {
         ]),
         html.link([
           attribute.attribute("rel", "stylesheet"),
-          attribute.attribute("href", "style.css"),
+          attribute.attribute("href", "assets/style.css"),
         ]),
       ],
       extra,
