@@ -69,3 +69,11 @@ parseOutputHelp : List (Html msg) -> Parser (Step (List (Html msg)) (List (Html 
 parseOutputHelp revHtml = oneOf [succeed (\sbscrpt->Loop (sbscrpt::revHtml)) |= subscriptParser, succeed () |. end |> Parser.map (\_->Done(List.reverse revHtml)), succeed (\t->Loop (t::revHtml)) |= normalParser]
 
 
+standing : String
+standing = """
+  0
+ /|\\
+/ | \\
+ / \\
+|   |
+"""
