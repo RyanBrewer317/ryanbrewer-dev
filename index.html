@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ryan Brewer's Website</title>
+
+    <!-- <link rel="stylesheet" href="./assets/styles.css" /> -->
+    <script type="module">
+      import { main } from "/src/ryanbrewerdev.gleam";
+
+      document.addEventListener("DOMContentLoaded", () => {
+        const dispatch = main({});
+      });
+    </script>
+  </head>
+  <body>
+    <div data-lustre-app></div>
+  </body>
+</html>
