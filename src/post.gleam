@@ -154,8 +154,8 @@ pub fn render(post: Post) -> Element(Nil) {
       ),
       html.body(
         [],
-        {
-          use <- do(html.nav(
+        [
+          html.nav(
             [],
             [
               html.a(
@@ -163,9 +163,9 @@ pub fn render(post: Post) -> Element(Nil) {
                 [text("Ryan Brewer")],
               ),
             ],
-          ))
-          finally(render_as_list(post))
-        },
+          ),
+          html.div([attribute.id("body")], render_as_list(post)),
+        ],
       ),
     ],
   )

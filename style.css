@@ -25,10 +25,6 @@ nav {
   color: var(--secondary-color-dark);
 }
 
-nav a:hover {
-  color: var(--primary-color);
-}
-
 #body {
   padding: 12pt;
   max-width: 600pt;
