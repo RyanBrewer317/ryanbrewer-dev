@@ -139,7 +139,7 @@ pub fn head(title: String, extra: List(Element(Nil))) -> Element(Nil) {
         ]),
         html.script(
           [attribute.attribute("type", "module")],
-          "import '../assets/style.css'",
+          "import '../assets/style.css';",
         ),
       ],
       extra,
