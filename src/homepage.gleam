@@ -12,7 +12,7 @@ pub fn homepage() -> Element(Nil) {
         [
           html.script(
             [attribute.attribute("type", "module")],
-            "import 'public/style.css';",
+            "import '../style.css';",
           ),
           html.script(
             [attribute.attribute("type", "module")],
