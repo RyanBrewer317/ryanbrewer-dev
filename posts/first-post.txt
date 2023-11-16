@@ -1,0 +1,11 @@
+id: first-post
+name: My First Blog Post
+date: 2023-11-16 12:30:00
+
+@paragraph@
+This is my first blog post! It's mostly to test out the my handrolled static blog code.
+@end@
+
+@paragraph@
+This is another paragraph.
+@end@

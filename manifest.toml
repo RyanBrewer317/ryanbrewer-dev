@@ -2,12 +2,21 @@
 # You typically do not need to edit this file
 
 packages = [
-  { name = "gleam_stdlib", version = "0.30.1", build_tools = ["gleam"], requirements = [], otp_app = "gleam_stdlib", source = "hex", outer_checksum = "704258528887F95075FFED7AAE1CCF836A9B88E3AADA2F69F9DA15815F94A4F9" },
+  { name = "birl", version = "0.17.0", build_tools = ["gleam"], requirements = ["ranger", "gleam_stdlib"], otp_app = "birl", source = "hex", outer_checksum = "AEA55D2329E13E72CB7FCC0FBAE640C453E6C9BF45B8D9DB4D7457F7F5C18F49" },
+  { name = "gleam_stdlib", version = "0.32.1", build_tools = ["gleam"], requirements = [], otp_app = "gleam_stdlib", source = "hex", outer_checksum = "ABF00CDCCB66FABBCE351A50060964C4ACE798F95A0D78622C8A7DC838792577" },
   { name = "gleeunit", version = "0.11.0", build_tools = ["gleam"], requirements = ["gleam_stdlib"], otp_app = "gleeunit", source = "hex", outer_checksum = "1397E5C4AC4108769EE979939AC39BF7870659C5AFB714630DEEEE16B8272AD5" },
   { name = "lustre", version = "3.0.6", build_tools = ["gleam"], requirements = ["gleam_stdlib"], otp_app = "lustre", source = "hex", outer_checksum = "2D2BEF77B5966773467574C2DC23A27FAB7C720DEF428E72C610DA1547E7E171" },
+  { name = "lustre_ssg", version = "0.2.0", build_tools = ["gleam"], requirements = ["lustre", "simplifile", "gleam_stdlib"], otp_app = "lustre_ssg", source = "hex", outer_checksum = "0BA84D4069DB9CF799943E4FEC61207D59B34FD1186709ACB532FEB091D203B9" },
+  { name = "party", version = "0.1.3", build_tools = ["gleam"], requirements = ["gleam_stdlib"], otp_app = "party", source = "hex", outer_checksum = "ED4C23100058AEA39D85DB552D9CD67A22D0B76FEB346BD4712FD167BBE56DCD" },
+  { name = "ranger", version = "0.5.0", build_tools = ["gleam"], requirements = ["gleam_stdlib"], otp_app = "ranger", source = "hex", outer_checksum = "653A15D0C73E75AD4EC6DE40478F0EBBA1157D0F5BB16FDD454D0C1129C32D41" },
+  { name = "simplifile", version = "0.4.0", build_tools = ["gleam"], requirements = ["gleam_stdlib"], otp_app = "simplifile", source = "hex", outer_checksum = "8F3C94B83F691CCFACD784A4D7C1F7E5A0437D93341549B908EE3B32E3477447" },
 ]
 
 [requirements]
-gleam_stdlib = { version = "~> 0.30" }
+birl = { version = "~> 0.17" }
+gleam_stdlib = { version = "~> 0.32" }
 gleeunit = { version = "~> 0.10" }
 lustre = { version = "~> 3.0" }
+lustre_ssg = { version = "~> 0.2" }
+party = { version = "~> 0.1" }
+simplifile = { version = "~> 0.4" }

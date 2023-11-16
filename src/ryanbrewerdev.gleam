@@ -1,6 +1,6 @@
 import gleam/int
 import lustre
-import lustre/element.{Element, text}
+import lustre/element.{type Element, text}
 import lustre/element/html.{a, body, button, div, nav, p}
 import lustre/attribute.{href, id}
 import lustre/event

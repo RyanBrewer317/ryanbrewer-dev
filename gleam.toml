@@ -2,6 +2,7 @@ name = "ryanbrewerdev"
 version = "0.1.0"
 description = "A Gleam project"
 target = "javascript"
+gleam = ">= 0.32.0"
 
 # Fill out these fields if you intend to generate HTML documentation or publish
 # your project to the Hex package manager.
@@ -11,8 +12,12 @@ target = "javascript"
 # links = [{ title = "Website", href = "https://gleam.run" }]
 
 [dependencies]
-gleam_stdlib = "~> 0.30"
+gleam_stdlib = "~> 0.32"
 lustre = "~> 3.0"
+birl = "~> 0.17"
+party = "~> 0.1"
+simplifile = "~> 0.4"
 
 [dev-dependencies]
 gleeunit = "~> 0.10"
+lustre_ssg = "~> 0.2"
