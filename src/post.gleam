@@ -152,7 +152,21 @@ pub fn render(post: Post) -> Element(Nil) {
           ),
         ],
       ),
-      html.body([], render_as_list(post)),
+      html.body(
+        [],
+        {
+          use <- do(html.nav(
+            [],
+            [
+              html.a(
+                [attribute.href("https://ryanbrewer.dev")],
+                [text("Ryan Brewer")],
+              ),
+            ],
+          ))
+          finally(render_as_list(post))
+        },
+      ),
     ],
   )
 }
