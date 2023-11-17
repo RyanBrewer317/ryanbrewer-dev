@@ -65,6 +65,15 @@ fn view(model: Model) -> Element(Msg) {
                   button([event.on_click(Incr)], [text("+")]),
                 ],
               ),
+              p(
+                [],
+                [
+                  a(
+                    [href("https://ryanbrewer.dev/posts/first-post.html")],
+                    [text("My first post!")],
+                  ),
+                ],
+              ),
             ],
           ),
         ],
