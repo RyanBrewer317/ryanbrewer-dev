@@ -3,7 +3,7 @@ import gleam/string
 import gleam/order.{type Order}
 import lustre/element.{type Element, text}
 import lustre/element/html
-import lustre/attribute.{class}
+import lustre/attribute.{type Attribute, attribute}
 import gleam/result.{map_error, try}
 import birl/time.{type DateTime}
 import party as p
@@ -74,9 +74,61 @@ fn parse_block() -> p.Parser(Element(Nil), Nil) {
   use _ <- p.do(p.string("@end@"))
   case cmd {
     Paragraph -> {
-      p.return(html.p([], [text(str)]))
+      p.return(parse_paragraph(str))
     }
   }
+}
+
+fn parse_paragraph(p: String) -> Element(Nil) {
+  let assert Ok(els) =
+    p.go(
+      {
+        use els <- p.do(p.many(p.choice([
+          parse_markup("*", html.i),
+          parse_markup("`", html.code),
+          parse_link(),
+          escape("\\"),
+          escape("*"),
+          escape("@"),
+          escape("`"),
+          p.map(p.satisfy(fn(_) { True }), fn(c) { text(c) }),
+        ])))
+        p.return(els)
+      },
+      p,
+    )
+  html.p([], els)
+}
+
+fn escape(char: String) -> p.Parser(Element(Nil), Nil) {
+  use _ <- p.do(p.char("\\"))
+  use _ <- p.do(p.char(char))
+  p.return(text(char))
+}
+
+fn parse_link() -> p.Parser(Element(Nil), Nil) {
+  use _ <- p.do(p.char("["))
+  use chars <- p.do(p.many(p.satisfy(fn(c) { c != "]" })))
+  let url = string.concat(chars)
+  use _ <- p.do(p.string("]("))
+  use chars <- p.do(p.many(p.satisfy(fn(c) { c != ")" })))
+  let str = string.concat(chars)
+  use _ <- p.do(p.char(")"))
+  p.return(html.a([attribute.href(url)], [text(str)]))
+}
+
+fn parse_markup(
+  char: String,
+  el: fn(List(Attribute(Nil)), List(Element(Nil))) -> Element(Nil),
+) -> p.Parser(Element(Nil), Nil) {
+  use _ <- p.do(p.char(char))
+  use strs <- p.do(p.many(p.alt(
+    p.seq(p.char("\\"), p.char(char)),
+    p.satisfy(fn(c) { c != char }),
+  )))
+  let str = string.concat(strs)
+  use _ <- p.do(p.char(char))
+  p.return(el([], [text(str)]))
 }
 
 fn parse_command() -> p.Parser(Command, Nil) {
@@ -99,7 +151,10 @@ fn finally(end: List(a)) -> List(a) {
 
 fn render_as_list(post: Post) -> List(Element(Nil)) {
   use <- do(html.h1([], [text(post.title)]))
-  use <- do(html.div([class("date")], [text(time.to_naive(post.date))]))
+  use <- do(html.div(
+    [attribute.class("date")],
+    [text(time.to_naive(post.date))],
+  ))
   finally(post.body)
 }
 
@@ -109,27 +164,23 @@ pub fn head(title: String, extra: List(Element(Nil))) -> Element(Nil) {
     list.append(
       [
         html.title([], title),
-        html.meta([attribute.attribute("charset", "UTF-8")]),
+        html.meta([attribute("charset", "UTF-8")]),
         html.meta([
-          attribute.attribute("name", "viewport"),
-          attribute.attribute(
-            "content",
-            "width=device-width, initial-scale=1.0",
-          ),
+          attribute.name("viewport"),
+          attribute("content", "width=device-width, initial-scale=1.0"),
         ]),
         html.link([
-          attribute.attribute("rel", "preconnect"),
-          attribute.attribute("href", "https://fonts.googleapis.com"),
+          attribute.rel("preconnect"),
+          attribute.href("https://fonts.googleapis.com"),
         ]),
         html.link([
-          attribute.attribute("rel", "preconnect"),
-          attribute.attribute("href", "https://fonts.gstatic.com"),
-          attribute.attribute("crossorigin", "true"),
+          attribute.rel("preconnect"),
+          attribute.href("https://fonts.gstatic.com"),
+          attribute("crossorigin", "true"),
         ]),
         html.link([
-          attribute.attribute("rel", "stylesheet"),
-          attribute.attribute(
-            "href",
+          attribute.rel("stylesheet"),
+          attribute.href(
             "https://fonts.googleapis.com/css2?family=Roboto&display=swap",
           ),
         ]),
@@ -141,16 +192,11 @@ pub fn head(title: String, extra: List(Element(Nil))) -> Element(Nil) {
 
 pub fn render(post: Post) -> Element(Nil) {
   html.html(
-    [attribute.attribute("lang", "en")],
+    [attribute("lang", "en")],
     [
       head(
         post.title,
-        [
-          html.script(
-            [attribute.attribute("type", "module")],
-            "import '../../style.css';",
-          ),
-        ],
+        [html.script([attribute.type_("module")], "import '../../style.css';")],
       ),
       html.body(
         [],
