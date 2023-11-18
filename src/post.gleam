@@ -8,6 +8,7 @@ import gleam/result.{map_error, try}
 import birl/time.{type DateTime}
 import party as p
 import gleam/list
+import gleam/int
 
 pub type Post {
   Post(title: String, id: String, date: DateTime, body: List(Element(Nil)))
@@ -20,6 +21,7 @@ pub type Error {
 
 type Command {
   Paragraph
+  Subheading
 }
 
 pub fn before(p1: Post, p2: Post) -> Order {
@@ -73,9 +75,9 @@ fn parse_block() -> p.Parser(Element(Nil), Nil) {
   let str = string.concat(strs)
   use _ <- p.do(p.string("@end@"))
   case cmd {
-    Paragraph -> {
-      p.return(parse_paragraph(str))
-    }
+    Paragraph -> p.return(parse_paragraph(str))
+
+    Subheading -> p.return(html.h4([], [text(str)]))
   }
 }
 
@@ -138,6 +140,7 @@ fn parse_command() -> p.Parser(Command, Nil) {
   use _ <- p.do(p.char("@"))
   case string.concat(text) {
     "paragraph" -> p.return(Paragraph)
+    "subheading" -> p.return(Subheading)
   }
 }
 
@@ -149,12 +152,16 @@ fn finally(end: List(a)) -> List(a) {
   end
 }
 
+fn pretty_date(date: DateTime) -> String {
+  let time.Date(year, _, day) = time.get_date(date)
+  time.string_month(date) <> " " <> int.to_string(day) <> ", " <> int.to_string(
+    year,
+  )
+}
+
 fn render_as_list(post: Post) -> List(Element(Nil)) {
   use <- do(html.h1([], [text(post.title)]))
-  use <- do(html.div(
-    [attribute.class("date")],
-    [text(time.to_naive(post.date))],
-  ))
+  use <- do(html.div([attribute.class("date")], [text(pretty_date(post.date))]))
   finally(post.body)
 }
 

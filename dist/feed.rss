@@ -11,10 +11,14 @@
     </description>
     <language>en-us</language>
     <item>
-      <title>First Post!</title>
+      <title>My First Blog Post</title>
       <pubDate>Thurs 16 Nov 2023 12:30</pubDate>
       <link>https://ryanbrewer.dev/posts/first-post.html</link>
       <description><![CDATA[Visit this <a href="ryanbrewer.dev">link</a> to my website!]]></description>
+    </item>
+    <item>
+      <title>An Introduction to Proofs with Dependent Types</title>
+      <pubDate>Fri 17 Nov 2023 17:45</pubDate>
     </item>
   </channel>
 </rss>
