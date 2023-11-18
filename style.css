@@ -25,6 +25,10 @@ nav {
   color: var(--secondary-color-dark);
 }
 
+p {
+  line-height: 25pt;
+}
+
 #body {
   padding: 12pt;
   max-width: 600pt;
