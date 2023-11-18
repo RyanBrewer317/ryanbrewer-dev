@@ -69,7 +69,7 @@ fn view(model: Model) -> Element(Msg) {
                 [],
                 [
                   a(
-                    [href("https://ryanbrewer.dev/posts/first-post.html")],
+                    [href("https://ryanbrewer.dev/posts/logic-in-types.html")],
                     [text("My first post!")],
                   ),
                 ],
