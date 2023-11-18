@@ -1,6 +1,6 @@
 id: logic-in-types
 name: An Introduction to Proofs with Dependent Types
-date: 2023-11-16
+date: 2023-11-17
 
 @paragraph@
 When I was first introduced to proof assistants like Coq, I thought it would be graduate-level material
