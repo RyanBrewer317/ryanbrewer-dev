@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+  <channel>
+    <title>Ryan's Blog</title>
+    <link>https://ryanbrewer.dev</link>
+    <description>
+      Ryan Brewer's personal blog, covering two main areas. 
+      The first is programming languages, software, logic, abstract math, and analytic philosophy.
+      The second is inspired by the first but diverges: 
+      philosophical positions on aesthetics and the nature of existence.
+    </description>
+    <language>en-us</language>
+    <item>
+      <title>My First Blog Post</title>
+      <pubDate>Thurs 16 Nov 2023 12:30</pubDate>
+      <link>https://ryanbrewer.dev/posts/first-post.html</link>
+      <description><![CDATA[Visit this <a href="ryanbrewer.dev">link</a> to my website!]]></description>
+    </item>
+    <item>
+      <title>An Introduction to Proofs with Dependent Types</title>
+      <pubDate>Fri 17 Nov 2023 17:45</pubDate>
+      <link>https://ryanbrewer.dev/posts/logic-in-types.html</link>
+      <description><![CDATA[Visit this <a href="ryanbrewer.dev">link</a> to my website!]]></description>
+    </item>
+  </channel>
+</rss>
