@@ -233,6 +233,37 @@ pub fn render(post: Post) -> Element(Nil) {
             ],
           ),
           html.div([attribute.id("body")], render_as_list(post)),
+          html.script(
+            [attribute.src("/__/firebase/8.10.1/firebase-app.js")],
+            "",
+          ),
+          html.script(
+            [attribute.src("/__/firebase/8.10.1/firebase-analytics.js")],
+            "",
+          ),
+          html.script(
+            [attribute.type_("module")],
+            "
+import { initializeApp } from \"firebase/app\";
+import { getAnalytics } from \"firebase/analytics\";
+
+const firebaseConfig = {
+  apiKey: \"AIzaSyCoiITg7WqJzdIwULEt3twyGSefsOzVDTI\",
+  authDomain: \"ryanbrewer-dev.firebaseapp.com\",
+  projectId: \"ryanbrewer-dev\",
+  storageBucket: \"ryanbrewer-dev.appspot.com\",
+  messagingSenderId: \"583067087794\",
+  appId: \"1:583067087794:web:bf7f10dcfe789270026aab\",
+  measurementId: \"G-BDZJ8SX3Y1\"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+
+// Initialize Analytics and get a reference to the service
+const analytics = getAnalytics(app);
+      ",
+          ),
         ],
       ),
     ],
