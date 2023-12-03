@@ -1,6 +1,6 @@
 id: logic-in-types
 name: An Introduction to Proofs with Dependent Types
-date: 2023-11-17
+date: 2023-12-03
 
 @paragraph@
 When I was first introduced to proof assistants like Coq, I thought it would be graduate-level material
@@ -10,7 +10,8 @@ using a C-like syntax.
 @end@
 
 @paragraph@
-A little familiarity with dependent types and proof assistants like Agda or Coq will help you understand this post, but isn't necessary.
+A little familiarity with dependent types and proof assistants like Agda or Coq 
+will help you understand this post, but isn't necessary.
 A familiarity with basic logic is assumed, including "for all."
 A familiarity with programming in statically-typed languages like C, Go, OCaml, or TypeScript is assumed.
 @end@
@@ -43,15 +44,20 @@ This gets us a way to express logical "or."
 @end@
 
 @paragraph@
-Functions (pure, side-effect-free ones that is) operate like implication.
+Functions (pure, side-effect-free ones, that is) operate like implication.
 if the input type has values, then any value in the function type can be used to construct a value of the output type.
 This needs examples.
-`void->void` is a type with a value, namely `(x: void)=>x`, so it's "true" but not very useful.
+`void->void` is a type with a value, namely `(x: void)=>x` in a TypeScript anonymous-function notation, 
+so it's "true" but not very useful.
 `void->int` is a type with values, such as `(x: void)=>7`, but also isn't useful.
 You'd need values of type `void` to be able to call these functions!
-`int->int` is a familiar type which of course has many values.
-`int->void` *doesn't* have values. Why? Say we had a function `f` of type `int->void`. Then we could call `f(5)` and get a value of type `void` back, which is impossible.
-So `int -> void` is a type with no values, because any such values would be able to construct elements of "void."
+`int->int` is a familiar type which of course has many values, such as `const square = (x: int) => x * x`.
+@end@
+
+@paragraph@
+`int->void` *doesn't* have values. Why? Say we had a function `f` of type `int->void`. 
+Then we could call `f(5)` and get a value of type `void` back, which is impossible.
+So `int -> void` is a type with no values, because any such values would be able to construct elements of `void`.
 Hopefully these examples make it clear why functions work like implication.
 @end@
 
@@ -80,7 +86,7 @@ This function is called with three arguments: an `int[]`, an `int`, and a `0<=i<
 @paragraph@
 The correspondence I described above doesn't tell you how to construct the type `0<=i<length(l).`
 It's a very strange-looking type.
-At the very least, it's a struct: the conjunction of two propositions `0 <= i` and `i < length(l)`.
+At the very least, it's a struct: the conjunction of two propositions \\(0 \le i\\) and \\(i < length(l)\\).
 This is where dependent types come in.
 @end@
 
@@ -91,32 +97,51 @@ Dependent Types
 @paragraph@
 Dependent function types ("Pi" types) are function types where the type of the output can refer to values of the input types.
 What does this mean? 
-We can have a function `f` with a type like `(t: type)->(t->t)`, 
-where the output type *changes* based on what argument the function is called with.
-Note that this notation assigns a parameter name to the first parameter type so later types can refer to it.
+We can have a function `f` which takes an argument `a: A` and the type of `f(a)` 
+*changes* based on the specific value of `a`.
 If `f` is defined as `(t: type)=>(x: t)=>x` then `f(int)(7)` returns `7`, and `f(float)(1.4)` returns `1.4`.
+That is, `f(T)` returns the identity function for type `T`.
+@end@
+
+@paragraph@
+The notation for a Pi type is \\(\Pi x: A. B\\) which I will write in a TypeScript-y notation as `(x: A)->B`.
+Note the `->` instead of `=>` to show that this is a type, not a function. 
+However, `x` is in scope in `B` like a function.
 @end@
 
 @paragraph@
 Extending this to the setting of multiple-argument functions, it also means that input types can refer to the given values of earlier parameters.
 The `get` function above has a dependent function type, because the type `0<=i<length(l)` refers to the earlier parameters `i` and `l`.
 This type is really `struct{0<=i a, i<length(l) b}`, since it's a logical "and."
-The `<=` and `<` operators here are definable functions, which take integers as arguments and produce types.
-So `get` can be called only if a struct can be constructed with two fields that respectively satisfy these two inequalities.
+The `<=` and `<` operators here are definable functions, which take integers as arguments and produce types. 
+I won't get into their definitions here but I may in a future post, and the interested reader can find them online.
+So anyway, `get` can be called only if a struct can be constructed with two fields that respectively satisfy these two inequalities.
+That's great!
 @end@
 
 @paragraph@
-Dependent function types have another use here, which is that they're the main way people represent logic's "forall" quantifier.
-That is, if your proposition is "forall n: int, n < 5 implies n < 6" or something like that, 
+Dependent function types have another use here, which is that they're the main way people represent logic's "forall" quantifier, \\(\forall\\).
+That is, if your proposition is \\(\forall n: int. n < 5 \implies n < 6\\) or something like that, 
 you generally use a dependent function type.
 The type would be something like `(n: int)->(n < 5)->(n < 6)`. 
-This works like "for all" because functions of this type can only be constructed if *every possible result type* has a value.
+The intuition I have for why this is the case goes as follows: 
+If you tell me about a machine that takes quarters and produces gumballs, I'll assume you're talking about real life.
+*However,* if you then say that there's a 1% random chance that the machine produces instead teleports the user into the Harry Potter world,
+then it will suddenly become clear to me that you were talking about an imaginary machine all along. 
+Even though the impossible thing happens only sometimes, and possibly never.
+@end@
+
+@paragraph@
+A more rigorous reason for why Pi types work like "for all" is because 
+functions of Pi types can only be constructed if *every possible result type* has a value.
 In the case of `(n: int)->(n < 5)->(n < 6)`, a value of this type *can* be created, 
 because proving that n is less than 5 is sufficient to prove that it is less than 6.
 If the type were instead `(n: int)->(n > 5)->(n > 6)`, and we have a function `f` of this type,
-then it could be called like `f(6)(proof_6_gt_5)` which are all valid terms, 
+then it could be called like `f(6)(proof_5_le_6)` which are all valid terms, 
 and then as a result you'd have a value of type `6 > 6`, which is "false" and has no values.
-Therefore this function `f` can't exist, even though calling it with other arguments *would* hypothetically be valid. 
+Therefore this function `f` can't exist. 
+Calling it with other arguments, like `f(4)(proof_4_le_6)`, *would* hypothetically be valid, 
+except that the function as a whole can't possibly exist because it would be possible to use it to get values of an empty type. 
 This is why dependent function types let you express "for all" in your types.
 @end@
 
@@ -130,7 +155,7 @@ Needless to say these ideas are the tip of a very large iceberg.
 For example, types like `int` seem pretty different from useful proposition types like `0<=i`.
 To find out more about that difference, look up `Prop` and `Set` in Coq's type system.
 I also didn't explain "there exists;" 
-The search term here is "Sigma" types, which I may write about more in the future.
+The search term here is "Sigma" (\\(\Sigma\\)) types, which I may write about more in the future.
 And there's still a ways to go before you get a full proof assistant.
 I think that this article gives a good foundation for exploring this iceberg on your own,
 but it was intended to set up future posts I want to write

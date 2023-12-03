@@ -15,5 +15,5 @@ All the code can be found on [https://github.com/RyanBrewer317/ryanbrewer-dev](m
 @end@
 
 @paragraph@
-The styles on this site are a work in progress. `code`, *italics*, \\\*escaping, [https://google.com](links).
+The styles on this site are a work in progress. `code`, *italics*, \\\*escaping, [https://ryanbrewer.dev](links), \\(math+2^2\\).
 @end@

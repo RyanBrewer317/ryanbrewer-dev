@@ -191,6 +191,21 @@ pub fn head(title: String, extra: List(Element(Nil))) -> Element(Nil) {
             "https://fonts.googleapis.com/css2?family=Roboto&display=swap",
           ),
         ]),
+        html.script(
+          [attribute.src("https://polyfill.io/v3/polyfill.min.js?features=es6")],
+          "",
+        ),
+        html.script(
+          [
+            attribute("type", "text/javascript"),
+            attribute("async", "true"),
+            attribute(
+              "src",
+              "https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js",
+            ),
+          ],
+          "",
+        ),
       ],
       extra,
     ),
