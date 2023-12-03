@@ -12,6 +12,6 @@
     "vite": "^4.4.5"
   },
   "dependencies": {
-    "vite-gleam": "0.3.0"
+    "vite-gleam": "^0.4.0"
   }
 }
