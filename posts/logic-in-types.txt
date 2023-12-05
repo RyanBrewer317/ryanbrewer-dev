@@ -1,6 +1,8 @@
 id: logic-in-types
 name: An Introduction to Proofs with Dependent Types
 date: 2023-12-03
+tags: dependent,type,types,logic,proof,proofs,assistants,intro,introduction
+description: This post introduces the basic ideas behind dependent-type-based proof assistants, and expressing logic with types and values.
 
 @paragraph@
 When I was first introduced to proof assistants like Coq, I thought it would be graduate-level material

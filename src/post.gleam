@@ -11,7 +11,14 @@ import gleam/list
 import gleam/int
 
 pub type Post {
-  Post(title: String, id: String, date: DateTime, body: List(Element(Nil)))
+  Post(
+    title: String,
+    id: String,
+    date: DateTime,
+    tags: List(String),
+    description: String,
+    body: List(Element(Nil)),
+  )
 }
 
 pub type Error {
@@ -37,8 +44,10 @@ fn parse() -> p.Parser(Post, Nil) {
   use id <- p.do(parse_id())
   use name <- p.do(parse_name())
   use date <- p.do(parse_date())
+  use tags <- p.do(parse_tags())
+  use desc <- p.do(parse_description())
   use els <- p.do(p.many(parse_block()))
-  p.return(Post(name, id, date, els))
+  p.return(Post(name, id, date, tags, desc, els))
 }
 
 fn parse_id() -> p.Parser(String, Nil) {
@@ -64,6 +73,22 @@ fn parse_date() -> p.Parser(time.DateTime, Nil) {
   let assert Ok(date) = time.from_naive(string.concat(datestr))
   use _ <- p.do(p.char("\n"))
   p.return(date)
+}
+
+fn parse_description() -> p.Parser(String, Nil) {
+  use _ <- p.do(p.string("description:"))
+  use _ <- p.do(p.many1(p.alt(p.char(" "), p.char("\t"))))
+  use desc <- p.do(p.many1(p.satisfy(fn(c) { c != "\n" })))
+  use _ <- p.do(p.char("\n"))
+  p.return(string.concat(desc))
+}
+
+fn parse_tags() -> p.Parser(List(String), Nil) {
+  use _ <- p.do(p.string("tags:"))
+  use _ <- p.do(p.many1(p.alt(p.char(" "), p.char("\t"))))
+  use tags_str <- p.do(p.many1(p.satisfy(fn(c) { c != "\n" })))
+  use _ <- p.do(p.char("\n"))
+  p.return(string.split(string.concat(tags_str), ","))
 }
 
 fn parse_block() -> p.Parser(Element(Nil), Nil) {
@@ -165,16 +190,24 @@ fn render_as_list(post: Post) -> List(Element(Nil)) {
   finally(post.body)
 }
 
-pub fn head(title: String, extra: List(Element(Nil))) -> Element(Nil) {
+pub fn head(
+  title: String,
+  description: String,
+  extra: List(Element(Nil)),
+) -> Element(Nil) {
   html.head(
     [],
     list.append(
       [
-        html.title([], title),
+        html.title([], title <> " - Ryan Brewer"),
         html.meta([attribute("charset", "UTF-8")]),
         html.meta([
           attribute.name("viewport"),
           attribute("content", "width=device-width, initial-scale=1.0"),
+        ]),
+        html.meta([
+          attribute.name("description"),
+          attribute("content", description),
         ]),
         html.link([
           attribute.rel("preconnect"),
@@ -218,6 +251,7 @@ pub fn render(post: Post) -> Element(Nil) {
     [
       head(
         post.title,
+        post.description,
         [html.script([attribute.type_("module")], "import '../../style.css';")],
       ),
       html.body(

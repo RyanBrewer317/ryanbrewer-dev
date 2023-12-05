@@ -9,6 +9,7 @@ pub fn homepage() -> Element(Nil) {
     [
       head(
         "Ryan Brewer's Blog",
+        "The place Ryan writes his thoughts and shows off cool projects.",
         [
           html.script(
             [attribute.attribute("type", "module")],
