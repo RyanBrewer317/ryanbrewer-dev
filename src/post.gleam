@@ -260,10 +260,7 @@ pub fn render(post: Post) -> Element(Nil) {
           html.nav(
             [],
             [
-              html.a(
-                [attribute.href("https://ryanbrewer.dev")],
-                [text("Ryan Brewer")],
-              ),
+              html.a([attribute.href("/")], [text("Ryan Brewer")]),
               html.a(
                 [attribute.href("/search"), attribute.id("nav-search")],
                 [text("Search Posts")],

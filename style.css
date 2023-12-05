@@ -63,6 +63,12 @@ a:hover {
   transition: 0.2s;
 }
 
+textarea:focus, input:focus{
+  outline: none;
+  border: 1px solid var(--secondary-color-dark);
+  border-radius: 5pt;
+}
+
 #nav-search {
   float: right;
 }
@@ -71,7 +77,9 @@ a:hover {
   width: 100%;
   font-size: 18px;
   padding: 11px;
-  border: 1px solid #ddd;
+  border-bottom: 1px solid var(--secondary-color-dark);
+  color: var(--secondary-color-dark);
+  background-color: var(--dark-background);
 }
 
 #search-posts-menu {
@@ -80,13 +88,7 @@ a:hover {
   margin: 0;
 }
 
-#search-posts-menu li a {
+#search-posts-menu li {
   padding: 12px;
-  text-decoration: none;
-  color: black;
   display: block
-}
-
-#search-posts-menu li a:hover {
-  background-color: #eee;
 }

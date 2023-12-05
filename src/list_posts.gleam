@@ -56,13 +56,13 @@ function searchPostsKeyUp() {
   const $input = document.getElementById(\"search-posts\");
   const q = $input.value.toLowerCase();
   const $menu = document.getElementById(\"search-posts-menu\");
-  $menu.children = $menu.children.sort(c => {
+  $menu.replaceChildren(Array.from($menu.children).sort(c => {
     const p = POSTS[c.id];
     let hits = 0;
     for (const tag in p.tags) if (q.includes(tag)) hits += 2;
     for (const word in p.description.split(\" \")) if (q.includes(word)) hits += 1;
     return hits;
-  });
+  }));
 }
   ",
   )
@@ -113,13 +113,23 @@ pub fn list_posts(posts: List(Post)) -> Element(Nil) {
             [attribute.attribute("type", "module")],
             "import '../style.css';",
           ),
+          script1(posts),
+          script2(),
         ],
       ),
       html.body(
         [],
         [
-          script1(posts),
-          script2(),
+          html.nav(
+            [],
+            [
+              html.a([attribute.href("/")], [text("Ryan Brewer")]),
+              html.a(
+                [attribute.href("/search"), attribute.id("nav-search")],
+                [text("Search Posts")],
+              ),
+            ],
+          ),
           html.div(
             [attribute.id("body")],
             [
