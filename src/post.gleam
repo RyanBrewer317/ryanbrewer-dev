@@ -177,7 +177,7 @@ fn finally(end: List(a)) -> List(a) {
   end
 }
 
-fn pretty_date(date: DateTime) -> String {
+pub fn pretty_date(date: DateTime) -> String {
   let time.Date(year, _, day) = time.get_date(date)
   time.string_month(date) <> " " <> int.to_string(day) <> ", " <> int.to_string(
     year,
@@ -263,6 +263,10 @@ pub fn render(post: Post) -> Element(Nil) {
               html.a(
                 [attribute.href("https://ryanbrewer.dev")],
                 [text("Ryan Brewer")],
+              ),
+              html.a(
+                [attribute.href("/search"), attribute.id("nav-search")],
+                [text("Search Posts")],
               ),
             ],
           ),

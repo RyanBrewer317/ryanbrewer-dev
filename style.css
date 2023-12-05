@@ -62,3 +62,31 @@ a:hover {
   opacity: 0.5;
   transition: 0.2s;
 }
+
+#nav-search {
+  float: right;
+}
+
+#search-posts {
+  width: 100%;
+  font-size: 18px;
+  padding: 11px;
+  border: 1px solid #ddd;
+}
+
+#search-posts-menu {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+#search-posts-menu li a {
+  padding: 12px;
+  text-decoration: none;
+  color: black;
+  display: block
+}
+
+#search-posts-menu li a:hover {
+  background-color: #eee;
+}

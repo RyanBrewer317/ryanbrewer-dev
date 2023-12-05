@@ -1,0 +1,17 @@
+<html lang="en"><head><title>Search Posts - Ryan Brewer - Ryan Brewer</title><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="description" content="Look through Ryan's past posts"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="true"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto&display=swap"><script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script><script type="text/javascript" async="true" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script><script type="module">import '../style.css';</script></head><body><script>const POSTS = {"first-post": {"id": "first-post", "url": "/posts/first-post.html", "title": "My First Blog Post", "date": "November 16, 2023", "tags": ["first post"], "description": "A test post for the blog."},
+"logic-in-types": {"id": "logic-in-types", "url": "/posts/logic-in-types.html", "title": "An Introduction to Proofs with Dependent Types", "date": "December 3, 2023", "tags": ["dependent", "type", "types", "logic", "proof", "proofs", "assistants", "intro", "introduction"], "description": "This post introduces the basic ideas behind dependent-type-based proof assistants, and expressing logic with types and values."},
+};</script><script>
+function searchPostsKeyUp() {
+  // Declare variables
+  const $input = document.getElementById("search-posts");
+  const q = $input.value.toLowerCase();
+  const $menu = document.getElementById("search-posts-menu");
+  $menu.children = $menu.children.sort(c => {
+    const p = POSTS[c.id];
+    let hits = 0;
+    for (const tag in p.tags) if (q.includes(tag)) hits += 2;
+    for (const word in p.description.split(" ")) if (q.includes(word)) hits += 1;
+    return hits;
+  });
+}
+  </script><div id="body"><input type="text" id="search-posts" placeholder="Search..." onkeyup="searchPostsKeyUp()" title="Enter search terms"><ul id="search-posts-menu"><li id="first-post" class="post-thumbnail"><h4><a href="posts/first-post.html">My First Blog Post</a></h4><div class="post-thumbnail-date">November 16, 2023</div><p>A test post for the blog.</p><hr></li><li id="logic-in-types" class="post-thumbnail"><h4><a href="posts/logic-in-types.html">An Introduction to Proofs with Dependent Types</a></h4><div class="post-thumbnail-date">December 3, 2023</div><p>This post introduces the basic ideas behind dependent-type-based proof assistants, and expressing logic with types and values.</p><hr></li></ul></div></body></html>

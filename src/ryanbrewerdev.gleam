@@ -40,7 +40,13 @@ fn view(model: Model) -> Element(Msg) {
       div(
         [],
         [
-          nav([], [a([href("https://ryanbrewer.dev")], [text("Ryan Brewer")])]),
+          nav(
+            [],
+            [
+              a([href("/")], [text("Ryan Brewer")]),
+              a([href("/search"), id("nav-search")], [text("Search Posts")]),
+            ],
+          ),
           div(
             [id("body")],
             [
