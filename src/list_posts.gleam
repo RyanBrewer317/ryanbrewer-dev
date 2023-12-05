@@ -56,14 +56,18 @@ function searchPostsKeyUp() {
   const $input = document.getElementById(\"search-posts\");
   const q = $input.value.toLowerCase();
   const $menu = document.getElementById(\"search-posts-menu\");
-  $menu.replaceChildren(...Array.from($menu.children).sort(c => {
-    const p = POSTS[c.id];
-    let hits = 0;
-    for (const i in p.tags) if (q.includes(p.tags[i])) hits += 2;
-    const words  = p.description.split(\" \");
-    for (const i in words) if (q.includes(words[i])) hits += 1;
-    return hits;
+  $menu.replaceChildren(...Array.from($menu.children).sort((a, b) => {
+    const aHits = getHits(q, POSTS[a.id]);
+    const bHits = getHits(q, POSTS[b.id]);
+    return aHits - bHits;
   }));
+}
+function getHits(q, p) {
+  let hits = 0;
+  for (const i in p.tags) if (q.includes(p.tags[i])) hits += 2;
+  const words = p.description.split(\" \");
+  for (const i in words) if (q.includes(words[i])) hits += 1;
+  return hits;
 }
   ",
   )

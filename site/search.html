@@ -6,13 +6,17 @@ function searchPostsKeyUp() {
   const $input = document.getElementById("search-posts");
   const q = $input.value.toLowerCase();
   const $menu = document.getElementById("search-posts-menu");
-  $menu.replaceChildren(...Array.from($menu.children).sort(c => {
-    const p = POSTS[c.id];
-    let hits = 0;
-    for (const i in p.tags) if (q.includes(p.tags[i])) hits += 2;
-    const words  = p.description.split(" ");
-    for (const i in words) if (q.includes(words[i])) hits += 1;
-    return hits;
+  $menu.replaceChildren(...Array.from($menu.children).sort((a, b) => {
+    const aHits = getHits(q, POSTS[a.id]);
+    const bHits = getHits(q, POSTS[b.id]);
+    return aHits - bHits;
   }));
+}
+function getHits(q, p) {
+  let hits = 0;
+  for (const i in p.tags) if (q.includes(p.tags[i])) hits += 2;
+  const words = p.description.split(" ");
+  for (const i in words) if (q.includes(words[i])) hits += 1;
+  return hits;
 }
   </script></head><body><nav><a href="/">Ryan Brewer</a><a href="/search" id="nav-search">Search Posts</a></nav><div id="body"><input type="text" id="search-posts" placeholder="Search..." onkeyup="searchPostsKeyUp()" title="Enter search terms"><ul id="search-posts-menu"><li id="logic-in-types" class="post-thumbnail"><h4><a href="posts/logic-in-types.html">An Introduction to Proofs with Dependent Types</a></h4><div class="post-thumbnail-date">December 3, 2023</div><p>This post introduces the basic ideas behind dependent-type-based proof assistants, and expressing logic with types and values.</p></li><li id="first-post" class="post-thumbnail"><h4><a href="posts/first-post.html">My First Blog Post</a></h4><div class="post-thumbnail-date">November 16, 2023</div><p>A test post for the blog.</p></li></ul></div></body></html>
