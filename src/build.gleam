@@ -33,7 +33,10 @@ pub fn main() {
   ssg.new(out_dir)
   |> ssg.add_dynamic_route("/posts", indexed_posts, post.render)
   |> ssg.add_static_route("/", homepage.homepage())
-  |> ssg.add_static_route("/search", list_posts.list_posts(posts))
+  |> ssg.add_static_route(
+    "/search",
+    list_posts.list_posts(list.sort(posts, post.before)),
+  )
   |> ssg.build
   let assert Ok(_) = simplifile.create_directory(out_dir <> "/public")
   simplifile.copy_directory(at: assets_dir, to: out_dir <> "/public")
