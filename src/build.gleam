@@ -35,7 +35,7 @@ pub fn main() {
   |> ssg.add_static_route("/", homepage.homepage())
   |> ssg.add_static_route(
     "/search",
-    list_posts.list_posts(list.sort(posts, post.before)),
+    list_posts.list_posts(list.sort(posts, post.after)),
   )
   |> ssg.build
   let assert Ok(_) = simplifile.create_directory(out_dir <> "/public")

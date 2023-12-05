@@ -59,8 +59,9 @@ function searchPostsKeyUp() {
   $menu.replaceChildren(...Array.from($menu.children).sort(c => {
     const p = POSTS[c.id];
     let hits = 0;
-    for (const tag in p.tags) if (q.includes(tag)) hits += 2;
-    for (const word in p.description.split(\" \")) if (q.includes(word)) hits += 1;
+    for (const i in p.tags) if (q.includes(p.tags[i])) hits += 2;
+    const words  = p.description.split(\" \");
+    for (const i in words) if (q.includes(words[i])) hits += 1;
     return hits;
   }));
 }

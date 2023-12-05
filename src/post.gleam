@@ -1,6 +1,6 @@
 import simplifile.{read}
 import gleam/string
-import gleam/order.{type Order}
+import gleam/order.{type Order, negate}
 import lustre/element.{type Element, text}
 import lustre/element/html
 import lustre/attribute.{type Attribute, attribute}
@@ -33,6 +33,10 @@ type Command {
 
 pub fn before(p1: Post, p2: Post) -> Order {
   time.compare(p1.date, p2.date)
+}
+
+pub fn after(p1: Post, p2: Post) -> Order {
+  negate(before(p1, p2))
 }
 
 pub fn post(filename: String) -> Result(Post, Error) {
