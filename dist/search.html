@@ -6,7 +6,7 @@ function searchPostsKeyUp() {
   const $input = document.getElementById("search-posts");
   const q = $input.value.toLowerCase();
   const $menu = document.getElementById("search-posts-menu");
-  $menu.replaceChildren(Array.from($menu.children).sort(c => {
+  $menu.replaceChildren(...Array.from($menu.children).sort(c => {
     const p = POSTS[c.id];
     let hits = 0;
     for (const tag in p.tags) if (q.includes(tag)) hits += 2;
@@ -14,6 +14,6 @@ function searchPostsKeyUp() {
     return hits;
   }));
 }
-  </script>  <script type="module" crossorigin src="/assets/style-5529a661.js"></script>
-  <link rel="stylesheet" href="/assets/style-3d43b696.css">
-</head><body><nav><a href="/">Ryan Brewer</a><a href="/search" id="nav-search">Search Posts</a></nav><div id="body"><input type="text" id="search-posts" placeholder="Search..." onkeyup="searchPostsKeyUp()" title="Enter search terms"><ul id="search-posts-menu"><li id="first-post" class="post-thumbnail"><h4><a href="posts/first-post.html">My First Blog Post</a></h4><div class="post-thumbnail-date">November 16, 2023</div><p>A test post for the blog.</p><hr></li><li id="logic-in-types" class="post-thumbnail"><h4><a href="posts/logic-in-types.html">An Introduction to Proofs with Dependent Types</a></h4><div class="post-thumbnail-date">December 3, 2023</div><p>This post introduces the basic ideas behind dependent-type-based proof assistants, and expressing logic with types and values.</p><hr></li></ul></div></body></html>
+  </script>  <script type="module" crossorigin src="/assets/style-98d33287.js"></script>
+  <link rel="stylesheet" href="/assets/style-69764b32.css">
+</head><body><nav><a href="/">Ryan Brewer</a><a href="/search" id="nav-search">Search Posts</a></nav><div id="body"><input type="text" id="search-posts" placeholder="Search..." onkeyup="searchPostsKeyUp()" title="Enter search terms"><ul id="search-posts-menu"><li id="first-post" class="post-thumbnail"><h4><a href="posts/first-post.html">My First Blog Post</a></h4><div class="post-thumbnail-date">November 16, 2023</div><p>A test post for the blog.</p></li><li id="logic-in-types" class="post-thumbnail"><h4><a href="posts/logic-in-types.html">An Introduction to Proofs with Dependent Types</a></h4><div class="post-thumbnail-date">December 3, 2023</div><p>This post introduces the basic ideas behind dependent-type-based proof assistants, and expressing logic with types and values.</p></li></ul></div></body></html>

@@ -63,7 +63,7 @@ a:hover {
   transition: 0.2s;
 }
 
-textarea:focus, input:focus{
+textarea:focus, input:focus, #search-posts:focus {
   outline: none;
   border: 1px solid var(--secondary-color-dark);
   border-radius: 5pt;
@@ -77,7 +77,7 @@ textarea:focus, input:focus{
   width: 100%;
   font-size: 18px;
   padding: 11px;
-  border-bottom: 1px solid var(--secondary-color-dark);
+  border: 1px solid var(--dark-background);
   color: var(--secondary-color-dark);
   background-color: var(--dark-background);
 }
@@ -91,4 +91,9 @@ textarea:focus, input:focus{
 #search-posts-menu li {
   padding: 12px;
   display: block
+}
+
+.post-thumbnail-date {
+  font-size: 11pt;
+  opacity: 0.8;
 }

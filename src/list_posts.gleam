@@ -56,7 +56,7 @@ function searchPostsKeyUp() {
   const $input = document.getElementById(\"search-posts\");
   const q = $input.value.toLowerCase();
   const $menu = document.getElementById(\"search-posts-menu\");
-  $menu.replaceChildren(Array.from($menu.children).sort(c => {
+  $menu.replaceChildren(...Array.from($menu.children).sort(c => {
     const p = POSTS[c.id];
     let hits = 0;
     for (const tag in p.tags) if (q.includes(tag)) hits += 2;
@@ -86,7 +86,6 @@ fn thumbnail(post: Post) -> Element(Nil) {
         [text(pretty_date(post.date))],
       ),
       html.p([], [text(post.description)]),
-      html.hr([]),
     ],
   )
 }
