@@ -9,7 +9,7 @@ function searchPostsKeyUp() {
   $menu.replaceChildren(...Array.from($menu.children).sort((a, b) => {
     const aHits = getHits(q, POSTS[a.id]);
     const bHits = getHits(q, POSTS[b.id]);
-    return aHits - bHits;
+    return bHits - aHits;
   }));
 }
 function getHits(q, p) {
