@@ -6,7 +6,6 @@ import lustre/attribute.{type Attribute, attribute}
 import gleam/result.{map_error, try}
 import party as p
 import helpers.{type Post, Post}
-import birl/time
 
 pub type Error {
   FileError(simplifile.FileError)
@@ -49,11 +48,11 @@ fn parse_name() -> p.Parser(String, Nil) {
   p.return(string.concat(name))
 }
 
-fn parse_date() -> p.Parser(time.DateTime, Nil) {
+fn parse_date() -> p.Parser(helpers.DateTime, Nil) {
   use _ <- p.do(p.string("date:"))
   use _ <- p.do(p.many1(p.alt(p.char(" "), p.char("\t"))))
   use datestr <- p.do(p.many1(p.satisfy(fn(c) { c != "\n" })))
-  let assert Ok(date) = time.from_naive(string.concat(datestr))
+  let assert Ok(date) = helpers.string_to_date(string.concat(datestr))
   use _ <- p.do(p.char("\n"))
   p.return(date)
 }

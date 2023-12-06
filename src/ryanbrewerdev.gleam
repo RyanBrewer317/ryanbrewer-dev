@@ -1,10 +1,9 @@
 import gleam/int
 import lustre
 import lustre/element.{type Element, text}
-import lustre/element/html.{a, button, div, nav, p}
+import lustre/element/html.{a, button, div, p}
 import lustre/attribute.{href, id}
 import lustre/event
-import helpers
 
 pub fn main() {
   let app = lustre.simple(init, update, view)
@@ -36,42 +35,29 @@ fn view(model: Model) -> Element(Msg) {
   let count = int.to_string(model)
 
   div(
-    [],
+    [id("body")],
     [
-      nav(
+      p(
         [],
         [
-          a([href("/")], [text("Ryan Brewer")]),
-          a([href("/search"), id("nav-search")], [text("Search Posts")]),
+          text(
+            "This is my website. It's hosted by Firebase and written mostly in Gleam, and the code is up on ",
+          ),
+          a(
+            [href("https://github.com/RyanBrewer317/ryanbrewer-dev")],
+            [text("my github")],
+          ),
+          text("."),
         ],
       ),
-      div(
-        [id("body")],
+      p([], [text(count)]),
+      p(
+        [],
         [
-          p(
-            [],
-            [
-              text(
-                "This is my website. It's hosted by Firebase and written mostly in Gleam, and the code is up on ",
-              ),
-              a(
-                [href("https://github.com/RyanBrewer317/ryanbrewer-dev")],
-                [text("my github")],
-              ),
-              text("."),
-            ],
-          ),
-          p([], [text(count)]),
-          p(
-            [],
-            [
-              button([event.on_click(Decr)], [text("-")]),
-              button([event.on_click(Incr)], [text("+")]),
-            ],
-          ),
+          button([event.on_click(Decr)], [text("-")]),
+          button([event.on_click(Incr)], [text("+")]),
         ],
       ),
-      helpers.tail(),
     ],
   )
 }

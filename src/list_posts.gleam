@@ -1,4 +1,4 @@
-import lustre/element.{type Element, text}
+import lustre/element.{type Element}
 import lustre/element/html
 import lustre/attribute.{attribute}
 import gleam/list
@@ -59,16 +59,7 @@ pub fn list_posts(posts: List(Post)) -> Element(Nil) {
       html.body(
         [],
         [
-          html.nav(
-            [],
-            [
-              html.a([attribute.href("/")], [text("Ryan Brewer")]),
-              html.a(
-                [attribute.href("/search"), attribute.id("nav-search")],
-                [text("Search Posts")],
-              ),
-            ],
-          ),
+          helpers.navbar(),
           html.div(
             [attribute.id("body")],
             [

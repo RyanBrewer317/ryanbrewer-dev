@@ -6,19 +6,15 @@ import gleam/string_builder.{
   type StringBuilder, append, append_builder, concat, from_string, join,
   to_string,
 }
-import birl/time.{type DateTime}
+import birl/time
 import gleam/int
 import gleam/order.{type Order, negate}
 
-pub type Post {
-  Post(
-    title: String,
-    id: String,
-    date: DateTime,
-    tags: List(String),
-    description: String,
-    body: List(Element(Nil)),
-  )
+pub type DateTime =
+  time.DateTime
+
+pub fn string_to_date(s: String) -> Result(DateTime, Nil) {
+  time.from_naive(s)
 }
 
 pub fn pretty_date(date: DateTime) -> String {
@@ -36,7 +32,18 @@ pub fn after(p1: Post, p2: Post) -> Order {
   negate(before(p1, p2))
 }
 
-pub fn thumbnail(post: Post) -> Element(Nil) {
+pub type Post {
+  Post(
+    title: String,
+    id: String,
+    date: DateTime,
+    tags: List(String),
+    description: String,
+    body: List(Element(Nil)),
+  )
+}
+
+pub fn thumbnail(post: Post) -> Element(a) {
   html.li(
     [attribute.class("post-thumbnail"), attribute.id(post.id)],
     [
@@ -58,7 +65,7 @@ pub fn thumbnail(post: Post) -> Element(Nil) {
   )
 }
 
-pub fn script_posts(posts: List(Post)) -> Element(Nil) {
+pub fn script_posts(posts: List(Post)) -> Element(a) {
   use <-
     fn(k: fn() -> List(StringBuilder)) {
       html.script(
@@ -149,6 +156,19 @@ pub fn head(
       ],
       extra,
     ),
+  )
+}
+
+pub fn navbar() -> Element(a) {
+  html.nav(
+    [],
+    [
+      html.a([attribute.href("/")], [text("Ryan Brewer")]),
+      html.a(
+        [attribute.href("/search"), attribute.id("nav-search")],
+        [text("Search Posts")],
+      ),
+    ],
   )
 }
 

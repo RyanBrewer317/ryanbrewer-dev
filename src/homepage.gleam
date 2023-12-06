@@ -28,11 +28,13 @@ pub fn homepage(posts: List(Post)) -> Element(Nil) {
       html.body(
         [],
         [
+          helpers.navbar(),
           html.div([attribute.attribute("data-lustre-app", "true")], []),
           html.ul(
             [attribute.id("posts-list")],
             list.map(posts, helpers.thumbnail),
           ),
+          helpers.tail(),
         ],
       ),
     ],

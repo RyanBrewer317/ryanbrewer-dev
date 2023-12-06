@@ -32,16 +32,7 @@ pub fn render(post: Post) -> Element(Nil) {
       html.body(
         [],
         [
-          html.nav(
-            [],
-            [
-              html.a([attribute.href("/")], [text("Ryan Brewer")]),
-              html.a(
-                [attribute.href("/search"), attribute.id("nav-search")],
-                [text("Search Posts")],
-              ),
-            ],
-          ),
+          helpers.navbar(),
           html.div([attribute.id("body")], render_as_list(post)),
           helpers.tail(),
         ],
