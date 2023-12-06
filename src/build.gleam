@@ -4,7 +4,9 @@ import homepage
 import list_posts
 import lustre/ssg
 import simplifile
-import post.{type Post}
+import render_post
+import parse_post
+import helpers.{type Post}
 
 const posts_dir = "posts"
 
@@ -17,25 +19,24 @@ fn read_all() -> List(Post) {
   list.map(
     paths,
     fn(filename) {
-      let assert Ok(post) = post.post(filename)
-      post
+      let assert Ok(p) = parse_post.go(filename)
+      p
     },
   )
 }
 
 pub fn main() {
   let posts = read_all()
-  // let chron_order = list.sort(posts, by: post.before)
   let indexed_posts =
-    list.map(posts, fn(post) { #(post.id, post) })
+    list.map(posts, fn(p) { #(p.id, p) })
     |> map.from_list
 
   ssg.new(out_dir)
-  |> ssg.add_dynamic_route("/posts", indexed_posts, post.render)
-  |> ssg.add_static_route("/", homepage.homepage())
+  |> ssg.add_dynamic_route("/posts", indexed_posts, render_post.render)
+  |> ssg.add_static_route("/", homepage.homepage(posts))
   |> ssg.add_static_route(
     "/search",
-    list_posts.list_posts(list.sort(posts, post.after)),
+    list_posts.list_posts(list.sort(posts, helpers.after)),
   )
   |> ssg.build
   let assert Ok(_) = simplifile.create_directory(out_dir <> "/public")

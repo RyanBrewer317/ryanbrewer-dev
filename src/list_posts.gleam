@@ -1,53 +1,10 @@
 import lustre/element.{type Element, text}
 import lustre/element/html
 import lustre/attribute.{attribute}
-import post.{type Post, head, pretty_date}
 import gleam/list
-import gleam/string_builder.{
-  type StringBuilder, append, append_builder, concat, from_string, join,
-  to_string,
-}
+import helpers.{type Post}
 
-fn script1(posts: List(Post)) -> Element(Nil) {
-  use <-
-    fn(k: fn() -> List(StringBuilder)) {
-      html.script(
-        [],
-        from_string("const POSTS = {")
-        |> append_builder(concat(k()))
-        |> append("};")
-        |> to_string(),
-      )
-    }
-  use p <- list.map(posts)
-  from_string("\"")
-  |> append(p.id)
-  |> append("\": {\"id\": \"")
-  |> append(p.id)
-  |> append("\", \"url\": \"")
-  |> append("/posts/" <> p.id <> ".html")
-  |> append("\", \"title\": \"")
-  |> append(p.title)
-  |> append("\", \"date\": \"")
-  |> append(pretty_date(p.date))
-  |> append("\", \"tags\": [")
-  |> append_builder(join(
-    list.map(
-      p.tags,
-      fn(tag) {
-        from_string("\"")
-        |> append(tag)
-        |> append("\"")
-      },
-    ),
-    ", ",
-  ))
-  |> append("], \"description\": \"")
-  |> append(p.description)
-  |> append("\"},\n")
-}
-
-fn script2() -> Element(Nil) {
+fn script() -> Element(Nil) {
   html.script(
     [],
     "
@@ -73,28 +30,6 @@ function getHits(q, p) {
   )
 }
 
-fn thumbnail(post: Post) -> Element(Nil) {
-  html.li(
-    [attribute.class("post-thumbnail"), attribute.id(post.id)],
-    [
-      html.h4(
-        [],
-        [
-          html.a(
-            [attribute.href("posts/" <> post.id <> ".html")],
-            [text(post.title)],
-          ),
-        ],
-      ),
-      html.div(
-        [attribute.class("post-thumbnail-date")],
-        [text(pretty_date(post.date))],
-      ),
-      html.p([], [text(post.description)]),
-    ],
-  )
-}
-
 fn searchbox() -> Element(Nil) {
   html.input([
     attribute.type_("text"),
@@ -109,7 +44,7 @@ pub fn list_posts(posts: List(Post)) -> Element(Nil) {
   html.html(
     [attribute.attribute("lang", "en")],
     [
-      head(
+      helpers.head(
         "Search Posts - Ryan Brewer",
         "Look through Ryan's past posts",
         [
@@ -117,8 +52,8 @@ pub fn list_posts(posts: List(Post)) -> Element(Nil) {
             [attribute.attribute("type", "module")],
             "import '../style.css';",
           ),
-          script1(posts),
-          script2(),
+          helpers.script_posts(posts),
+          script(),
         ],
       ),
       html.body(
@@ -140,7 +75,7 @@ pub fn list_posts(posts: List(Post)) -> Element(Nil) {
               searchbox(),
               html.ul(
                 [attribute.id("search-posts-menu")],
-                list.map(posts, thumbnail),
+                list.map(posts, helpers.thumbnail),
               ),
             ],
           ),

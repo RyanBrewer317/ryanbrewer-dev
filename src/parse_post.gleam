@@ -1,25 +1,12 @@
 import simplifile.{read}
 import gleam/string
-import gleam/order.{type Order, negate}
 import lustre/element.{type Element, text}
 import lustre/element/html
 import lustre/attribute.{type Attribute, attribute}
 import gleam/result.{map_error, try}
-import birl/time.{type DateTime}
 import party as p
-import gleam/list
-import gleam/int
-
-pub type Post {
-  Post(
-    title: String,
-    id: String,
-    date: DateTime,
-    tags: List(String),
-    description: String,
-    body: List(Element(Nil)),
-  )
-}
+import helpers.{type Post, Post}
+import birl/time
 
 pub type Error {
   FileError(simplifile.FileError)
@@ -31,15 +18,7 @@ type Command {
   Subheading
 }
 
-pub fn before(p1: Post, p2: Post) -> Order {
-  time.compare(p1.date, p2.date)
-}
-
-pub fn after(p1: Post, p2: Post) -> Order {
-  negate(before(p1, p2))
-}
-
-pub fn post(filename: String) -> Result(Post, Error) {
+pub fn go(filename: String) -> Result(Post, Error) {
   use content <- try(map_error(read(filename), FileError))
   map_error(p.go(parse(), content), ParseError)
 }
@@ -171,118 +150,4 @@ fn parse_command() -> p.Parser(Command, Nil) {
     "paragraph" -> p.return(Paragraph)
     "subheading" -> p.return(Subheading)
   }
-}
-
-fn do(el: a, k: fn() -> List(a)) -> List(a) {
-  [el, ..k()]
-}
-
-fn finally(end: List(a)) -> List(a) {
-  end
-}
-
-pub fn pretty_date(date: DateTime) -> String {
-  let time.Date(year, _, day) = time.get_date(date)
-  time.string_month(date) <> " " <> int.to_string(day) <> ", " <> int.to_string(
-    year,
-  )
-}
-
-fn render_as_list(post: Post) -> List(Element(Nil)) {
-  use <- do(html.h1([], [text(post.title)]))
-  use <- do(html.div([attribute.class("date")], [text(pretty_date(post.date))]))
-  finally(post.body)
-}
-
-pub fn head(
-  title: String,
-  description: String,
-  extra: List(Element(Nil)),
-) -> Element(Nil) {
-  html.head(
-    [],
-    list.append(
-      [
-        html.title([], title <> " - Ryan Brewer"),
-        html.meta([attribute("charset", "UTF-8")]),
-        html.meta([
-          attribute.name("viewport"),
-          attribute("content", "width=device-width, initial-scale=1.0"),
-        ]),
-        html.meta([
-          attribute.name("description"),
-          attribute("content", description),
-        ]),
-        html.link([
-          attribute.rel("preconnect"),
-          attribute.href("https://fonts.googleapis.com"),
-        ]),
-        html.link([
-          attribute.rel("preconnect"),
-          attribute.href("https://fonts.gstatic.com"),
-          attribute("crossorigin", "true"),
-        ]),
-        html.link([
-          attribute.rel("stylesheet"),
-          attribute.href(
-            "https://fonts.googleapis.com/css2?family=Roboto&display=swap",
-          ),
-        ]),
-        html.script(
-          [attribute.src("https://polyfill.io/v3/polyfill.min.js?features=es6")],
-          "",
-        ),
-        html.script(
-          [
-            attribute("type", "text/javascript"),
-            attribute("async", "true"),
-            attribute(
-              "src",
-              "https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js",
-            ),
-          ],
-          "",
-        ),
-      ],
-      extra,
-    ),
-  )
-}
-
-pub fn render(post: Post) -> Element(Nil) {
-  html.html(
-    [attribute("lang", "en")],
-    [
-      head(
-        post.title,
-        post.description,
-        [html.script([attribute.type_("module")], "import '../../style.css';")],
-      ),
-      html.body(
-        [],
-        [
-          html.nav(
-            [],
-            [
-              html.a([attribute.href("/")], [text("Ryan Brewer")]),
-              html.a(
-                [attribute.href("/search"), attribute.id("nav-search")],
-                [text("Search Posts")],
-              ),
-            ],
-          ),
-          html.div([attribute.id("body")], render_as_list(post)),
-          html.script(
-            [attribute.src("/__/firebase/8.10.1/firebase-app.js")],
-            "",
-          ),
-          html.script(
-            [attribute.src("/__/firebase/8.10.1/firebase-analytics.js")],
-            "",
-          ),
-          html.script([attribute.src("/__/firebase/init.js")], ""),
-        ],
-      ),
-    ],
-  )
 }

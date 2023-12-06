@@ -4,6 +4,7 @@ import lustre/element.{type Element, text}
 import lustre/element/html.{a, body, button, div, nav, p}
 import lustre/attribute.{href, id}
 import lustre/event
+import helpers
 
 pub fn main() {
   let app = lustre.simple(init, update, view)
@@ -71,25 +72,11 @@ fn view(model: Model) -> Element(Msg) {
                   button([event.on_click(Incr)], [text("+")]),
                 ],
               ),
-              p(
-                [],
-                [
-                  a(
-                    [href("https://ryanbrewer.dev/posts/logic-in-types.html")],
-                    [text("My first post!")],
-                  ),
-                ],
-              ),
             ],
           ),
+          helpers.tail(),
         ],
       ),
-      html.script([attribute.src("/__/firebase/8.10.1/firebase-app.js")], ""),
-      html.script(
-        [attribute.src("/__/firebase/8.10.1/firebase-analytics.js")],
-        "",
-      ),
-      html.script([attribute.src("/__/firebase/init.js")], ""),
     ],
   )
 }

@@ -1,13 +1,14 @@
 import lustre/element.{type Element}
 import lustre/element/html
 import lustre/attribute
-import post.{head}
+import helpers.{type Post}
+import gleam/list
 
-pub fn homepage() -> Element(Nil) {
+pub fn homepage(posts: List(Post)) -> Element(Nil) {
   html.html(
     [attribute.attribute("lang", "en")],
     [
-      head(
+      helpers.head(
         "Ryan Brewer's Blog",
         "The place Ryan writes his thoughts and shows off cool projects.",
         [
@@ -26,7 +27,13 @@ pub fn homepage() -> Element(Nil) {
       ),
       html.body(
         [],
-        [html.div([attribute.attribute("data-lustre-app", "true")], [])],
+        [
+          html.div([attribute.attribute("data-lustre-app", "true")], []),
+          html.ul(
+            [attribute.id("posts-list")],
+            list.map(posts, helpers.thumbnail),
+          ),
+        ],
       ),
     ],
   )
