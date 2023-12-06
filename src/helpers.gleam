@@ -170,7 +170,6 @@ pub fn tail() -> Element(a) {
         ],
         "",
       ),
-      html.script([attribute.type_("module")], "console.log(firebase);"),
       html.script(
         [attribute.type_("module"), attribute.src("/__/firebase/init.js")],
         "",
