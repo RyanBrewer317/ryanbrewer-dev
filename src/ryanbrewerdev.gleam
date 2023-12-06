@@ -2,7 +2,7 @@ import gleam/int
 import lustre
 import lustre/element.{type Element, text}
 import lustre/element/html.{a, button, div, p}
-import lustre/attribute.{href, id}
+import lustre/attribute.{href}
 import lustre/event
 
 pub fn main() {
@@ -35,7 +35,7 @@ fn view(model: Model) -> Element(Msg) {
   let count = int.to_string(model)
 
   div(
-    [id("body")],
+    [],
     [
       p(
         [],
