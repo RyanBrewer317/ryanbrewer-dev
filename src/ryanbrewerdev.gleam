@@ -1,14 +1,14 @@
 import gleam/int
 import lustre
 import lustre/element.{type Element, text}
-import lustre/element/html.{a, body, button, div, nav, p}
+import lustre/element/html.{a, button, div, nav, p}
 import lustre/attribute.{href, id}
 import lustre/event
 import helpers
 
 pub fn main() {
   let app = lustre.simple(init, update, view)
-  let assert Ok(dispatch) = lustre.start(app, "body", Nil)
+  let assert Ok(dispatch) = lustre.start(app, "[data-lustre-app]", Nil)
 
   dispatch
 }
@@ -35,48 +35,43 @@ fn update(model: Model, msg: Msg) -> Model {
 fn view(model: Model) -> Element(Msg) {
   let count = int.to_string(model)
 
-  body(
+  div(
     [],
     [
-      div(
+      nav(
         [],
         [
-          nav(
-            [],
-            [
-              a([href("/")], [text("Ryan Brewer")]),
-              a([href("/search"), id("nav-search")], [text("Search Posts")]),
-            ],
-          ),
-          div(
-            [id("body")],
-            [
-              p(
-                [],
-                [
-                  text(
-                    "This is my website. It's hosted by Firebase and written mostly in Gleam, and the code is up on ",
-                  ),
-                  a(
-                    [href("https://github.com/RyanBrewer317/ryanbrewer-dev")],
-                    [text("my github")],
-                  ),
-                  text("."),
-                ],
-              ),
-              p([], [text(count)]),
-              p(
-                [],
-                [
-                  button([event.on_click(Decr)], [text("-")]),
-                  button([event.on_click(Incr)], [text("+")]),
-                ],
-              ),
-            ],
-          ),
-          helpers.tail(),
+          a([href("/")], [text("Ryan Brewer")]),
+          a([href("/search"), id("nav-search")], [text("Search Posts")]),
         ],
       ),
+      div(
+        [id("body")],
+        [
+          p(
+            [],
+            [
+              text(
+                "This is my website. It's hosted by Firebase and written mostly in Gleam, and the code is up on ",
+              ),
+              a(
+                [href("https://github.com/RyanBrewer317/ryanbrewer-dev")],
+                [text("my github")],
+              ),
+              text("."),
+            ],
+          ),
+          p([], [text(count)]),
+          p(
+            [],
+            [
+              button([event.on_click(Decr)], [text("-")]),
+              button([event.on_click(Incr)], [text("+")]),
+            ],
+          ),
+        ],
+      ),
+      helpers.tail(),
     ],
   )
 }
