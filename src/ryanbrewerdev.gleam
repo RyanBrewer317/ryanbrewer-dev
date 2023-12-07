@@ -83,6 +83,7 @@ Functions are written like
             ],
             [text("here")],
           ),
+          text("."),
         ],
       ),
       html.textarea([
