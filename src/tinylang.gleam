@@ -3,6 +3,7 @@ import gleam/map.{type Map}
 import gleam/result
 import gleam/int
 import gleam/string
+import gleam/list
 
 type Expr {
   LInt(Int)
@@ -50,16 +51,14 @@ fn expr() -> p.Parser(Expr, e) {
     parenthetical(),
   ]))
   use _ <- p.do(ws())
-  use mb_call <- p.do(p.perhaps(p.char("(")))
-  use e <- p.do(case mb_call {
-    Ok(_) -> {
-      use arg <- p.do(p.lazy(expr))
-      use _ <- p.do(p.char(")"))
-      p.return(LCall(lit, arg))
-    }
-    Error(Nil) -> p.return(lit)
-  })
-  use _ <- p.do(ws())
+  use args <- p.do(p.many({
+    use _ <- p.do(p.char("("))
+    use arg <- p.do(p.lazy(expr))
+    use _ <- p.do(p.char(")"))
+    use _ <- p.do(ws())
+    p.return(arg)
+  }))
+  let e = list.fold(args, lit, LCall)
   p.return(e)
 }
 
