@@ -47,7 +47,7 @@ pub fn thumbnail(post: Post) -> Element(a) {
   html.li(
     [attribute.class("post-thumbnail"), attribute.id(post.id)],
     [
-      html.h4(
+      html.h3(
         [],
         [
           html.a(

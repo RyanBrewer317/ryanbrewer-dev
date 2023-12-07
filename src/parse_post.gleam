@@ -84,7 +84,7 @@ fn parse_block() -> p.Parser(Element(Nil), Nil) {
   case cmd {
     Paragraph -> p.return(parse_paragraph(str))
 
-    Subheading -> p.return(html.h4([], [text(str)]))
+    Subheading -> p.return(html.h3([], [text(str)]))
   }
 }
 

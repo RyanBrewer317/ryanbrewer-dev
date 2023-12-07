@@ -37,21 +37,25 @@ fn view(model: Model) -> Element(Msg) {
   div(
     [],
     [
-      html.h4([], [text("My Website")]),
+      html.h3([], [text("My Website")]),
       p(
         [],
         [
           text(
-            "This is my website. It's hosted by Firebase and written mostly in Gleam, and the code is up on ",
+            "This is my website. It's hosted by Firebase and written mostly in ",
           ),
+          a([href("https://gleam.run")], [text("Gleam")]),
+          text(", and the code is up on my "),
           a(
             [href("https://github.com/RyanBrewer317/ryanbrewer-dev")],
-            [text("my github")],
+            [text("github")],
           ),
-          text("."),
+          text(". The only framework used is "),
+          a([href("https://lustre.build/")], [text("Lustre")]),
+          text("; Scripting, markup, styles, and layout were all done by hand."),
         ],
       ),
-      html.h4([], [text("Lambda Calculus in Gleam")]),
+      html.h3([], [text("Lambda Calculus in Gleam")]),
       html.p(
         [],
         [
@@ -64,9 +68,9 @@ That's why I made this website in ",
           text(
             "
 , a statically-typed functional language
-that can run anywhere JavaScript can, and additionally run on Erlang's BEAM VM. 
+that can run anywhere JavaScript can, as well as on Erlang's BEAM VM. 
 I've used Gleam to write a lambda calculus evaluator that you can play with below. 
-Functions are written like 
+Lambda abstractions are written like 
 ",
           ),
           html.code([], [text("\\var. body")]),
@@ -109,8 +113,7 @@ Functions are written like
                 [
                   html.strong([], [text("output ")]),
                   text(" (variables may be renamed): "),
-                  html.span([attribute.id("code-output")], [text(s)]),
-                  html.br([]),
+                  div([attribute.id("code-output")], [text(s)]),
                 ],
               )
             }

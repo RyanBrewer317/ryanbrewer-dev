@@ -12,9 +12,9 @@ A little familiarity with dependent types and proof assistants like Agda or Coq
 will help you understand this post, but isn&#39;t necessary.
 A familiarity with basic logic is assumed, including &quot;for all.&quot;
 A familiarity with programming in statically-typed languages like C, Go, OCaml, or TypeScript is assumed.
-</p><h4>
+</p><h3>
 Logic in Types
-</h4><p>
+</h3><p>
 In academia, there is a well-known correspondence between logic and type systems,
 called the Curry-Howard Isomorphism. 
 It&#39;s a big name but the idea is simple:
@@ -50,9 +50,9 @@ Logical negation is simply represented by a function returning <code>void</code>
 &quot;not p&quot; and &quot;p implies false&quot; are equivalent.
 That&#39;s another explanation of why <code>int-&gt;void</code> is empty: it&#39;s kind of like &quot;not <code>int</code>,&quot; and we know <code>int</code> is &quot;true.&quot;
 Note that this logic also doesn&#39;t have &quot;p or not p&quot; as an axiom. It is &quot;intuitionistic.&quot;
-</p><h4>
+</p><h3>
 The Point
-</h4><p>
+</h3><p>
 Is all of this useful? Yes, it&#39;s proven its worth. 
 Because the details of this correspondence is about types having values, you can make sure functions are
 only called under the right conditions. 
@@ -66,9 +66,9 @@ The correspondence I described above doesn&#39;t tell you how to construct the t
 It&#39;s a very strange-looking type.
 At the very least, it&#39;s a struct: the conjunction of two propositions \(0 \le i\) and \(i &lt; length(l)\).
 This is where dependent types come in.
-</p><h4>
+</p><h3>
 Dependent Types
-</h4><p>
+</h3><p>
 Dependent function types (&quot;Pi&quot; types) are function types where the type of the output can refer to values of the input types.
 What does this mean? 
 We can have a function <code>f</code> which takes an argument <code>a: A</code> and the type of <code>f(a)</code> 
@@ -109,9 +109,9 @@ Therefore this function <code>f</code> can&#39;t exist.
 Calling it with other arguments, like <code>f(4)(proof_4_le_6)</code>, <i>would</i> hypothetically be valid, 
 except that the function as a whole can&#39;t possibly exist because it would be possible to use it to get values of an empty type. 
 This is why dependent function types let you express &quot;for all&quot; in your types.
-</p><h4>
+</p><h3>
 Tip of the Iceberg
-</h4><p>
+</h3><p>
 This concludes my first real blog post. 
 Needless to say these ideas are the tip of a very large iceberg.
 For example, types like <code>int</code> seem pretty different from useful proposition types like <code>0&lt;=i</code>.
