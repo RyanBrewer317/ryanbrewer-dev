@@ -128,7 +128,6 @@ pub fn head(
 window.dataLayer = window.dataLayer || [];
 function gtag(){dataLayer.push(arguments);}
 gtag('js', new Date());
-firebase.analytics();
         ",
         ),
         html.title([], title <> " - Ryan Brewer"),
@@ -200,6 +199,7 @@ pub fn tail() -> Element(a) {
         "",
       ),
       html.script([attribute.src("/__/firebase/init.js")], ""),
+      html.script([], "firebase.analytics();"),
     ],
   )
 }
