@@ -38,7 +38,7 @@ p {
 #code {
   margin: 10pt;
   padding: 5pt;
-  background-color: var(--code-color);
+  background-color: var(--code-background);
   color: var(--code-color);
   font-family: var(--code-font);
   width: 200pt;

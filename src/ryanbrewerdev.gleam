@@ -4,7 +4,7 @@ import lustre/element/html.{a, div, p}
 import lustre/attribute.{href}
 import lustre/event
 import tinylang
-import party as p
+// import party as p
 import gleam/result
 import gleam/string
 
@@ -62,11 +62,11 @@ fn view(model: Model) -> Element(Msg) {
           "" -> text("")
           code ->
             tinylang.go(code)
-            |> p.go(parse_output(), _)
-            |> result.unwrap(or: [
-              text("There's a bug in this website! I can't show this output."),
-            ])
-            |> fn(els) {
+            // |> p.go(parse_output(), _)
+            // |> result.unwrap(or: [
+            //   text("There's a bug in this website! I can't show this output."),
+            // ])
+            |> fn(s) {
               div(
                 [],
                 [
@@ -80,7 +80,7 @@ fn view(model: Model) -> Element(Msg) {
                         #("font-family", "FreeMono, monospace"),
                       ]),
                     ],
-                    els,
+                    [text(s)],
                   ),
                 ],
               )
@@ -90,23 +90,22 @@ fn view(model: Model) -> Element(Msg) {
     ],
   )
 }
-
 /// this is legacy: the current lambda calculus implementation doesn't use subscripts.
-fn subscript_parser() -> p.Parser(Element(a), e) {
-  use _ <- p.do(p.char("_"))
-  use n <- p.do(p.map(p.many1(p.digit()), string.concat))
-  p.return(html.sub(
-    [attribute.style([#("font-size", "9pt"), #("margin-right", "1px")])],
-    [text(n)],
-  ))
-}
+// fn subscript_parser() -> p.Parser(Element(a), e) {
+//   use _ <- p.do(p.char("_"))
+//   use n <- p.do(p.map(p.many1(p.digit()), string.concat))
+//   p.return(html.sub(
+//     [attribute.style([#("font-size", "9pt"), #("margin-right", "1px")])],
+//     [text(n)],
+//   ))
+// }
 
-fn normal_parser() -> p.Parser(Element(a), e) {
-  p.many(p.satisfy(fn(c) { c != "_" }))
-  |> p.map(string.concat)
-  |> p.map(text)
-}
+// fn normal_parser() -> p.Parser(Element(a), e) {
+//   p.many(p.satisfy(fn(c) { c != "_" }))
+//   |> p.map(string.concat)
+//   |> p.map(text)
+// }
 
-fn parse_output() -> p.Parser(List(Element(a)), e) {
-  p.many(p.alt(subscript_parser(), normal_parser()))
-}
+// fn parse_output() -> p.Parser(List(Element(a)), e) {
+//   p.many(p.alt(subscript_parser(), normal_parser()))
+// }
