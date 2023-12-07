@@ -5,7 +5,7 @@
   --light-background: white;
   --secondary-color-light: black;
   --font: "Roboto", sans-serif;
-  --code-font: "Courier New", Courier, monospace;
+  --code-font: FreeMono, monospace;
   --code-background: black;
   --code-color: limegreen;
 }
@@ -41,16 +41,21 @@ p {
   background-color: var(--code-background);
   color: var(--code-color);
   font-family: var(--code-font);
-  width: 200pt;
-  height: 50pt;
+  min-width: 200pt;
+  width: 75%;
+  height: 100pt;
   font-size: 14pt;
-  border: 1pt solid var(--code-color);
+  border: 1pt solid var(--primary-color);
   border-radius: 3pt;
 }
 
 #code:focus {
   outline: none !important;
-  border: 1pt solid var(--primary-color);
+  border: 1pt solid var(--code-color);
+}
+
+#code-output {
+  font-family: var(--code-font);
 }
 
 a {

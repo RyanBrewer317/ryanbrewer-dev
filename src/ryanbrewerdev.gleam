@@ -109,10 +109,7 @@ Functions are written like
                 [
                   html.strong([], [text("output ")]),
                   text(" (variables may be renamed): "),
-                  div(
-                    [attribute.style([#("font-family", "FreeMono, monospace")])],
-                    [text(s)],
-                  ),
+                  div([attribute.id("code-output")], [text(s)]),
                 ],
               )
             }
