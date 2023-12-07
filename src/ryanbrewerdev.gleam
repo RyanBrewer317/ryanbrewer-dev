@@ -4,9 +4,10 @@ import lustre/element/html.{a, div, p}
 import lustre/attribute.{href}
 import lustre/event
 import tinylang
+
 // import party as p
-import gleam/result
-import gleam/string
+// import gleam/result
+// import gleam/string
 
 pub fn main() {
   let app = lustre.simple(init, update, view)
