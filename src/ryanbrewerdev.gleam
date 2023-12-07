@@ -37,6 +37,7 @@ fn view(model: Model) -> Element(Msg) {
   div(
     [],
     [
+      html.h4([], [text("My Website")]),
       p(
         [],
         [
