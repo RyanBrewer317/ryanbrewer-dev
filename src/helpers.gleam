@@ -181,8 +181,11 @@ pub fn tail() -> Element(a) {
         [attribute.src("/__/firebase/8.10.1/firebase-analytics.js")],
         "",
       ),
-      html.script([], "console.log(firebase);"),
       html.script([attribute.src("/__/firebase/init.js")], ""),
+      html.script(
+        [attribute.type_("module")],
+        "const analytics = firebase.analytics();",
+      ),
     ],
   )
 }
