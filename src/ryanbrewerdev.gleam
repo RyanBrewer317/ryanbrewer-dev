@@ -109,7 +109,8 @@ Functions are written like
                 [
                   html.strong([], [text("output ")]),
                   text(" (variables may be renamed): "),
-                  div([attribute.id("code-output")], [text(s)]),
+                  html.span([attribute.id("code-output")], [text(s)]),
+                  html.br([]),
                 ],
               )
             }
