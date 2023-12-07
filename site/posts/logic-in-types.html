@@ -2,8 +2,7 @@
 window.dataLayer = window.dataLayer || [];
 function gtag(){dataLayer.push(arguments);}
 gtag('js', new Date());
-
-gtag('config', 'G-BDZJ8SX3Y1');
+firebase.analytics();
         </script><title>An Introduction to Proofs with Dependent Types - Ryan Brewer</title><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="description" content="This post introduces the basic ideas behind dependent-type-based proof assistants, and expressing logic with types and values."><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="true"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto&display=swap"><script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script><script type="text/javascript" async="true" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script><script type="module">import '../../style.css';</script></head><body><nav><a href="/">Ryan Brewer</a><a href="/search" id="nav-search">Search Posts</a></nav><div id="body"><h1>An Introduction to Proofs with Dependent Types</h1><div class="date">December 3, 2023</div><p>
 When I was first introduced to proof assistants like Coq, I thought it would be graduate-level material
 that was way beyond what I could ever hope to understand. However, the essence of how they work is surprisingly simple,
