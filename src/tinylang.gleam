@@ -181,7 +181,7 @@ fn eval_helper(e: IR, heap: Map(Int, IR)) -> IR {
       let func = eval_helper(func, heap)
       let arg = eval_helper(arg, heap)
       case func {
-        IRLambda(i, e) -> substitute(from: i, to: arg, in: e)
+        IRLambda(i, e) -> eval_helper(substitute(from: i, to: arg, in: e), heap)
         _ -> IRCall(func, arg)
       }
     }
