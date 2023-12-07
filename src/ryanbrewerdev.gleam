@@ -52,7 +52,7 @@ fn view(model: Model) -> Element(Msg) {
           ),
           text(". The only framework used is "),
           a([href("https://lustre.build/")], [text("Lustre")]),
-          text("; Scripting, markup, styles, and layout were all done by hand."),
+          text("; scripting, markup, styles, and layout were all done by hand."),
         ],
       ),
       html.h3([], [text("Lambda Calculus in Gleam")]),
@@ -66,8 +66,8 @@ That's why I made this website in ",
           ),
           a([href("https://gleam.run")], [text("Gleam")]),
           text(
-            "
-, a statically-typed functional language
+            ",
+a statically-typed functional language
 that can run anywhere JavaScript can, as well as on Erlang's BEAM VM. 
 I've used Gleam to write a lambda calculus evaluator that you can play with below. 
 Lambda abstractions are written like 
