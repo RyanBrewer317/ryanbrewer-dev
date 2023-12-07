@@ -21,7 +21,7 @@ fn parse_int() -> p.Parser(Expr, e) {
 
 fn parse_var_string() -> p.Parser(String, e) {
   use first <- p.do(p.letter())
-  use rest <- p.do(p.many1(p.alt(p.alphanum(), p.char("_"))))
+  use rest <- p.do(p.many(p.alt(p.alphanum(), p.char("_"))))
   p.return(first <> string.concat(rest))
 }
 

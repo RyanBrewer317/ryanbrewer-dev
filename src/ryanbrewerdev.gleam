@@ -50,6 +50,40 @@ fn view(model: Model) -> Element(Msg) {
           text("."),
         ],
       ),
+      html.h4([], [text("Lambda Calculus in Gleam")]),
+      html.p(
+        [],
+        [
+          text(
+            "
+I study programming language design, and I'm particularly fond of functional programming.
+That's why I made this website in ",
+          ),
+          a([href("https://gleam.run")], [text("Gleam")]),
+          text(
+            "
+, a statically-typed functional language
+that can run anywhere JavaScript can, and additionally run on Erlang's BEAM VM. 
+I've used Gleam to write a lambda calculus evaluator that you can play with below. 
+Functions are written like 
+",
+          ),
+          html.code([], [text("\\var. body")]),
+          text(", and are called like "),
+          html.code([], [text("fun(arg)")]),
+          text(". There are also positive integers like 7. Try writing "),
+          html.code([], [text("(\\x.x)(2)")]),
+          text(", which evaluates to 2. The code for this can be found "),
+          a(
+            [
+              href(
+                "https://github.com/RyanBrewer317/ryanbrewer-dev/blob/main/src/tinylang.gleam",
+              ),
+            ],
+            [text("here")],
+          ),
+        ],
+      ),
       html.textarea([
         attribute.id("code"),
         attribute.placeholder(
@@ -74,13 +108,7 @@ fn view(model: Model) -> Element(Msg) {
                   html.strong([], [text("output ")]),
                   text(" (variables may be renamed): "),
                   div(
-                    [
-                      attribute.style([
-                        #("margin", "4pt 2pt"),
-                        #("font-size", "15pt"),
-                        #("font-family", "FreeMono, monospace"),
-                      ]),
-                    ],
+                    [attribute.style([#("font-family", "FreeMono, monospace")])],
                     [text(s)],
                   ),
                 ],

@@ -33,6 +33,7 @@ pub fn homepage(posts: List(Post)) -> Element(Nil) {
             [attribute.id("body")],
             [
               html.div([attribute.attribute("data-lustre-app", "true")], []),
+              html.h4([], [element.text("Blog Posts")]),
               html.ul(
                 [attribute.id("posts-list")],
                 list.map(posts, helpers.thumbnail),
