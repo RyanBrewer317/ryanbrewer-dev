@@ -113,6 +113,25 @@ pub fn head(
     [],
     list.append(
       [
+        html.script(
+          [
+            attribute("async", "true"),
+            attribute.src(
+              "https://www.googletagmanager.com/gtag/js?id=G-BDZJ8SX3Y1",
+            ),
+          ],
+          "",
+        ),
+        html.script(
+          [],
+          "
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+
+gtag('config', 'G-BDZJ8SX3Y1');
+        ",
+        ),
         html.title([], title <> " - Ryan Brewer"),
         html.meta([attribute("charset", "UTF-8")]),
         html.meta([
@@ -182,10 +201,6 @@ pub fn tail() -> Element(a) {
         "",
       ),
       html.script([attribute.src("/__/firebase/init.js")], ""),
-      html.script(
-        [attribute.type_("module")],
-        "const analytics = firebase.analytics();",
-      ),
     ],
   )
 }
