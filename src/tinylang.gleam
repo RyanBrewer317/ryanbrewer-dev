@@ -181,21 +181,10 @@ fn eval_helper(e: IR, heap: Map(Int, IR)) -> IR {
       let func = eval_helper(func, heap)
       let arg = eval_helper(arg, heap)
       case func {
-        IRLambda(i, e) -> eval_helper(substitute(from: i, to: arg, in: e), heap)
+        IRLambda(i, e) -> eval_helper(e, map.insert(heap, i, arg))
         _ -> IRCall(func, arg)
       }
     }
-  }
-}
-
-fn substitute(from old: Int, to new: IR, in e: IR) -> IR {
-  let sub = substitute(from: old, to: new, in: _)
-  case e {
-    IRVar(i) if i == old -> new
-    IRLambda(i, _) if i == old -> e
-    IRLambda(i, e) -> IRLambda(i, sub(e))
-    IRCall(func, arg) -> IRCall(sub(func), sub(arg))
-    IRVar(_) | IRInt(_) -> e
   }
 }
 
