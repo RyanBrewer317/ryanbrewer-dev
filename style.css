@@ -20,6 +20,17 @@ html,
   font-family: var(--font);
 }
 
+h3 {
+  margin-top: 25pt;
+}
+
+#rss-subscribe-icon {
+  display: inline;
+  height: 13pt;
+  margin-right: 4pt;
+  margin-bottom: -2pt;
+}
+
 nav {
   padding: 10pt;
   color: var(--secondary-color-dark);
@@ -76,7 +87,7 @@ textarea:focus, input:focus, #search-posts:focus {
   border-radius: 5pt;
 }
 
-#nav-search {
+#nav-search, #nav-subscribe {
   float: right;
 }
 

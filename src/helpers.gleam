@@ -180,10 +180,23 @@ pub fn navbar() -> Element(a) {
   html.nav(
     [],
     [
-      html.a([attribute.href("/")], [text("Ryan Brewer")]),
+      html.a(
+        [attribute.href("/"), attribute.id("nav-home")],
+        [text("Ryan Brewer")],
+      ),
+      html.a(
+        [attribute.href("/feed.rss"), attribute.id("nav-subscribe")],
+        [
+          html.img([
+            attribute.src("/rss-icon.png"),
+            attribute.id("rss-subscribe-icon"),
+          ]),
+          text("Subscribe"),
+        ],
+      ),
       html.a(
         [attribute.href("/search"), attribute.id("nav-search")],
-        [text("Search Posts")],
+        [text("Posts")],
       ),
     ],
   )

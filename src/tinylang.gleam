@@ -79,7 +79,7 @@ type Gen {
 }
 
 type Wrapped(a) {
-  Wrapped(gen: Gen, val: a)
+  Wrapped(val: a, gen: Gen)
 }
 
 fn with_fresh_res(
@@ -89,78 +89,43 @@ fn with_fresh_res(
   f(Gen(gen.int + 1), gen.int)
 }
 
-fn wrap(a: a, gen: Gen) -> Wrapped(a) {
-  Wrapped(gen, a)
-}
-
-fn do_wrap_res(gen: Gen, k: fn() -> a) -> Result(Wrapped(a), String) {
-  Ok(Wrapped(gen, k()))
-}
-
 type IR {
   IRInt(Int)
-  IRVar(Int)
-  IRLambda(Int, IR)
+  IRVar(Int, String)
+  IRLambda(Int, String, IR)
   IRCall(IR, IR)
 }
 
-fn translate(gen: Gen, e: Expr) -> Result(#(IR, Map(Int, String)), String) {
-  use Wrapped(_, out) <- result.try(translate_helper(
-    gen,
-    e,
-    map.new(),
-    map.new(),
-  ))
-  Ok(out)
+fn translate(gen: Gen, e: Expr) -> Result(IR, String) {
+  use w <- result.try(translate_helper(gen, e, map.new()))
+  Ok(w.val)
 }
 
 fn translate_helper(
   gen: Gen,
   e: Expr,
   renames: Map(String, Int),
-  renames2: Map(Int, String),
-) -> Result(Wrapped(#(IR, Map(Int, String))), String) {
+) -> Result(Wrapped(IR), String) {
   case e {
-    LInt(i) ->
-      Ok(
-        #(IRInt(i), renames2)
-        |> wrap(gen),
-      )
+    LInt(i) -> Ok(Wrapped(IRInt(i), gen))
     LVar(x) ->
       case map.get(renames, x) {
-        Ok(i) ->
-          Ok(
-            #(IRVar(i), renames2)
-            |> wrap(gen),
-          )
+        Ok(i) -> Ok(Wrapped(IRVar(i, x), gen))
         Error(Nil) -> Error("Wait! " <> x <> " isn't defined anywhere!")
       }
     LLambda(x, e) -> {
       use gen, i <- with_fresh_res(gen)
-      use Wrapped(gen, #(e, renames2)) <- result.try(translate_helper(
-        gen,
-        e,
-        map.insert(renames, x, i),
-        renames2,
-      ))
-      use <- do_wrap_res(gen)
-      #(IRLambda(i, e), map.insert(renames2, i, x))
+      use w <- result.try(translate_helper(gen, e, map.insert(renames, x, i)))
+      IRLambda(i, x, w.val)
+      |> Wrapped(gen)
+      |> Ok
     }
     LCall(func, arg) -> {
-      use Wrapped(gen, #(func, renames2)) <- result.try(translate_helper(
-        gen,
-        func,
-        renames,
-        renames2,
-      ))
-      use Wrapped(gen, #(arg, renames2)) <- result.try(translate_helper(
-        gen,
-        arg,
-        renames,
-        renames2,
-      ))
-      use <- do_wrap_res(gen)
-      #(IRCall(func, arg), renames2)
+      use w1 <- result.try(translate_helper(gen, func, renames))
+      use w2 <- result.try(translate_helper(w1.gen, arg, renames))
+      IRCall(w1.val, w2.val)
+      |> Wrapped(w2.gen)
+      |> Ok
     }
   }
 }
@@ -171,38 +136,35 @@ fn eval(e: IR) -> IR {
 
 fn eval_helper(e: IR, heap: Map(Int, IR)) -> IR {
   case e {
-    IRInt(_) | IRLambda(_, _) -> e
-    IRVar(i) ->
-      result.lazy_unwrap(
-        map.get(heap, i),
-        or: fn() { panic as "undefined after renaming" },
-      )
+    IRInt(_) -> e
+    IRVar(i, _) ->
+      case map.get(heap, i) {
+        Ok(val) -> val
+        Error(Nil) -> e
+      }
     IRCall(func, arg) -> {
       let func = eval_helper(func, heap)
       let arg = eval_helper(arg, heap)
       case func {
-        IRLambda(i, e) -> eval_helper(e, map.insert(heap, i, arg))
+        IRLambda(i, _, e) -> eval_helper(e, map.insert(heap, i, arg))
         _ -> IRCall(func, arg)
       }
     }
+    IRLambda(i, x, e) ->
+      // evaluate the body without giving the argument a value;
+      // the evaluator will get as far as it can
+      IRLambda(i, x, eval_helper(e, heap))
   }
 }
 
-fn pretty(e: IR, renames: Map(Int, String)) -> String {
+fn pretty(e: IR) -> String {
   case e {
     IRInt(i) -> int.to_string(i)
-    IRVar(i) ->
-      result.lazy_unwrap(
-        map.get(renames, i),
-        or: fn() { panic as "identifier with no rename" },
-      )
-    IRLambda(i, e) ->
-      "\\" <> result.lazy_unwrap(
-        map.get(renames, i),
-        or: fn() { panic as "parameter with no rename" },
-      ) <> ". " <> pretty(e, renames)
-    IRCall(func, arg) ->
-      pretty(func, renames) <> "(" <> pretty(arg, renames) <> ")"
+    IRVar(_, x) -> x
+    IRLambda(_, x, e) -> "\\" <> x <> ". " <> pretty(e)
+    IRCall(IRLambda(_, _, _) as func, arg) ->
+      "(" <> pretty(func) <> ")(" <> pretty(arg) <> ")"
+    IRCall(func, arg) -> pretty(func) <> "(" <> pretty(arg) <> ")"
   }
 }
 
@@ -219,9 +181,9 @@ pub fn go(code: String) -> String {
       p.go(expr(), code),
       "there's a mistake in the notation somewhere; I couldn't understand it!",
     ))
-    use #(ir, renames) <- result.try(translate(Gen(0), e))
+    use ir <- result.try(translate(Gen(0), e))
     let val = eval(ir)
-    Ok(pretty(val, renames))
+    Ok(pretty(val))
   }
   |> squash_res()
 }
