@@ -19,3 +19,12 @@ All the code can be found on [https://github.com/RyanBrewer317/ryanbrewer-dev](m
 @paragraph@
 The styles on this site are a work in progress. `code`, *italics*, \\\*escaping, [https://ryanbrewer.dev](links), \\(math+2^2\\).
 @end@
+
+@math@
+A^1 math_2 block^3!
+@end@
+
+@code@
+print("A code block!") 
+# language is auto-detected atm.
+@end@

@@ -26,14 +26,18 @@ h3 {
 
 #rss-subscribe-icon {
   display: inline;
-  height: 13pt;
+  height: 10pt;
   margin-right: 4pt;
-  margin-bottom: -2pt;
+  margin-bottom: -1pt;
 }
 
 nav {
   padding: 10pt;
   color: var(--secondary-color-dark);
+}
+
+#nav-search, #nav-subscribe {
+  margin-left: 15pt;
 }
 
 p {

@@ -185,6 +185,10 @@ pub fn navbar() -> Element(a) {
         [text("Ryan Brewer")],
       ),
       html.a(
+        [attribute.href("/search"), attribute.id("nav-search")],
+        [text("Posts")],
+      ),
+      html.a(
         [attribute.href("/feed.rss"), attribute.id("nav-subscribe")],
         [
           html.img([
@@ -193,10 +197,6 @@ pub fn navbar() -> Element(a) {
           ]),
           text("Subscribe"),
         ],
-      ),
-      html.a(
-        [attribute.href("/search"), attribute.id("nav-search")],
-        [text("Posts")],
       ),
     ],
   )

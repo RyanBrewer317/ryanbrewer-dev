@@ -15,6 +15,8 @@ pub type Error {
 type Command {
   Paragraph
   Subheading
+  CodeBlock
+  MathBlock
 }
 
 pub fn go(filename: String) -> Result(Post, Error) {
@@ -83,8 +85,13 @@ fn parse_block() -> p.Parser(Element(Nil), Nil) {
   use _ <- p.do(p.string("@end@"))
   case cmd {
     Paragraph -> p.return(parse_paragraph(str))
-
     Subheading -> p.return(html.h3([], [text(str)]))
+    CodeBlock -> p.return(html.pre([], [html.code([], [text(str)])]))
+    MathBlock ->
+      p.return(html.div(
+        [attribute.class("math-block")],
+        [text("\\[" <> str <> "\\]")],
+      ))
   }
 }
 
@@ -148,5 +155,7 @@ fn parse_command() -> p.Parser(Command, Nil) {
   case string.concat(text) {
     "paragraph" -> p.return(Paragraph)
     "subheading" -> p.return(Subheading)
+    "code" -> p.return(CodeBlock)
+    "math" -> p.return(MathBlock)
   }
 }
