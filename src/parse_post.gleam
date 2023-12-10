@@ -150,6 +150,8 @@ fn parse_markup(
 fn parse_command() -> p.Parser(Command, Nil) {
   use _ <- p.do(p.many(p.choice([p.char(" "), p.char("\n"), p.char("\t")])))
   use _ <- p.do(p.char("@"))
+  use _ <- p.do(p.many(p.alt(p.char(" "), p.char("\t"))))
+  use _ <- p.do(p.char("\n"))
   use text <- p.do(p.many1(p.alt(p.letter(), p.char("_"))))
   use _ <- p.do(p.char("@"))
   case string.concat(text) {
