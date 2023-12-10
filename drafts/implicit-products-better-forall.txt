@@ -1,0 +1,10 @@
+id: implicit-products-better-forall
+name: Implicit Products: A Better Type-Theoretic "Forall"
+date: 2023-12-09
+tags: 
+description: 
+
+@paragraph@
+Hello world!
+@end@
+
