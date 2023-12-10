@@ -77,6 +77,8 @@ fn parse_tags() -> p.Parser(List(String), Nil) {
 
 fn parse_block() -> p.Parser(Element(Nil), Nil) {
   use cmd <- p.do(parse_command())
+  use _ <- p.do(p.many(p.alt(p.char(" "), p.char("\t"))))
+  use _ <- p.do(p.char("\n"))
   use strs <- p.do(p.many(p.alt(
     p.seq(p.char("\\"), p.char("@")),
     p.satisfy(fn(c) { c != "@" }),
@@ -150,8 +152,6 @@ fn parse_markup(
 fn parse_command() -> p.Parser(Command, Nil) {
   use _ <- p.do(p.many(p.choice([p.char(" "), p.char("\n"), p.char("\t")])))
   use _ <- p.do(p.char("@"))
-  use _ <- p.do(p.many(p.alt(p.char(" "), p.char("\t"))))
-  use _ <- p.do(p.char("\n"))
   use text <- p.do(p.many1(p.alt(p.letter(), p.char("_"))))
   use _ <- p.do(p.char("@"))
   case string.concat(text) {
