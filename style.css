@@ -44,6 +44,10 @@ p {
   line-height: 25pt;
 }
 
+code {
+  font-size: 12pt;
+}
+
 #body {
   padding: 12pt;
   max-width: 600pt;
