@@ -2,6 +2,7 @@ import lustre/element.{type Element, text}
 import lustre/element/html
 import lustre/attribute.{attribute}
 import gleam/list
+import gleam/string
 import gleam/string_builder.{
   type StringBuilder, append, append_builder, concat, from_string, join,
   to_string,
@@ -84,7 +85,7 @@ pub fn script_posts(posts: List(Post)) -> Element(a) {
   |> append("\", \"url\": \"")
   |> append("/posts/" <> p.id <> ".html")
   |> append("\", \"title\": \"")
-  |> append(p.title)
+  |> append(string.replace(each: "\"", with: "\\\"", in: p.title))
   |> append("\", \"date\": \"")
   |> append(pretty_date(p.date))
   |> append("\", \"tags\": [")
@@ -100,7 +101,7 @@ pub fn script_posts(posts: List(Post)) -> Element(a) {
     ", ",
   ))
   |> append("], \"description\": \"")
-  |> append(p.description)
+  |> append(string.replace(each: "\"", with: "\\\"", in: p.description))
   |> append("\"},\n")
 }
 
