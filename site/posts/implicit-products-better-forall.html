@@ -1,0 +1,57 @@
+<html lang="en"><head><script async="true" src="https://www.googletagmanager.com/gtag/js?id=G-BDZJ8SX3Y1"></script><script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+        </script><title>Implicit Products: A Better Type-Theoretic &quot;Forall&quot; - Ryan Brewer</title><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="description" content="Implicit products are a fascinating approach to universal quantification in dependent type theory, as well as proof irrelevance/erasure in compiler implementation."><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="true"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto&display=swap"><script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script><script type="text/javascript" async="true" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css"><script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script><script>hljs.highlightAll();</script><script type="module">import '../../style.css';</script></head><body><nav><a href="/" id="nav-home">Ryan Brewer</a><a href="/search" id="nav-search">Posts</a><a href="/feed.rss" id="nav-subscribe"><img src="/rss-icon.png" id="rss-subscribe-icon">Subscribe</a></nav><div id="body"><h1>Implicit Products: A Better Type-Theoretic &quot;Forall&quot;</h1><div class="date">December 10, 2023</div><p>In this post I&#39;ll talk about a type theory idea that deserves more attention: implicit products.
+They came about in the 1998 dissertation of Alexandre Miquel, 
+but for English speakers a common citation would be 
+<a href="https://www.semanticscholar.org/paper/The-Implicit-Calculus-of-Constructions-Extending-an-Miquel/990f8f44e011192122dfd35617f8cabf08052d60">The Implicit Calculus of Constructions</a>.
+They are used most notably in the <a href="https://cedille.github.io/">Cedille</a> proof assistant.
+</p><p>This post assumes familiarity with logic (including the universal quantifer &quot;for all&quot;), 
+<a href="/posts/logic-in-types.html">dependent types</a>, very basic set theory, and the \(\lambda\)-calculus.
+</p><h3>What is it?
+</h3><p>For a moment, you&#39;ll have to ignore the strange name <i>implicit product.</i>
+It makes a lot of sense once you know how they&#39;re used, but I&#39;ll get to that later.
+Think of an implicit product like a universal quantifer (&quot;for all&quot;) in logic.
+It&#39;s written like:
+</p><div class="math-block">\[\\forall x: A. B(x)
+\]</div><p>where \(A\) is a type (proposition) and \(B\) is a type that may refer to \(x\) (predicate).
+An implicit product is a type that is inhabited if \(B(x)\) is inhabited for every \(x\) in \(A\).
+</p><p>In the most recent iterations of the theory, you make a value of this type by writing \(\Lambda x: A. e\)
+where, crucially, \(x\) can appear in the types in \(e\) but not in anything that could stick around &#39;til runtime.
+That is, if you erase all the types of \(e\), the \(x\) isn&#39;t used in it at all.
+To use such a term \(\Lambda x: A. e\) you call it like a \(\lambda\)-abstraction.
+For the purpose of type-inference you might mark the call with some additional symbol to make it clear
+that the function is a \(\Lambda\)-abstraction and not a \(\lambda\)-abstraction.
+</p><h3>Infinite Intersection
+</h3><p>On the surface this might just seem like a worse \(\Pi\)-type, which is the usual &quot;for all&quot; in something
+like Coq, Agda, or Lean. 
+The only real difference, from what I&#39;ve said so far, is that the parameter of the abstraction isn&#39;t used at runtime. 
+But this makes all the difference. 
+</p><p>A \(\Pi\)-type represents &quot;for all&quot; in a strange, roundabout way: it&#39;s a function (implication) from <i>data</i> (not a proposition)
+to a proposition about that data, and can only be constructed if every proposition it returns can be constructed given the data of that
+proposition.
+</p><p>When you learn about &quot;for all&quot; and &quot;there exists&quot; in logic, that isn&#39;t at all how you normally learn it.
+Instead, &quot;for all&quot; is seen as a possibly-infinite conjunction for every element of a possibly-infinite domain.
+&quot;There exists&quot; is, dually, a possibly-infinite <i>disjunction</i> for every element of a possibly-infinite domain.
+\(\Sigma\)-types can kind of be seen that way for existential quantification, but \(\Pi\)-types definitely can&#39;t,
+because again, they&#39;re a bit like an implication from a non-proposition.
+They work for doing logic, of course; they&#39;re just a little weird.
+</p><p>Implicit products fix this. 
+An implicit product is a possibly-infinite <i>intersection</i> (conjunction) of all the possible &quot;return types.&quot;
+\(\forall x: A. B(x)\) is an intersection of all types \(B(x)\) for each \(x\) in \(A\).
+</p><p>What&#39;s an intersection type? 
+They&#39;re what you get when you say that a term (say, \(e\)) could have one type (say, \(A\)) or another type (say, \(B\)).
+Then you might say \(e: A\cap B\), that is, \(e\) is in the <i>intersection</i> between the types \(A\) and \(B\).
+This isn&#39;t the standard way of doing conjunction in logic (pairs/structs/records/tuples are), 
+but it should be clear that if \(A\cap B\) has a value in it (and is therefore &quot;true&quot;), 
+then \(A\) and \(B\) also have values in them (are &quot;true&quot;), namely that same value in their intersection.
+So it acts like a conjunction here.
+</p><p>But wait, if it&#39;s just an intersection of all the return types, it&#39;s not really a function, right?
+How is that possible? We literally have calls to \(\Lambda\)-abstractions!
+The secret is, since they don&#39;t use their parameter for evaluation, it&#39;s perfectly fine to evaluate them with no argument at all!
+(In the absense of side-effects, of course.)
+At runtime, \((\Lambda x: A. \lambda y: B. e)(a)(b)\) evaluates as \((\lambda y. e)(b)\). 
+Therefore, values of type \(\forall x: A. B(x)\) execute as some kind of \(B\), 
+and we know that its argument (\(x\)) doesn&#39;t matter.
+</p></div><div><script src="/__/firebase/8.10.1/firebase-app.js"></script><script src="/__/firebase/8.10.1/firebase-analytics.js"></script><script src="/__/firebase/init.js"></script><script>firebase.analytics();</script></div></body></html>
