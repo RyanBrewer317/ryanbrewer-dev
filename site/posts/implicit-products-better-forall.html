@@ -14,7 +14,7 @@ They are used most notably in the <a href="https://cedille.github.io/">Cedille</
 It makes a lot of sense once you know how they&#39;re used, but I&#39;ll get to that later.
 Think of an implicit product like a universal quantifer (&quot;for all&quot;) in logic.
 It&#39;s written like:
-</p><div class="math-block">\[\\forall x: A. B(x)
+</p><div class="math-block">\[\forall x: A. B(x)
 \]</div><p>where \(A\) is a type (proposition) and \(B\) is a type that may refer to \(x\) (predicate).
 An implicit product is a type that is inhabited if \(B(x)\) is inhabited for every \(x\) in \(A\).
 </p><p>In the most recent iterations of the theory, you make a value of this type by writing \(\Lambda x: A. e\)
@@ -54,4 +54,55 @@ The secret is, since they don&#39;t use their parameter for evaluation, it&#39;s
 At runtime, \((\Lambda x: A. \lambda y: B. e)(a)(b)\) evaluates as \((\lambda y. e)(b)\). 
 Therefore, values of type \(\forall x: A. B(x)\) execute as some kind of \(B\), 
 and we know that its argument (\(x\)) doesn&#39;t matter.
+</p><p>Implicit products are generalization in their truest form: some aspect of a value could work for multiple types,
+so the type gets replaced with a type variable, and the whole type becomes an intersection of all the possible
+instantiations of that type variable. 
+This is why I argue that implicit products make for a &quot;better&quot; interpretation of the universal quantifier than \(\Pi\)-types.
+</p><h3>What&#39;s with that name though?
+</h3><p>The other reason implicit products are interesting is from a compiler engineering perspective.
+When developing a dependently typed language, a huge optimization to make is erasing the proofs at runtime,
+much like one erases the types at runtime. 
+The only thing that should remain are values of actual <i>data</i>types, like <code>int</code>, 
+as opposed to proofs of propositions (which are technically still values of types).
+</p><p>To that end, languages like Idris and Agda, and the extraction of OCaml code from Coq code, 
+have put a lot of effort into <i>proof irrelevance,</i> the property that proofs don&#39;t affect runtime execution.
+Idris has Quantitative Type Theory for this, which allows it to say that the variables bound by some 
+\(\lambda\)-abstractions aren&#39;t used &quot;relevantly&quot; in the body of the abstraction. 
+That is, it can be used in things that get erased, but nothing that makes it to runtime.
+Sound familiar? These &quot;0-quantity&quot; \(\lambda\)-abstractions are very similar to implicit products.
+The only real difference is that they&#39;re philosophically still functions, not giant intersections.
+The erasure of the argument is an optimization, nothing more. 
+Regardless, this similarity shows how using implicit products in your language automatically gives you a big optimization.
+</p><p>The &quot;0-quantity&quot; \(\lambda\)-abstractions of Idris&#39; QTT are called &quot;implicit.&quot;
+This is a common term for arguments that we expect to disappear at runtime.
+There is the risk of confusion with another meaning for &quot;implicit&quot; in this context:
+arguments which you <i>don&#39;t</i> write but which (possibly) <i>are</i> present at runtime.
+This kind of &quot;implicit&quot; is a basic form of type inference for dependently typed languages.
+If you have a polymorphic identity function \(id=\lambda t: *.\lambda x: t. x\) then
+you&#39;d like to be able to call it like \(id(7)\) instead of \(id(\mathbb{N})(7)\), but
+you would consider this a notational shorthand, nothing more.
+That&#39;s called an &quot;implicit&quot; argument but it isn&#39;t the type of &quot;implicit&quot; we consider here for implicit products.
+</p><p>So now we know why they&#39;re called <i>implicit</i> products.
+Why are they called implicit <i>products?</i>
+</p><p>This might be a more basic point for those quite familiar with dependent types,
+but it&#39;s an easy source of confusion so I figured I&#39;d touch on it anyway.
+In general in type theory, a product is a type of tuple: 
+the product of \(\mathbb{N}\) and \(\mathbb{Z}\) is the type of pairs of natural numbers and integers,
+and is written \(\mathbb{N}\times\mathbb{Z}\). 
+It&#39;s a Cartesian product, to use a term more broadly familiar.
+This is really confusing because \(\Pi\)-types are often referred to as &quot;products,&quot;
+or &quot;dependent product types,&quot; as well as being called &quot;dependent function types.&quot;
+My understanding for why this is the case is that we can think of a tuple (an element of a product type) as a function from
+\(\mathbb{N}\) to values of various types. 
+These are &quot;indexed&quot; by the natural number given.
+So \((5, {4})\) is a tiny function mapping \(0\) to \(5\) and \(1\) to \({4}\).
+The return type of this function depends on the integer given as its argument: it&#39;s a dependent function type!
+A \(\Pi\)-type indexes values of various types (the family of return types) using the values of the argument type.
+It is this function-type meaning of &quot;product&quot; that is used in the term &quot;implicit product.&quot;
+</p><h3>Conclusion
+</h3><p>That&#39;s all I have to say about implicit products for now.
+I think they&#39;re a really cool idea and I&#39;m adding them to my own dependently-typed language
+<a href="https://github.com/RyanBrewer317/Saber">Saber</a>.
+If you want to play with a finished implemenation, though,
+the most famous by far would be <a href="https://cedille.github.io/">Cedille</a>.
 </p></div><div><script src="/__/firebase/8.10.1/firebase-app.js"></script><script src="/__/firebase/8.10.1/firebase-analytics.js"></script><script src="/__/firebase/init.js"></script><script>firebase.analytics();</script></div></body></html>

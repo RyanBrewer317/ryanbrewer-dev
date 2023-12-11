@@ -29,7 +29,7 @@ It's written like:
 @end@
 
 @math@
-\\forall x: A. B(x)
+\forall x: A. B(x)
 @end@
 
 @paragraph@
@@ -103,7 +103,7 @@ Implicit products are generalization in their truest form: some aspect of a valu
 so the type gets replaced with a type variable, and the whole type becomes an intersection of all the possible
 instantiations of that type variable. 
 This is why I argue that implicit products make for a "better" interpretation of the universal quantifier than \\(\\Pi\\)-types.
-@end
+@end@
 
 @subheading@
 What's with that name though?
