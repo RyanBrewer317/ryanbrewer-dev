@@ -142,6 +142,17 @@ gtag('js', new Date());
           attribute("content", description),
         ]),
         html.link([
+          attribute.rel("icon"),
+          attribute.type_("image/x-icon"),
+          attribute.href("/favicon.ico"),
+        ]),
+        html.link([
+          attribute.rel("alternate"),
+          attribute.type_("application/rss+xml"),
+          attribute("title", "Ryan Brewer's Blog"),
+          attribute.href("https://ryanbrewer.dev/feed.rss"),
+        ]),
+        html.link([
           attribute.rel("preconnect"),
           attribute.href("https://fonts.googleapis.com"),
         ]),
