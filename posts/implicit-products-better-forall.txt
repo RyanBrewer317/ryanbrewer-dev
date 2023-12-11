@@ -1,7 +1,7 @@
 id: implicit-products-better-forall
 name: Implicit Products: A Better Type-Theoretic "Forall"
 date: 2023-12-10
-tags: implicit,product,products,type,types,dependent,dependently,theory,forall,for all,set theory,logic,universal,quantifier,quantifiers,lambda,intersection,runtime,erasure,cedille
+tags: implicit,product,products,type,types,dependent,dependently,theory,forall,for all,set,logic,universal,quantifier,quantifiers,lambda,intersection,runtime,erasure,proof,irrelevance,cedille,cdle
 description: Implicit products are a fascinating approach to universal quantification in dependent type theory, as well as proof irrelevance/erasure in compiler implementation.
 
 @paragraph@
