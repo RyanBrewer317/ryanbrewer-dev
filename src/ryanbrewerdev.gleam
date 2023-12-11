@@ -87,7 +87,9 @@ Lambda abstractions are written like
             ],
             [text("here")],
           ),
-          text("."),
+          text(
+            ". (It's currently broken on firefox, but definitely works on chrome.)",
+          ),
         ],
       ),
       html.textarea([
