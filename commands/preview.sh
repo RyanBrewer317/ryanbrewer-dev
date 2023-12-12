@@ -2,7 +2,7 @@
 
 if lsof -Pi :8085 -sTCP:LISTEN -t >/dev/null ; then
   echo "killing port in prep for server"
-  ./kill-port.sh
+  commands/kill-port.sh
 fi
 gleam build
 gleam run -m build
