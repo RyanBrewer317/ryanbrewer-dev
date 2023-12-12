@@ -3,6 +3,11 @@ import lustre/element/html
 import lustre/attribute.{attribute}
 import gleam/list
 import helpers.{type Post}
+import components/head.{head}
+import components/thumbnail.{thumbnail}
+import components/script_posts.{script_posts}
+import components/navbar.{navbar}
+import components/tail.{tail}
 
 fn script() -> Element(Nil) {
   html.script(
@@ -44,7 +49,7 @@ pub fn list_posts(posts: List(Post)) -> Element(Nil) {
   html.html(
     [attribute.attribute("lang", "en")],
     [
-      helpers.head(
+      head(
         "Search Posts - Ryan Brewer",
         "Look through Ryan's past posts",
         [
@@ -52,25 +57,25 @@ pub fn list_posts(posts: List(Post)) -> Element(Nil) {
             [attribute.attribute("type", "module")],
             "import '../style.css';",
           ),
-          helpers.script_posts(posts),
+          script_posts(posts),
           script(),
         ],
       ),
       html.body(
         [],
         [
-          helpers.navbar(),
+          navbar(),
           html.div(
             [attribute.id("body")],
             [
               searchbox(),
               html.ul(
                 [attribute.id("search-posts-menu")],
-                list.map(posts, helpers.thumbnail),
+                list.map(posts, thumbnail),
               ),
             ],
           ),
-          helpers.tail(),
+          tail(),
         ],
       ),
     ],

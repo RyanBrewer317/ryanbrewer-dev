@@ -2,6 +2,9 @@ import lustre/element.{type Element, text}
 import lustre/element/html
 import lustre/attribute.{attribute}
 import helpers.{type Post}
+import components/head.{head}
+import components/navbar.{navbar}
+import components/tail.{tail}
 
 fn do(el: a, k: fn() -> List(a)) -> List(a) {
   [el, ..k()]
@@ -24,7 +27,7 @@ pub fn render(post: Post) -> Element(Nil) {
   html.html(
     [attribute("lang", "en")],
     [
-      helpers.head(
+      head(
         post.title,
         post.description,
         [html.script([attribute.type_("module")], "import '../../style.css';")],
@@ -32,9 +35,9 @@ pub fn render(post: Post) -> Element(Nil) {
       html.body(
         [],
         [
-          helpers.navbar(),
+          navbar(),
           html.div([attribute.id("body")], render_as_list(post)),
-          helpers.tail(),
+          tail(),
         ],
       ),
     ],
