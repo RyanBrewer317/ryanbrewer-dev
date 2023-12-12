@@ -1,7 +1,7 @@
 import lustre/element.{type Element, text}
 import lustre/element/html
 import lustre/attribute.{attribute}
-import helpers.{type Post, Post}
+import helpers.{type Post}
 
 fn do(el: a, k: fn() -> List(a)) -> List(a) {
   [el, ..k()]
