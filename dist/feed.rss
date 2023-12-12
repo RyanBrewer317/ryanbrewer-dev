@@ -1,3 +1,4 @@
+
 <?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
@@ -10,24 +11,24 @@
     <language>en-us</language>
     <item>
       <title>My First Blog Post</title>
-      <pubDate>Thu, 16 Nov 2023 12:30:00 PST</pubDate>
+      <pubDate>Thu, 16 Nov 2023 00:00:00 PST</pubDate>
       <link>https://ryanbrewer.dev/posts/first-post.html</link>
       <guid>https://ryanbrewer.dev/posts/first-post.html</guid>
-      <description><![CDATA[A test post for the blog. Read more <a href="https://ryanbrewer.dev/posts/first-post.html">here</a>!]]></description>
+      <description><![CDATA[A test post for the blog.  Read more <a href="https://ryanbrewer.dev/posts/first-post.html">here</a>!]]></description>
     </item>
     <item>
       <title>An Introduction to Proofs with Dependent Types</title>
-      <pubDate>Sun, 03 Dec 2023 17:45:00 PST</pubDate>
+      <pubDate>Sun, 03 Dec 2023 00:00:00 PST</pubDate>
       <link>https://ryanbrewer.dev/posts/logic-in-types.html</link>
       <guid>https://ryanbrewer.dev/posts/logic-in-types.html</guid>
-      <description><![CDATA[This post introduces the basic ideas behind dependent-type-based proof assistants, and expressing logic with types and values. Read more <a href="https://ryanbrewer.dev/posts/logic-in-types.html">here</a>!]]></description>
+      <description><![CDATA[This post introduces the basic ideas behind dependent-type-based proof assistants, and expressing logic with types and values.  Read more <a href="https://ryanbrewer.dev/posts/logic-in-types.html">here</a>!]]></description>
     </item>
     <item>
       <title>Implicit Products: A Better Type-Theoretic "Forall"</title>
-      <pubDate>Sun, 10 Dec 2023 17:09:00 PST</pubDate>
+      <pubDate>Sun, 10 Dec 2023 00:00:00 PST</pubDate>
       <link>https://ryanbrewer.dev/posts/implicit-products-better-forall.html</link>
       <guid>https://ryanbrewer.dev/posts/implicit-products-better-forall.html</guid>
-      <description><![CDATA[Implicit products are a fascinating approach to universal quantification in dependent type theory, as well as proof irrelevance/erasure in compiler implementation. Read more <a href="https://ryanbrewer.dev/posts/implicit-products-better-forall.html">here</a>!]]></description>
+      <description><![CDATA[Implicit products are a fascinating approach to universal quantification in dependent type theory, as well as proof irrelevance/erasure in compiler implementation.  Read more <a href="https://ryanbrewer.dev/posts/implicit-products-better-forall.html">here</a>!]]></description>
     </item>
   </channel>
 </rss>

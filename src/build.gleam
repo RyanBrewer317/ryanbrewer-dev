@@ -6,6 +6,7 @@ import lustre/ssg
 import simplifile
 import render_post
 import parse_post
+import feed
 import helpers.{type Post}
 
 const posts_dir = "posts"
@@ -37,5 +38,12 @@ pub fn main() {
   |> ssg.add_static_route("/search", list_posts.list_posts(posts))
   |> ssg.build
   let assert Ok(_) = simplifile.create_directory(out_dir <> "/public")
-  simplifile.copy_directory(at: assets_dir, to: out_dir <> "/public")
+  let assert Ok(_) =
+    simplifile.copy_directory(at: assets_dir, to: out_dir <> "/public")
+  let assert Ok(_) = simplifile.create_file(out_dir <> "/public/feed.rss")
+  let assert Ok(_) =
+    simplifile.write(
+      contents: feed.feed(posts),
+      to: out_dir <> "/public/feed.rss",
+    )
 }

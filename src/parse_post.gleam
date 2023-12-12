@@ -50,7 +50,7 @@ fn parse_name() -> p.Parser(String, Nil) {
   p.return(string.concat(name))
 }
 
-fn parse_date() -> p.Parser(helpers.DateTime, Nil) {
+fn parse_date() -> p.Parser(helpers.Date, Nil) {
   use _ <- p.do(p.string("date:"))
   use _ <- p.do(p.many1(p.alt(p.char(" "), p.char("\t"))))
   use datestr <- p.do(p.many1(p.satisfy(fn(c) { c != "\n" })))
