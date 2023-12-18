@@ -29,5 +29,12 @@
       <guid>https://ryanbrewer.dev/posts/implicit-products-better-forall.html</guid>
       <description><![CDATA[Implicit products are a fascinating approach to universal quantification in dependent type theory, as well as proof irrelevance/erasure in compiler implementation.  Read more <a href="https://ryanbrewer.dev/posts/implicit-products-better-forall.html">here</a>!]]></description>
     </item>
+    <item>
+      <title>Security and Crashing with Modal Logic</title>
+      <pubDate>Sun, 17 Dec 2023 00:00:00 PST</pubDate>
+      <link>https://ryanbrewer.dev/posts/security-crashing-modal-logic.html</link>
+      <guid>https://ryanbrewer.dev/posts/security-crashing-modal-logic.html</guid>
+      <description><![CDATA[Modal logic is a beautiful field of logic that can be applied to computer science in a few ways, one of which we explore in this post. It can elucidate security concepts and how and why to crash software.  Read more <a href="https://ryanbrewer.dev/posts/security-crashing-modal-logic.html">here</a>!]]></description>
+    </item>
   </channel>
 </rss>

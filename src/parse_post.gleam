@@ -4,6 +4,7 @@ import lustre/element.{type Element, text}
 import lustre/element/html
 import lustre/attribute.{type Attribute, attribute}
 import gleam/result.{map_error, try}
+import gleam/list
 import party as p
 import helpers.{type Post, Post}
 
@@ -89,11 +90,11 @@ fn parse_block() -> p.Parser(Element(Nil), Nil) {
     Paragraph -> p.return(parse_paragraph(str))
     Subheading -> p.return(html.h3([], [text(str)]))
     CodeBlock -> p.return(html.pre([], [html.code([], [text(str)])]))
-    MathBlock ->
-      p.return(html.div(
-        [attribute.class("math-block")],
-        [text("\\[" <> str <> "\\]")],
-      ))
+    MathBlock -> {
+      use <- fn(k) { p.return(html.div([], k())) }
+      use line <- list.map(string.split(str, on: "\n"))
+      html.div([attribute.class("math-block")], [text("\\[" <> line <> "\\]")])
+    }
   }
 }
 
