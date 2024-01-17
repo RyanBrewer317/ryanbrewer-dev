@@ -44,20 +44,19 @@ fn parse_lambda() -> p.Parser(Expr, e) {
 
 fn expr() -> p.Parser(Expr, e) {
   use _ <- p.do(ws())
-  use lit <- p.do(p.choice([
-    parse_int(),
-    parse_var(),
-    parse_lambda(),
-    parenthetical(),
-  ]))
+  use lit <- p.do(
+    p.choice([parse_int(), parse_var(), parse_lambda(), parenthetical()]),
+  )
   use _ <- p.do(ws())
-  use args <- p.do(p.many({
-    use _ <- p.do(p.char("("))
-    use arg <- p.do(p.lazy(expr))
-    use _ <- p.do(p.char(")"))
-    use _ <- p.do(ws())
-    p.return(arg)
-  }))
+  use args <- p.do(
+    p.many({
+      use _ <- p.do(p.char("("))
+      use arg <- p.do(p.lazy(expr))
+      use _ <- p.do(p.char(")"))
+      use _ <- p.do(ws())
+      p.return(arg)
+    }),
+  )
   let e = list.fold(args, lit, LCall)
   p.return(e)
 }
@@ -163,7 +162,11 @@ fn pretty(e: IR) -> String {
     IRVar(_, x) -> x
     IRLambda(_, x, e) -> "\\" <> x <> ". " <> pretty(e)
     IRCall(IRLambda(_, _, _) as func, arg) ->
-      "(" <> pretty(func) <> ")(" <> pretty(arg) <> ")"
+      "("
+      <> pretty(func)
+      <> ")("
+      <> pretty(arg)
+      <> ")"
     IRCall(func, arg) -> pretty(func) <> "(" <> pretty(arg) <> ")"
   }
 }

@@ -95,7 +95,7 @@ textarea:focus, input:focus, #search-posts:focus {
   border-radius: 5pt;
 }
 
-#nav-search, #nav-subscribe {
+#nav-search, #nav-subscribe, #nav-contact {
   float: right;
 }
 

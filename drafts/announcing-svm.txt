@@ -1,0 +1,35 @@
+id: announcing-svm
+name: Announcing the Saber VM
+date: 2024-01-17
+tags: 
+description: 
+
+@paragraph@
+In this post I'm excited to announce the [https://github.com/RyanBrewer317/SVM](Saber Virtual Machine), or SVM.
+It's a project I've been working hard on for the past month,
+with fascinating properties and an in-progress MVP implementation that's
+coming along well.
+@end@
+
+@subheading@
+What is it?
+@end@
+
+@paragraph@
+SVM is a compiler backend for functional languages.
+Specifically, it is an abstract stack machine.
+It takes in CPS code that's been closure-converted and hoisted,
+and executes it or AOT compiles it to a native binary.
+@end@
+
+@paragraph@
+The goals of the project are safety, expressivity, and portability.
+I talk more about the safety below
+@end@
+
+@subheading@
+Safety
+@end@
+
+@paragraph@
+SVM 

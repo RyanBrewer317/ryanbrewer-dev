@@ -32,14 +32,11 @@ pub fn script_posts(posts: List(Post)) -> Element(a) {
   |> append(pretty_date(p.date))
   |> append("\", \"tags\": [")
   |> append_builder(join(
-    list.map(
-      p.tags,
-      fn(tag) {
-        from_string("\"")
-        |> append(tag)
-        |> append("\"")
-      },
-    ),
+    list.map(p.tags, fn(tag) {
+      from_string("\"")
+      |> append(tag)
+      |> append("\"")
+    }),
     ", ",
   ))
   |> append("], \"description\": \"")

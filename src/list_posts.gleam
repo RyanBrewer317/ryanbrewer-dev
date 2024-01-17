@@ -46,38 +46,22 @@ fn searchbox() -> Element(Nil) {
 }
 
 pub fn list_posts(posts: List(Post)) -> Element(Nil) {
-  html.html(
-    [attribute.attribute("lang", "en")],
-    [
-      head(
-        "Search Posts - Ryan Brewer",
-        "Look through Ryan's past posts",
-        [
-          html.script(
-            [attribute.attribute("type", "module")],
-            "import '../style.css';",
-          ),
-          script_posts(posts),
-          script(),
-        ],
+  html.html([attribute.attribute("lang", "en")], [
+    head("Search Posts - Ryan Brewer", "Look through Ryan's past posts", [
+      html.script(
+        [attribute.attribute("type", "module")],
+        "import '../style.css';",
       ),
-      html.body(
-        [],
-        [
-          navbar(),
-          html.div(
-            [attribute.id("body")],
-            [
-              searchbox(),
-              html.ul(
-                [attribute.id("search-posts-menu")],
-                list.map(posts, thumbnail),
-              ),
-            ],
-          ),
-          tail(),
-        ],
-      ),
-    ],
-  )
+      script_posts(posts),
+      script(),
+    ]),
+    html.body([], [
+      navbar(),
+      html.div([attribute.id("body")], [
+        searchbox(),
+        html.ul([attribute.id("search-posts-menu")], list.map(posts, thumbnail)),
+      ]),
+      tail(),
+    ]),
+  ])
 }

@@ -11,9 +11,11 @@ pub fn string_to_date(s: String) -> Result(Date, Nil) {
 }
 
 pub fn pretty_date(date: Date) -> String {
-  birl.string_month(date) <> " " <> int.to_string(birl.get_day(date).date) <> ", " <> int.to_string(
-    birl.get_day(date).year,
-  )
+  birl.string_month(date)
+  <> " "
+  <> int.to_string(birl.get_day(date).date)
+  <> ", "
+  <> int.to_string(birl.get_day(date).year)
 }
 
 pub fn before(p1: Post, p2: Post) -> Order {

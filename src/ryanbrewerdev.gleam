@@ -34,95 +34,80 @@ fn update(_model: Model, msg: Msg) -> Model {
 }
 
 fn view(model: Model) -> Element(Msg) {
-  div(
-    [],
-    [
-      html.h3([], [text("My Website")]),
-      p(
-        [],
-        [
-          text(
-            "This is my website. It's hosted by Firebase and written mostly in ",
-          ),
-          a([href("https://gleam.run")], [text("Gleam")]),
-          text(", and the code is up on my "),
-          a(
-            [href("https://github.com/RyanBrewer317/ryanbrewer-dev")],
-            [text("github")],
-          ),
-          text(". The only framework used is "),
-          a([href("https://lustre.build/")], [text("Lustre")]),
-          text("; scripting, markup, styles, and layout were all done by hand."),
-        ],
-      ),
-      html.h3([], [text("Lambda Calculus in Gleam")]),
-      html.p(
-        [],
-        [
-          text(
-            "
+  div([], [
+    html.h3([], [text("My Website")]),
+    p([], [
+      text("This is my website. It's hosted by Firebase and written mostly in "),
+      a([href("https://gleam.run")], [text("Gleam")]),
+      text(", and the code is up on my "),
+      a([href("https://github.com/RyanBrewer317/ryanbrewer-dev")], [
+        text("github"),
+      ]),
+      text(". The only framework used is "),
+      a([href("https://lustre.build/")], [text("Lustre")]),
+      text("; scripting, markup, styles, and layout were all done by hand."),
+    ]),
+    html.h3([], [text("Lambda Calculus in Gleam")]),
+    html.p([], [
+      text(
+        "
 I study programming language design, and I'm particularly fond of functional programming.
 That's why I made this website in ",
-          ),
-          a([href("https://gleam.run")], [text("Gleam")]),
-          text(
-            ",
+      ),
+      a([href("https://gleam.run")], [text("Gleam")]),
+      text(
+        ",
 a statically-typed functional language
 that can run anywhere JavaScript can, as well as on Erlang's BEAM VM. 
 I've used Gleam to write a lambda calculus evaluator that you can play with below. 
 Lambda abstractions are written like 
 ",
-          ),
-          html.code([], [text("\\var. body")]),
-          text(", and are called like "),
-          html.code([], [text("fun(arg)")]),
-          text(". There are also positive integers like 7. Try writing "),
-          html.code([], [text("(\\x.x)(2)")]),
-          text(", which evaluates to 2. The code for this can be found "),
-          a(
-            [
-              href(
-                "https://github.com/RyanBrewer317/ryanbrewer-dev/blob/main/src/tinylang.gleam",
-              ),
-            ],
-            [text("here")],
-          ),
-          text(
-            ". (It's currently broken on firefox, but definitely works on chrome.)",
+      ),
+      html.code([], [text("\\var. body")]),
+      text(", and are called like "),
+      html.code([], [text("fun(arg)")]),
+      text(". There are also positive integers like 7. Try writing "),
+      html.code([], [text("(\\x.x)(2)")]),
+      text(", which evaluates to 2. The code for this can be found "),
+      a(
+        [
+          href(
+            "https://github.com/RyanBrewer317/ryanbrewer-dev/blob/main/src/tinylang.gleam",
           ),
         ],
+        [text("here")],
       ),
-      html.textarea([
-        attribute.id("code"),
-        attribute.placeholder(
-          "Write some lambda calculus code! Example: (\\x.\\y.x)(\\x.x)(3)",
-        ),
-        event.on_input(NewCode),
-      ]),
-      html.br([]),
-      {
-        case model {
-          "" -> text("")
-          code ->
-            tinylang.go(code)
-            // |> p.go(parse_output(), _)
-            // |> result.unwrap(or: [
-            //   text("There's a bug in this website! I can't show this output."),
-            // ])
-            |> fn(s) {
-              div(
-                [],
-                [
-                  html.strong([], [text("output ")]),
-                  text(" (variables may be renamed): "),
-                  div([attribute.id("code-output")], [text(s)]),
-                ],
-              )
-            }
-        }
-      },
-    ],
-  )
+      text(
+        ". (It's currently broken on firefox, but definitely works on chrome.)",
+      ),
+    ]),
+    html.textarea([
+      attribute.id("code"),
+      attribute.placeholder(
+        "Write some lambda calculus code! Example: (\\x.\\y.x)(\\x.x)(3)",
+      ),
+      event.on_input(NewCode),
+    ]),
+    html.br([]),
+    {
+      case model {
+        "" -> text("")
+        code ->
+          tinylang.go(code)
+          // |> p.go(parse_output(), _)
+          // |> result.unwrap(or: [
+          //   text("There's a bug in this website! I can't show this output."),
+          // ])
+          |> fn(s) {
+            div([], [
+              html.strong([], [text("output ")]),
+              text(" (variables may be renamed): "),
+              div([attribute.id("code-output")], [text(s)]),
+            ])
+          }
+      }
+    },
+  ])
 }
 /// this is legacy: the current lambda calculus implementation doesn't use subscripts.
 // fn subscript_parser() -> p.Parser(Element(a), e) {

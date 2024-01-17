@@ -80,10 +80,10 @@ fn parse_block() -> p.Parser(Element(Nil), Nil) {
   use cmd <- p.do(parse_command())
   use _ <- p.do(p.many(p.alt(p.char(" "), p.char("\t"))))
   use _ <- p.do(p.char("\n"))
-  use strs <- p.do(p.many(p.alt(
-    p.seq(p.char("\\"), p.char("@")),
-    p.satisfy(fn(c) { c != "@" }),
-  )))
+  use strs <- p.do(
+    p.many(p.alt(p.seq(p.char("\\"), p.char("@")), p.satisfy(fn(c) { c != "@" }),
+    )),
+  )
   let str = string.concat(strs)
   use _ <- p.do(p.string("@end@"))
   case cmd {
@@ -102,16 +102,20 @@ fn parse_paragraph(p: String) -> Element(Nil) {
   let assert Ok(els) =
     p.go(
       {
-        use els <- p.do(p.many(p.choice([
-          parse_markup("*", html.i),
-          parse_markup("`", html.code),
-          parse_link(),
-          escape("\\"),
-          escape("*"),
-          escape("@"),
-          escape("`"),
-          p.map(p.satisfy(fn(_) { True }), fn(c) { text(c) }),
-        ])))
+        use els <- p.do(
+          p.many(
+            p.choice([
+              parse_markup("*", html.i),
+              parse_markup("`", html.code),
+              parse_link(),
+              escape("\\"),
+              escape("*"),
+              escape("@"),
+              escape("`"),
+              p.map(p.satisfy(fn(_) { True }), fn(c) { text(c) }),
+            ]),
+          ),
+        )
         p.return(els)
       },
       p,
@@ -141,10 +145,12 @@ fn parse_markup(
   el: fn(List(Attribute(Nil)), List(Element(Nil))) -> Element(Nil),
 ) -> p.Parser(Element(Nil), Nil) {
   use _ <- p.do(p.char(char))
-  use strs <- p.do(p.many(p.alt(
-    p.seq(p.char("\\"), p.char(char)),
-    p.satisfy(fn(c) { c != char }),
-  )))
+  use strs <- p.do(
+    p.many(p.alt(
+      p.seq(p.char("\\"), p.char(char)),
+      p.satisfy(fn(c) { c != char }),
+    )),
+  )
   let str = string.concat(strs)
   use _ <- p.do(p.char(char))
   p.return(el([], [text(str)]))
