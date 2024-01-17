@@ -81,7 +81,9 @@ fn parse_block() -> p.Parser(Element(Nil), Nil) {
   use _ <- p.do(p.many(p.alt(p.char(" "), p.char("\t"))))
   use _ <- p.do(p.char("\n"))
   use strs <- p.do(
-    p.many(p.alt(p.seq(p.char("\\"), p.char("@")), p.satisfy(fn(c) { c != "@" }),
+    p.many(p.alt(
+      p.seq(p.char("\\"), p.char("@")),
+      p.satisfy(fn(c) { c != "@" }),
     )),
   )
   let str = string.concat(strs)
@@ -166,5 +168,6 @@ fn parse_command() -> p.Parser(Command, Nil) {
     "subheading" -> p.return(Subheading)
     "code" -> p.return(CodeBlock)
     "math" -> p.return(MathBlock)
+    _ -> panic as { "unknown command " <> string.concat(text) }
   }
 }

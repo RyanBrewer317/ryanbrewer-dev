@@ -162,11 +162,7 @@ fn pretty(e: IR) -> String {
     IRVar(_, x) -> x
     IRLambda(_, x, e) -> "\\" <> x <> ". " <> pretty(e)
     IRCall(IRLambda(_, _, _) as func, arg) ->
-      "("
-      <> pretty(func)
-      <> ")("
-      <> pretty(arg)
-      <> ")"
+      "(" <> pretty(func) <> ")(" <> pretty(arg) <> ")"
     IRCall(func, arg) -> pretty(func) <> "(" <> pretty(arg) <> ")"
   }
 }

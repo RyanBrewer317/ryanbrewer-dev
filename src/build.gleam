@@ -43,7 +43,6 @@ pub fn main() {
   let assert Ok(_) =
     simplifile.write(
       contents: feed.feed(posts),
-      to: out_dir
-      <> "/public/feed.rss",
+      to: out_dir <> "/public/feed.rss",
     )
 }
