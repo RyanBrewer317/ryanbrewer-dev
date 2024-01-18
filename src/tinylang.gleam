@@ -1,5 +1,5 @@
 import party as p
-import gleam/map.{type Map}
+import gleam/dict.{type Dict}
 import gleam/result
 import gleam/int
 import gleam/string
@@ -96,25 +96,25 @@ type IR {
 }
 
 fn translate(gen: Gen, e: Expr) -> Result(IR, String) {
-  use w <- result.try(translate_helper(gen, e, map.new()))
+  use w <- result.try(translate_helper(gen, e, dict.new()))
   Ok(w.val)
 }
 
 fn translate_helper(
   gen: Gen,
   e: Expr,
-  renames: Map(String, Int),
+  renames: Dict(String, Int),
 ) -> Result(Wrapped(IR), String) {
   case e {
     LInt(i) -> Ok(Wrapped(IRInt(i), gen))
     LVar(x) ->
-      case map.get(renames, x) {
+      case dict.get(renames, x) {
         Ok(i) -> Ok(Wrapped(IRVar(i, x), gen))
         Error(Nil) -> Error("Wait! " <> x <> " isn't defined anywhere!")
       }
     LLambda(x, e) -> {
       use gen, i <- with_fresh_res(gen)
-      use w <- result.try(translate_helper(gen, e, map.insert(renames, x, i)))
+      use w <- result.try(translate_helper(gen, e, dict.insert(renames, x, i)))
       IRLambda(i, x, w.val)
       |> Wrapped(gen)
       |> Ok
@@ -130,14 +130,14 @@ fn translate_helper(
 }
 
 fn eval(e: IR) -> IR {
-  eval_helper(e, map.new())
+  eval_helper(e, dict.new())
 }
 
-fn eval_helper(e: IR, heap: Map(Int, IR)) -> IR {
+fn eval_helper(e: IR, heap: Dict(Int, IR)) -> IR {
   case e {
     IRInt(_) -> e
     IRVar(i, _) ->
-      case map.get(heap, i) {
+      case dict.get(heap, i) {
         Ok(val) -> val
         Error(Nil) -> e
       }
@@ -145,7 +145,7 @@ fn eval_helper(e: IR, heap: Map(Int, IR)) -> IR {
       let func = eval_helper(func, heap)
       let arg = eval_helper(arg, heap)
       case func {
-        IRLambda(i, _, e) -> eval_helper(e, map.insert(heap, i, arg))
+        IRLambda(i, _, e) -> eval_helper(e, dict.insert(heap, i, arg))
         _ -> IRCall(func, arg)
       }
     }

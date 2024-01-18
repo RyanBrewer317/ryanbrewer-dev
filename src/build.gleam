@@ -1,5 +1,5 @@
 import gleam/list
-import gleam/map
+import gleam/dict
 import homepage
 import list_posts
 import lustre/ssg
@@ -28,7 +28,7 @@ pub fn main() {
   let posts = list.sort(read_all(), helpers.after)
   let indexed_posts =
     list.map(posts, fn(p) { #(p.id, p) })
-    |> map.from_list
+    |> dict.from_list
 
   ssg.new(out_dir)
   |> ssg.add_dynamic_route("/posts", indexed_posts, render_post.render)
