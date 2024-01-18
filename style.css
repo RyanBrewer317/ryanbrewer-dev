@@ -36,7 +36,7 @@ nav {
   color: var(--secondary-color-dark);
 }
 
-#nav-search, #nav-subscribe {
+#nav-search, #nav-subscribe, #nav-contact {
   margin-left: 15pt;
 }
 

@@ -17,14 +17,25 @@ What is it?
 
 @paragraph@
 SVM is a compiler backend for functional languages.
-Specifically, it is an abstract stack machine.
+Specifically, it is an abstract stack machine, with many possible implementations.
 It takes in CPS code that's been closure-converted and hoisted,
 and executes it or AOT compiles it to a native binary.
+My current implementation is a naive bytecode VM in Rust, without JITing, 
+mostly for rapid prototyping as the design settles.
 @end@
 
 @paragraph@
 The goals of the project are safety, expressivity, and portability.
-I talk more about the safety below
+I talk more about each of these below, but a quick overview is that
+safety is achieved through a carefully designed type system, and primarily
+includes memory safety. 
+Memory safety that is guaranteed at compile time can make it hard to express what you want,
+such as with Rust's borrow-checker, so SVM uses a combination of ownership and
+runtime checks (like [https://vale.dev/](Vale)).
+When safety isn't important, SVM can run the same bytecode just as well with no runtime tagging or checks.
+This way there's no loss of expressivity, which is very important for a project that
+aims to be a backend for functional languages, which have all sorts of complicated schemes
+for managing memory, such as garbage collectors that would be a nightmare to verify.
 @end@
 
 @subheading@
