@@ -35,6 +35,25 @@ fn update(_model: Model, msg: Msg) -> Model {
 
 fn view(model: Model) -> Element(Msg) {
   div([], [
+    html.h3([], [text("Who I Am")]),
+    p([], [
+      text("I'm Ryan Brewer, the software developer behind "),
+      a([href("https://github.com/RyanBrewer317/SVM")], [text("SVM")]),
+      text(
+        ", an abstract machine for safe, portable computation that functional languages can compile to.",
+      ),
+      text(
+        "With SVM, I'm hoping to broaden accessibility to safe computation, both informationally and financially.",
+      ),
+      text("Consider supporting my work!"),
+    ]),
+    html.iframe([
+      attribute.src("https://github.com/sponsors/RyanBrewer317/button"),
+      attribute.attribute("title", "Sponsor RyanBrewer317"),
+      attribute.height(32),
+      attribute.width(114),
+      attribute.style([#("border", "0"), #("border-radius", "6px;")]),
+    ]),
     html.h3([], [text("My Website")]),
     p([], [
       text("This is my website. It's hosted by Firebase and written mostly in "),
