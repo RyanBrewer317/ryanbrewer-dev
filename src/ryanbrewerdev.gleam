@@ -40,12 +40,12 @@ fn view(model: Model) -> Element(Msg) {
       text("I'm Ryan Brewer, the software developer behind "),
       a([href("https://github.com/RyanBrewer317/SVM")], [text("SVM")]),
       text(
-        ", an abstract machine for safe, portable computation that functional languages can compile to.",
+        ",
+an abstract machine for safe, portable computation that functional languages can compile to. 
+With SVM, I'm hoping to broaden accessibility to safe computation, both informationally and financially. 
+Consider supporting my work!
+",
       ),
-      text(
-        "With SVM, I'm hoping to broaden accessibility to safe computation, both informationally and financially.",
-      ),
-      text("Consider supporting my work!"),
     ]),
     html.iframe([
       attribute.src("https://github.com/sponsors/RyanBrewer317/button"),
