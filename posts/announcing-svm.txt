@@ -5,7 +5,7 @@ tags: announce,announcing,announcement,svm,saber,vm,sabervm,virtual,abstract,mac
 description: This post announces SaberVM, an abstract machine for functional programs that guarantees safety, reliability, and portability.
 
 @paragraph@
-In this post I'm excited to announce the [https://github.com/RyanBrewer317/SVM](Saber Virtual Machine), or SaberVM.
+In this post I'm excited to announce the [https://github.com/RyanBrewer317/SaberVM](Saber Virtual Machine), or SaberVM.
 It's a project I've been working hard on for the past month,
 with fascinating properties and an in-progress MVP implementation that's
 coming along well.
@@ -107,8 +107,8 @@ Conclusion
 
 @paragraph@
 SaberVM is carefully designed but still a very young project. 
-I have an in-progress [https://github.com/RyanBrewer317/SVM](implementation) in Rust
-that I call the MVP, a subset of the final SVM that isn't even necessarily forwards-compatible,
+I have an in-progress [https://github.com/RyanBrewer317/SaberVM](implementation) in Rust
+that I call the MVP, a subset of the final SaberVM that isn't even necessarily forwards-compatible,
 just to play with the ideas and their interactions and see how they really work in practice.
 I'm sure as I learn more the design will change somewhat but the core ideas and goals are very strong.
 @end@
@@ -122,7 +122,7 @@ I think the VM runtime will be easier to write than the typechecker, since it'll
 
 @paragraph@
 If you've read this far and think that the project sounds interesting, consider
-starring it on [https://github.com/RyanBrewer317/SVM](github), or even
+starring it on [https://github.com/RyanBrewer317/SaberVM](github), or even
 sponsoring my work on [https://github.com/sponsors/RyanBrewer317](github) or 
 [https://ko-fi.com/ryanbrewer](ko-fi)!
 @end@

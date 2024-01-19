@@ -2,7 +2,7 @@
 window.dataLayer = window.dataLayer || [];
 function gtag(){dataLayer.push(arguments);}
 gtag('js', new Date());
-        </script><title>Announcing the Saber Virtual Machine - Ryan Brewer</title><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="description" content="This post announces SaberVM, an abstract machine for functional programs that guarantees safety, reliability, and portability."><link rel="icon" type="image/x-icon" href="/favicon.ico"><link rel="alternate" type="application/rss+xml" title="Ryan Brewer's Blog" href="https://ryanbrewer.dev/feed.rss"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="true"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto&display=swap"><script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script><script type="text/javascript" async="true" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css"><script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script><script>hljs.highlightAll();</script><script type="module">import '../../style.css';</script></head><body><nav><a href="/" id="nav-home">Ryan Brewer</a><a href="/search" id="nav-search">Posts</a><a href="/contact.html" id="nav-contact">Contact</a><a href="/feed.rss" id="nav-subscribe"><img src="/rss-icon.png" id="rss-subscribe-icon">Subscribe</a></nav><div id="body"><h1>Announcing the Saber Virtual Machine</h1><div class="date">January 18, 2024</div><p>In this post I&#39;m excited to announce the <a href="https://github.com/RyanBrewer317/SVM">Saber Virtual Machine</a>, or SaberVM.
+        </script><title>Announcing the Saber Virtual Machine - Ryan Brewer</title><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="description" content="This post announces SaberVM, an abstract machine for functional programs that guarantees safety, reliability, and portability."><link rel="icon" type="image/x-icon" href="/favicon.ico"><link rel="alternate" type="application/rss+xml" title="Ryan Brewer's Blog" href="https://ryanbrewer.dev/feed.rss"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="true"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto&display=swap"><script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script><script type="text/javascript" async="true" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css"><script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script><script>hljs.highlightAll();</script><script type="module">import '../../style.css';</script></head><body><nav><a href="/" id="nav-home">Ryan Brewer</a><a href="/search" id="nav-search">Posts</a><a href="/contact.html" id="nav-contact">Contact</a><a href="/feed.rss" id="nav-subscribe"><img src="/rss-icon.png" id="rss-subscribe-icon">Subscribe</a></nav><div id="body"><h1>Announcing the Saber Virtual Machine</h1><div class="date">January 18, 2024</div><p>In this post I&#39;m excited to announce the <a href="https://github.com/RyanBrewer317/SaberVM">Saber Virtual Machine</a>, or SaberVM.
 It&#39;s a project I&#39;ve been working hard on for the past month,
 with fascinating properties and an in-progress MVP implementation that&#39;s
 coming along well.
@@ -65,8 +65,8 @@ you can write functions that attempt single fallible instructions with an except
 the corresponding <code>Err</code> value.
 </p><h3>Conclusion
 </h3><p>SaberVM is carefully designed but still a very young project. 
-I have an in-progress <a href="https://github.com/RyanBrewer317/SVM">implementation</a> in Rust
-that I call the MVP, a subset of the final SVM that isn&#39;t even necessarily forwards-compatible,
+I have an in-progress <a href="https://github.com/RyanBrewer317/SaberVM">implementation</a> in Rust
+that I call the MVP, a subset of the final SaberVM that isn&#39;t even necessarily forwards-compatible,
 just to play with the ideas and their interactions and see how they really work in practice.
 I&#39;m sure as I learn more the design will change somewhat but the core ideas and goals are very strong.
 </p><p>I&#39;ve gotten most of the typechecker done in just a few days, which is really promising,
@@ -74,7 +74,7 @@ and the algorithms are very simple. (I&#39;ll post more about them soon!)
 I think the VM runtime will be easier to write than the typechecker, since it&#39;ll be a naive prototype
 (without, say, JIT compiling), so I&#39;d say the implementation is about halfway done, which is very exciting.
 </p><p>If you&#39;ve read this far and think that the project sounds interesting, consider
-starring it on <a href="https://github.com/RyanBrewer317/SVM">github</a>, or even
+starring it on <a href="https://github.com/RyanBrewer317/SaberVM">github</a>, or even
 sponsoring my work on <a href="https://github.com/sponsors/RyanBrewer317">github</a> or 
 <a href="https://ko-fi.com/ryanbrewer">ko-fi</a>!
 </p></div><div><script src="https://storage.ko-fi.com/cdn/scripts/overlay-widget.js"></script><script>
