@@ -41,7 +41,7 @@
       <pubDate>Thu, 18 Jan 2024 00:00:00 PST</pubDate>
       <link>https://ryanbrewer.dev/posts/announcing-svm.html</link>
       <guid>https://ryanbrewer.dev/posts/announcing-svm.html</guid>
-      <description><![CDATA[This post announces SVM, the Saber Virtual Machine, an abstract machine for functional programs that guarantees safety, reliability, and portability.  Read more <a href="https://ryanbrewer.dev/posts/announcing-svm.html">here</a>!]]></description>
+      <description><![CDATA[This post announces SaberVM, an abstract machine for functional programs that guarantees safety, reliability, and portability.  Read more <a href="https://ryanbrewer.dev/posts/announcing-svm.html">here</a>!]]></description>
     </item>
   </channel>
 </rss>

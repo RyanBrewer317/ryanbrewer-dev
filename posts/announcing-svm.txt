@@ -1,16 +1,16 @@
 id: announcing-svm
 name: Announcing the Saber Virtual Machine
 date: 2024-01-18
-tags: announce,announcing,announcement,svm,saber,vm,virtual,abstract,machine,exception,exceptions,handling,crash,crashing,microreboot,reboot,region,regions,capability,capabilities,morrisett,language,tech,technology,bytecode,stack,vale,generational
-description: This post announces SVM, the Saber Virtual Machine, an abstract machine for functional programs that guarantees safety, reliability, and portability.
+tags: announce,announcing,announcement,svm,saber,vm,sabervm,virtual,abstract,machine,exception,exceptions,handling,crash,crashing,microreboot,reboot,region,regions,capability,capabilities,morrisett,language,tech,technology,bytecode,stack,vale,generational
+description: This post announces SaberVM, an abstract machine for functional programs that guarantees safety, reliability, and portability.
 
 @paragraph@
-In this post I'm excited to announce the [https://github.com/RyanBrewer317/SVM](Saber Virtual Machine), or SVM.
+In this post I'm excited to announce the [https://github.com/RyanBrewer317/SVM](Saber Virtual Machine), or SaberVM.
 It's a project I've been working hard on for the past month,
 with fascinating properties and an in-progress MVP implementation that's
 coming along well.
 If you like writing functional languages and want a portable backend to target that's fast and/or safe,
-you may be very interested in SVM, especially in its upcoming AOT-compile-to-optimized-native form.
+you may be very interested in SaberVM, especially in its upcoming AOT-compile-to-optimized-native form.
 @end@
 
 @subheading@
@@ -18,7 +18,7 @@ What is it?
 @end@
 
 @paragraph@
-SVM is a compiler backend for functional languages.
+SaberVM is a compiler backend for functional languages.
 Specifically, it is an abstract stack machine, with many possible implementations.
 It takes in CPS code that's been closure-converted and hoisted,
 and executes it or AOT compiles it to a native binary.
@@ -32,13 +32,13 @@ To give a very quick overview,
 safety is achieved through a carefully designed type system, and primarily includes memory safety. 
 Expressivity is preserved by using runtime checks and tagging for some of the safety guarantees,
 so you can use any convoluted memory scheme you want so long as you don't dereference a dangling pointer.
-SVM offers portability by being designed to be simple to implement on a variety of platforms.
-Lastly, SVM is reliable because of a built-in crash recovery system you can use to microreboot 
+SaberVM offers portability by being designed to be simple to implement on a variety of platforms.
+Lastly, SaberVM is reliable because of a built-in crash recovery system you can use to microreboot 
 without the whole program terminating, like Erlang's BEAM.
 @end@
 
 @paragraph@
-The two main systems of SVM are *regions* and *exceptions.*
+The two main systems of SaberVM are *regions* and *exceptions.*
 @end@
 
 @subheading@
@@ -69,7 +69,7 @@ instead to read memory controlled by `C` but think that it's `B`.
 @paragraph@
 If allocating something in memory fixes a certain max-size for that chunk of memory for the rest of the program's lifetime, 
 that can cause issues from a poor use of memory. 
-Therefore, SVM puts its values in regions so there are certain points where it's statically known that nothing will 
+Therefore, SaberVM puts its values in regions so there are certain points where it's statically known that nothing will 
 dereference some set of pointers ever again, so their referent memory can be really freed, with no restriction on its future use. 
 As a language writer, if you find your output programs have significant fragmentation issues, 
 you can do some light region inference to fix it. 
@@ -82,20 +82,20 @@ Exceptions
 @end@
 
 @paragraph@
-SVM's other interesting system is exceptions. Exceptions in SVM are not like normal exceptions, 
-though there's nothing stopping a compiler writer from building a normal exception system on top of SVM. 
-Instead, SVM exceptions don't take arguments. Every function must have a catch-all exception case, and only that. 
-Why? Having this built-in to SVM means that instructions that fail at runtime don't crash your program, 
+SaberVM's other interesting system is exceptions. Exceptions in SaberVM are not like normal exceptions, 
+though there's nothing stopping a compiler writer from building a normal exception system on top of SaberVM. 
+Instead, SaberVM exceptions don't take arguments. Every function must have a catch-all exception case, and only that. 
+Why? Having this built-in to SaberVM means that instructions that fail at runtime don't crash your program, 
 they just jump to the exception handler. 
-The language targeting SVM is then expected to produce exception handlers that do at least one of four things:
+The language targeting SaberVM is then expected to produce exception handlers that do at least one of four things:
 crash the program (with an explicit halt instruction),
 rethrow the exception (that is, jump to the caller's catch-all exception handler),
 restart the crashed function (in a microreboot or Erlang style, without information about what caused the exception), or
-release held resources (currently SVM doesn't have locks, only CAS, but this is likely to change).
+release held resources (currently SaberVM doesn't have locks, only CAS, but this is likely to change).
 @end@
 
 @paragraph@
-Note that SVM exceptions are *not* expected to be how your own language handles its exceptions!
+Note that SaberVM exceptions are *not* expected to be how your own language handles its exceptions!
 For example, if you prefer a `Result`-style exception handling, 
 you can write functions that attempt single fallible instructions with an exception handler that produces 
 the corresponding `Err` value.
@@ -106,7 +106,7 @@ Conclusion
 @end@
 
 @paragraph@
-SVM is carefully designed but still a very young project. 
+SaberVM is carefully designed but still a very young project. 
 I have an in-progress [https://github.com/RyanBrewer317/SVM](implementation) in Rust
 that I call the MVP, a subset of the final SVM that isn't even necessarily forwards-compatible,
 just to play with the ideas and their interactions and see how they really work in practice.
