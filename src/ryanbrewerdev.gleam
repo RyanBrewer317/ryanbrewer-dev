@@ -38,11 +38,11 @@ fn view(model: Model) -> Element(Msg) {
     html.h3([], [text("Who I Am")]),
     p([], [
       text("I'm Ryan Brewer, the software developer behind "),
-      a([href("https://github.com/RyanBrewer317/SVM")], [text("SVM")]),
+      a([href("https://github.com/RyanBrewer317/SaberVM")], [text("SaberVM")]),
       text(
         ",
 an abstract machine for safe, portable computation that functional languages can compile to. 
-With SVM, I'm hoping to broaden accessibility to safe computation, both informationally and financially. 
+With SaberVM, I'm hoping to broaden accessibility to safe computation, both informationally and financially. 
 Consider supporting my work!
 ",
       ),

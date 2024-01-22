@@ -12,7 +12,7 @@ pub fn homepage(posts: List(Post)) -> Element(Nil) {
   html.html([attribute.attribute("lang", "en")], [
     head(
       "Ryan Brewer's Blog",
-      "The place Ryan writes his thoughts and shows off cool projects.",
+      "The place Ryan writes his thoughts and shows off SaberVM and other cool projects.",
       [
         html.script(
           [attribute.attribute("type", "module")],
