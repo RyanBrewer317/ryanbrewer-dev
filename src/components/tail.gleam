@@ -4,6 +4,7 @@ import lustre/attribute.{attribute}
 
 pub fn tail() -> Element(a) {
   html.div([], [
+    html.div([attribute.style([#("height", "100pt")])], []),
     html.script(
       [attribute.src("https://storage.ko-fi.com/cdn/scripts/overlay-widget.js")],
       "",

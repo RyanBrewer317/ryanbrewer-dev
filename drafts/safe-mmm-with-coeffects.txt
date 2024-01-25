@@ -162,8 +162,54 @@ Coeffects are the same with comonads. They only make sense for functions, not va
 So I won't be able to define `extract` or `duplicate` for this capability system.
 However, it's imaginable that you can *simulate* this capability system with comonads.
 A very fascinating discussion of this happens in [https://arxiv.org/abs/1907.07283](this paper)
-by Vikraman Choudhury and Neel Krishnaswami, two fantastic researchers.
+by Vikraman Choudhury and Neel Krishnaswami, two fantastic researchers to keep an eye on.
 They use comonads in a nonpure language to simulate purity, instead of the typical reverse of
 using monads in a pure language to simulate nonpurity.
-Ch
+The also make a very explicit connection between comonads and capability-based security,
+and offer some fascinating category theory relating capability systems and linear logic.
+Choudhury in particular is a top researcher on comonadic security right now,
+and I'll recommend another interesting [https://dl.acm.org/doi/abs/10.1145/3563335](paper) of his
+on using comonads, this time for information security. I talked more about that paper in this 
+[https://ryanbrewer.dev/posts/security-crashing-modal-logic.html](post).
+@end@
+
+@paragraph@
+The Crary, et al. paper on capabilities doesn't make any mention of comonads, coeffects, or category theory.
+However, the Choudhury and Krishnaswami paper fills me with confidence about my intuition that 
+this is indeed a coeffect system at heart. The paper *does* mention effect systems, saying,
+@end@
+
+@paragraph@
+*"The relationship between effects and capabilities is quite close. 
+A necessary prerequisite for the use of either system is type inference, 
+performed by a programmer or compiler, and much of the research into effects systems has concentrated on this difficult task. 
+Because of the focus on inference, effect systems are usually formulated as a bottom-up synthesis of effects. 
+Our work may viewed as producing verifiable evidence of the correctness of an inference. 
+Hence, while effect systems typically work bottom-up, specifying the effects that might occur, 
+we take a top-down approach, specifying by capabilities the effects that are* permitted to occur."
+@end@
+
+@paragraph@
+This again sounds like the dual of an effects system, and like much of the literature on coeffects.
+Functions are annotated with labels specifying what is allowed to occur in the function,
+and thus the function can only be called when those things are allowed for the caller.
+@end@
+
+@paragraph@
+I think coeffects are a really interesting way to handle memory safety.
+SaberVM doesn't require that any values are used linearly, so there are no
+"move semantics" or anything like that.
+To do something with memory in a function, you just give that function the capability
+to do that thing, and all of a sudden it's guaranteed that the function will only be 
+called when the memory operations are safe to perform. 
+Freed memory will never be read or written, using a very permissive compiletime analysis
+that is completely compositional (so functions can be analyzed individually).
+@end@
+
+@subheading@
+Conclusion
+@end@
+
+@paragraph@
+
 @end@
