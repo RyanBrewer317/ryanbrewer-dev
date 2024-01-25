@@ -1,0 +1,96 @@
+<html lang="en"><head><script async="true" src="https://www.googletagmanager.com/gtag/js?id=G-BDZJ8SX3Y1"></script><script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+        </script><title>Safe Manual Memory Management with Coeffects - Ryan Brewer</title><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="description" content="Using ideas from Crary et al.'s Calculus of Capabilities, I discuss the coeffectful memory management used in SaberVM."><link rel="icon" type="image/x-icon" href="/favicon.ico"><link rel="alternate" type="application/rss+xml" title="Ryan Brewer's Blog" href="https://ryanbrewer.dev/feed.rss"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="true"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto&display=swap"><script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script><script type="text/javascript" async="true" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css"><script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script><script>hljs.highlightAll();</script>  <script type="module" crossorigin src="/assets/style-b7ef9c88.js"></script>
+  <link rel="stylesheet" href="/assets/style-d6c1c3cd.css">
+</head><body><nav><a href="/" id="nav-home">Ryan Brewer</a><a href="/search" id="nav-search">Posts</a><a href="/contact.html" id="nav-contact">Contact</a><a href="/feed.rss" id="nav-subscribe"><img src="/rss-icon.png" id="rss-subscribe-icon">Subscribe</a></nav><div id="body"><h1>Safe Manual Memory Management with Coeffects</h1><div class="date">January 23, 2024</div><p>Recently I <a href="https://ryanbrewer.dev/posts/announcing-svm.html">announced</a> SaberVM,
+which uses a fun combination of features to express quite a lot in a safe way.
+One of the big interesting parts of SaberVM is its memory safety scheme.
+Part of SaberVM&#39;s strategy is at compiletime, like how Rust guarantees memory safety at compiletime.
+These sorts of approaches have seen a lot of interest lately.
+SaberVM&#39;s compiletime strategy is quite a bit different from Rust&#39;s, however, and isn&#39;t a well-known strategy outside of academia,
+so it might be an exciting new opening in the design space for language designers who haven&#39;t seen it before.
+For marketing purposes I&#39;ll call it &quot;capability-based memory safety,&quot; but I didn&#39;t invent it.
+I thought it could be helpful if I devoted a post to explain capability-based memory safety and why I chose it for SaberVM.
+</p><h3>A Calculus of Capabilities
+</h3><p>The system I&#39;m using is almost entirely taken from the 1999 paper 
+<a href="https://dl.acm.org/doi/10.1145/292540.292564">Typed Memory Management in a Calculus of Capabilities</a>,
+by Karl Crary, David Walker, and Greg Morrisett. 
+My adjustments are generally about making it work for a stack-based bytecode language.
+I highly recommend reading the paper, as it&#39;s short and accessible for an academic paper.
+However, for those unfamiliar with programming language papers and that sort of academic writing,
+this post attempts to talk through the ideas in a more informal, casual style.
+</p><p>I want to emphasize that I didn&#39;t come up with this idea, and the paper is fairly well-cited.
+Compile-time memory safety ideas are much more well-known within academia than outside of it,
+where most people only know of what Rust is doing.
+Some of these ideas made it into the Cyclone language, which actually had a significant influence on Rust&#39;s design.
+</p><p>First, we think of all our memory being divided up into <i>regions,</i> which are basically arenas. 
+To simplify, we won&#39;t consider nested regions, nor an unfreeable &quot;heap region&quot; for allocating without a region.
+If you want to allocate something in the heap, you must have made a region first.
+</p><p>To access the memory in a region, we need <i>capabilities.</i>
+A capability is basically a set of memory access privileges.
+Say we&#39;re using a region called <code>r</code>.
+If I want to store a point <code>(3, 4)</code> in <code>r</code>, I need a <i>read-write</i> capability for <code>r</code>, which I&#39;ll write as <code>+r</code>. 
+Then the type of the point will be <code>(int, int)@r</code> where <code>r</code> is the name of the region.
+Then if I want to access the contents of this point, like <code>fst(p)</code>, I <i>also</i> need the <code>+r</code> capability.
+</p><p>In this system there&#39;s no way to free the point, since regions are like arenas. 
+SaberVM has an extension to the idea that allows freeing individual values, but I won&#39;t go into that here.
+Whole regions can be freed together, though, which needs a <i>unique</i> capability <code>1r</code>.
+Unique capabilities are read-write capabilities but they additionally can&#39;t be duplicated; hence the name.
+That means if you have a capability <code>{+r1, 1r2}</code>, then you know for sure that <code>r1</code> and <code>r2</code> are different regions.
+If region polymorphism is involved, you know the region variables won&#39;t be instantiated with the same region,
+since <code>r2</code> would then exist twice.
+This is really important, because otherwise you could free <code>r2</code> and then read and write in <code>r1</code>, which might be the memory you just freed!
+</p><h3>Region Borrowing
+</h3><p>If creating a region gives you the unique right to free it,
+and that right is needed and consumed when you free it,
+then how do read-write (nonunique) capabilities come about?
+You could instantiate a <code>+r</code> with a <code>1r</code>, and duplicate the <code>+r</code> as much as you want, but then
+you couldn&#39;t get back the access you need to free the region later, so what do you do?
+The amazing answer is <i>bounded capability polymorphism.</i>
+</p><p>Functions can be capability-polymorphic, meaning they can have capability set variables that are instantiated at each callsite.
+These variables can have a <i>bound,</i> which is some set of privileges that they at least grant.
+For example, <code>{1r}</code>\(\le\)<code>{+r}</code> is always true and means that the set <code>{1r}</code> satisfies anything that the set <code>{+r}</code> satisfies 
+(but not necessarily vice versa).
+Therefore, a bounded capability variable looks like <code>c≤C</code> for some set of capabilities <code>C</code>, 
+and can only be instantiated with a set of capabilities that satisfies <code>C</code>.
+So if we have <code>c≤{+r1}</code>, we know that it could be instantiated with, say, <code>{+r1}</code>, <code>{1r1}</code>, or <code>{+r1, +r2}</code>,
+but not <code>{+r2}</code> or <code>{}</code>.
+Why is this so helpful? Well for one we know that <code>c</code> grants at least as much privilege as <code>{+r1}</code>, so we can safely read and write to <code>r1</code>.
+But the much more interesting consequence for a <a href="https://en.wikipedia.org/wiki/Continuation-passing_style">CPS</a>-based language 
+like SaberVM and the language in the paper is <i>region borrowing.</i>
+</p><p>Say I have a CPS function of type <code>forall r: Rgn, c≤{+r}. [c](int, int, [c](int)-&gt;void)-&gt;void</code>.
+What does this mean? It has a polymorphic region variable <code>r</code> and a bounded polymorphic capability variable <code>c</code>
+which has at least the privilege to read and write in <code>r</code>.
+The <code>[c]</code> notation means that the function can only be called in a context where capability set <code>c</code> (our bounded variable) is satisfied. 
+That is, we know this function will at least be allowed to read and write in the instantiated <code>r</code> regions.
+It takes as arguments two integers and a continuation that also needs <code>c</code> to be satisfied, and which takes an integer.
+You can think of this as a CPS&#39;d addition or multiplication function or something like that,
+that uses heap allocation for some reason.
+</p><p>We can call that function instantiating <code>r</code> with a region <code>r2</code> and instantiating <code>c</code> with <code>{1r2}</code>, since <code>{1r2}</code>\(\le\)<code>{+r2}</code>. 
+That means our function type becomes <code>[{1r2}](int, int, [{1r2}](int)-&gt;void)-&gt;void</code>, 
+and can be given a continuation that is able to free <code>r2</code>.
+This is in spite of the fact that the code inside the function is using a duplicable <code>c≤{+r2}</code> capability and is accessing <code>r2</code> willy-nilly.
+This is perfectly safe, because either the continuation gets dropped and the program continues with only the <code>+r2</code> capability
+(never again being able to free <code>r2</code>) or the continuation is eventually called (via the <code>c≤{+r}</code> capability) and the <code>1r2</code> capability is regained.
+These ideas can be used in a non-CPS setting too (see <a href="https://cyclone.thelanguage.org/wiki/Type-Checking%20Regions/">Cyclone</a>), 
+but CPS simplifies this a lot. 
+As you can see, this allows a kind of region borrowing, where <code>1r</code> capabilities are temporarily made <code>+r</code> in a safe way.
+</p><p>Capabilities are purely compiletime things, like types,
+and each point in the program has a capability for everything that&#39;s allowed at that point.
+Note that a uniqueness capability doesn&#39;t put any uniqueness restriction on the values the 
+program computes with; pointers can be duplicated as much as you want, and the type system still
+prevents use-after-free bugs.
+When a region <code>r</code> is freed, it&#39;s impossible to obtain a capability for it, so pointers into the region
+can&#39;t be dereferenced, even though they can still be passed around.
+</p><h3>Coeffects
+</h3><p>hi
+</p></div><div><script src="https://storage.ko-fi.com/cdn/scripts/overlay-widget.js"></script><script>
+  kofiWidgetOverlay.draw('ryanbrewer', {
+    'type': 'floating-chat',
+    'floating-chat.donateButton.text': 'Support me',
+    'floating-chat.donateButton.background-color': '#323842',
+    'floating-chat.donateButton.text-color': '#fff'
+  });
+    </script><script src="/__/firebase/8.10.1/firebase-app.js"></script><script src="/__/firebase/8.10.1/firebase-analytics.js"></script><script src="/__/firebase/init.js"></script><script>firebase.analytics();</script></div></body></html>

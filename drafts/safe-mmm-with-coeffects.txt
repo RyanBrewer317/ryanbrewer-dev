@@ -1,0 +1,169 @@
+id: safe-mmm-with-coeffects
+name: Safe Manual Memory Management with Coeffects
+date: 2024-01-23
+tags: safe,safety,manual,memory,management,coeffect,coeffects,sabervm,saber,tech,programming,language,languages,static,analysis
+description: Using ideas from Crary et al.'s Calculus of Capabilities, I discuss the coeffectful memory management used in SaberVM.
+
+@paragraph@
+Recently I [https://ryanbrewer.dev/posts/announcing-svm.html](announced) SaberVM,
+which uses a fun combination of features to express quite a lot in a safe way.
+One of the big interesting parts of SaberVM is its memory safety scheme.
+Part of SaberVM's strategy is at compiletime, like how Rust guarantees memory safety at compiletime.
+These sorts of approaches have seen a lot of interest lately.
+SaberVM's compiletime strategy is quite a bit different from Rust's, however, and isn't a well-known strategy outside of academia,
+so it might be an exciting new opening in the design space for language designers who haven't seen it before.
+For marketing purposes I'll call it "capability-based memory safety," but I didn't invent it.
+I thought it could be helpful if I devoted a post to explain capability-based memory safety and why I chose it for SaberVM.
+@end@
+
+@subheading@
+A Calculus of Capabilities
+@end@
+
+@paragraph@
+The system I'm using is almost entirely taken from the 1999 paper 
+[https://dl.acm.org/doi/10.1145/292540.292564](Typed Memory Management in a Calculus of Capabilities),
+by Karl Crary, David Walker, and Greg Morrisett. 
+My adjustments are generally about making it work for a stack-based bytecode language, and I don't discuss them here.
+I highly recommend reading the paper, as it's short and accessible for an academic paper.
+However, for those unfamiliar with programming language papers and that sort of academic writing,
+this post attempts to talk through the ideas in a more informal, casual style.
+@end@
+
+@paragraph@
+I want to emphasize that I didn't come up with this idea, and the paper is fairly well-cited.
+Compile-time memory safety ideas are much more well-known within academia than outside of it,
+where most people only know of what Rust is doing.
+Some of these ideas made it into the Cyclone language, which actually had a significant 
+[https://doc.rust-lang.org/reference/influences.html](influence) on Rust's design.
+@end@
+
+@paragraph@
+First, we think of all our memory being divided up into *regions,* which are basically arenas. 
+To simplify, we won't consider nested regions, nor an unfreeable "heap region" for allocating without a region.
+If you want to allocate something in the heap, you must have made a region first.
+@end@
+
+@paragraph@
+To access the memory in a region, we need *capabilities.*
+A capability is basically a set of memory access privileges.
+Say we're using a region called `r`.
+If I want to store a point `(3, 4)` in `r`, I need a *read-write* capability for `r`, which I'll write as `+r`. 
+Then the type of the point will be `(int, int)\@r` where `r` is the name of the region.
+Then if I want to access the contents of this point, like `fst(p)`, I *also* need the `+r` capability.
+@end@
+
+@paragraph@
+In this system there's no way to free the point, since regions are like arenas. 
+SaberVM has an extension to the idea that allows freeing individual values, but I won't go into that here.
+Whole regions can be freed together, though, which needs a *unique* capability `1r`.
+Unique capabilities grant read-write permission but they additionally can't be duplicated in a set of capabilities; hence the name.
+That means if you have a capability `{+r1, 1r2}`, then you know for sure that `r1` and `r2` are different regions.
+If region polymorphism is involved, you know the region variables won't be instantiated with the same region,
+since `r2` would then exist in the capability set twice.
+This is really important, because otherwise you could free `r2` and then read and write in `r1`, which might be the memory you just freed!
+@end@
+
+@paragraph@
+Note that this means capability sets aren't *really* sets.
+`{+r}` is equivalent to `{+r, +r}`, but `{1r}` and `{1r, 1r}`
+aren't equivalent because `{1r, 1r}` is an unsatisfiable capability
+asserting that `r`\\(\\neq\\)`r`.
+@end@
+
+@subheading@
+Region Borrowing
+@end@
+
+@paragraph@
+If creating a region gives you the unique right to free it,
+and that right is needed and consumed when you free it,
+then how do read-write (nonunique) capabilities come about?
+You could instantiate a `+r` with a `1r`, and duplicate the `+r` as much as you want, but then
+you couldn't get back the access you need to free the region later, so what do you do?
+The amazing answer is *bounded capability polymorphism.*
+@end@
+
+@paragraph@
+Functions can be capability-polymorphic, meaning they can have capability variables that are instantiated at each callsite.
+These variables can have a *bound,* which is some set of privileges that they at least grant.
+For example, `{1r}`\\(\\le\\)`{+r}` is always true and means that the set `{1r}` satisfies anything that the set `{+r}` satisfies 
+(but not necessarily vice versa).
+Therefore, a bounded capability variable looks like `c≤C` for some set of capabilities `C`, 
+and can only be instantiated with a set of capabilities that satisfies `C`.
+So if we have `c≤{+r1}`, we know that it could be instantiated with, say, `{+r1}`, `{1r1}`, or `{+r1, +r2}`,
+but not `{+r2}` or `{}`.
+Why is this so helpful? Well for one we know that `c` grants at least as much privilege as `{+r1}`, so we can safely read and write to `r1`.
+But the much more interesting consequence for a [https://en.wikipedia.org/wiki/Continuation-passing_style](CPS)-based language 
+like SaberVM and the language in the paper is *region borrowing.*
+@end@
+
+@paragraph@
+Say I have a CPS function of type `forall r: Rgn, c≤{+r}. [c](int, int, [c](int)->void)->void`.
+What does this mean? It has a polymorphic region variable `r` and a bounded polymorphic capability variable `c`
+which has at least the privilege to read and write in `r`.
+The `[c]` notation means that the function can only be called in a context where capability set `c` (our bounded variable) is satisfied. 
+That is, we know this function will at least be allowed to read and write in the instantiated `r` regions.
+It takes as arguments two integers and a continuation that also needs `c` to be satisfied, and which takes an integer.
+You can think of this as a CPS'd addition or multiplication function or something like that,
+that uses heap allocation for some reason.
+@end@
+
+@paragraph@
+We can call that function instantiating `r` with a region `r2` and instantiating `c` with `{1r2}`, since `{1r2}`\\(\\le\\)`{+r2}`. 
+That means our function type becomes `[{1r2}](int, int, [{1r2}](int)->void)->void`, 
+and can be given a continuation that is able to free `r2`.
+This is in spite of the fact that the code inside the function is using a duplicable `c≤{+r2}` capability and is accessing `r2` willy-nilly.
+This is perfectly safe, because either the continuation gets dropped and the program continues with only the `+r2` capability
+(never again being able to free `r2`) or the continuation is eventually called (via the `c≤{+r}` capability) and the `1r2` capability is regained,
+with the `+r2` capability forever lost (until the next borrow :).
+These ideas can be used in a non-CPS setting too (see [https://cyclone.thelanguage.org/wiki/Type-Checking%20Regions/](Cyclone)), 
+but CPS simplifies this process a lot.
+@end@
+
+@paragraph@
+As you can see, this allows a kind of region borrowing, where `1r` capabilities are temporarily made `+r` in a safe way.
+@end@
+
+@paragraph@
+Capabilities are purely compiletime things, like types,
+and each point in the program has a capability for everything that's allowed at that point.
+Note that a uniqueness capability doesn't put any uniqueness restriction on the values the 
+program computes with; pointers can always be duplicated as much as you want, and the type system still
+prevents use-after-free bugs.
+When a region `r` is freed, it's impossible to obtain a capability for it, so pointers into the region
+can't be dereferenced, even though they can still be passed around.
+@end@
+
+@subheading@
+Coeffects
+@end@
+
+@paragraph@
+I wanted to close out the body of this post with a fun theoretical discussion.
+Recall that function types are written like `[C](a)->b`, 
+where `C` is a set of capabilities that must be satisfied for the function to be safely called.
+This approach to guaranteeing safety at compiletime is called *coeffectful.*
+You may have heard of *effects,* and how they are modelled with *monads.*
+Coeffects are the dual of effects: they don't change the environment as they execute,
+they *require* some fact about the environment *to be able* to start executing.
+@end@
+
+@paragraph@
+Effects don't make monads. They only make sense for functions, not values.
+So there's no `IO(a)` in an effect system, to use `IO` effects as a running example.
+There's no `return: a->IO(a)` unless `return` actually performs an IO effect.
+There's no way for `join: IO(IO(a)) -> IO(a)` to make sense for an effect system; almost because it's too trivial.
+This is why effect systems often write `a -[IO]-> b` instead of `a -> IO(b)` for effectful functions.
+@end@
+
+@paragraph@
+Coeffects are the same with comonads. They only make sense for functions, not values.
+So I won't be able to define `extract` or `duplicate` for this capability system.
+However, it's imaginable that you can *simulate* this capability system with comonads.
+A very fascinating discussion of this happens in [https://arxiv.org/abs/1907.07283](this paper)
+by Vikraman Choudhury and Neel Krishnaswami, two fantastic researchers.
+They use comonads in a nonpure language to simulate purity, instead of the typical reverse of
+using monads in a pure language to simulate nonpurity.
+Ch
+@end@

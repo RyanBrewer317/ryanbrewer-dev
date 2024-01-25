@@ -72,14 +72,14 @@ ensures the values it holds can only affect other <code>Secret</code> values.
 In the modal language, however, we&#39;re talking about a 
 <code>Public</code> comonad that makes sure the held value only depends on <code>Public</code> values. 
 This flipping of perspective has been studied a bit,
-most notably by <a href="https://dl.acm.org/doi/abs/10.1145/3563335">Choudbury</a>.
+most notably by <a href="https://dl.acm.org/doi/abs/10.1145/3563335">Choudhury</a>.
 He takes inspiration from a system by <a href="https://dl.acm.org/doi/10.1145/3011069">Davies</a> (that is
 explicitly inspired by necessity in modal logic) that is used to 
 determine which expressions in a language don&#39;t depend on user input,
 and can therefore be evaluated at compiletime as an optimization.
 This is like noticing that <code>y</code> is necessarily <code>4</code> in the python code above,
 and removing the addition.
-Choudbury extends this idea for language-based security, 
+Choudhury extends this idea for language-based security, 
 combining it with the <code>Secret</code> monad I just mentioned.
 </p><h3>Crashing
 </h3><p>Consider for a moment what it is that an <a href="https://www.w3schools.com/python/ref_keyword_assert.asp">assert statement</a> 

@@ -116,14 +116,14 @@ ensures the values it holds can only affect other `Secret` values.
 In the modal language, however, we're talking about a 
 `Public` comonad that makes sure the held value only depends on `Public` values. 
 This flipping of perspective has been studied a bit,
-most notably by [https://dl.acm.org/doi/abs/10.1145/3563335](Choudbury).
+most notably by [https://dl.acm.org/doi/abs/10.1145/3563335](Choudhury).
 He takes inspiration from a system by [https://dl.acm.org/doi/10.1145/3011069](Davies) (that is
 explicitly inspired by necessity in modal logic) that is used to 
 determine which expressions in a language don't depend on user input,
 and can therefore be evaluated at compiletime as an optimization.
 This is like noticing that `y` is necessarily `4` in the python code above,
 and removing the addition.
-Choudbury extends this idea for language-based security, 
+Choudhury extends this idea for language-based security, 
 combining it with the `Secret` monad I just mentioned.
 @end@
 
