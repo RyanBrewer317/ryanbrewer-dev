@@ -1,6 +1,6 @@
 id: safe-mmm-with-coeffects
 name: Safe Manual Memory Management with Coeffects
-date: 2024-01-23
+date: 2024-01-25
 tags: safe,safety,manual,memory,management,coeffect,coeffects,sabervm,saber,tech,programming,language,languages,static,analysis
 description: Using ideas from Crary et al.'s Calculus of Capabilities, I discuss the coeffectful memory management used in SaberVM.
 
@@ -14,6 +14,12 @@ SaberVM's compiletime strategy is quite a bit different from Rust's, however, an
 so it might be an exciting new opening in the design space for language designers who haven't seen it before.
 For marketing purposes I'll call it "capability-based memory safety," but I didn't invent it.
 I thought it could be helpful if I devoted a post to explain capability-based memory safety and why I chose it for SaberVM.
+@end@
+
+@paragraph@
+This post assumes a passing familiarity with use-after-free bugs,
+[https://en.wikipedia.org/wiki/Continuation-passing_style](continuation-passing style),
+and memory arenas.
 @end@
 
 @subheading@
@@ -140,13 +146,29 @@ Coeffects
 @end@
 
 @paragraph@
+This part of the post assumes some familiarity with monads and effect systems. 
+A passing familiarity of comonads or category theory will help. 
+Feel free to skip to the conclusion of the post if this isn't understandable!
+@end@
+
+@paragraph@
 I wanted to close out the body of this post with a fun theoretical discussion.
 Recall that function types are written like `[C](a)->b`, 
 where `C` is a set of capabilities that must be satisfied for the function to be safely called.
 This approach to guaranteeing safety at compiletime is called *coeffectful.*
-You may have heard of *effects,* and how they are modelled with *monads.*
+You may have heard of *effects,* and how they are modeled with *monads.*
 Coeffects are the dual of effects: they don't change the environment as they execute,
 they *require* some fact about the environment *to be able* to start executing.
+@end@
+
+@paragraph@
+Comonads are the duals of monads.
+Instead of `return: a -> m a` they have `extract: c a -> a`.
+Instead of `join: m (m a) -> m a` they have `duplicate: c a -> c (c a)`.
+Instead of `bind: m a -> (a -> m b) -> m b` they have `cobind: c a -> (c a -> b) -> c b`.
+We won't generally assume comonads have an `fmap: (a -> b) -> (c a -> c b)`
+since that requirement can get in the way and isn't needed in true category theory.
+(It's referred to as *tensorial strength* if you need a search term).
 @end@
 
 @paragraph@
@@ -165,7 +187,7 @@ A very fascinating discussion of this happens in [https://arxiv.org/abs/1907.072
 by Vikraman Choudhury and Neel Krishnaswami, two fantastic researchers to keep an eye on.
 They use comonads in a nonpure language to simulate purity, instead of the typical reverse of
 using monads in a pure language to simulate nonpurity.
-The also make a very explicit connection between comonads and capability-based security,
+They also make a very explicit connection between comonads and capability-based security,
 and offer some fascinating category theory relating capability systems and linear logic.
 Choudhury in particular is a top researcher on comonadic security right now,
 and I'll recommend another interesting [https://dl.acm.org/doi/abs/10.1145/3563335](paper) of his
@@ -176,7 +198,7 @@ on using comonads, this time for information security. I talked more about that 
 @paragraph@
 The Crary, et al. paper on capabilities doesn't make any mention of comonads, coeffects, or category theory.
 However, the Choudhury and Krishnaswami paper fills me with confidence about my intuition that 
-this is indeed a coeffect system at heart. The paper *does* mention effect systems, saying,
+this is indeed a coeffect system at heart. The Crary, et al. paper *does* mention *effect* systems, though, saying,
 @end@
 
 @paragraph@
@@ -190,7 +212,7 @@ we take a top-down approach, specifying by capabilities the effects that are* pe
 @end@
 
 @paragraph@
-This again sounds like the dual of an effects system, and like much of the literature on coeffects.
+This again sounds like the dual of an effect system, and like much of the literature on coeffects.
 Functions are annotated with labels specifying what is allowed to occur in the function,
 and thus the function can only be called when those things are allowed for the caller.
 @end@
@@ -200,9 +222,9 @@ I think coeffects are a really interesting way to handle memory safety.
 SaberVM doesn't require that any values are used linearly, so there are no
 "move semantics" or anything like that.
 To do something with memory in a function, you just give that function the capability
-to do that thing, and all of a sudden it's guaranteed that the function will only be 
+to do that thing, and the type system guarantees that the function will only be 
 called when the memory operations are safe to perform. 
-Freed memory will never be read or written, using a very permissive compiletime analysis
+The memory in freed regions will never be read or written, using a very permissive compiletime analysis
 that is completely compositional (so functions can be analyzed individually).
 @end@
 
@@ -211,5 +233,28 @@ Conclusion
 @end@
 
 @paragraph@
+This post is perhaps longer and more technical than some of my others.
+Public interest in SaberVM since I [https://ryanbrewer.dev/posts/announcing-svm.html](announced) 
+it has far exceeded my expectations, 
+so I thought it might be appreciated if I wrote a few posts explaining the magic sauce that makes it work.
+@end@
 
+@paragraph@
+Aside from that, I've thought for a long time that coeffects are very underappreciated
+for programming language safety guarantees. 
+That was a big part of why I wrote this [https://ryanbrewer.dev/posts/security-crashing-modal-logic.html](post)
+which talked a little more about how comonads (and the necessity operator from modal logic, which is a comonad)
+can be used for information security.
+@end@
+
+@paragraph@
+I hope this post is interesting for people.
+If you found it interesting, I recommend reading the original [https://dl.acm.org/doi/10.1145/292540.292564](paper),
+and checking out the [https://cyclone.thelanguage.org/](Cyclone) language.
+I also of course recommend checking out [https://github.com/RyanBrewer317/SaberVM](SaberVM) if you haven't.
+If you want to see SaberVM's progress and are maybe even considering using it as the
+backend of your functional language, consider
+starring it on [https://github.com/RyanBrewer317/SaberVM](github), or even
+sponsoring my work on [https://github.com/sponsors/RyanBrewer317](github) or 
+[https://ko-fi.com/ryanbrewer](ko-fi)!
 @end@
