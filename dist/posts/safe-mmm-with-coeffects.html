@@ -150,6 +150,26 @@ to do that thing, and the type system guarantees that the function will only be
 called when the memory operations are safe to perform. 
 The memory in freed regions will never be read or written, using a very permissive compiletime analysis
 that is completely compositional (so functions can be analyzed individually).
+</p><h3>SaberVM
+</h3><p>As a final detail, it&#39;s worth mentioning why I chose this for SaberVM instead of other approaches.
+I talk about this at length in my <a href="https://ryanbrewer.dev/posts/announcing-svm.html">announcement</a>
+and even more on the README of the SaberVM <a href="https://github.com/RyanBrewer317/SaberVM">github</a>,
+so I won&#39;t go into much detail here.
+</p><p>SaberVM should be able to support garbage collection, since it&#39;s intended to be a target for functional languages. 
+Ideally it can do this without FFI, since SaberVM binaries that use FFI can no longer be blindly trusted. 
+That means there can be very few limitations on how memory is accessed.
+I&#39;m pairing this system with Vale&#39;s <a href="https://verdagon.dev/blog/generational-references">generational references</a>
+so that values within a region can be freed and reused, without freeing the whole region.
+This gives a lot of expressivity, and I&#39;m a big fan of what Vale is doing.
+The region system offers a way to deal with the fragmentation issues generational references can cause,
+because there are certain points in a program where we can guarantee at compiletime
+that some memory won&#39;t be accessed ever again (namely, when we free the region),
+which means we can combine all that memory into a single chunk to start allocating out of
+without fear of how old pointers could dereference into it.
+</p><p>That really is the primary reason for using regions, but they offer a number of other benefits as well.
+You can use many small regions if you don&#39;t want to be reusing the memory in them for some reason,
+and they work like arenas at runtime so have very fast allocation and deallocation.
+I&#39;d love to see more languages start incorporating capability-based (or coeffectful) memory safety guarantees.
 </p><h3>Conclusion
 </h3><p>This post is perhaps longer and more technical than some of my others.
 Public interest in SaberVM since I <a href="https://ryanbrewer.dev/posts/announcing-svm.html">announced</a> 

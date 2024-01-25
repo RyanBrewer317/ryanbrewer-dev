@@ -229,6 +229,38 @@ that is completely compositional (so functions can be analyzed individually).
 @end@
 
 @subheading@
+SaberVM
+@end@
+
+@paragraph@
+As a final detail, it's worth mentioning why I chose this for SaberVM instead of other approaches.
+I talk about this at length in my [https://ryanbrewer.dev/posts/announcing-svm.html](announcement)
+and even more on the README of the SaberVM [https://github.com/RyanBrewer317/SaberVM](github),
+so I won't go into much detail here.
+@end@
+
+@paragraph@
+SaberVM should be able to support garbage collection, since it's intended to be a target for functional languages. 
+Ideally it can do this without FFI, since SaberVM binaries that use FFI can no longer be blindly trusted. 
+That means there can be very few limitations on how memory is accessed.
+I'm pairing this system with Vale's [https://verdagon.dev/blog/generational-references](generational references)
+so that values within a region can be freed and reused, without freeing the whole region.
+This gives a lot of expressivity, and I'm a big fan of what Vale is doing.
+The region system offers a way to deal with the fragmentation issues generational references can cause,
+because there are certain points in a program where we can guarantee at compiletime
+that some memory won't be accessed ever again (namely, when we free the region),
+which means we can combine all that memory into a single chunk to start allocating out of
+without fear of how old pointers could dereference into it.
+@end@
+
+@paragraph@
+That really is the primary reason for using regions, but they offer a number of other benefits as well.
+You can use many small regions if you don't want to be reusing the memory in them for some reason,
+and they work like arenas at runtime so have very fast allocation and deallocation.
+I'd love to see more languages start incorporating capability-based (or coeffectful) memory safety guarantees.
+@end@
+
+@subheading@
 Conclusion
 @end@
 
