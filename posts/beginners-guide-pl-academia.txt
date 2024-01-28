@@ -1,6 +1,6 @@
 id: beginners-guide-pl-academia
 name: A Beginner's Guide to Programming Language Academia
-date: 2024-01-26
+date: 2024-01-28
 tags: beginner,guide,pl,programming,language,languages,academia,paper,papers,academic,list,experience
 description: This post briefly maps out many different subfields of programming language theory, in an effort to make it more accessible to those outside academia.
 
