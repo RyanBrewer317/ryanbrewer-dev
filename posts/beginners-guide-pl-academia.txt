@@ -1,0 +1,562 @@
+id: beginners-guide-pl-academia
+name: A Beginner's Guide to Programming Language Academia
+date: 2024-01-26
+tags: beginner,guide,pl,programming,language,languages,academia,paper,papers,academic,list,experience
+description: This post briefly maps out many different subfields of programming language theory, in an effort to make it more accessible to those outside academia.
+
+@paragraph@
+After my last [https://ryanbrewer.dev/posts/safe-mmm-with-coeffects.html](post),
+a few people seemed interested in the papers I read, 
+so I thought I'd write a (necessarily long) post mapping out my experience of
+programming language papers, with tons of recommendations for programming language
+developers to start exploring.
+At the end I'll have a list of all the papers I mention throughout the post.
+Note that this is just my own journey through the academia, and will be missing plenty of important work.
+Hopefully what I have here will serve as good jumping off points for your own PL research.
+@end@
+
+@paragraph@
+If you aren't familiar reading academic papers, don't worry!
+It's not as hard as you think. 
+My best advice for getting started is patience.
+Papers will often use terms you (or I) are not familiar with,
+but then they'll define the terms later in the paper.
+I don't know why people write this way, but it seems to be a convention.
+Also, when you read a paper, start with the abstract, introduction, and conclusion.
+Leave the actual technical details of the work to the end.
+@end@
+
+@paragraph@
+For terms that they don't define, there are two youtube playlists I HAVE to recommend, by
+[https://youtube.com/playlist?list=PLbgaMIhjbmEnaH_LTkxLI7FMa2HsnawM_&si=FIZVKTC8TXFz-IfI](Bartozs Milewski)
+and [https://youtube.com/playlist?list=PLCTMeyjMKRkqTM2-9HXH81tvpdROs-nz3&si=2iJc5syQCdk2rbjz](Richard Southwell).
+I especially recommend the latter one, 
+for getting me up to speed on a ton of important concepts in an accessible way.
+The things that it taught me that you should probably know:
+intuitionistic logic, sequent calculus, dependent types, the Curry-Howard isomorphism.
+If you don't like youtube videos, many blog posts across the internet explain pieces of these ideas.
+Exercise your Google-Fu! (Or whatever search engine you use.)
+Self learning requires a lot of googling.
+@end@
+
+@paragraph@
+The prerequisites for this post are all over the place:
+if you don't understand something, just skip it!
+There may be other things in other sections that are more digestable.
+I hope this post will have something for people who are fairly advanced too, 
+since some of these things are pretty niche, even in PL.
+@end@
+
+@subheading@
+Static and Dynamic Analysis
+@end@
+
+@paragraph@
+When your code doesn't compile because of a type error, it means the language is doing something called *static analysis.* 
+"Static" is an adjective referring to everything at compile-time.
+"Dynamic" is the opposite, referring to everything at runtime.
+Thus, "dynamic analysis" means doing some runtime checks, like guaranteeing that indexing into an array is in bounds
+by crashing (or producing `undefined`) if it's not.
+@end@
+
+@paragraph@
+Type theory is the bread and butter of static analysis.
+If you say `int x = 5;` then you're doing type theory, because `x` is given the *type* `int`.
+If you then try to assign `x` the value `"hello!"` then that's a type error,
+because any value of `x` must have the type `int`, but `"hello!"` has the type `string`.
+Types are very familiar to programmers.
+@end@
+
+@paragraph@
+In a "statically typed" language, types are checked at compile-time.
+In a "dynamically typed" language, types are checked at runtime.
+In a "strongly typed" language, incompatible types leads to a crash or compile error.
+In a "weakly typed" language, incompatible types are *coerced,* 
+meaning one of the incompatible values is modified to make the types match.
+JavaScript is the classic example of a weakly typed language: `parseInt` needs its argument to be a string, 
+so if you give it something else then that thing will be implicitly turned into a string before `parseInt` starts working with it.
+@end@
+
+@paragraph@
+Dynamic typing is still absolutely a part of type theory, and I've found some of the papers on it to be fascinating.
+When you combine static and dynamic typing, you get a system that can express anything correct and rule out some incorrect things, 
+whereas type systems usually try to rule out all incorrect things and still allow some correct things. 
+They're inverse approaches.
+[https://dl.acm.org/doi/10.1145/96709.96747](Quasi-static typing) (Satish Thatte) is my personal favorite paper on this, 
+related to a much more famous [https://dl.acm.org/doi/10.1145/75277.75296](paper) 
+with a godsquad of four researchers you should pay attention to.
+Other interesting work on combining static and dynamic types (often called "gradual typing") 
+are [https://homepages.inf.ed.ac.uk/wadler/topics/blame.html](blame) (Wadler) and 
+[https://users.soe.ucsc.edu/~cormac/papers/popl06-hybrid.pdf](hybrid typing) (Flanagan), 
+both from researchers that are worth keeping an eye on. 
+Wadler did much of the theoretical work behind Haskell, and Flanagan did much of the work behind ANF compilation.
+I'm sure I'm forgetting important work here but that should be enough to give a good jumping off point for your own research.
+@end@
+
+@subheading@
+Dependent Types
+@end@
+
+@paragraph@
+That's all I'm going to say about dynamic types now, 
+since type theory generally tries to remove runtime checks as much as possible.
+The farthest you can go with this is something called *dependent types.*
+Dependent type theory is enormous but some names to know are Per Martin-Löf
+(a logician and philosopher who came up with many of the original ideas)
+and Thierry Coquand.
+@end@
+
+@paragraph@
+Dependent type theory can be quite difficult to grasp the first ten times you try,
+but eventually the ideas will start to click, no matter your background.
+Earlier I mentioned Richard Southwell's wonderful 
+[https://youtube.com/playlist?list=PLCTMeyjMKRkqTM2-9HXH81tvpdROs-nz3&si=2iJc5syQCdk2rbjz](videos)
+for learning dependent type theory, and I've also written a [https://ryanbrewer.dev/posts/logic-in-types.html](post)
+that tries to gently introduce the ideas.
+@end@
+
+@paragraph@
+The main thing you need to know about dependent types for now is that they allow you to express any
+facts you want about your programs (more or less) and offer you a way to prove those facts.
+So you could write a function that gets things from an array, but the given array has to be
+big enough for the given index to make sense.
+Then to use this function, you just write a proof that the array is big enough for the index.
+It's quite a bit of effort compared to using types in traditional languages, 
+but it's very useful when program correctness really matters.
+If you want the language to *figure out the proofs for you,*
+check out [https://en.wikipedia.org/wiki/Liquid_Haskell](Liquid Haskell)'s [https://arxiv.org/abs/2010.07763](refinement types).
+Note that in general dependently typed languages use intuitionistic logic for their proofs;
+if you're interested in expressing classical logic, check out the continuation stuff I mention later in the post.
+Lean notably allows classical logic with its dependent types.
+@end@
+
+@paragraph@
+The classic dependently typed system is called the Calculus of Constructions, or CoC.
+There's no way to express your typical functional-language ADTs in it,
+so it's often extended to the Calculus of Inductive Constructions, or CIC,
+which is really just CoC + (G)ADTs.
+Cedille (which I discuss further later in the post) has another approach to adding ADTs
+using pure lambda calculus, the details of which I won't discuss in this post.
+@end@
+
+@paragraph@
+Since we can do arbitrary computation in the type system in a dependently typed language,
+we suddenly need types *for our types,* which we call *kinds.*
+A very simple and beautiful formalization of this structure is
+[https://www.cambridge.org/core/journals/journal-of-functional-programming/article/introduction-to-generalized-type-systems/869991BA6A99180BF96A616894C6D710](pure type systems)
+or "PTS"s, by a very famous researcher named Henk Barendregt.
+The paper I just linked calls them "generalized type systems" but that's not what anyone calls them anymore.
+His "\\(\\lambda\\)-cube" in that paper is extremely famous, with CoC being the most powerful system present. 
+So there aren't ADTs in any corner of the cube.
+(And every corner of it is a system that definitely halts, so none of it is even turing complete!)
+@end@
+
+@paragraph@
+If you want you can have computation on the kind level, the heirarchy of types-of-types-of-types-of...
+can go on forever (in which case they're called "universes")
+and the "Extended CIC" has such an infinite heirarchy.
+The Coq (maybe renamed to Rocq?) dependently typed language is based on the extended CIC.
+@end@
+
+@subheading@
+Termination Checking
+@end@
+
+@paragraph@
+Dependent types allow you to write functions that produce types,
+and call those functions at compile-time to decide the types of your values.
+That means you can have arbitrary code running at compile time,
+so most dependently typed languages aren't allowed to loop forever.
+(There are other reasons infinite loops are bad, which have to do with how dependent types express propositions and proofs.)
+This segues to a super fascinating field about *termination checking.*
+Think of it as "how to get around the halting problem" or
+"how bad is it, *really,* to be turing incomplete?"
+The goal is to be able to express normal programs while also knowing that none of those programs loop forever.
+@end@
+
+@paragraph@
+A very important part of termination checking is *rewrite theory.*
+It's a very fun theory about computation where you have a list of symbols 
+(a "term") and a set of rules (a "term-rewriting system" or TRS) 
+and you apply those rules in any order to the term until none of them apply anymore.
+A rule might look like \\(t\\&f\\rightarrow f\\), which shows a computation rule for logic.
+@end@
+
+@paragraph@
+Term rewriting represents computation as a bunch of terms with a "rewrite-to" relation between them;
+that is, computation is done in set theory, and function composition is just relation transitivity.
+It's quite elegant, and gives a nice language for talking about computation.
+In particular, if there are no infinite sequence of steps in your rewrite relation,
+then the rewrite system halts on every term you give it.
+Often you show that the sequences are finite by assigning each term a positive integer 
+in such a way as to guarantee that each step in the relation always reduces the positive integer.
+Since every term's integer is positive, you know that those subtractions can't go on forever.
+@end@
+
+@paragraph@
+A fun paper combining functional programming and rewrite theory is
+[https://www.researchgate.net/publication/29622149_Decidable_Type_Inference_for_the_Polymorphic_Rewriting_Calculus](Decidable Type Inference for the Polymorphic Rewriting Calculus).
+A great book on rewrite theory and termination checking is
+[https://www.amazon.com/Term-Rewriting-That-Franz-Baader/dp/0521779200](Term Rewriting and All That) by Franz Baader and Tobias Nipkow
+(who's a top researcher in rewrite theory).
+@end@
+
+@paragraph@
+Most dependently typed languages assign each term its "depth," which is meant like the depth of a binary tree.
+For a linked list, its depth is its length. 
+This is a useful positive integer to assign because recursion (the only way to loop forever in a functional language)
+usually is applied to the subcomponents of a term, that is, terms whose depth are 1 less.
+To support this and other reasoning, they'll often encode positive integers themselves as something like linked lists,
+and do math using the lengths/depths.
+The typical paper for termination checking a dependently typed language is 
+[https://www.semanticscholar.org/paper/foetus-Termination-Checker-for-Simple-Functional-Abel/c216d842401569de47d2472b84d33f4f38bbe670](foetus).
+Another concept to know that encodes the depth idea more explicitly is
+[https://dl.acm.org/doi/10.1145/328691.328893](sized typing).
+@end@
+
+@paragraph@
+Another very important angle of termination checking is *recursion schemes.*
+As far as I know this came about in the very famous paper on
+[https://www.researchgate.net/publication/2592417_Functional_Programming_with_Bananas_Lenses_Envelopes_and_Barbed_Wire](bananas, lenses, envelopes, and barbed wire).
+They divide recursion into two types, called *catamorphisms* and *anamorphisms,* which are dual in category theory (look up "F-Algebras").
+Catamorphic recursion is when the size or depth is going down, as I discussed earlier;
+computation is trickling down a tree into smaller and smaller subtrees.
+Catamorphisms are guaranteed to halt.
+Anamorphic recursion is when the size is going up, because you're building a tree and recursing on it.
+For example, you might recursively push something onto a linked list until its length is 10 or more.
+Anamorphisms (or corecursion) might not halt, in general,
+so much of the recent research into termination checking focuses on them, 
+with terms like "coinduction" (anamorphism) and "corecursion" (apomorphism).
+There are many other recursion schemes (hylo-, apo-, para-, etc.-morphisms, the list goes on).
+@end@
+
+@paragraph@
+One important recursion scheme is called "Mendler-style" recursion.
+It's a fancy way of doing catamorphisms that the Cedille dependently typed language uses for all of its termination checking.
+Cedille is interesting for many reasons, which I'll get into in the next section.
+@end@
+
+@subheading@
+Intrinsic and Extrinsic Typing
+@end@
+
+@paragraph@
+In general when we think of types and type theory, we're thinking in terms of only *intrinsic* type theory,
+or "Church-style" type theory, or "type theory a la Church." (I swear it's called that.)
+This means that the meaning of an expression is dependent on its type.
+`fn foo(i: int) { return i; }` does nothing but return what you give it, 
+but we might say that if it was for `float` instead of `int` then it would be a different function.
+*Extrinsic* typing argues that the `int` version and the `float` version are *the exact some function,*
+namely its *untyped* behavior, and we just have various methods for *assigning* types to untyped expressions.
+Much of the end result is the same, it's just a different way of looking at things.
+Extrinsic type theory is also called "Curry-style" type theory or "type theory a la Curry."
+@end@
+
+@paragraph@
+The most famous consequence of this way of thinking is *intersection types.*
+These mean assigning one expression *multiple* types (so it's in the "intersection" of these types).
+The most famous language that does this is TypeScript, by far.
+@end@
+
+@paragraph@
+Some intersection type systems can well-type all the expressions that halt,
+and none of the expressions that don't, thereby characterizing halting in the type system.
+Obviously, the typechecking for these systems is undecidable.
+@end@
+
+@paragraph@
+Within academia another very famous extrinsic system is Cedille.
+Cedille is a dependently typed language with *dependent* intersection types,
+meaning the second type in the intersection can refer to the value with that has the first type
+(which is the second type's own value too, meaning the terms type can talk about the term itself).
+It also has an [https://ryanbrewer.dev/posts/implicit-products-better-forall.html](implicit products)
+which are like an infinitary intersection type.
+(Here's a [https://link.springer.com/chapter/10.1007/978-3-540-78499-9_26](paper).)
+Cedille also has an extrinsic equality type to let you really say that a no-op function for integers is equal to a no-op function for floats.
+It does all of this to be able to express inductive types (ADTs) with a much smaller extension to the CoC than the CIC requires.
+One of the Cedille papers is [https://github.com/cedille/cedille.github.io/blob/master/semantics.pdf](this) but many of them are very interesting.
+If you like podcasts, Type Theory Forall has a couple wonderful episodes on Cedille.
+@end@
+
+@paragraph@
+Extrinsic type theory is very deep and has their own versions of many intrinsic things, like the \\(\\lambda\\)-cube.
+My favorite is the "\\(\\Delta\\)-chair", discussed [https://arxiv.org/abs/1803.09660](here).
+@end@
+
+@subheading@
+Performance
+@end@
+
+@paragraph@
+Much of my favorite work on making functional languages fast is connected to Greg Morrisett, a researcher I really admire. 
+Work that he was a part of is a big inspiration for [https://ryanbrewer.dev/posts/announcing-svm.html](SaberVM), 
+as well as the Rust programming language.
+I recommend the [https://dl.acm.org/doi/10.1145/1029873.1029883](papers on Cyclone),
+Morrisett's [https://www.semanticscholar.org/paper/Compiling-with-Types-Morrisett/75c668959ae112943b32d75bccc2d8bd5d6ee3b6](PhD thesis),
+[https://dl.acm.org/doi/10.1145/199448.199475](intensional polymorphism) (Robert Harper is a researcher to be aware of;
+also I think [https://github.com/ollef/sixten](Sixten) uses something like this for its polymorphism),
+and the [https://dl.acm.org/doi/10.1145/292540.292564](calculus of capabilities) 
+(which I have a [https://ryanbrewer.dev/posts/safe-mmm-with-coeffects.html](post) on).
+@end@
+
+@paragraph@
+A few of those suggestions use *regions,* a notion typically connected to
+Tofte and Talpin's [https://www.sciencedirect.com/science/article/pii/S0890540196926139](region calculus).
+It's a super famous paper about basically using arenas for functional programming, with lifetime inference.
+@end@
+
+@paragraph@
+The [https://arxiv.org/abs/2107.00522](Gibbon) compiler takes a subset of Haskell and improves cache locality and parallelism
+by turning the datastructures into arrays. (Without the language user having to change anything in their code!)
+@end@
+
+@paragraph@
+Continuations are very very useful for compiling functional programs, as they let the functions kind of disappear.
+The idea of a continuation is that instead of a function returning, 
+it takes a function as its argument and calls that function with what it would have returned.
+Thus the caller says "when you're done with your work, don't give it to me. Instead, send it over to this other function."
+It's a transformation of the program into something that can just be expressed with jumps in machine code.
+[https://ryanbrewer.dev/posts/announcing-svm.html](SaberVM) uses "Continuation-Passing Style" (CPS) 
+because it's such a useful structure for functional language compilers.
+[https://www.cambridge.org/core/books/compiling-with-continuations/7CA9C36DCE78AD82218E745F43A4E740](Compiling With Continuations)
+is the go-to reference on this, and I found it pretty accessible and helpful when I read it.
+CPS is also really good for optimizations.
+Since then [https://dl.acm.org/doi/10.1145/173262.155113](ANF) has become a popular alternative, for being simpler in certain ways
+while still allowing many of the CPS optimizations.
+The ANF researchers are yet more names you'll see more often.
+@end@
+
+@paragraph@
+There's a lot of interesting work on parallelism in functional languages.
+[https://dl.acm.org/doi/10.1145/3371086](Par Means Parallel) is a paper using linear logic
+(everything used exactly once) for parallelism.
+[https://portal.findresearcher.sdu.dk/en/publications/choreographic-programming](Choreographic programming)
+is a really neat way of architecting distributed computation.
+[https://dl.acm.org/doi/10.1145/2502323.2502326](LVars) use monotonicity to guarantee deadlock freedom.
+@end@
+
+@paragraph@
+Linear logic leads to good resource usage too.
+[https://www.semanticscholar.org/paper/Linear-Types-can-Change-the-World!-Wadler/24c850390fba27fc6f3241cb34ce7bc6f3765627](Linear Types Can Change The World) 
+is a super famous paper using linear types for safe in-place updates of immutable values.
+[https://link.springer.com/chapter/10.1007/11693024_2](this paper) also uses linear types, for much more of the memory management.
+[https://link.springer.com/chapter/10.1007/3-540-46425-5_24](Alias Types) use linear logic but
+separate the references from the "proof things" so that the references can still be used nonlinearly.
+@end@
+
+@subheading@
+Information Flow
+@end@
+
+@paragraph@
+The last section I'll touch on is Information Flow Control, or IFC.
+This is a big part of "language-based security," where information security is achieved through programming language features.
+[https://dl.acm.org/doi/10.1145/292540.292555](DCC) is the classic reference, 
+which is able to track and restrict the flow of information through programs.
+[https://arxiv.org/abs/2104.10379](FLAC) extends this with trust relations that can change during the runtime of the program,
+and some very elegant security and lattice theory.
+DCC and FLAC use monads, and [https://arxiv.org/abs/2209.06334](this paper) brings in comonads as well for more interesting features,
+in particular related to modal logic.
+[https://dl.acm.org/doi/10.1145/3264820.3264823](This paper) offers a potential simplification of DCC.
+@end@
+
+@paragraph@
+Amal Ahmed and William Bowman have done a lot of work on something called "secure compilation"
+or "full abstraction," where the compiler produces something that is itself typed and preserves all the security guarantees of the source language.
+Because of the expressivity of System F (the polymorphic typed lambda calculus),
+it's seen as a useful target for compilation, as it can express many of the features of source languages.
+For example, Haskell extends System F only a little bit, and has syntax sugar the compiles to it for everything else.
+A really interesting paper relating this to information flow is [https://dl.acm.org/doi/10.1145/2784731.2784733](Noninterference For Free).
+Noninterference is the property that IFC systems try to have (think of it as "secrets don't get leaked")
+and "theorems for free" is how we refer to the power of polymorphism in System F, referencing
+[https://dl.acm.org/doi/10.1145/99370.99404](this classic paper).
+@end@
+
+@subheading@
+Conclusion (and the List of Papers)
+@end@
+
+@paragraph@
+One final piece of advice I have for self-learning is talking to people.
+Part of that means joining discord servers and subreddits and whatnot that
+focus on programming languages, but another important part is talking to researchers.
+When you find a paper with ideas that you really like,
+collect a list of questions you have about it and send an email to the authors.
+Cold emailing has been very successful for me,
+and many wonderful papers I discovered were sent to me as responses from researchers I cold-emailed.
+I discovered [https://arxiv.org/abs/1803.09660](intersection types) from emailing the authors of a 
+[https://www.researchgate.net/publication/29622149_Decidable_Type_Inference_for_the_Polymorphic_Rewriting_Calculus](paper using rewrite theory).
+I discovered an [https://dl.acm.org/doi/10.1145/3607852](dependent type paper about Haskell) from emailing one of the guys behind 
+[https://cedille.github.io/](Cedille).
+You have no idea what papers people will recommend to you,
+but you can rest assured that the PL research community is generally quite friendly, patient, and thoughtful.
+@end@
+
+@paragraph@
+Finally, here's the promised list of papers:
+@end@
+
+@paragraph@
+[https://dl.acm.org/doi/10.1145/96709.96747](Quasi-static typing)
+(1990) by Satish R. Thatte.
+@end@
+
+@paragraph@
+[https://dl.acm.org/doi/10.1145/75277.75296](Dynamic typing in a statically-typed language)
+(1989) by Martin Abadi, Luca Cardelli, Benjamin Pierce, and Gordon Plotkin.
+@end@
+
+@paragraph@
+[https://www.researchgate.net/publication/221602824_Well-Typed_Programs_Can't_Be_Blamed](Well-Typed Programs Can’t Be Blamed)
+(2009) by Philip Wadler and Robert Bruce Findler.
+@end@
+
+@paragraph@
+[https://users.soe.ucsc.edu/~cormac/papers/popl06-hybrid.pdf](Hybrid Type Checking)
+(2006) by Cormac Flanagan.
+@end@
+
+@paragraph@
+[https://arxiv.org/abs/2010.07763](Refinement Types: A Tutorial)
+(2020) by Ranjit Jhala and Niki Vazou.
+@end@
+
+@paragraph@
+[https://www.cambridge.org/core/journals/journal-of-functional-programming/article/introduction-to-generalized-type-systems/869991BA6A99180BF96A616894C6D710](Introduction to Generalized Type Systems)
+(1991) by Henk Barendregt.
+@end@
+
+@paragraph@
+[https://www.researchgate.net/publication/29622149_Decidable_Type_Inference_for_the_Polymorphic_Rewriting_Calculus](Decidable Type Inference for the Polymorphic Rewriting Calculus)
+(2006) by Horatiu Cirstea, Claude Kirchner, Luigi Liquori, and Benjamin Wack.
+@end@
+
+@paragraph@
+[https://www.amazon.com/Term-Rewriting-That-Franz-Baader/dp/0521779200](Term Rewriting and All That)
+(1998) by Franz Baader and Tobias Nipkow.
+@end@
+
+@paragraph@
+[https://www.semanticscholar.org/paper/foetus-Termination-Checker-for-Simple-Functional-Abel/c216d842401569de47d2472b84d33f4f38bbe670](foetus – Termination Checker for Simple Functional Programs)
+(2002) by Andreas Abel.
+@end@
+
+@paragraph@
+[https://dl.acm.org/doi/10.1145/328691.328893](Calculating sized types)
+(1999) by Wei-Ngan Chin and Siau-Cheng Khoo.
+@end@
+
+@paragraph@
+[https://link.springer.com/chapter/10.1007/978-3-540-78499-9_26](The Implicit Calculus of Constructions as a Programming Language with Dependent Types)
+(2008) by Bruno Barras and Bruno Bernardo.
+@end@
+
+@paragraph@
+[https://github.com/cedille/cedille.github.io/blob/master/semantics.pdf](Syntax and Semantics of Cedille)
+(2018) by Aaron Stump.
+@end@
+
+@paragraph@
+[https://dl.acm.org/doi/10.1145/1029873.1029883](Experience With Safe Manual Memory-Management in Cyclone)
+(2004) by Michael Hicks, Greg Morrisett, Dan Grossman, and Trevor Jim.
+@end@
+
+@paragraph@
+[https://www.semanticscholar.org/paper/Compiling-with-Types-Morrisett/75c668959ae112943b32d75bccc2d8bd5d6ee3b6](Compiling With Types)
+(1995) by Greg Morrisett.
+@end@
+
+@paragraph@
+[https://dl.acm.org/doi/10.1145/199448.199475](Compiling Polymorphism Using Intensional Type Analysis)
+(1995) by Robert Harper and Greg Morrisett.
+@end@
+
+@paragraph@
+[https://dl.acm.org/doi/10.1145/292540.292564](Typed Memory Management in a Calculus of Capabilities)
+(1999) by Karl Crary, David Walker, and Greg Morrisett.
+@end@
+
+@paragraph@
+[https://www.sciencedirect.com/science/article/pii/S0890540196926139](Region-Based Memory Management)
+(1997) by Mads Tofte and Jean-Pierre Talpin.
+@end@
+
+@paragraph@
+[https://arxiv.org/abs/2107.00522](Efficient Tree-Traversals: Reconciling Parallelism and Dense Data Representations)
+(2021) by Chaitanya Koparkar, Mike Rainey, Michael Vollmer, Milind Kulkarni, and Ryan R. Newton.
+@end@
+
+@paragraph@
+[https://dl.acm.org/doi/10.1145/173262.155113](The Essence of Compiling with Continuations)
+(1993) by Cormac Flanagan, Amr Sabry, Bruce F. Duba, and Matthias Felleisen.
+@end@
+
+@paragraph@
+[https://dl.acm.org/doi/10.1145/3371086](Par means parallel: multiplicative linear logic proofs as concurrent functional programs)
+(2019) by Federico Aschieri and Francesco A. Genco.
+@end@
+
+@paragraph@
+[https://portal.findresearcher.sdu.dk/en/publications/choreographic-programming](Choreographic Programming)
+(2013) by Fabrizio Montesi.
+@end@
+
+@paragraph@
+[https://dl.acm.org/doi/10.1145/2502323.2502326](LVars: Lattice-based Data Structures for Deterministic Parallelism)
+(2013) by Lindsey Kuper and Ryan R. Newton.
+@end@
+
+@paragraph@
+[https://www.semanticscholar.org/paper/Linear-Types-can-Change-the-World!-Wadler/24c850390fba27fc6f3241cb34ce7bc6f3765627](Linear Types can Change The World!)
+(1990) by Philip Wadler.
+@end@
+
+@paragraph@
+[https://link.springer.com/chapter/10.1007/11693024_2](Linear Regions Are All You Need)
+(2006) by Matthew Fluet, Greg Morrisett, and Amal Ahmed.
+@end@
+
+@paragraph@
+[https://link.springer.com/chapter/10.1007/3-540-46425-5_24](Alias Types)
+(2000) by Frederick Smith, David Walker, and Greg Morrisett.
+@end@
+
+@paragraph@
+[https://dl.acm.org/doi/10.1145/292540.292555](A Core Calculus of Dependency)
+(1999) by Martín Abadi, Anindya Banerjee, Nevin Heintze, and Jon G. Riecke.
+@end@
+
+@paragraph@
+[https://arxiv.org/abs/2104.10379](A Calculus for Flow-Limited Authorization)
+(2021) by Owen Arden, Anitha Gollamudi, Ethan Cecchetti, Stephen Chong, and Andrew C. Myers.
+@end@
+
+@paragraph@
+[https://arxiv.org/abs/2209.06334](Monadic and Comonadic Aspects of Dependency Analysis)
+(2022) by Pritam Choudhury.
+@end@
+
+@paragraph@
+[https://dl.acm.org/doi/10.1145/3264820.3264823](A Perspective on the Dependency Core Calculus)
+(2018) by Maximilian Algehed.
+@end@
+
+@paragraph@
+[https://dl.acm.org/doi/10.1145/2784731.2784733](Noninterference For Free)
+(2015) by William Bowman and Amal Ahmed.
+@end@
+
+@paragraph@
+[https://dl.acm.org/doi/10.1145/99370.99404](Theorems for free!)
+(1989) by Philip Wadler.
+@end@
+
+@paragraph@
+[https://arxiv.org/abs/1803.09660](The Delta-calculus: syntax and types)
+(2018) by Luigi Liquori and Claude Stolze.
+@end@
+
+@paragraph@
+[https://dl.acm.org/doi/10.1145/3607852](Dependently-Typed Programming with Logical Equality Reflection)
+(2023) by Yiyan Liu and Stephanie Weirich.
+@end@

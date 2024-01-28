@@ -50,5 +50,12 @@
       <guid>https://ryanbrewer.dev/posts/safe-mmm-with-coeffects.html</guid>
       <description><![CDATA[Using ideas from Crary et al.'s Calculus of Capabilities, I discuss the coeffectful memory management used in SaberVM.  Read more <a href="https://ryanbrewer.dev/posts/safe-mmm-with-coeffects.html">here</a>!]]></description>
     </item>
+    <item>
+      <title>A Beginner's Guide to Programming Language Academia</title>
+      <pubDate>Fri, 26 Jan 2024 00:00:00 PST</pubDate>
+      <link>https://ryanbrewer.dev/posts/beginners-guide-pl-academia.html</link>
+      <guid>https://ryanbrewer.dev/posts/beginners-guide-pl-academia.html</guid>
+      <description><![CDATA[This post briefly maps out many different subfields of programming language theory, in an effort to make it more accessible to those outside academia.  Read more <a href="https://ryanbrewer.dev/posts/beginners-guide-pl-academia.html">here</a>!]]></description>
+    </item>
   </channel>
 </rss>
