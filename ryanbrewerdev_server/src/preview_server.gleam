@@ -2,8 +2,12 @@ import wisp.{type Request, type Response}
 import mist
 import gleam/erlang/process
 import gleam/io
+import simplifile
 
-const path = "/Users/ryanbrewer/Documents/ryanbrewer-dev"
+pub fn path() -> String {
+  let assert Ok(path) = simplifile.current_directory()
+  path <> "/.."
+}
 
 pub fn main() {
   let secret_key_base = wisp.random_string(64)
@@ -21,14 +25,14 @@ pub fn handle_request(request: Request) -> Response {
   case wisp.path_segments(request) {
     ["search"] -> {
       wisp.ok()
-      |> wisp.set_body(wisp.File(path <> "/dist/search.html"))
+      |> wisp.set_body(wisp.File(path() <> "/dist/search.html"))
     }
     [] -> {
       wisp.ok()
-      |> wisp.set_body(wisp.File(path <> "/dist/index.html"))
+      |> wisp.set_body(wisp.File(path() <> "/dist/index.html"))
     }
     _ -> {
-      use <- wisp.serve_static(request, under: "/", from: path <> "/dist")
+      use <- wisp.serve_static(request, under: "/", from: path() <> "/dist")
       wisp.ok()
     }
   }

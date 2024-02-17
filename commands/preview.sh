@@ -8,9 +8,9 @@ gleam build
 gleam run -m build
 npx vite build # this doesn't hang because of vite-plugin-close.ts
 ( # subshell so we don't *actually* change directories
-  cd ~/Documents/ryanbrewer-dev/dist
+  cd $(pwd)/dist
   ( # subshell so we don't actually change directories
-    cd ~/Documents/ryanbrewer-dev/ryanbrewerdev_server
+    cd ../ryanbrewerdev_server
     gleam run & 
   )
   open http://localhost:8085
