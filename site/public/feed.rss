@@ -59,7 +59,7 @@
     </item>
     <item>
       <title>Advanced Typechecking for Stack-Based Languages</title>
-      <pubDate>Sat, 17 Feb 2024 00:00:00 PST</pubDate>
+      <pubDate>Sun, 18 Feb 2024 00:00:00 PST</pubDate>
       <link>https://ryanbrewer.dev/posts/typechecking-svm.html</link>
       <guid>https://ryanbrewer.dev/posts/typechecking-svm.html</guid>
       <description><![CDATA[This post discusses the interesting typechecker of SaberVM, which uses a stack-based bytecode language with a powerful type system.  Read more <a href="https://ryanbrewer.dev/posts/typechecking-svm.html">here</a>!]]></description>
