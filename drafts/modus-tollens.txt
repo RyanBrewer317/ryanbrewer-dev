@@ -1,0 +1,13 @@
+id: modus-tollens
+name: A Deep Dive on Modus Tollens
+date: 2024-03-06
+tags: bonk
+description: bonk
+
+@paragraph@
+Modus ponens gets quite a spotlight in programming language theory, since it corresponds to function application. In this post I instead want to look at modus tollens, which is like a dual concept: a function is applied to a *disproof* of its *return* type, to produce a disproof of its *input* type. In classical logic this is very simple and straightforward, and looks like this:
+@end@
+
+@math@
+A\rightarrow B,\neg B\;\;\vdash\;\;\neg A
+@end@

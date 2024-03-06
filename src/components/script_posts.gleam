@@ -14,9 +14,9 @@ pub fn script_posts(posts: List(Post)) -> Element(a) {
       html.script(
         [],
         from_string("const POSTS = {")
-        |> append_builder(concat(k()))
-        |> append("};")
-        |> to_string(),
+          |> append_builder(concat(k()))
+          |> append("};")
+          |> to_string(),
       )
     }
   use p <- list.map(posts)

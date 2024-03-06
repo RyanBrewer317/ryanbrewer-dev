@@ -2,8 +2,8 @@ echo "Enter name:"
 read name
 echo "Enter id:"
 read id
-draft_filename="/Users/ryanbrewer/Documents/ryanbrewer-dev/drafts/$id.txt"
-prod_filename="/Users/ryanbrewer/Documents/ryanbrewer-dev/posts/$id.txt"
+draft_filename="$HOME/Documents/ryanbrewer-dev/drafts/$id.txt"
+prod_filename="$HOME/Documents/ryanbrewer-dev/posts/$id.txt"
 if test -f $draft_filename;
 then
   echo "That id is in use already!"

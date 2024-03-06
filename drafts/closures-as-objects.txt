@@ -1,0 +1,93 @@
+id: closures-as-objects
+name: Closures As Objects
+date: 2024-03-05
+tags: bonk
+description: bonk
+
+@paragraph@
+In this post I discuss an interesting way of implementing closures in a programming language, which takes advantages of the fact that closures and single-method OOP-style objects have some correspondence.
+@end@
+
+@paragraph@
+I actually had this thought when I was reading about the [https://en.wikipedia.org/wiki/OBJ_(programming_language)](OBJ) programming language, but I think the ideas I'm about to discuss may be more similar to how Java implements its closures.
+@end@
+
+@subheading@
+The Problem
+@end@
+
+@paragraph@
+The canonical idea behind closures in a functional language goes something like this: a function needs to be able to access variables from the scope in which it was defined. Therefore, the function needs to carry around the values it uses from its scope. Great, we'll just have a struct with the function pointer and the values, and pass that around. To call this closure, you take out the function pointer and call it, passing in these extra values for it to use. 
+@end@
+
+@paragraph@
+Then at some point you sit down and design the compilation of a function like `map`, which takes a function and a list and calls the function on everything in the list to produce a new list. When `map` is compiled, we know its argument is a function, *but now there are two types of functions.* Are we expecting a struct, or a code pointer? If we decide to compile it for the former, then we can give `map` closures, but we can't give it our top-level functions that have no captured values. If we decide to compile it for the latter, then we can give `map` our top-level functions, but we can't give it closures.
+@end@
+
+@paragraph@
+Fine, you say, we'll compile two copies of `map`. One that takes a closure and one that takes a function pointer. Each callsite will pick which to use, and we'll accept the bigger binary size since the definition of `map` is pretty small. But now what about a function that takes three function arguments? Do we have to compile eight different copies of it? And what if it's two hundred lines long? Three hundred? Four function arguments? It's clear that this approach doesn't scale at all.
+@end@
+
+@paragraph@
+The canonical response to this is to simply put everything in closures. That way, we compile higher-order functions like `map` to take closures, and now we can give it anything, since functions have been "closure-converted." Yes, a bunch of these structs will have nothing but a code pointer, but it works.
+@end@
+
+@paragraph@
+The problem with this approach, if it isn't obvious, is that there's suddenly a bunch of new overhead. Closures are typically heap-allocated, and now every function call is reading somewhere in memory. Functional code in particular tends to have a lot of functions and a lot of function calls, hence the name.
+@end@
+
+@subheading@
+Solutions
+@end@
+
+@paragraph@
+There are many ways to improve on this, of course. "Lambda-lifting" transforms the whole program to pass the values around without a struct, at the cost of separate compilation. In plenty of cases the best this can do is still putting things in and out of structs, but it can be an improvement. You can also do some escape analysis to see if you know enough about the callsites of a closure to be able to skip the allocations and instead modify the callsites. An easy form of this escape analysis is to treat functions introduced by compilation passes specially, since the compiler knows more about their callsites; for example, continuation-passing style compilers might not put continuations in closures. Yet another very common approach (I believe Haskell and OCaml do this) is to simply double down and optimize heap allocation using arena allocators with reserved registers, making the heap allocation of closures much cheaper. Rust, as far as I can tell, will look at every callsite of `map` and pump out different copies of `map` for different callsites.
+@end@
+
+@paragraph@
+Object-oriented languages (Java, JavaScript, Python) do something similar to closure conversion. JavaScript and Python functions are all objects, which is a bit like putting everything in structs (it's worth noting that the JIT compilation can potentially help out here for some cases, with more runtime information). A function in such a language is merely an object that has a `call` method, more or less. Java doesn't even have functions, only methods, so "function calls" are always taking function pointers from a datastructure (the object's vtable) and giving the method the object itself (as the `this` implicit argument).
+@end@
+
+@paragraph@
+However, Java's lambdas are strange. They look like anonymous functions, but really they're objects from *anonymous single-method classes* which satisfy a [https://docs.oracle.com/javase/8/docs/api/java/util/function/Function.html]("Functional Interface"). If you have a method like `map` in java, then it will have to take an argument of that functional interface type. Thus the codegen for it will call the method on the functional interface. If you want to pass in methods, Java gives you *method references* where you write `ClassName::methodName` or `objectName::methodName` as a special syntax, which can be thought of as something like `x -> ClassName.methodName(x)` or `x -> objectName.methodName(x)`. That is, the method gets wrapped up in an anonymous class to meet the functional interface too.
+@end@
+
+@paragraph@
+That may sound ridiculous. I mean, having only methods and no functions is already ridiculous, and probably what lead to this whole convoluted mess. But now lets take a moment to look at OBJ.
+@end@
+
+@paragraph@
+OBJ is a "rewrite-based language," where you specify a list of rewrite rules and the language applies them to a value over and over until no more apply. In one way this is like a generalization of functional programming: a function is like a rewrite rule from a `foo(bar)` expression to the body of `foo` where the parameters are replaced with `bar`. That rewrite rule gets applied repeatedly until there are no more `foo(bar)` expressions left. But in another way this is very much not a generalization of functional programming: there are no lambdas. Rewrite rules have no way of expressing variable binders (unless you try the recent "Nominal Rewriting"). The authors make the compelling argument that first-order computation is easier to read and think about for programmers, and easier to prove correct. So OBJ can be seen as an interesting attempt to make lambda-free functional programming as expressive and convenient as possible.
+@end@
+
+@paragraph@
+Now, I won't show OBJ syntax here, because it's absolutely awful for someone more used to ML-style or C-style syntax like myself. The paper I'm basing this off of can be found [https://www.researchgate.net/publication/2238131_Higher_Order_Functions_Considered_Unnecessary_for_Higher_Order_Programming](here), with a PDF accessible [https://cseweb.ucsd.edu/~goguen/pps/utyop.pdf](here). But to continue our running example, here's how the OBJ authors write `map`: they write a "Theory" (basically an interface) with a single function, then `map` is in a Module (like a class) that gets parameterized by another module that satisfies the interface. This starts to sound like functional interfaces. `map` calls the function in the interface on each item of a list, etc. etc.
+@end@
+
+@paragraph@
+This approach could be seen as having the user create an object (the module) whenever they want it to close over some values, and then using an interface as a way to pass the struct to things that expect a function. Of course, they introduce syntax sugar for making this process more concise.
+@end@
+
+@paragraph@
+So why am I so excited about this? Well, this gives OBJ ways of expressing closures when you need that kind of expressivity, but while still allowing function calls in the general case to be not-closures, potentially opening the door to a big performance improvement. Let me explain clearly. In a hypothetical language, you can have a functional interface for higher-order functions like `map` to use as their argument type. In the codegen for `map` you still need to call it as a closure. At the callsites of `map` you wrap top-level functions in closures. Now, all of a sudden, programs that don't use higher-order functions do zero closure-related work! It's like a *lazy* closure conversion, where functions are only closure converted when it becomes necessary, and normal function calls aren't affected.
+@end@
+
+@paragraph@
+Maybe this is what the hyper-optimized OCaml and Haskell compilers are actually doing already, but it certainly isn't discussed in the common literature about closures, both in academic papers and on the internet. The common closure conversion algorithms I've seen closure convert everything upfront.
+@end@
+
+@paragraph@
+Note that OBJ doesn't really go that route. They use a VM and ridiculously expressive rewrite rules and aren't really trying to maximize performance. But reading through their attempt at avoiding lambdas was very eye-opening for me, as someone who's thought a fair amount about the ambient performance hits of having closures in your language.
+@end@
+
+@subheading@
+Conclusion
+@end@
+
+@paragraph@
+I hope this idea was interesting. It's not meant to be the one true way of implementing closures; it's just a point in the design space to be aware of, with its own tradeoffs.
+@end@
+
+@paragraph@
+I for one hope to try this approach in a future language, Saber. 
+@end@

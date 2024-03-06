@@ -64,5 +64,12 @@
       <guid>https://ryanbrewer.dev/posts/typechecking-svm.html</guid>
       <description><![CDATA[This post discusses the interesting typechecker of SaberVM, which uses a stack-based bytecode language with a powerful type system.  Read more <a href="https://ryanbrewer.dev/posts/typechecking-svm.html">here</a>!]]></description>
     </item>
+    <item>
+      <title>A Deep Dive on Modus Tollens</title>
+      <pubDate>Wed, 06 Mar 2024 00:00:00 PST</pubDate>
+      <link>https://ryanbrewer.dev/posts/modus-tollens.html</link>
+      <guid>https://ryanbrewer.dev/posts/modus-tollens.html</guid>
+      <description><![CDATA[bonk  Read more <a href="https://ryanbrewer.dev/posts/modus-tollens.html">here</a>!]]></description>
+    </item>
   </channel>
 </rss>
