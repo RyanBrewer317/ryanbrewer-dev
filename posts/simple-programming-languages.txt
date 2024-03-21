@@ -1,15 +1,15 @@
 id: simple-programming-languages
 name: Simple Programming Languages
 date: 2024-03-20
-tags: bonk
-description: bonk
+tags: simple,programming,language,languages,simplicity,readability,gleam,go,c,ready-at-hand,ready,at,hand,first-order,first,order,reason,reasoning,iteration,cycle,single,way,static,type,system,obj,heidegger,aesthetic,aesthetics
+description: Simple programming languages are wonderful to work in. But what is it about them that actually makes them simple? And why do we like that so much?
 
 @paragraph@
 I love simple programming languages, like Gleam, Go, and C. I know I'm not alone; there's something wonderful about using a simple language: reading it, using it in a team, coming back to it after a long time, the list goes on.
 @end@
 
 @paragraph@
-In this post I want to make this kind of simplicity more precise and talk about some reasons it's important.
+In this post I want to make this kind of simplicity more precise and talk about some reasons it's important. I propose five key ideas for simple programming languages: ready-at-hand features, fast iteration cycles, a single way of doing things, first-order reasoning principles, and simple static type systems. I discuss each of these at length below.
 @end@
 
 @subheading@
@@ -33,15 +33,15 @@ I bring up this idea of readiness-at-hand because simple programming languages o
 @end@
 
 @paragraph@
-I won't say too much more about this because hopefully you'll be able to see it as a little bit of a theme in the following sections.
+I won't say too much more about this because hopefully you'll be able to see it as a little bit of a theme in the following sections. The paper I'd recommend for finding more about these ideas in the philosophy of technology is [https://www.jstor.org/stable/24232017](here).
 @end@
 
 @subheading@
-Compile Times
+Iteration Cycles
 @end@
 
 @paragraph@
-A very fast iteration cycle is a very nice feature that simple languages aim for. Prototyping and experimentation is very cheap and the developer can stay in a flow-state that a 2+ second compile time would make impossible.
+A very fast iteration cycle (meaning compile times, mostly) is a very nice feature that simple languages aim for. Prototyping and experimentation is very cheap and the developer can stay in a flow-state that a 2+ second compile time would make impossible.
 @end@
 
 @paragraph@
@@ -124,11 +124,11 @@ Pattern matching on `True` and `False` is just like an `if` statement, so this "
 @end@
 
 @paragraph@
-Gleam also enforces snake_case for variable and function names, and PascalCase for type names. Gleam also has a great formatter and starting a gleam project includes by default a github action for checking your formatting! All the restrictions quickly corral you into a specific style that everyone else is also using.
+Gleam also enforces snake_case for variable and function names, and PascalCase for type names. Gleam also has a great opinionated code formatter (just like Go) and starting a gleam project includes, by default, a github action for checking your formatting. Really! All the restrictions quickly corral you into a specific style that everyone else is also using.
 @end@
 
 @paragraph@
-Gleam explicitly makes a small, synergystic feature set the goal, optimizing for fast *learning times* and ease of *reading code.* This focus is a big deal, and definitely resonates with what I like about Go as well. You won't understand how useful this is until you experience it for a while yourself.
+Gleam explicitly makes a small, synergystic feature set the goal, optimizing for fast *learning times* and ease of *reading code.* A tagline of the language is that you can [https://tour.gleam.run/](learn it in an afternoon). This focus is a big deal, and definitely resonates with what I like about Go as well. You won't understand how useful this is until you experience it for a while yourself.
 @end@
 
 @paragraph@
@@ -140,7 +140,7 @@ First Order Reasoning
 @end@
 
 @paragraph@
-In academia there's a language called OBJ designed to be like a functional language with no lambdas (technically it's a "term rewriting" language). The scholars behind it argue that higher-order functions are difficult for humans to reason about, and they offer interesting ways to recover much of the expressivity of closures in other (vaguely object-oriented) ways.
+In academia there's a language called [https://en.wikipedia.org/wiki/OBJ_(programming_language)](OBJ) designed to be like a functional language with no lambdas (technically it's a "term rewriting" language). The scholars behind it argue that higher-order functions are difficult for humans to reason about, and they offer interesting ways to recover much of the expressivity of closures in other (vaguely object-oriented) ways.
 @end@
 
 @paragraph@
@@ -159,31 +159,43 @@ import gleam/io
 /// for each i in a list, print i+1
 pub fn print_all_plus_one(l: List(Int)) {
   // this is contrived; normally you'd use only one loop
-  // first loop:
+  // a loop:
   let res = {
     use i <- list.map(l)
     int.to_string(i + 1)
   }
-  // second loop:
+  // another loop:
   use s <- list.each(res)
   io.print(s)
 }
 @end@
 
 @paragraph@
-Note that this style of code is a little gross and most people wouldn't use `use` here, but if you want 
+Note that this style of code is a little gross and you generally wouldn't use `use` here, you'd just call `list.each` as normal. I just want to show how `use` turns higher-order code into something that feels imperative, and indeed I have seen code like this is gleam codebases occasionally.
 @end@
 
 @paragraph@
-If this area of programming language design that's interesting for you, I'll also link [https://www.haskellforall.com/2024/02/unification-free-keyword-type-checking.html](this cool blog post).
+If this is an area of programming language design that's interesting for you, I'll also link [https://www.haskellforall.com/2024/02/unification-free-keyword-type-checking.html](this cool blog post).
 @end@
 
 @subheading@
-Static Typing
+Type Systems
 @end@
 
 @paragraph@
-One might wonder why Python doesn't make my list. The reason is that python code feels very different to write, because of *refactoring.*
+One might wonder why Python doesn't make my list. The reason is that python code feels very different to write, because of *refactoring.* The type systems of Gleam, Go, and C are very helpful when I make big changes to my code, allowing me to not keep everything in my head at once. Python makes me feel lost and alone, feeling around in the dark, wondering what runtime type error I'll discover next. Python makes next to no effort to manage the complexity of the project for me, which makes the project terrifying to touch in any significant way. Optimizing for readability generally goes alongside optimizing for refactoring.
+@end@
+
+@paragraph@
+On the other side of the spectrum, one might wonder why Haskell doesn't make my list. After all, it's like, nothing but lambdas, right? Oh so simple. Of course, I don't really believe anyone thinks haskell would make this list. Because of type system features (and an unfortunate culture of "pick random strings of symbols to express complex ideas, just to make absolutely everything a one-liner") haskell is not simple, there are a million ways to write it, and it's incredibly hard to read (though pretty fun to write once you get it).
+@end@
+
+@paragraph@
+Simple languages straddle an interesting balance between expressiveness and restrictiveness. C, Go, and Gleam all offer some form of dynamic typing that's explicitly for a small number of usecases. Then, they all offer a little bit of fanciness to express what you want without dynamic typing: Go interfaces, Gleam's powerful polymorphism, and C preprocessor macros and casts. After that, the type systems are very bare-bones and restrictive. This balance struck by simple programming languages feels very nice to work in. It's like how perfect parents find a balance between their child's freedom and their own control, keeping their child both safe and happy.
+@end@
+
+@paragraph@
+Finally, I definitely have to link these famous gleam blog posts about doing wonderful things simply with Gleam's type system: [https://mckayla.blog/posts/all-you-need-is-data-and-functions.html](All you need is data and functions) and [https://blog.hayleigh.dev/phantom-types-in-gleam](Phantom Types in Gleam).
 @end@
 
 @subheading@
@@ -191,5 +203,17 @@ Conclusion
 @end@
 
 @paragraph@
+Hopefully this article was interesting. I know many people like simple languages for their simplicity, but I haven't seen many attempts to systematize it as I do here. 
+@end@
 
+@paragraph@
+I'm quite burnt out from working so long on [https://github.com/RyanBrewer317/SaberVM](SaberVM), with so many tiny bugfixes, so my mind has been wandering to programming language ideas and philosophy.
+@end@
+
+@paragraph@
+I'm quite interested in simple programming languages, obviously, and I plan to write a little language that pushes these ideas even further than Gleam does, with no lambdas like OBJ. I also have some ideas for doing this with no garbage collector, borrowing ideas from Mojo's Python-friendly borrow checker.
+@end@
+
+@paragraph@
+To summarize, the five key ideas are: readiness-at-hand, iteration speed, one-way-of-doing-things, first-order reasoning, and simple static type systems. I truly think this is the right direction for language design to go in the long run, not complex languages like Haskell and Rust.
 @end@

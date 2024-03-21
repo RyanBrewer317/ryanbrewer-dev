@@ -64,5 +64,12 @@
       <guid>https://ryanbrewer.dev/posts/typechecking-svm.html</guid>
       <description><![CDATA[This post discusses the interesting typechecker of SaberVM, which uses a stack-based bytecode language with a powerful type system.  Read more <a href="https://ryanbrewer.dev/posts/typechecking-svm.html">here</a>!]]></description>
     </item>
+    <item>
+      <title>Simple Programming Languages</title>
+      <pubDate>Wed, 20 Mar 2024 00:00:00 PST</pubDate>
+      <link>https://ryanbrewer.dev/posts/simple-programming-languages.html</link>
+      <guid>https://ryanbrewer.dev/posts/simple-programming-languages.html</guid>
+      <description><![CDATA[Simple programming languages are wonderful to work in. But what is it about them that actually makes them simple? And why do we like that so much?  Read more <a href="https://ryanbrewer.dev/posts/simple-programming-languages.html">here</a>!]]></description>
+    </item>
   </channel>
 </rss>
