@@ -1,0 +1,195 @@
+id: simple-programming-languages
+name: Simple Programming Languages
+date: 2024-03-20
+tags: bonk
+description: bonk
+
+@paragraph@
+I love simple programming languages, like Gleam, Go, and C. I know I'm not alone; there's something wonderful about using a simple language: reading it, using it in a team, coming back to it after a long time, the list goes on.
+@end@
+
+@paragraph@
+In this post I want to make this kind of simplicity more precise and talk about some reasons it's important.
+@end@
+
+@subheading@
+Ready-At-Hand
+@end@
+
+@paragraph@
+In the philosophy of technology there's a very useful concept: "presence-at-hand" vs. "readiness-at-hand." When something is present-at-hand, it's currently taking up our thoughts and in our immediate consciousness. If it's instead ready-at-hand, it's like we can't even tell that it's there until we want to use it. For example, when we walk into our kitchen for the millionth time, we're not really aware of all the cupboards, food, appliances, table, chairs, decorations, or whatever else you have in your kitchen. At least for me, it's almost like I only see the fridge if I'm coming for a quick bite. As I sit down, I become aware of the table and chairs, which were ready-at-hand and now become present-at-hand, and I don't think a single thought about the fridge, which becomes ready-at-hand.
+@end@
+
+@paragraph@
+Just because you're using something doesn't make it become present-at-hand. Glasses, for example, remain ready-at-hand even as you see through them, because your mind acts as if they aren't even there. However, when you use ready-at-hand things and they *disfunction* then they become present-at-hand: dirt on your glasses makes the presence of the glasses suddenly very loud to your mind.
+@end@
+
+@paragraph@
+This is like the idea of a small working memory that limits the number of concepts you can juggle in your mind at once, but generalized to include how we filter out noise from all the sense data we're constantly bombarded with.
+@end@
+
+@paragraph@
+I bring up this idea of readiness-at-hand because simple programming languages often *do* have many features, but they're designed to stay invisible to our mind whenever we're not using them. For example, Gleam, Go, and C are all very cross-platform, and making them support more platforms is a big chunk of the work that goes into them. Being able to run your code in a browser, or on a Raspberry Pi, or on a phone, or on a server, are real features that are added to the language, but they don't hurt its simplicity at all. Another example is LSP support, which is a major focus for the developers of Gleam and Go, and for C is doing pretty well now in spite of its age.
+@end@
+
+@paragraph@
+I won't say too much more about this because hopefully you'll be able to see it as a little bit of a theme in the following sections.
+@end@
+
+@subheading@
+Compile Times
+@end@
+
+@paragraph@
+A very fast iteration cycle is a very nice feature that simple languages aim for. Prototyping and experimentation is very cheap and the developer can stay in a flow-state that a 2+ second compile time would make impossible.
+@end@
+
+@paragraph@
+Obviously, C needs a little bit of slack here, because it's designed as a single-pass compiler originally, but its design is quite good considering that constraint. Say what you will about header files being annoying, I think they're quite ergonomic under those circumstances. They offer an out-of-orderness that we take for granted now but that definitely counts as a ready-at-hand feature.
+@end@
+
+@paragraph@
+But for Gleam and Go, compiler performance is some of the best in class. Go is famous for this, so I won't say too much about it. The Gleam compiler is written in Rust and the designers have been very explicit that it will never be self-hosted, as that would hurt compiler performance and make distribution harder. Files are parsed and processed in parallel where possible, and I've personally found my Gleam projects to compile instantly.
+@end@
+
+@paragraph@
+It's also worth mentioning gleam's dependency system is extremely nice. It works with the Hex package manager of Erlang and Elixir, and therefore generates beautiful HexDocs documentation pages for you to make libraries easy to find and make good documentation the norm. To see how convenient gleam makes everything, see the options that come up when I type `gleam` into my terminal and hit enter:
+@end@
+
+@code@
+ $ gleam
+
+gleam 1.0.0
+
+USAGE:
+    gleam <SUBCOMMAND>
+
+OPTIONS:
+    -h, --help       Print help information
+    -V, --version    Print version information
+
+SUBCOMMANDS:
+    add        Add new project dependencies
+    build      Build the project
+    check      Type check the project
+    clean      Clean build artifacts
+    deps       Work with dependency packages
+    docs       Render HTML documentation
+    export     Export something useful from the Gleam project
+    fix        Rewrite deprecated Gleam code
+    format     Format source code
+    help       Print this message or the help of the given subcommand(s)
+    hex        Work with the Hex package manager
+    lsp        Run the language server, to be used by editors
+    new        Create a new project
+    publish    Publish the project to the Hex package manager
+    remove     Remove project dependencies
+    run        Run the project
+    shell      Start an Erlang shell
+    test       Run the project tests
+    update     Update dependency packages to their latest versions
+@end@
+
+@paragraph@
+That's a lot of very straightforward and convenient subcommands! I've been using Gleam for a few months now and published a couple packages and added many to my projects and I'm very happy with this process.
+@end@
+
+@subheading@
+One Way of Doing Things
+@end@
+
+@paragraph@
+Designing a language for fast compile times often means a lot of fancy features aren't possible. For example, Go isn't planning on adding metaprogramming, and for a long time wasn't even planning on adding generics. 
+@end@
+
+@paragraph@
+But in many cases these languages argue that the sacrifices made for performance are actually better language design choices anyway. Go wants all of its looping code to be with a for loop, all of its "this-or-that" code to be with if statements, and all of its "choose-one-of-these" code to be with switch statements. To that end, for loops and switch statements are a little unusual in Go, and there's no while loop. Go's concurrency story is very committed to one approach, unlike Rust which is the opposite. Functional code is possible to some degree but Go's lambdas are a pain in the ass to write. Go's type system solves every type challenge with interfaces.
+@end@
+
+@paragraph@
+Gleam takes this idea even further. Following its functional lineage, there are *no* loop constructs, just recursion and things like `map` and `fold`. Tail call optimization is used so these compile a lot like how a while loop would. Furthermore, Gleam doesn't even have `if`! Instead, there is only (powerful) pattern matching with (powerful) guards. Fibonacci might be written like so:
+@end@
+
+@code@
+pub fn fib(n: Int) -> Int {
+  case n < 2 {
+    True -> n
+    False -> fib(n - 1) + fib(n - 2)
+  }
+}
+@end@
+
+@paragraph@
+Pattern matching on `True` and `False` is just like an `if` statement, so this "limitation" is never that annoying in practice.
+@end@
+
+@paragraph@
+Gleam also enforces snake_case for variable and function names, and PascalCase for type names. Gleam also has a great formatter and starting a gleam project includes by default a github action for checking your formatting! All the restrictions quickly corral you into a specific style that everyone else is also using.
+@end@
+
+@paragraph@
+Gleam explicitly makes a small, synergystic feature set the goal, optimizing for fast *learning times* and ease of *reading code.* This focus is a big deal, and definitely resonates with what I like about Go as well. You won't understand how useful this is until you experience it for a while yourself.
+@end@
+
+@paragraph@
+As AI code completion becomes more popular, this one-way approach becomes even more valuable. I see generative AI as aesthetics-engines, in a philosophical sense, because of their word-at-a-time nature (instead of trains of thought) and their basis in statistics. That means simple languages like C, Go, and Gleam, whose programs are always written in the same way, will be producing more accurate code suggestions. They have a very consistent aesthetic for humans and computers to understand. My fibonacci function above was almost completely generated by Claude, with no edits in post, just by writing it in the codebase for this blog (a small- to mid-size Gleam application). I'm quite sure that Claude has zero or almost zero experience with Gleam code in its training set, and there's a danger of confusing it with Rust because of the (intentional) syntax similarities, but still it did very well.
+@end@
+
+@subheading@
+First Order Reasoning
+@end@
+
+@paragraph@
+In academia there's a language called OBJ designed to be like a functional language with no lambdas (technically it's a "term rewriting" language). The scholars behind it argue that higher-order functions are difficult for humans to reason about, and they offer interesting ways to recover much of the expressivity of closures in other (vaguely object-oriented) ways.
+@end@
+
+@paragraph@
+C and Go are fairly first-order. They both *support* higher order functions (though C closures are very do-it-all-yourself of course), but that style of code is not idiomatic at all. Like I said before, loops should be with the provided loop constructs and dynamic behavior should generally be achieved in other ways. This feels almost explicit as you write Go and C code, and Go is clearly doing this more out of ideology than technical issues. Python lambdas are like this too, to a lesser extent.
+@end@
+
+@paragraph@
+You'd think Gleam would be hurting in this category, as a functional language, but it actually has design choices for this too. Local variable bindings in Gleam aren't recursive, explicitly to encourage functions to be lifted to the top-level. Gleam uses the `|>` operator to make higher-order code much easier to read and think about. Gleam's (awesome!) `use` syntax subsumes most uses of lambdas in functions, in a way that feels a lot like writing comfy, simple imperative code. For example, you can get something like for-loops:
+@end@
+
+@code@
+import gleam/int
+import gleam/list
+import gleam/io
+
+/// for each i in a list, print i+1
+pub fn print_all_plus_one(l: List(Int)) {
+  // this is contrived; normally you'd use only one loop
+  // first loop:
+  let res = {
+    use i <- list.map(l)
+    int.to_string(i + 1)
+  }
+  // second loop:
+  use s <- list.each(res)
+  io.print(s)
+}
+@end@
+
+@paragraph@
+Note that this style of code is a little gross and most people wouldn't use `use` here, but if you want 
+@end@
+
+@paragraph@
+If this area of programming language design that's interesting for you, I'll also link [https://www.haskellforall.com/2024/02/unification-free-keyword-type-checking.html](this cool blog post).
+@end@
+
+@subheading@
+Static Typing
+@end@
+
+@paragraph@
+One might wonder why Python doesn't make my list. The reason is that python code feels very different to write, because of *refactoring.*
+@end@
+
+@subheading@
+Conclusion
+@end@
+
+@paragraph@
+
+@end@
