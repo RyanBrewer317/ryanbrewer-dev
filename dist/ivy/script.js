@@ -7,3 +7,7 @@ function func(x) {
         }
     }
 }
+
+document.body.addEventListener("click", function(e) {
+    alert("今天也是勇敢生活的一天:)");
+});
