@@ -194,7 +194,7 @@ fn translate_helper(
           result.map(translate_helper(gen, t, renames), fn(w) {
             #(Some(w.val), w.gen)
           })
-        None -> Ok(#(None, gen))
+        None -> Ok(#(None, w.gen))
       })
       IRLambda(i, x, mb_t, w.val)
       |> Wrapped(gen)

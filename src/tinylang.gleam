@@ -116,7 +116,7 @@ fn translate_helper(
       use gen, i <- with_fresh_res(gen)
       use w <- result.try(translate_helper(gen, e, dict.insert(renames, x, i)))
       IRLambda(i, x, w.val)
-      |> Wrapped(gen)
+      |> Wrapped(w.gen)
       |> Ok
     }
     LCall(func, arg) -> {
