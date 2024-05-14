@@ -130,5 +130,5 @@ Maybe this is just a toy example, and languages without dependent types get by w
 @end@
 
 @paragraph@
-*discussion [https://news.ycombinator.com/item?id=40361197](here).*
+discussion [https://news.ycombinator.com/item?id=40361197](here).
 @end@
