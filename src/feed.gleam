@@ -1,8 +1,8 @@
-import helpers.{type Post}
-import gleam/string_builder.{append, append_builder, from_string, to_string}
-import gleam/list
-import gleam/int
 import birl
+import gleam/int
+import gleam/list
+import gleam/string_builder.{append, append_builder, from_string, to_string}
+import helpers.{type Post}
 
 pub fn feed(posts: List(Post)) -> String {
   let items = {

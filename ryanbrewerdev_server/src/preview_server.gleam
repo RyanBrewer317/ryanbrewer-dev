@@ -1,8 +1,8 @@
-import wisp.{type Request, type Response}
-import mist
 import gleam/erlang/process
 import gleam/io
+import mist
 import simplifile
+import wisp.{type Request, type Response}
 
 pub fn path() -> String {
   let assert Ok(path) = simplifile.current_directory()

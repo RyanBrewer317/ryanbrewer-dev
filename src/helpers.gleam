@@ -1,7 +1,7 @@
-import lustre/element.{type Element}
 import birl
 import gleam/int
 import gleam/order.{type Order, negate}
+import lustre/element.{type Element}
 
 pub type Date =
   birl.Time

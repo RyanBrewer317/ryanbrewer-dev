@@ -1,7 +1,7 @@
+import helpers.{type Post, pretty_date}
+import lustre/attribute.{attribute}
 import lustre/element.{type Element, text}
 import lustre/element/html
-import lustre/attribute.{attribute}
-import helpers.{type Post, pretty_date}
 
 pub fn thumbnail(post: Post) -> Element(a) {
   html.li([attribute.class("post-thumbnail"), attribute.id(post.id)], [

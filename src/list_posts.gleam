@@ -1,13 +1,13 @@
-import lustre/element.{type Element}
-import lustre/element/html
-import lustre/attribute.{attribute}
+import components/head.{head}
+import components/navbar.{navbar}
+import components/script_posts.{script_posts}
+import components/tail.{tail}
+import components/thumbnail.{thumbnail}
 import gleam/list
 import helpers.{type Post}
-import components/head.{head}
-import components/thumbnail.{thumbnail}
-import components/script_posts.{script_posts}
-import components/navbar.{navbar}
-import components/tail.{tail}
+import lustre/attribute.{attribute}
+import lustre/element.{type Element}
+import lustre/element/html
 
 fn script() -> Element(Nil) {
   html.script(

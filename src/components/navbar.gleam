@@ -1,6 +1,6 @@
+import lustre/attribute.{attribute}
 import lustre/element.{type Element, text}
 import lustre/element/html
-import lustre/attribute.{attribute}
 
 pub fn navbar() -> Element(a) {
   html.nav([], [

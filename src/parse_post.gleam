@@ -1,12 +1,12 @@
-import simplifile.{read}
+import gleam/list
+import gleam/result.{map_error, try}
 import gleam/string
+import helpers.{type Post, Post}
+import lustre/attribute.{type Attribute, attribute}
 import lustre/element.{type Element, text}
 import lustre/element/html
-import lustre/attribute.{type Attribute, attribute}
-import gleam/result.{map_error, try}
-import gleam/list
 import party as p
-import helpers.{type Post, Post}
+import simplifile.{read}
 
 pub type Error {
   FileError(simplifile.FileError)

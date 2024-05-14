@@ -1,7 +1,7 @@
+import gleam/list
+import lustre/attribute.{attribute}
 import lustre/element.{type Element}
 import lustre/element/html
-import lustre/attribute.{attribute}
-import gleam/list
 
 pub fn head(
   title: String,

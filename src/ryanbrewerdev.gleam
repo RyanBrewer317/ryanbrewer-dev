@@ -1,9 +1,10 @@
 import lustre
+import lustre/attribute.{href}
 import lustre/element.{type Element, text}
 import lustre/element/html.{a, div, p}
-import lustre/attribute.{href}
 import lustre/event
 import tinylang
+import tinytypedlang
 
 // import party as p
 // import gleam/result
@@ -16,43 +17,70 @@ pub fn main() {
   dispatch
 }
 
-type Model =
-  String
+type Model {
+  Model(code: String, is_typed: Bool)
+}
 
 fn init(_) -> Model {
-  ""
+  Model("", False)
 }
 
 pub type Msg {
   NewCode(String)
+  SetTyping(Bool)
 }
 
-fn update(_model: Model, msg: Msg) -> Model {
+fn update(model: Model, msg: Msg) -> Model {
   case msg {
-    NewCode(code) -> code
+    NewCode(code) -> Model(code: code, is_typed: model.is_typed)
+    SetTyping(typed) -> Model(code: model.code, is_typed: typed)
   }
 }
 
 fn view(model: Model) -> Element(Msg) {
   div([], [
-    html.h3([], [text("Who I Am")]),
+    html.h3([], [text("Me.")]),
     p([], [
-      text("I'm Ryan Brewer, the software developer behind "),
+      text(
+        "I'm Ryan Brewer.
+I'm a passionate software developer working on open-source software 
+for safe, reliable, and portable applications.
+I specialize in a formal methods approach to systems design, with a focus on ergonomics.
+My current biggest project is ",
+      ),
       a([href("https://github.com/RyanBrewer317/SaberVM")], [text("SaberVM")]),
       text(
         ",
-an abstract machine for safe, portable computation that functional languages can compile to. 
-With SaberVM, I'm hoping to broaden accessibility to safe computation, both informationally and financially. 
+a lightweight abstract machine for functional languages that aims 
+to be formally memory-safe, fault-tolerant, and very small. 
+With SaberVM, I'm hoping to broaden accessibility to safe computation, 
+both by taking it out of the ivory tower of academia and 
+by removing the need for expensive hardware.
 Consider supporting my work!
 ",
       ),
     ]),
-    html.iframe([
-      attribute.src("https://github.com/sponsors/RyanBrewer317/button"),
-      attribute.attribute("title", "Sponsor RyanBrewer317"),
-      attribute.height(32),
-      attribute.width(114),
-      attribute.style([#("border", "0"), #("border-radius", "6px;")]),
+    a(
+      [
+        attribute.id("github"),
+        href("https://github.com/sponsors/RyanBrewer317"),
+      ],
+      [
+        html.img([
+          attribute.src("/github-logo.png"),
+          attribute.alt("GitHub logo"),
+          attribute.id("github-logo"),
+        ]),
+        html.span([], [text("Sponsor")]),
+      ],
+    ),
+    a([attribute.id("kofi"), href("https://ko-fi.com/ryanbrewer")], [
+      html.img([
+        attribute.src("/kofi-logo.png"),
+        attribute.alt("Ko-fi logo"),
+        attribute.id("kofi-logo"),
+      ]),
+      html.span([], [text("Support")]),
     ]),
     html.h3([], [text("My Website")]),
     p([], [
@@ -96,27 +124,69 @@ Lambda abstractions are written like
         ],
         [text("here")],
       ),
-      text(
-        ". (It's currently broken on firefox, but definitely works on chrome.)",
-      ),
+      text("."),
     ]),
+    p([], [
+      text(
+        "Want types in your lambda calculus?
+You can check the box below to switch to a version with a fancy dependent type system!
+Type annotations are introduced by ",
+      ),
+      html.code([], [text("let")]),
+      text("-bindings, like "),
+      html.code([], [text("let x: A = v; e")]),
+      text(", lambdas, like "),
+      html.code([], [text("\\x: A. e")]),
+      text(", and Pi types, like "),
+      html.code([], [text("forall x: A. B")]),
+      text(". For lambdas and bindings, the types can often be "),
+      a([href("https://ncatlab.org/nlab/show/bidirectional+typechecking")], [
+        text("inferred"),
+      ]),
+      text(". The type of types is "),
+      html.code([], [text("Type")]),
+      text(", whose type is "),
+      a([href("https://cs.brown.edu/courses/cs1951x/docs/logic/girard.html")], [
+        text("also "),
+        html.code([], [text("Type")]),
+      ]),
+      text(". The code for this extended evaluator can be found "),
+      a(
+        [
+          href(
+            "https://github.com/RyanBrewer317/ryanbrewer-dev/blob/main/src/tinytypedlang.gleam",
+          ),
+        ],
+        [text("here")],
+      ),
+      text("."),
+    ]),
+    html.input([
+      attribute.type_("checkbox"),
+      attribute.id("is-typed"),
+      event.on_check(SetTyping),
+    ]),
+    html.label([attribute.for("is-typed")], [text("dependent types")]),
+    html.br([]),
     html.textarea([
       attribute.id("code"),
-      attribute.placeholder(
-        "Write some lambda calculus code! Example: (\\x.\\y.x)(\\x.x)(3)",
-      ),
+      attribute.placeholder(case model.is_typed {
+        False ->
+          "Write some lambda calculus code! Example: (\\x.\\y.x)(\\x.x)(3)"
+        True ->
+          "Play with dependent types! Example: let id: forall a: Type. a->a = \\a.\\x.x; id(Int)(3)"
+      }),
       event.on_input(NewCode),
     ]),
     html.br([]),
     {
       case model {
-        "" -> text("")
-        code ->
-          tinylang.go(code)
-          // |> p.go(parse_output(), _)
-          // |> result.unwrap(or: [
-          //   text("There's a bug in this website! I can't show this output."),
-          // ])
+        Model("", _) -> text("")
+        Model(code, _) ->
+          case model.is_typed {
+            False -> tinylang.go(code)
+            True -> tinytypedlang.go(code)
+          }
           |> fn(s) {
             div([], [
               html.strong([], [text("output ")]),
@@ -128,22 +198,3 @@ Lambda abstractions are written like
     },
   ])
 }
-/// this is legacy: the current lambda calculus implementation doesn't use subscripts.
-// fn subscript_parser() -> p.Parser(Element(a), e) {
-//   use _ <- p.do(p.char("_"))
-//   use n <- p.do(p.map(p.many1(p.digit()), string.concat))
-//   p.return(html.sub(
-//     [attribute.style([#("font-size", "9pt"), #("margin-right", "1px")])],
-//     [text(n)],
-//   ))
-// }
-
-// fn normal_parser() -> p.Parser(Element(a), e) {
-//   p.many(p.satisfy(fn(c) { c != "_" }))
-//   |> p.map(string.concat)
-//   |> p.map(text)
-// }
-
-// fn parse_output() -> p.Parser(List(Element(a)), e) {
-//   p.many(p.alt(subscript_parser(), normal_parser()))
-// }

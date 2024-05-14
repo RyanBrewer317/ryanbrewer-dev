@@ -1,9 +1,9 @@
-import lustre/element.{type Element, text}
-import lustre/element/html
-import lustre/attribute
 import components/head.{head}
 import components/navbar.{navbar}
 import components/tail.{tail}
+import lustre/attribute
+import lustre/element.{type Element, text}
+import lustre/element/html
 
 pub fn contact() -> Element(Nil) {
   html.html([attribute.attribute("lang", "en")], [

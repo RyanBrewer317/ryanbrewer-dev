@@ -1,9 +1,9 @@
-import party as p
 import gleam/dict.{type Dict}
-import gleam/result
 import gleam/int
-import gleam/string
 import gleam/list
+import gleam/result
+import gleam/string
+import party as p
 
 type Expr {
   LInt(Int)

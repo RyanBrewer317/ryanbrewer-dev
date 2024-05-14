@@ -1,10 +1,10 @@
-import lustre/element.{type Element, text}
-import lustre/element/html
-import lustre/attribute.{attribute}
-import helpers.{type Post}
 import components/head.{head}
 import components/navbar.{navbar}
 import components/tail.{tail}
+import helpers.{type Post}
+import lustre/attribute.{attribute}
+import lustre/element.{type Element, text}
+import lustre/element/html
 
 fn do(el: a, k: fn() -> List(a)) -> List(a) {
   [el, ..k()]

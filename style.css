@@ -123,3 +123,28 @@ textarea:focus, input:focus, #search-posts:focus {
   font-size: 11pt;
   opacity: 0.8;
 }
+
+#kofi, #github {
+  display: inline-block;
+  font-size: 11pt;
+  color: var(--secondary-color-dark);
+}
+
+#kofi span, #github span {
+  opacity: 0.8;
+}
+
+#github-logo {
+  height: 18pt;
+  margin-right: 5pt;
+  margin-bottom: -4pt;
+}
+
+#kofi-logo {
+  height: 30pt;
+  margin-bottom: -11pt;
+}
+
+#kofi {
+  margin-left: 10pt;
+}

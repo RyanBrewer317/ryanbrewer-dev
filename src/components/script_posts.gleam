@@ -1,5 +1,3 @@
-import lustre/element.{type Element}
-import lustre/element/html
 import gleam/list
 import gleam/string
 import gleam/string_builder.{
@@ -7,6 +5,8 @@ import gleam/string_builder.{
   to_string,
 }
 import helpers.{type Post, pretty_date}
+import lustre/element.{type Element}
+import lustre/element/html
 
 pub fn script_posts(posts: List(Post)) -> Element(a) {
   use <-

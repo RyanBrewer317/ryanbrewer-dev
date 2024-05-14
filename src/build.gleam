@@ -1,14 +1,14 @@
-import gleam/list
+import contact
+import feed
 import gleam/dict
+import gleam/list
+import helpers.{type Post}
 import homepage
 import list_posts
 import lustre/ssg
-import simplifile
-import render_post
 import parse_post
-import contact
-import feed
-import helpers.{type Post}
+import render_post
+import simplifile
 
 const posts_dir = "posts"
 

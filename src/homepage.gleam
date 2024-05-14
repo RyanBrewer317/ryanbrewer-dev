@@ -1,12 +1,12 @@
-import lustre/element.{type Element}
-import lustre/element/html
-import lustre/attribute
-import helpers.{type Post}
-import gleam/list
 import components/head.{head}
-import components/thumbnail.{thumbnail}
 import components/navbar.{navbar}
 import components/tail.{tail}
+import components/thumbnail.{thumbnail}
+import gleam/list
+import helpers.{type Post}
+import lustre/attribute
+import lustre/element.{type Element}
+import lustre/element/html
 
 pub fn homepage(posts: List(Post)) -> Element(Nil) {
   html.html([attribute.attribute("lang", "en")], [
