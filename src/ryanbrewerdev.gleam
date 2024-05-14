@@ -189,8 +189,8 @@ Type annotations are introduced by ",
           }
           |> fn(s) {
             div([], [
-              html.strong([], [text("output ")]),
-              text(" (variables may be renamed): "),
+              html.strong([], [text("output")]),
+              text(": "),
               div([attribute.id("code-output")], [text(s)]),
             ])
           }

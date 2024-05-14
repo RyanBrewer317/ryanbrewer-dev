@@ -1,0 +1,17 @@
+id: lambda-calculus-in-gleam
+name: Coding a Lambda-Calculus in Gleam
+date: 2024-05-14
+tags: 
+description: 
+
+@paragraph@
+Hi all! Today I wanted to walk through how a simple lambda calculus can be implemented in the Gleam programming language. The lambda calculus forms the basis for many functional programming languages, such as Gleam itself. This post will nicely lead into follow-up posts on implementing fancy type systems using Gleam.
+@end@
+
+@subheading@
+Why Gleam?
+@end@
+
+@paragraph@
+I've been a big fan of the Gleam programming language since well before its 1.0 release, and wrote this website using it. (Indeed, the lambda-calculus evaluator we will be writing can be played with on my home page!) Gleam is a simple functional language
+@end@
