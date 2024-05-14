@@ -71,5 +71,12 @@
       <guid>https://ryanbrewer.dev/posts/simple-programming-languages.html</guid>
       <description><![CDATA[Simple programming languages are wonderful to work in. But what is it about them that actually makes them simple? And why do we like that so much?  Read more <a href="https://ryanbrewer.dev/posts/simple-programming-languages.html">here</a>!]]></description>
     </item>
+    <item>
+      <title>The Type of Sprintf</title>
+      <pubDate>Tue, 14 May 2024 00:00:00 PST</pubDate>
+      <link>https://ryanbrewer.dev/posts/type-of-sprintf.html</link>
+      <guid>https://ryanbrewer.dev/posts/type-of-sprintf.html</guid>
+      <description><![CDATA[Most static type systems wouldn't let you make something like sprintf, whose type is determined by a format string. Dependent types can save the day!  Read more <a href="https://ryanbrewer.dev/posts/type-of-sprintf.html">here</a>!]]></description>
+    </item>
   </channel>
 </rss>

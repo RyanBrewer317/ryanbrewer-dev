@@ -1,0 +1,63 @@
+<html lang="en"><head><script async="true" src="https://www.googletagmanager.com/gtag/js?id=G-BDZJ8SX3Y1"></script><script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+        </script><title>The Type of Sprintf - Ryan Brewer</title><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="description" content="Most static type systems wouldn't let you make something like sprintf, whose type is determined by a format string. Dependent types can save the day!"><link rel="icon" type="image/x-icon" href="/favicon.ico"><link rel="alternate" type="application/rss+xml" title="Ryan Brewer's Blog" href="https://ryanbrewer.dev/feed.rss"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="true"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto&display=swap"><script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script><script type="text/javascript" async="true" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css"><script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script><script>hljs.highlightAll();</script>  <script type="module" crossorigin src="/assets/style-d8333133.js"></script>
+  <link rel="stylesheet" href="/assets/style-5cc4213c.css">
+</head><body><nav><a href="/" id="nav-home">Ryan Brewer</a><a href="/search" id="nav-search">Posts</a><a href="/contact.html" id="nav-contact">Contact</a><a href="/feed.rss" id="nav-subscribe"><img src="/rss-icon.png" id="rss-subscribe-icon">Subscribe</a></nav><div id="body"><h1>The Type of Sprintf</h1><div class="date">May 14, 2024</div><p>Today I decided to write a little post about giving a type to the <code>sprintf</code> function via dependent types. The idea of this and related functions (like <code>printf</code>) is to have the first argument be a string, and special patterns in the string determine what the following arguments should be. For example:
+</p><pre><code>// no special patterns, just prints the string
+sprintf(&quot;hello world!\n&quot;); 
+// %d pattern, the following arg should be an integer
+sprintf(&quot;num: %d\n&quot;, 42); 
+</code></pre><p>For languages that have compile-time (aka &quot;static&quot;) types, this function generally has to be a special case in the typechecker. There&#39;s no way for the user to create a function that does something similar, since the type of the function depends on the contents of the format string. You generally couldn&#39;t even do something like this:
+</p><pre><code>void my_sprintf(char* format, ???) {
+    sprintf(format, ???);
+}
+</code></pre><p>...because <code>my_sprintf</code> doesn&#39;t have the same special case that the <code>sprintf</code> function has in the typechecker.
+</p><p>However, in a <i>dependent</i> type system, we actually <i>do</i> have the power to make functions like these. In fact, <code>sprintf</code> is sometimes given as the main example of what dependent types allow you to do that you couldn&#39;t do with only refinement types. For full transparency, I got this example from the <a href="http://www.danielgratzer.com/courses/type-theory-s-2024/lecture-notes.pdf">lecture notes</a> of Daniel Gratzer. Hopefully this blog post makes a cool example a little more accessible.
+</p><p>Without further ado, the set-up goes like this. As you can imagine, we have to parse the format string at compile-time to determine the types of the arguments. Therefore we&#39;ll start by making a simple <code>Token</code> datatype:
+</p><pre><code>data Token: Type where
+    IntFormat: Token
+    CharFormat: Token
+    StrFormat: Token
+    NormalChar: Char -&gt; Token
+</code></pre><p>This is using a pseudo-code based on Agda or Idris GADT syntax. Obviously, you can put more format specifier tokens here if you want.
+</p><p>Next, we need to lex the string into tokens:
+</p><pre><code>-- `::` is the &quot;cons&quot; operator, prepending to a linked list
+lex: List Char -&gt; List Token
+lex chars = case chars of
+    [] =&gt; []
+    &#39;%&#39; :: &#39;%&#39; :: rest =&gt; NormalChar &#39;%&#39; :: lex rest
+    &#39;%&#39; :: &#39;d&#39; :: rest =&gt; IntFormat :: lex rest
+    &#39;%&#39; :: &#39;c&#39; :: rest =&gt; CharFormat :: lex rest
+    &#39;%&#39; :: &#39;s&#39; :: rest =&gt; StrFormat :: lex rest
+    c :: rest =&gt; NormalChar c :: lex rest
+</code></pre><p>This appears to be a normal lexing function, because it is. There&#39;s no special magic in a dependent type system for being able to run code at compile-time!
+</p><p>What <i>is</i> special magic, in my opinion, is the next step: turning our list of tokens into a type! (This will break the syntax highlighting, unfortunately, but bear with me.)
+</p><pre><code>tokens_to_type: List Token -&gt; Type
+tokens_to_type tokens = case tokens of
+    NormalChar _ :: rest =&gt; tokens_to_type rest
+    IntFormat :: rest =&gt; Int -&gt; tokens_to_type rest
+    CharFormat :: rest =&gt; Char -&gt; tokens_to_type rest
+    StrFormat :: rest =&gt; String -&gt; tokens_to_type rest
+    [] =&gt; String
+</code></pre><p>This is worth taking a moment to unpack. Normal characters get dropped on the floor since they have no impact on the type we&#39;re constructing. Format characters, on the other hand, each prepend a new argument type to the overall function type. The base case, when there are no more characters in the format string, produces the final return type of the function: a <code>String</code>. For example, if the format string was <code>&quot;%d %s&quot;</code>, the tokenization would be <code>[IntFormat, NormalChar &#39; &#39;, StrFormat], so the resulting type would be </code>Int -&gt; String -&gt; String`. This might be confusing because it&#39;s a post-order traversal of the list, and might feel kind of backwards.
+</p><p>This process of producing different types based on a case-statement inspection (&quot;elimination&quot;) of a value is called a &quot;Large Elimination&quot; and can be thought of as a definitive feature of dependent types that is absent from refinement types. It&#39;s extremely important for writing proofs of, say, mathematical theorems, but it&#39;s also very useful for programming tasks like the <code>sprintf</code> example we&#39;re exploring.
+</p><p>Putting it all together, we can write this handy function:
+</p><pre><code>type_of_sprintf: String -&gt; Type
+type_of_sprintf s = tokens_to_type (lex (string_to_char_list s))
+</code></pre><p>Nice! What does it feel like to have to <i>use</i> the types produced by this function?
+</p><pre><code>sprintf: (s: String) -&gt; type_of_sprintf s
+sprintf s = sprintf_helper (lex (string_to_char_list s)) &quot;&quot;
+
+sprintf_helper: (tokens: List Token) -&gt; String -&gt; tokens_to_type tokens
+sprintf_helper tokens out_str = case tokens of
+    NormalChar c :: rest =&gt; sprintf_helper rest (out_str ++ char_to_string c)
+    IntFormat :: rest =&gt; \i: Int -&gt; sprintf_helper rest (out_str ++ int_to_string i)
+    CharFormat :: rest =&gt; \c: Char -&gt; sprintf_helper rest (out_str ++ char_to_string c)
+    StrFormat :: rest =&gt; \s: String -&gt; sprintf_helper rest (out_str ++ s)
+    [] =&gt; out_str
+</code></pre><p>Not too bad! It&#39;s a bit crazy because each branch of this case-statement produces a value of a different type, but indeed the type of the entire case-statement is <code>tokens_to_type tokens</code>, which is dependent on the value being inspected (<code>tokens</code>). Code that is very similar to this (just syntax adjustments) typechecks in Agda, which many consider to be the state of the art in dependent pattern-matching.
+</p><p>Obviously this code doesn&#39;t meet a full specification of <code>sprintf</code>, and is implemented in a pretty unoptimized way (something like \(O(N)\) time complexity in the size of the format string). I hope, however, that you can start to see that dependent types can be extremely powerful and expressive while staying completely at compile-time. In fact, if you don&#39;t mind writing a proof or two, our <code>sprintf</code> function can be called on format strings that aren&#39;t fully known at compile-time! You only need to be able to prove that the string will have certain format specifiers, and then calling <code>sprintf</code> can typecheck.
+</p><p>Maybe this is just a toy example, and languages without dependent types get by with special-cased <code>sprintf</code> functions just fine. But I think that this example is quite a nice demonstration of what&#39;s <i>possible</i> with dependent types that wouldn&#39;t be possible with other systems, including even refinement types. Personally, I find large eliminations very useful for writing proofs, such as when I want to prove that certain ADT constructors are impossible at a certain point. But that&#39;s a story for another time :)
+</p></div><div><div style="height:100pt;"></div><script src="/__/firebase/8.10.1/firebase-app.js"></script><script src="/__/firebase/8.10.1/firebase-analytics.js"></script><script src="/__/firebase/init.js"></script><script>firebase.analytics();</script></div></body></html>
