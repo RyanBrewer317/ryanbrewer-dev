@@ -156,3 +156,13 @@ textarea:focus, input:focus, #search-posts:focus {
   padding-top: 5pt;
   text-align: center;
 }
+
+#ryan-and-ivy-img {
+  margin-right: 30pt;
+}
+
+@media (min-width: 400pt) {
+  #ryan-and-ivy-img {
+    float: left;
+  }
+}

@@ -40,15 +40,12 @@ fn update(model: Model, msg: Msg) -> Model {
 fn view(model: Model) -> Element(Msg) {
   div([], [
     html.div([], [
-      html.div(
-        [attribute.style([#("float", "left"), #("margin-right", "20px")])],
-        [
-          html.img([attribute.src("/ryan-and-ivy.jpg"), attribute.width(300)]),
-          html.div([attribute.class("caption")], [
-            text("Me and my lovely wife, Ivy!"),
-          ]),
-        ],
-      ),
+      html.div([attribute.id("ryan-and-ivy-img")], [
+        html.img([attribute.src("/ryan-and-ivy.jpg"), attribute.width(300)]),
+        html.div([attribute.class("caption")], [
+          text("Me and my lovely wife, Ivy!"),
+        ]),
+      ]),
       html.div([], [
         html.h3([], [text("Me.")]),
         p([], [
