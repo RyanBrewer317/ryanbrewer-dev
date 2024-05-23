@@ -31,7 +31,9 @@ pub fn homepage(posts: List(Post)) -> Element(Nil) {
       navbar(),
       html.div([attribute.id("body")], [
         html.div([attribute.attribute("data-lustre-app", "true")], []),
-        html.h4([], [element.text("Blog Posts")]),
+        html.h3([attribute.style([#("padding-top", "50pt")])], [
+          element.text("Blog Posts"),
+        ]),
         html.ul([attribute.id("posts-list")], list.map(posts, thumbnail)),
       ]),
       tail(),

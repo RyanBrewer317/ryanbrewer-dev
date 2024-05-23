@@ -148,3 +148,11 @@ textarea:focus, input:focus, #search-posts:focus {
 #kofi {
   margin-left: 10pt;
 }
+
+.caption {
+  font-size: 11pt;
+  opacity: 0.8;
+  padding-bottom: 10pt;
+  padding-top: 5pt;
+  text-align: center;
+}
