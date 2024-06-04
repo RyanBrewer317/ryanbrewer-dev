@@ -10,9 +10,7 @@ pub fn thumbnail(post: Post) -> Element(a) {
         text(post.title),
       ]),
     ]),
-    html.div([attribute.class("post-thumbnail-date")], [
-      text(pretty_date(post.date)),
-    ]),
+    html.div([attribute.class("subtle-text")], [text(pretty_date(post.date))]),
     html.p([], [text(post.description)]),
   ])
 }
