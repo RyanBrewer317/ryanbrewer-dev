@@ -216,5 +216,23 @@ Type annotations are introduced by ",
           }
       }
     },
+    html.div([attribute.id("webring-links")], [
+      html.span([attribute.class("subtle-text")], [text("Webring: ")]),
+      html.a(
+        [
+          attribute.class("webring"),
+          attribute.href("https://webring.xxiivv.com/#ryan-brewer"),
+          attribute.target("_blank"),
+          attribute.rel("noopener"),
+        ],
+        [
+          html.img([
+            attribute.src("/xxiivv-webring-icon.svg"),
+            attribute.alt("XXIIVV webring icon"),
+            attribute.style([#("bottom", "-8pt")]),
+          ]),
+        ],
+      ),
+    ]),
   ])
 }

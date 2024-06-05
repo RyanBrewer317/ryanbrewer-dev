@@ -157,6 +157,7 @@ textarea:focus, input:focus, #search-posts:focus {
 
 #copyright-notice {
   text-align: center;
+  margin-bottom: 0;
 }
 
 #ryan-and-ivy-img {
@@ -167,4 +168,13 @@ textarea:focus, input:focus, #search-posts:focus {
   #ryan-and-ivy-img {
     float: left;
   }
+}
+
+#webring-links {
+  margin-top: 50pt;
+}
+
+.webring img {
+  width: 30pt;
+  position: relative;
 }
