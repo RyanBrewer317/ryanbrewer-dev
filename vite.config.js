@@ -6,7 +6,7 @@ import * as fs from "fs";
 const input_obj = fs.readdirSync("site/posts").reduce((obj, filename)=>{
   obj[filename] = "site/posts/"+filename;
   return obj;
-}, { main: "site/index.html", search: "site/search.html", contact: "site/contact.html", demos: "site/demos.html" })
+}, { main: "site/index.html", search: "site/search.html", contact: "site/contact.html", demos: "site/demos.html", "404": "site/404.html" })
 
 export default defineConfig({
   root: "site",
