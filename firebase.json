@@ -8,12 +8,12 @@
     ],
     "rewrites": [
       {
-        "source": "/search",
-        "destination": "/search.html"
+        "source": "/",
+        "destination": "/index.html"
       },
       {
-        "source": "**",
-        "destination": "/index.html"
+        "source": "/search",
+        "destination": "/search.html"
       },
       {
         "source": "/contact",
@@ -22,6 +22,10 @@
       {
         "source": "/demos",
         "destination": "/demos.html"
+      },
+      {
+        "source": "**",
+        "destination": "/unknown.html"
       }
     ]
   }

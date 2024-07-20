@@ -178,3 +178,8 @@ textarea:focus, input:focus, #search-posts:focus {
   width: 30pt;
   position: relative;
 }
+
+#unknown-page-banner {
+  font-size: 25pt;
+  padding-bottom: 100pt;
+}

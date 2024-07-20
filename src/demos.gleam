@@ -145,6 +145,8 @@ Type annotations are introduced by ",
         text("also "),
         code([], [text("Type")]),
       ]),
+      text(". The type of numbers is "),
+      code([], [text("Int")]),
       text(". The code for this extended evaluator can be found "),
       a(
         [
