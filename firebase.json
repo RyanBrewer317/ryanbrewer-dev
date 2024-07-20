@@ -18,6 +18,10 @@
       {
         "source": "/contact",
         "destination": "/contact.html"
+      },
+      {
+        "source": "/demos",
+        "destination": "/demos.html"
       }
     ]
   }

@@ -36,7 +36,7 @@ nav {
   color: var(--secondary-color-dark);
 }
 
-#nav-search, #nav-subscribe, #nav-contact {
+#nav-search, #nav-subscribe, #nav-contact, #nav-demos {
   margin-left: 15pt;
 }
 
@@ -54,7 +54,7 @@ code {
   margin: 0 auto;
 }
 
-#code {
+.code {
   margin: 10pt;
   padding: 5pt;
   background-color: var(--code-background);
@@ -68,12 +68,12 @@ code {
   border-radius: 3pt;
 }
 
-#code:focus {
+.code:focus {
   outline: none !important;
   border: 1pt solid var(--code-color);
 }
 
-#code-output {
+.code-output {
   font-family: var(--code-font);
   margin-bottom: 20pt;
   margin-top: 5pt;
@@ -95,7 +95,7 @@ textarea:focus, input:focus, #search-posts:focus {
   border-radius: 5pt;
 }
 
-#nav-search, #nav-subscribe, #nav-contact {
+#nav-search, #nav-subscribe, #nav-contact, #nav-demos {
   float: right;
 }
 
