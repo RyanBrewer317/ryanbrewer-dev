@@ -10,10 +10,10 @@ pub fn navbar() -> Element(a) {
     html.a([attribute.href("/search"), attribute.id("nav-search")], [
       text("Posts"),
     ]),
-    html.a([attribute.href("/contact"), attribute.id("nav-contact")], [
+    html.a([attribute.href("/contact.html"), attribute.id("nav-contact")], [
       text("Contact"),
     ]),
-    html.a([attribute.href("/demos"), attribute.id("nav-demos")], [
+    html.a([attribute.href("/demos.html"), attribute.id("nav-demos")], [
       text("Demos"),
     ]),
     html.a([attribute.href("/feed.rss"), attribute.id("nav-subscribe")], [

@@ -99,7 +99,8 @@ Lambda abstractions are written like
       text("."),
     ]),
     textarea([
-      id("code"),
+      id("untyped-code"),
+      class("code"),
       placeholder(
         "Write some lambda calculus code! Example: (\\x.\\y.x)(\\x.x)(3)",
       ),
