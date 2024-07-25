@@ -77,7 +77,7 @@ A final philosophical point that's very important for getting any further in cat
 @end@
 
 @paragraph@
-In many cases, the arrows of a category will also have some representation as objects in that same category. For example, in a category of sets and functions, functions are also sets, so may be present as both arrows and objects in the category. Categories where *every* arrow has a corresponding object are called "closed." The object of an arrow \\(f:X\\to Y\\) is called an "exponential" or "exponential object" and is written \\(Y^X\\). This notation comes from the idea that if \\(X\\) and \\(Y\\) are sets, the number of elements (functions) in the set \\(X\\to Y\\) is equal to the number of elements in \\(Y\\) raised to the power of the number of elements in \\(X\\), which is kinda fun I think. I won't properly define exponential objects until later on when I discuss products and universal constructions, but just knowing about them informally helps one realize the depth with which one can think about arrows in a category.
+In many cases, the arrows of a category will also have some representation as objects in that same category. For example, in a category of sets and functions, functions are also sets, so may be present as both arrows and objects in the category. Categories where *every* arrow has a corresponding object are called "closed," though this adjective doesn't appear by itself because of there multiple interesting formal definitions to pick between. The object of an arrow \\(f:X\\to Y\\) is called an "exponential" or "exponential object" and is written \\(Y^X\\). This notation comes from the idea that if \\(X\\) and \\(Y\\) are sets, the number of elements (functions) in the set \\(X\\to Y\\) is equal to the number of elements in \\(Y\\) raised to the power of the number of elements in \\(X\\), which is kinda fun I think. I won't properly define exponential objects until later on when I discuss products and universal constructions, but just knowing about them informally helps one realize the depth with which one can think about arrows in a category.
 @end@
 
 @subheading@
@@ -201,7 +201,7 @@ A popular example of natural transformations in a language like Haskell are mona
 @end@
 
 @diagram@
-    T\ar[r,"\eta\circ id_T"]\ar[dr,<->,"="] & T\circ T\ar[d,"\mu"] & T\ar[l,"id_T\circ\eta"']\ar[ld,<->,"="'] \\
+    T\ar[r,"\eta\circ id_T"]\ar[dr,<->,"="'] & T\circ T\ar[d,"\mu"] & T\ar[l,"id_T\circ\eta"']\ar[ld,<->,"="] \\
     & T &
 @end@
 
@@ -222,7 +222,11 @@ Sometimes writing natural transformations as \\(\\alpha_X: FX\\to GX\\) instead 
 @end@
 
 @paragraph@
-The last point I'll bring up about category theory on category theory is the notion of "enrichment." A typical category has sets \\(\\texttt{Hom}(X,Y)\\) of arrows going from any object \\(X\\) to any object \\(Y\\) (it might be the empty set if there are no such arrows). The fact that these collections of arrows are sets means a category is "locally small," and sometimes that's taken as part of the definition of a category. But the idea of a category can be generalized to have other kinds of collections for the arrows between objects. If the collection is a "class" and too big to form a set, then the category can be called "locally large," for example. When generalizing categories this way, we pick a category and say that these collections are objects in that category. For example, a locally small category (aka the normal kind) uses the category \\(\\texttt{Set}\\) of all sets (it's a large category), which means that the collections of arrows are sets. In this system, the idea of "homset" gets replaced with what are called "hom-objects," since they're objects in a category. You then say that locally small categories are "enriched over \\(\\texttt{Set}\\)." If the collection of arrows is a small category instead of a set, then you'd generally say the hom-objects are in \\(\\texttt{Cat}\\). Funnily enough, \\(\\texttt{Cat}\\) itself is an example of a category enriched over \\(\\texttt{Cat}\\)! That only means that the collections of functors between categories in \\(\\texttt{Cat}\\) are categories, not sets. (Also, \\(\\texttt{Set}\\) is enriched over \\(\\texttt{Set}\\), since function spaces \\(A\\to B\\) are just sets of functions.)
+The last point I'll bring up about category theory on category theory is the notion of "enrichment." A typical category has sets \\(\\texttt{Hom}(X,Y)\\) of arrows going from any object \\(X\\) to any object \\(Y\\) (it might be the empty set if there are no such arrows). The fact that these collections of arrows are sets means a category is "locally small," and sometimes that's taken as part of the definition of a category. But the idea of a category can be generalized to have other kinds of collections for the arrows between objects. If the collection is a "class" and too big to form a set, then the category can be called "locally large," for example. When generalizing categories this way, we pick a category and say that these collections are objects in that category. For example, a locally small category (aka the normal kind) uses the category \\(\\texttt{Set}\\) of all sets (it's a large category), which means that the collections of arrows are sets. In this system, the idea of "homset" gets replaced with what are called "hom-objects," since they're objects in a category. You then say that locally small categories are "enriched over \\(\\texttt{Set}\\)." If the collection of arrows is a small category instead of a set, then you'd generally say the hom-objects are in \\(\\texttt{Cat}\\).
+@end@
+
+@paragraph@
+Funnily enough, \\(\\texttt{Cat}\\) itself is an example of a category enriched over \\(\\texttt{Cat}\\)! That only means that the collections of functors between categories in \\(\\texttt{Cat}\\) are categories, not just sets. Also, \\(\\texttt{Set}\\) is enriched over \\(\\texttt{Set}\\), since function spaces \\(A\\to B\\) are just sets of functions. Remember, exponential objects are objects representing arrows, and \\(\\texttt{Set}\\) has them because a homset is a set, and \\(\\texttt{Cat}\\) has them because the collection of functors from an object \\(C\\) to an object \\(D\\) form a category. So indeed, a category being enriched over itself just mean it has exponential objects for all its arrows!
 @end@
 
 @paragraph@
@@ -234,7 +238,57 @@ Other important concepts
 @end@
 
 @paragraph@
-It's unusual that I introduce natural transformations before universal constructions (like, say, a product). That choice has made some thing hard (I still owe you a formal definition of exponential objects!) but I think it does more good than bad, and I have enormous power to talk deeply about these other powerful concepts now, with the full weight of category theory.
+It's unusual that I introduce natural transformations before universal constructions (like, say, a product). That choice has made some things hard (I still owe you a formal definition of exponential objects!) but I think it does more good than bad, and I have enormous power now to talk deeply about these other powerful concepts.
+@end@
+
+@paragraph@
+One simple one to start off with is "dual" categories. Any category \\(C\\) has a dual category, written \\(C^{op}\\), where you simply flip the direction of all the arrows. This is still a valid category because if you had two morphisms \\(f:X\\to Y\\) and \\(g:Y\\to Z\\) that compose into \\(g\\circ f:X\\to Z\\) in \\(C\\) then in \\(C^{op}\\) you have \\(f:Y\\to X\\), \\(g:Z\\to Y\\), and \\(f\\circ g:Z\\to X\\) which is all perfectly valid category theory stuff. Looping arrows (including identity arrows) still loop on the same object, though their actual definition might change if they aren't identity arrows. Obviously, the dual of a dual is the original category.
+@end@
+
+@paragraph@
+I like to think of objects in dual categories as "absences" of objects. This is building on the perspective of morphisms as transformations. So if there's an object \\(X\\) in a category \\(C\\), the corresponding \\(X\\) in \\(C^{op}\\) represents a hole that would be filled if we had an \\(X\\). For example, if \\(C\\) is a category of types and functions, and has some object `int` for integers, then the corresponding object in \\(C^{op}\\) means not having an integer. Where does this weird idea come from? Well, if I have a function like `f: bool -> int` then I could use it to produce an integer and fill the hole, but that just leaves me needing a boolean! So a function from `bool` to `int` *transforms a need for integers into a need for booleans!*
+@end@
+
+@paragraph@
+To give this intuition a bit more credit, category theory uses the dual category to represent the inputs to arrows. Let me explain. Consider a functor \\(FX=X\\to A\\) for some fixed object \\(A\\). So in a category of types and functions, \\(F\\) would map the type \\(\\texttt{int}\\) of integers to the type \\(\\texttt{int}\\to A\\) of functions from integers to \\(A\\). Except that's not quite right, because the first \\(\\texttt{int}\\) is a presence of integers and the second \\(\\texttt{int}\\) is a *need* for integers. Therefore we actually say \\(F\\) maps objects from a dual category into objects in the original category: \\(F:C^{op}\\to C\\). Alternatively, we say \\(F\\) is a "contravariant" functor from \\(C\\) to \\(C\\), which just means that the input category is actually the dual of what's written. All the other functors are then called "covariant;" these are just terms you have to memorize, which I personally find a bit painful, but I guess they make sense in some other fields of math.
+@end@
+
+@paragraph@
+The other use of dual categories is as a way of finding interesting ideas. Consider the monad defined earlier, which had certain commutative diagrams it had to satisfy. What would you be defining if you flipped all those arrows? A monad in a category \\(C\\) becomes a "comonad" in \\(C^{op}\\), which is a less famous concept but certainly a powerful one that I've mentioned in past posts and I'm sure will come up again in future ones. The idea is that if you flip all the arrows in a definition like the definition of monads, you use the "co-" prefix to name the new concept you find. Here's the commutative diagrams a comonad must satisfy, just so you can see the flipped arrows (\\(\\epsilon\\) is co-\\(\\eta\\) and \\(\\delta\\) is co-\\(\\mu\\)):
+@end@
+
+@diagram@
+    T\ar[dr,<->,"="'] & T\circ T\ar[l,"\varepsilon\circ id_T"']\ar[r,"id_T\circ\varepsilon"] & T\ar[ld,<->,"="] \\
+    & T\ar[u,"\delta"] &
+@end@
+
+@paragraph@
+@end@
+
+@diagram@
+    T\circ T\circ T & T\circ T\ar[l,"id_T\circ\delta"'] \\
+    T\circ T\ar[u,"\delta\circ id_T"] & T\ar[l,"\delta"]\ar[u,"\delta"]
+@end@
+
+@paragraph@
+This whole "co-" business with dual categories is the idea behind the "a coconut is a nut" category theory joke :)
+@end@
+
+@paragraph@
+Another important concept to discuss is the idea of a "universal construction." The idea is we have some object we want to define, so we specify some condition it has to specify, and then either the category has no objects that satisfy it, has one object that satisfies it, or has multiple objects that satisfy it. In the first two cases our job is done, but if we have multiple objects that satisfy our condition then we need to specify how we're going to pick out the object we're looking for. In a universal construction, this means specifying how every other candidate interacts with the one we're looking for. If there is such an object that interacts with the rest in that way, then it's the object we're looking for; if not, then the category just doesn't have the object we're looking for. Whew, that was abstract! Let's look at an example. A "product" between two objects \\(X\\) and \\(Y\\) is written \\(X\\times Y\\) and is an object with morphisms \\(p:X\\times Y\\to X\\) and \\(q:X\\times Y\\to Y\\). If there are multiple such objects, then they all have a unique arrow to the product such that the following diagram commutes: 
+@end@
+
+@diagram@
+    & Z\ar[ld,"f"']\ar[rd,"g"]\ar[d,"h"] & \\
+    X & X\times Y\ar[l,"p"]\ar[r,"q"'] & Y
+@end@
+
+@paragraph@
+So there's just one arrow \\(h\\) from a candidate to the product and the morphisms from a candidate to \\(X\\) and \\(Y\\) are equal to the composition of \\(h\\) and the respective morphisms of the product. Note that when the candidate *is* the product, \\(h=id_{X\\times Y}\\). If these restrictions can't be satisfied, then \\(X\\) and \\(Y\\) don't have a product.
+@end@
+
+@paragraph@
+If every pair of objects has a product in the category, the category is "cartesian," and called a "cartesian monoidal category." I'll touch on the "monoidal" part in a moment, but I just want to mention that in \\(\\texttt{Set}\\), the category of all sets and functions, products are sets of pairs \\(A\\times B\\) where the first component comes from some set \\(A\\) and the second component comes from \\(B\\). The most famous example by far is the cartesian plane, where we do geometry in high school! It's the set of points \\((x,y):\\mathbb{R}\\times\\mathbb{R}\\), and it's most people's first time hearing the word "cartesian." These sets of pairs are called "cartesian products" in set theory, hence the terms "cartesian plane" and "cartesian monoidal category," and the name "product" (and corresponding multiplication symbol \\(\\times\\)) for the object.
 @end@
 
 @subheading@
