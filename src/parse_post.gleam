@@ -144,7 +144,12 @@ fn parse_block() -> p.Parser(Element(Nil), Nil) {
       let assert Ok(_) =
         shellout.command(
           run: "inkscape",
-          with: ["-l", "--export-filename", "../public/"<>img_filename, "diagram.pdf"],
+          with: [
+            "-l",
+            "--export-filename",
+            "../public/" <> img_filename,
+            "diagram.pdf",
+          ],
           in: "diagram-work",
           opt: [shellout.LetBeStdout],
         )

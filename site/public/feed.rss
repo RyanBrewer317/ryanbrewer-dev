@@ -78,12 +78,5 @@
       <guid>https://ryanbrewer.dev/posts/type-of-sprintf.html</guid>
       <description><![CDATA[Most static type systems wouldn't let you make something like sprintf, whose type is determined by a format string. Dependent types can save the day!  Read more <a href="https://ryanbrewer.dev/posts/type-of-sprintf.html">here</a>!]]></description>
     </item>
-    <item>
-      <title>Getting Started with Category Theory</title>
-      <pubDate>Sat, 20 Jul 2024 00:00:00 PST</pubDate>
-      <link>https://ryanbrewer.dev/posts/getting-started-category-theory.html</link>
-      <guid>https://ryanbrewer.dev/posts/getting-started-category-theory.html</guid>
-      <description><![CDATA[Category theory is a beautiful and powerful field but it can feel impenetrable without the right entry point. This post hopes to serve as a sort of beginner's guide.  Read more <a href="https://ryanbrewer.dev/posts/getting-started-category-theory.html">here</a>!]]></description>
-    </item>
   </channel>
 </rss>
