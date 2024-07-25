@@ -98,14 +98,17 @@ Lambda abstractions are written like
       ),
       text("."),
     ]),
-    textarea([
-      id("untyped-code"),
-      class("code"),
-      placeholder(
-        "Write some lambda calculus code! Example: (\\x.\\y.x)(\\x.x)(3)",
-      ),
-      event.on_input(NewUntypedCode),
-    ]),
+    textarea(
+      [
+        id("untyped-code"),
+        class("code"),
+        placeholder(
+          "Write some lambda calculus code! Example: (\\x.\\y.x)(\\x.x)(3)",
+        ),
+        event.on_input(NewUntypedCode),
+      ],
+      "",
+    ),
     br([]),
     {
       case model {
@@ -159,14 +162,17 @@ Type annotations are introduced by ",
       text("."),
     ]),
     br([]),
-    textarea([
-      id("deptyped-code"),
-      class("code"),
-      placeholder(
-        "Play with dependent types! Example: let id: forall a: Type. a->a = \\a.\\x.x; id(Int)(3)",
-      ),
-      event.on_input(NewDepTypedCode),
-    ]),
+    textarea(
+      [
+        id("deptyped-code"),
+        class("code"),
+        placeholder(
+          "Play with dependent types! Example: let id: forall a: Type. a->a = \\a.\\x.x; id(Int)(3)",
+        ),
+        event.on_input(NewDepTypedCode),
+      ],
+      "",
+    ),
     br([]),
     {
       case model {

@@ -27,7 +27,7 @@ fn parse_int() -> p.Parser(Expr, e) {
 
 fn parse_var_string() -> p.Parser(String, e) {
   use first <- p.do(p.letter())
-  use rest <- p.do(p.many(p.alt(p.alphanum(), p.char("_"))))
+  use rest <- p.do(p.many(p.either(p.alphanum(), p.char("_"))))
   p.return(first <> string.concat(rest))
 }
 
@@ -54,19 +54,19 @@ fn parse_lambda() -> p.Parser(Expr, e) {
 
 fn parse_universe() -> p.Parser(Expr, e) {
   use _ <- p.do(p.string("Type"))
-  use _ <- p.do(p.not(p.alt(p.alphanum(), p.char("_"))))
+  use _ <- p.do(p.not(p.either(p.alphanum(), p.char("_"))))
   p.return(LUniverse)
 }
 
 fn parse_int_type() -> p.Parser(Expr, e) {
   use _ <- p.do(p.string("Int"))
-  use _ <- p.do(p.not(p.alt(p.alphanum(), p.char("_"))))
+  use _ <- p.do(p.not(p.either(p.alphanum(), p.char("_"))))
   p.return(LIntType)
 }
 
 fn parse_pi_type() -> p.Parser(Expr, e) {
   use _ <- p.do(p.string("forall"))
-  use _ <- p.do(p.not(p.alt(p.alphanum(), p.char("_"))))
+  use _ <- p.do(p.not(p.either(p.alphanum(), p.char("_"))))
   use _ <- p.do(ws())
   use x <- p.do(parse_var_string())
   use _ <- p.do(ws())

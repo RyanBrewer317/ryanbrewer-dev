@@ -188,15 +188,8 @@ textarea:focus, input:focus, #search-posts:focus {
   padding: 30pt 0;
 }
 
-.diagram svg {
+.diagram img {
   transform: scale(2.25);
   transform-origin: left;
-}
-
-.diagram g, text {
-  fill: white;
-}
-
-.diagram path {
-  stroke: white;
+  filter: invert(1);
 }

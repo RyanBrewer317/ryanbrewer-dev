@@ -24,6 +24,11 @@ The styles on this site are a work in progress. `code`, *italics*, \\\*escaping,
 A^1 math_2 block^3!
 @end@
 
+@diagram@
+    D\ar[r,"i"] & a\ar[d,"g"] \\
+    m\ar[u,"s"] & r\ar[l,"a"]
+@end@
+
 @code@
 print("A code block!") 
 # language is auto-detected atm.

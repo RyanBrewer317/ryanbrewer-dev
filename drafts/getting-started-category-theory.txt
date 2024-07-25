@@ -92,7 +92,7 @@ Now we have a bunch of definitions and intuition about what a category is, but t
 A particularly powerful example of this are categories where the *objects are categories.* These categories mean that when you're doing some work with a category, you're also working in larger categories where your category is an object, and those categories have arrows to and from your category that you can actually use to help with your reasoning. The primary example of this is called \\(\\texttt{Cat}\\), a large category where the objects are all small categories. The arrows in \\(\\texttt{Cat}\\) are called "functors," and they're functions (really *mappings,* in the event of a large or locally large category where they can't be functions) mapping objects of some category \\(C\\) into objects of some category \\(D\\), and mapping the arrows in \\(C\\) to arrows in \\(D\\). Functors also get an extra restriction: functors must preserve commuting diagrams. What this means is that composition and identity must be preserved: \\(F(g\\circ f)=Fg\\circ Ff\\) and \\(F(id_X)=id_{FX}\\). That's an important idea and worth thinking about a little, and hopefully will become more clear in the coming paragraphs. This restriction makes functors a sort of homomorphisms, if you're familiar with group theory or related fields of abstract algebra. In more friendly language, functors are required to preserve the structure of a category. So if I have some diagram in my category \\(C\\) then a functor \\(F:C\\to D\\) gives me a diagram in \\(D\\) that can be drawn in a very similar way: 
 @end@
 
-@diagram@
+@paragraph@
 @end@
 
 @diagram@
@@ -101,7 +101,7 @@ A particularly powerful example of this are categories where the *objects are ca
     Y\ar[rr,"f"] &                            & Z            & FY\ar[rr,"Ff"] &                               & FZ
 @end@
 
-@diagram@
+@paragraph@
 @end@
 
 @paragraph@
@@ -179,15 +179,29 @@ But there's also "horizontal" composition, which I could draw either of two ways
 @end@
 
 @paragraph@
-This is a powerful form of composition that gets used a lot but one that took me a while to wrap my head around. A composition of functors \\(H\\circ F\\)
+This is a powerful form of composition that gets used a lot but one that took me a while to wrap my head around. A composition of functors \\(H\\circ F\\) is just some functor out there, and so is \\(K\\circ G\\). They may behave quite differently from \\(H\\) or \\(F\\) or \\(K\\) or \\(G\\). It seems strange that transformations from \\(F\\) to \\(G\\) and \\(H\\) to \\(K\\) would be enough to find a natural transformation between these two mysterious functors. But indeed they are! Consider the natural transformation written "pointwise" or "by components:" \\(\\gamma_X:H(FX)\\to K(GX)\\). (\\(\\gamma\\) is what I'm calling the natural transformation \\(\\beta\\circ \\alpha\\).) If we think just for a moment for cases where objects are types and arrows are functions, this is a polymorphic function that takes a value of type `H (F a)` (using a Haskelly notation) and returns a value of type `K (G a)`. Available to us are two polymorphic functions `alpha: F a -> G a` and `beta: H a -> K a`. So we can define \\(\\gamma_X\\) as `gamma hfa = beta (fmap alpha hfa)` in Haskell, or \\(\\gamma_X=\\beta_X\\circ H\\alpha_X\\) in category theory notation. You could have instead done \\(\\gamma_X=K\\alpha_X\\circ \\beta_X\\), and because of the naturality condition these two definitions are equal. So we define the horizontal composition \\(\\beta\\circ\\alpha=\\gamma\\).
 @end@
 
 @paragraph@
-A popular example of natural transformations in a language like Haskell are monads. A monad is an endofunctor \\(T:C\\to C\\) with two natural transformations \\(\\eta:id_C\\Rightarrow T\\) and \\(\\mu:T\\circ T\\Rightarrow T\\). There are also some conditions to satisfy, but let's start by unpacking that! \\(id_C\\) is an identity arrow in \\(\\texttt{Cat}\\), so it's a functor that maps every object and morphism in \\(C\\) into that same object or morphism. \\(T\\circ T\\) is the composition of \\(T\\) with itself, which is a thing you can do when an arrow loops from an object back to the same object (remember, \\(T\\) is an endofunctor, aka a looping arrow in \\(\\texttt{Cat}\\)). So we've got three functors we're talking about here (\\(id_C\\), \\(T\\), and \\(T\\circ T\\)) and two natural transformations to get between them. Now, the restrictions on these natural transformations are nicely illustrated in two commutating diagrams:
+Now one last tricky thing is that if we have two ways to compose, is the following diagram potentially ambiguous?
 @end@
 
 @diagram@
-    T\ar[r,"\eta\circ id_T"]\ar[dr,"="] & T\circ T\ar[d,"\char"03BC"] & T\ar[l,"id_T\circ\eta"']\ar[ld,"="'] \\
+    X\ar[r,bend left=50,""{name=U1,below},"F"]\ar[r,""{name=UM1},""{name=DM1,below},"G" near start]\ar[r,bend right=50,""{name=D1},"H"{below}] & Y\ar[r,bend left=50,""{name=U2,below},"K"]\ar[r,""{name=UM2},""{name=DM2,below},"L" near start]\ar[r,bend right=50,""{name=D2},"M"{below}] & Z
+    \ar[from=U1,to=UM1,"\alpha"] \ar[from=U2,to=UM2,"\gamma"]
+    \ar[from=DM1,to=D1,"\beta"]  \ar[from=DM2,to=D2,"\delta"]
+@end@
+
+@paragraph@
+We've got a square of natural transformations here, and it's unclear if we horizontally compose into a column first and then vertically compose, or if we vertically compose into a row first and then horizontally compose. Luckily, the naturality condition of natural transformations guarantees that either way produces the same result! Either way you end up with the same \\(K\\circ F\\to M\\circ H\\) natural transformation. This is called the Interchange Law, and it has some pretty cool consequences I'll get to in future posts.
+@end@
+
+@paragraph@
+A popular example of natural transformations in a language like Haskell are monads. Note that my explanation here won't help much with understanding how to use monads in your code, I'm just discussing the math. A monad is an endofunctor \\(T:C\\to C\\) with two natural transformations \\(\\eta:id_C\\Rightarrow T\\) and \\(\\mu:T\\circ T\\Rightarrow T\\). There are also some conditions to satisfy, but let's start by unpacking just that much! \\(id_C\\) is an identity arrow in \\(\\texttt{Cat}\\), so it's a functor that maps every object and morphism in \\(C\\) into that same object or morphism. \\(T\\circ T\\) is the composition of \\(T\\) with itself, which is a thing you can do when an arrow loops from an object back to the same object (remember, \\(T\\) is an endofunctor, aka a looping arrow in \\(\\texttt{Cat}\\)). So we've got three functors we're talking about here (\\(id_C\\), \\(T\\), and \\(T\\circ T\\)) and two natural transformations to get between them. Now, the restrictions on these natural transformations are nicely illustrated in two commutating diagrams:
+@end@
+
+@diagram@
+    T\ar[r,"\eta\circ id_T"]\ar[dr,<->,"="] & T\circ T\ar[d,"\mu"] & T\ar[l,"id_T\circ\eta"']\ar[ld,<->,"="'] \\
     & T &
 @end@
 
@@ -195,12 +209,32 @@ A popular example of natural transformations in a language like Haskell are mona
 @end@
 
 @diagram@
-    T\circ T\circ T\ar[r,"id_T\circ\char"03BC"]\ar[d,"\char"03BC\circ id_T"] & T\circ T\ar[d,"\char"03BC"] \\
-    T\circ T\ar[r,"\char"] & T
+    T\circ T\circ T\ar[r,"id_T\circ\mu"]\ar[d,"\mu\circ id_T"] & T\circ T\ar[d,"\mu"] \\
+    T\circ T\ar[r,"\mu"] & T
 @end@
 
 @paragraph@
-Note that compositions in these arrows are compositions of natural transformations. In particular, they are *horizontal* compositions, which you can only really know by context. Recall that \\(id_C\\circ T=T\\), so \\(\\eta\\) transforms the implicit \\(id_C\\) into \\(T\\) and \\(id_T\\) (an identity arrow in the functor category \\([C,C]\\)) does nothing \\(T\\), so horizontally composed into \\(\\eta\\circ id_T\\) they transform \\(T\\) into \\(T\\circ T\\). If the arrow were a *vertical* composition instead, then it would mean \\(id_T\\) would transform \\(T\\) into \\(T\\) and then you'd do \\(\\eta\\) on \\(T\\), which makes no sense because \\(\\eta:id_C\\to T\\) and isn't an arrow coming out of \\(T\\).
+Note that compositions in these arrows are compositions of natural transformations. In particular, they are *horizontal* compositions, which you can only really know by context. Recall that \\(id_C\\circ T=T\\), so \\(\\eta\\) transforms the implicit \\(id_C\\) into \\(T\\) and \\(id_T\\) (an identity arrow in the functor category \\([C,C]\\)) does nothing \\(T\\), so horizontally composed into \\(\\eta\\circ id_T\\) they transform \\(T\\) into \\(T\\circ T\\). If the arrow were a *vertical* composition instead, then it would mean \\(id_T\\) would transform \\(T\\) into \\(T\\) and then you'd do \\(\\eta\\) on \\(T\\), which makes no sense because \\(\\eta:id_C\\to T\\) and isn't an arrow coming out of \\(T\\). In the second diagram, \\(id_T\\circ\\mu:T\\circ T\\circ T\\to T\\circ T\\) might be more clear when written as \\(id_T\\circ\\mu:T\\circ(T\\circ T)\\to T\\circ T\\), which is equal because composition is associative.
+@end@
+
+@paragraph@
+Sometimes writing natural transformations as \\(\\alpha_X: FX\\to GX\\) instead of \\(\\alpha:F\\to G\\) clarifies what's going on, making it feel more concrete. Note that in Haskell we'd write `return :: a -> T a` for some monad `T` instead of \\(\\eta:id_C\\to T\\), because we write natural transformations as polymorphic functions `alpha :: F a -> G a` and \\(id_C\\) applied to any type `a` is just equal to that same type `a`. And for \\(\\mu\\) we have the polymorphic function `join :: T (T a) -> T a` for any monad `T`.
+@end@
+
+@paragraph@
+The last point I'll bring up about category theory on category theory is the notion of "enrichment." A typical category has sets \\(\\texttt{Hom}(X,Y)\\) of arrows going from any object \\(X\\) to any object \\(Y\\) (it might be the empty set if there are no such arrows). The fact that these collections of arrows are sets means a category is "locally small," and sometimes that's taken as part of the definition of a category. But the idea of a category can be generalized to have other kinds of collections for the arrows between objects. If the collection is a "class" and too big to form a set, then the category can be called "locally large," for example. When generalizing categories this way, we pick a category and say that these collections are objects in that category. For example, a locally small category (aka the normal kind) uses the category \\(\\texttt{Set}\\) of all sets (it's a large category), which means that the collections of arrows are sets. In this system, the idea of "homset" gets replaced with what are called "hom-objects," since they're objects in a category. You then say that locally small categories are "enriched over \\(\\texttt{Set}\\)." If the collection of arrows is a small category instead of a set, then you'd generally say the hom-objects are in \\(\\texttt{Cat}\\). Funnily enough, \\(\\texttt{Cat}\\) itself is an example of a category enriched over \\(\\texttt{Cat}\\)! That only means that the collections of functors between categories in \\(\\texttt{Cat}\\) are categories, not sets. (Also, \\(\\texttt{Set}\\) is enriched over \\(\\texttt{Set}\\), since function spaces \\(A\\to B\\) are just sets of functions.)
+@end@
+
+@paragraph@
+Because \\(\\texttt{Cat}\\) is enriched over \\(\\texttt{Cat}\\), the arrows between two objects (categories) form a category, and we can say there are arrows between the arrows. That's what leads to the above notation of natural transformations as arrows between arrows. We call \\(\\texttt{Cat}\\) a "2-category" because there are arrows between the arrows, the idea being that a set is only objects and is a "0-category," and then adding arrows between objects is a "1-category." If you have arrows between arrows between arrows then it's a 3-category. Note that the category of 1-categories (which is \\(\\texttt{Cat}\\)) is a 2-category; the category of 2-categories is a 3-category and this pattern continues indefinitely. I'm told advanced researchers are studying \\(\\infty\\)-categories but we're well beyond what I know now!
+@end@
+
+@subheading@
+Other important concepts
+@end@
+
+@paragraph@
+It's unusual that I introduce natural transformations before universal constructions (like, say, a product). That choice has made some thing hard (I still owe you a formal definition of exponential objects!) but I think it does more good than bad, and I have enormous power to talk deeply about these other powerful concepts now, with the full weight of category theory.
 @end@
 
 @subheading@
