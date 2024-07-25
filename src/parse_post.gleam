@@ -18,6 +18,7 @@ type Command {
   Subheading
   CodeBlock
   MathBlock
+  DiagramBlock
 }
 
 pub fn go(filename: String) -> Result(Post, Error) {
@@ -97,6 +98,15 @@ fn parse_block() -> p.Parser(Element(Nil), Nil) {
       use line <- list.map(string.split(str, on: "\n"))
       html.div([attribute.class("math-block")], [text("\\[" <> line <> "\\]")])
     }
+    DiagramBlock ->
+      p.return(
+        html.div([attribute.class("diagram")], [
+          html.script(
+            [attribute.type_("text/tikz")],
+            "\n  \\begin{tikzcd}\n" <> str <> "  \\end{tikzcd}\n",
+          ),
+        ]),
+      )
   }
 }
 
@@ -168,6 +178,7 @@ fn parse_command() -> p.Parser(Command, Nil) {
     "subheading" -> p.return(Subheading)
     "code" -> p.return(CodeBlock)
     "math" -> p.return(MathBlock)
+    "diagram" -> p.return(DiagramBlock)
     _ -> panic as { "unknown command " <> string.concat(text) }
   }
 }

@@ -183,3 +183,20 @@ textarea:focus, input:focus, #search-posts:focus {
   font-size: 25pt;
   padding-bottom: 100pt;
 }
+
+.diagram {
+  padding: 30pt 0;
+}
+
+.diagram svg {
+  transform: scale(2.25);
+  transform-origin: left;
+}
+
+.diagram g, text {
+  fill: white;
+}
+
+.diagram path {
+  stroke: white;
+}
