@@ -266,7 +266,7 @@ To give this intuition a bit more credit, category theory uses the dual category
 @end@
 
 @paragraph@
-The other use of dual categories is as a way of finding interesting ideas. Consider the monad defined earlier, which had certain commutative diagrams it had to satisfy. What would you be defining if you flipped all those arrows? A monad in a dual category \\(C^op\\) becomes a "comonad" in \\(C\\), which is a less famous concept but certainly a powerful one that I've mentioned in past posts and I'm sure will come up again in future ones. The idea is that if you flip all the arrows in a definition like the definition of monads, you use the "co-" prefix to name the new concept you find. Here's the commutative diagrams a comonad must satisfy, just so you can see the flipped arrows (\\(\\epsilon\\) is "co-\\(\\eta\\)" and \\(\\delta\\) is "co-\\(\\mu\\)"):
+The other use of dual categories is as a way of finding interesting ideas. Consider the monad defined earlier, which had certain commutative diagrams it had to satisfy. What would you be defining if you flipped all those arrows? A monad in a dual category \\(C^{op}\\) becomes a "comonad" in \\(C\\), which is a less famous concept but certainly a powerful one that I've mentioned in past posts and I'm sure will come up again in future ones. The idea is that if you flip all the arrows in a definition like the definition of monads, you use the "co-" prefix to name the new concept you find. Here's the commutative diagrams a comonad must satisfy, just so you can see the flipped arrows (\\(\\epsilon\\) is "co-\\(\\eta\\)" and \\(\\delta\\) is "co-\\(\\mu\\)"):
 @end@
 
 @diagram@
