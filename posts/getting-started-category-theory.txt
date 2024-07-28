@@ -1,8 +1,8 @@
 id: getting-started-category-theory
 name: Getting Started with Category Theory
-date: 2024-07-20
-tags: intro,introduction,getting,started,category,theory,categories,object,objects,morphism,morphisms,functor,functors,natural,transformation,transformations
-description: Category theory is a beautiful and powerful field but it can feel impenetrable without the right entry point. This post hopes to serve as a sort of beginner's guide.
+date: 2024-07-29
+tags: intro,introduction,getting,started,category,theory,categories,object,objects,morphism,morphisms,functor,functors,natural,transformation,transformations,product,coproduct,products,coproducts,limit,colimit,limits,colimits,initial,terminal,diagram,diagrams,bifunctor,bifunctors,monoid,monoidal,preorder,universal,construction,cone,cocone,cones,cocones,co-cone,co-cones,beginner,friendly,reference,getting,started
+description: Category theory is a beautiful and powerful field but it can feel impenetrable without the right entry point. This post hopes to serve as a sort of beginner's guide and reference.
 
 @paragraph@
 Category theory is a fascinating and unreasonably powerful tool for thinking about computation, transformation, and relationships between things in the world. That makes it useful for mathematicians, computer scientists, and philosophers alike. I've struggled through learning a decent chunk of the theory on my own (meaning, no university courses) and now that I have a couple years of that struggle behind me I thought I should document some of the really useful intuitions and perspectives on category theory that made everything make sense for me but which aren't really discussed in any materials I came across. This post will be a bit long, acting as a whirlwind tour of many important concepts.
@@ -10,6 +10,18 @@ Category theory is a fascinating and unreasonably powerful tool for thinking abo
 
 @paragraph@
 I often find that the most useful and time-saving thing I do when learning category theory is to get out a pencil and paper and sketch the concepts in any way that makes sense to me. The teaching benefits massively from the combination of seeing things organized two-dimensionally and figuring out enough to be able to draw anything in the first place. I recommend you draw out example diagrams and tables as you read through this post, though I'll try to make that as unnecessary as I can. With this many ideas, it can be valuable to take your time getting through the post. I also plan on making a little wiki of concepts, recording some videos, and publishing some parts of this post as subposts that are more digestable, but having all this here in a post is great for control-F/command-F searching for things, and for having a pedagogical order of concepts.
+@end@
+
+@paragraph@
+I know not all my explanations here will sufficiently answer all questions; that's the nature of the medium. But hopefully I give enough direction for searching online (or in books) for any answers you might need. At the end of the post I mention some resources that have taught me almost everything I know. To get a sense of what today's mathematicians are actually doing in category theory research, though, you have to read papers; struggling through papers is a major source of intuition and depth for me. Examples of papers with fascinating category theory are [https://doi.org/10.1016/S1571-0661(04)80568-1](Adjunction Models For Call-By-Push-Value With Stacks), [https://www.researchgate.net/publication/2592417_Functional_Programming_with_Bananas_Lenses_Envelopes_and_Barbed_Wire](Functional Programming with Bananas, Lenses, Envelopes and Barbed Wire), and [https://dl.acm.org/doi/10.1145/3408993](Recovering Purity with Comonads and Capabilities), all of which are beyond what is discussed here but which I'd love to write posts on in the future.
+@end@
+
+@paragraph@
+This post assumes some light familiarity with set theory, such as how a function in set theory is a set of pairs, or how there's no set of all sets. I often use the term "collection," implicitly referring to set-theoretical issues such the possibility of needing to use classes instead of sets in some situations. Otherwise, this post tries to be fairly self-contained. (Hence its length.)
+@end@
+
+@paragraph@
+Without further ado, let's get started.
 @end@
 
 @subheading@
@@ -25,7 +37,7 @@ Informally, a category is just a collection of things, along with a particular r
 @end@
 
 @paragraph@
-Formally, a category \\(C\\) is a collection of objects (often written \\(\\texttt{ob}(C)\\)) and a collection of arrows (often called "morphisms," each starting at an object and ending at an object). To be a valid category, there are some requirements these collections need to satisfy. *It's very helpful to draw these on paper.* For any object \\(X\\) in \\(C\\), there must be a morphism from \\(X\\) to \\(X\\) (drawn as a little loop at \\(X\\)) that "does nothing" (typically written \\(id_X\\) but sometimes unfortunately written as just \\(X\\) when what is meant is "clear from context"). This is called an "identity arrow," "identity on \\(X\\)," or "identity of \\(X\\)." Also, for any objects \\(X\\), \\(Y\\), and \\(Z\\) in \\(C\\), for any two morphisms \\(f:X\\to Y\\) and \\(g:Y\\to Z\\), there must be a morphism \\(g\\circ f:X\\to Z\\) (pronounced "\\(g\\) after \\(f\\)") that is exactly the same as following \\(f\\) from \\(X\\) to \\(Y\\) and from there following \\(g\\) to finally get to \\(Z\\). This is called the *composition* of \\(f\\) and \\(g\\), and the composition operator \\(\\circ\\) must be associative. These requirements are drawn formally with the following diagrams. These diagrams are called "commutative diagrams" or "commuting diagrams," meaning that any two paths from one object to another must be equal (one says the diagram "commutes"). Therefore, each diagram is visually representing a bunch of equations, such as \\(f\\circ id_X=f\\).
+Formally, a category \\(C\\) is a collection of objects (often written \\(\\texttt{ob}(C)\\)) and a collection of arrows (often called "morphisms," each starting at an object and ending at an object). To be a valid category, there are some requirements these collections need to satisfy. *It's very helpful to draw these on paper.* For any object \\(X\\) in \\(C\\), there must be a morphism from \\(X\\) to \\(X\\) (drawn as a little loop at \\(X\\)) that "does nothing" (typically written \\(id_X\\) or \\(1_X\\) but sometimes unfortunately written as just \\(X\\) when what is meant is "clear from context"). This is called an "identity arrow," "identity on \\(X\\)," or "identity of \\(X\\)." Also, for any objects \\(X\\), \\(Y\\), and \\(Z\\) in \\(C\\), for any two morphisms \\(f:X\\to Y\\) and \\(g:Y\\to Z\\), there must be a morphism \\(g\\circ f:X\\to Z\\) (pronounced "\\(g\\) after \\(f\\)") that is exactly the same as following \\(f\\) from \\(X\\) to \\(Y\\) and from there following \\(g\\) to finally get to \\(Z\\). This is called the *composition* of \\(f\\) and \\(g\\), and the composition operator \\(\\circ\\) must be associative. These requirements are drawn formally with the following diagrams. These diagrams are called "commutative diagrams" or "commuting diagrams," meaning that any two paths from one object to another must be equal (one says the diagram "commutes"). Therefore, each diagram is visually representing a bunch of equations, such as \\(f\\circ id_X=f\\).
 @end@
 
 @diagram@
@@ -89,7 +101,7 @@ Now we have a bunch of definitions and intuition about what a category is, but t
 @end@
 
 @paragraph@
-A particularly powerful example of this are categories where the *objects are categories.* These categories mean that when you're doing some work with a category, you're also working in larger categories where your category is an object, and those categories have arrows to and from your category that you can actually use to help with your reasoning. The primary example of this is called \\(\\texttt{Cat}\\), a large category where the objects are all small categories. The arrows in \\(\\texttt{Cat}\\) are called "functors," and they're functions (really *mappings,* in the event of a large or locally large category where they can't be functions) mapping objects of some category \\(C\\) into objects of some category \\(D\\), and mapping the arrows in \\(C\\) to arrows in \\(D\\). Functors also get an extra restriction: functors must preserve commuting diagrams. What this means is that composition and identity must be preserved: \\(F(g\\circ f)=Fg\\circ Ff\\) and \\(F(id_X)=id_{FX}\\). That's an important idea and worth thinking about a little, and hopefully will become more clear in the coming paragraphs. This restriction makes functors a sort of homomorphisms, if you're familiar with group theory or related fields of abstract algebra. In more friendly language, functors are required to preserve the structure of a category. So if I have some diagram in my category \\(C\\) then a functor \\(F:C\\to D\\) gives me a diagram in \\(D\\) that can be drawn in a very similar way: 
+A particularly powerful example of this are categories where the *objects are categories.* These categories mean that when you're doing some work with a category, you're also working in larger categories where your category is an object, and those categories have arrows to and from your category that you can actually use to help with your reasoning. The primary example of this is called \\(\\texttt{Cat}\\), a large category where the objects are all small categories. The arrows in \\(\\texttt{Cat}\\) are called "functors," and they're functions (really *mappings,* in the event of a large or locally large category where they can't be functions) mapping objects of some category \\(C\\) into objects of some category \\(D\\), and mapping the arrows in \\(C\\) to arrows in \\(D\\). Functors also get an extra restriction: functors must preserve commuting diagrams. What this means is that composition and identity must be preserved: \\(F(g\\circ f)=Fg\\circ Ff\\) and \\(F(id_X)=id_{FX}\\). (Category theory doesn't do parentheses for applying mappings to things; \\(Fg\\) might be written \\(F(g)\\) in what you're used to.) That preservation condition is an important idea and worth thinking about a little, and hopefully will become more clear in the coming paragraphs. It makes functors a sort of homomorphisms, if you're familiar with group theory or related fields of abstract algebra. In more friendly language, functors are required to preserve the structure of a category. So if I have some diagram in my category \\(C\\) then a functor \\(F:C\\to D\\) gives me a diagram in \\(D\\) that can be drawn in a very similar way: 
 @end@
 
 @paragraph@
@@ -105,7 +117,7 @@ A particularly powerful example of this are categories where the *objects are ca
 @end@
 
 @paragraph@
-This does *not* mean that if \\(X\\), \\(Y\\), and \\(Z\\) are different from each other, then \\(FX\\), \\(FY\\), and \\(FZ\\) are too. It *only* means that, assuming the first diagram commutes, the second one does too. \\(FX\\) could be equal to \\(FY\\), and \\(Fp\\) could even just be \\(id_{FX}\\)! So long as commuting diagrams are mapped to diagrams that also commute. One example of a functor that I like is from the monoid-based category of addition on natural numbers to the monoid-based category of multiplication on natural numbers. The single monoid object gets mapped into the other single monoid object, of course. There are a bunch of functors to choose from here, but I like powers of 2 so I'll map every morphism \\(n\\) in the addition category to the morphism \\(2^n\\) in the multiplication category. That's a functor because if I compose two morphisms in the addition category (say, \\(2+3\\)) then does the right thing in the multiplication category:
+This does *not* mean that if \\(X\\), \\(Y\\), and \\(Z\\) are different from each other, then \\(FX\\), \\(FY\\), and \\(FZ\\) are too. It *only* means that, assuming the first diagram commutes, the second one does too. \\(FX\\) could be equal to \\(FY\\), and \\(Fp\\) could even just be \\(id_{FX}\\)! So long as commuting diagrams are mapped to diagrams that also commute. One example of a functor that I like is from the monoid-based category of addition on natural numbers to the monoid-based category of multiplication on natural numbers. The single monoid object gets mapped into the other single monoid object, of course. There are a bunch of functors to choose from here, but I like powers of 2 so I'll map every morphism \\(n\\) in the addition category to the morphism \\(2^n\\) in the multiplication category. That's a functor because if I compose two morphisms in the addition category (say, \\(2+3\\)) then does the right thing in the multiplication category. Functors are often written with a dash in the place of the parameter, so this functor would be written \\(2^-\\). Here's a diagram to help illustrate:
 @end@
 
 @diagram@
@@ -113,7 +125,7 @@ This does *not* mean that if \\(X\\), \\(Y\\), and \\(Z\\) are different from ea
 @end@
 
 @paragraph@
-This represents how exponentiation turns multiplication into addition! Composition in these categories are addition and multiplication respectively, and the functor is raising 2 to a power, so the functors-preserve-composition equation becomes \\(2^{n+m}=2^n\cdot 2^m\\), a rule for exponentials we learn in high school!
+This represents how exponentiation turns multiplication into addition! Composition in these categories are addition and multiplication respectively, and the functor is raising 2 to a power, so the functors-preserve-composition equation \\(F(g\\circ f)=Fg\\circ Ff\\) becomes \\(2^{n+m}=2^n\cdot 2^m\\), a rule for exponentials we learn in high school!
 @end@
 
 @paragraph@
@@ -254,7 +266,7 @@ To give this intuition a bit more credit, category theory uses the dual category
 @end@
 
 @paragraph@
-The other use of dual categories is as a way of finding interesting ideas. Consider the monad defined earlier, which had certain commutative diagrams it had to satisfy. What would you be defining if you flipped all those arrows? A monad in a category \\(C\\) becomes a "comonad" in \\(C^{op}\\), which is a less famous concept but certainly a powerful one that I've mentioned in past posts and I'm sure will come up again in future ones. The idea is that if you flip all the arrows in a definition like the definition of monads, you use the "co-" prefix to name the new concept you find. Here's the commutative diagrams a comonad must satisfy, just so you can see the flipped arrows (\\(\\epsilon\\) is co-\\(\\eta\\) and \\(\\delta\\) is co-\\(\\mu\\)):
+The other use of dual categories is as a way of finding interesting ideas. Consider the monad defined earlier, which had certain commutative diagrams it had to satisfy. What would you be defining if you flipped all those arrows? A monad in a dual category \\(C^op\\) becomes a "comonad" in \\(C\\), which is a less famous concept but certainly a powerful one that I've mentioned in past posts and I'm sure will come up again in future ones. The idea is that if you flip all the arrows in a definition like the definition of monads, you use the "co-" prefix to name the new concept you find. Here's the commutative diagrams a comonad must satisfy, just so you can see the flipped arrows (\\(\\epsilon\\) is "co-\\(\\eta\\)" and \\(\\delta\\) is "co-\\(\\mu\\)"):
 @end@
 
 @diagram@
@@ -313,7 +325,7 @@ Isomorphisms make products a little odd. Since we define things up to isomorphis
 @end@
 
 @paragraph@
-Now, that's enough about products. Remember dual categories! We just defined products, so we must have just defined something called "coproducts" as well! A product \\(X\\times Y\\) in a category \\(C\\) is a coproduct in \\(C^{op}\\), written \\(X+Y\\). This means two things. First, a coproduct has arrows coming *to* it *from* the objects \\(X\\) and \\(Y\\), which we often call \\(\\texttt{inl}\\) and \\(\\texttt{inr}\\) instead of \\(p\\) and \\(q\\) respectively. Second, the commutative diagram of the universal construction gets its arrows flipped as well, so a coproduct has a single arrow going *to* all the other candidates, instead of coming *from* them. A category that has a coproduct for every pair of objects is called a "cocartesian monoidal" category.
+Now, that's enough about products. Remember dual categories! We just defined products, so we must have just defined something called "coproducts" as well! A product \\(X\\times Y\\) in a dual category \\(C^{op}\\) is a coproduct in \\(C\\), written \\(X+Y\\). This means two things. First, a coproduct has arrows coming *to* it *from* the objects \\(X\\) and \\(Y\\), which we often call \\(\\texttt{inl}\\) and \\(\\texttt{inr}\\) instead of \\(p\\) and \\(q\\) respectively. Second, the commutative diagram of the universal construction gets its arrows flipped as well, so a coproduct has a single arrow going *to* all the other candidates, instead of coming *from* them. A category that has a coproduct for every pair of objects is called a "cocartesian monoidal" category.
 @end@
 
 @paragraph@
@@ -337,12 +349,12 @@ Let's finally define exponential objects! In a monoidal category, given objects 
 @end@
 
 @diagram@
-    Z\otimes X\ar[d,"u\otimes id_X"]\ar[dl,"e"] & \\
-    Y^X\otimes X\ar[r,"\texttt{eval}"] & Y
+    Z\otimes X\ar[d,"u\otimes id_X"']\ar[dr,"e"] & \\
+    Y^X\otimes X\ar[r,"\texttt{eval}"'] & Y
 @end@
 
 @paragraph@
-The notation \\(u\\otimes id_X\\) is taking advantage of the fact that \\(\\otimes\\) is a bifunctor, so can map a pair of morphisms \\(u:Z\\to Y^X\\) and \\(id_X:X\\to X\\) into a morphism from \\(Z\\otimes X\\) to \\(Y^X\\otimes X\\). With this sort of notation you have to just know that the things on either side of the \\(\\times\\) are morphisms, not objects, to know what's going on. Note that when the tensor product is a (cartesian) product, we write \\(\\times\\) instead of \\(\\otimes\\).
+The notation \\(u\\otimes id_X\\) is taking advantage of the fact that \\(\\otimes\\) is a bifunctor, so can map a pair of morphisms \\(u:Z\\to Y^X\\) and \\(id_X:X\\to X\\) into a morphism from \\(Z\\otimes X\\) to \\(Y^X\\otimes X\\). With this sort of notation you have to just know that the things on either side of the \\(\\otimes\\) are morphisms, not objects, to know what's going on. Note that when the tensor product is a (cartesian) product, we write \\(\\times\\) instead of \\(\\otimes\\).
 @end@
 
 @paragraph@
@@ -358,7 +370,32 @@ The dual concept, called coexponentials and written \\(Y-X\\), are a thing but I
 @end@
 
 @paragraph@
-Universal constructions are powerful for defining interesting objects in categories, but there are occasionally cleaner ways using special categories and functors. 
+Notice that any of the commuting diagrams in this post are perfectly valid as tiny little categories on their own, if we of course include the implicit identity arrows and composed arrows. A functor from such a "diagram category" into a category \\(C\\) is essentially just picking places in \\(C\\) that match the diagram; functors preserve commuting diagrams, after all. The collection of all functors from a diagram category into \\(C\\) is the collection of all collections of objects and arrows in \\(C\\) that satisfy the diagram. For this reason, the formal definition of a diagram is a functor from a diagram category into the category of interest, often written \\(F:D\\to C\\).
+@end@
+
+@paragraph@
+One interesting diagram category is the category with a single object and a single morphism (the identity morphism). Functors from such a category into a category \\(C\\) just pick an object in the category, and the collection of all such functors is basically the collection of objects in \\(C\\). This category (and all the categories isomorphic to it) is the terminal object in \\(\\texttt{Cat}\\), so we might call it \\(1\\). Similarly, a diagram category of two objects with one arrow between them leads to picking all the morphisms in \\(C\\). These categories give a way for reasoning about the internals of categories in \\(\\texttt{Cat}\\), which can only talk about functors between categories instead of the objects and arrows within them.
+@end@
+
+@paragraph@
+This formal idea of diagram gives an alternative way of thinking about many universal constructions, which I personally prefer. Consider products. Instead of a universal construction, we could define products first with the diagram category of two objects with only identity arrows. I'll call this category \\(\\mathbf{2}\\). Functors from this category into a category \\(C\\) just pick two objects in \\(C\\), which could even be the same object. Now consider what's called a "constant functor," a functor that maps all objects into some specific object \\(X\\) and map all arrows into \\(id_X\\). This is typically written \\(\\Delta_X\\). There's a constant functor \\(\\Delta_c:\\mathbf{2}\\to C\\) for every object \\(c\\) in \\(C\\). For a given diagram \\(F:\\mathbf{2}\\to C\\) and a given constant functor \\(\\Delta_c:\\mathbf{2}\\to C\\), there might be a natural transformation \\(\\alpha:\\Delta_c\\to F\\). If there is, its naturality square looks like the following:
+@end@
+
+@diagram@
+    & c\ar[ld,"\alpha_X"']\ar[rd,"\alpha_Y"] & \\
+    FX & & FY
+@end@
+
+@paragraph@
+It's a triangle instead of a square because \\(\\Delta_c X=\\Delta_c Y\\) so the top corners of the square are the same point. There's no arrow between \\(FX\\) and \\(FY\\) because it would have to be \\(Ff\\) for some morphism \\(f:X\\to Y\\) but there are no such arrows in the diagram category. Anyway, hopefully you can see that this natural transformation makes \\(c\\) a possible ("candidate") product of \\(FX\\) and \\(FY\\)! Now, instead of any universal construction stuff, we take all the constant functors that have a natural transformation to \\(F\\), and form a new category out of the corresponding constant objects (all the the "\\(c\\)"s if you will). The arrows in this new category will be just whatever arrows those objects had between each other in \\(C\\). Now we can simply define the product of \\(FX\\) and \\(FY\\) to be the terminal object in this new category!
+@end@
+
+@paragraph@
+This general trick using functors as diagrams, constant functors as particular objects, natural transformations between the two, and forming categories which might have initial or terminal objects, is a very cool and broad technique that is, in certain situations, more flexible and (in my opinion) concrete than a universal construction. For example, if we take natural transformations *to* constant functors, then the *initial* object in the resulting category is the *coproduct* of the pair of objects. (Draw that out!) Moreover, I find that thinking about definitions this way gives me a much deeper understanding of universal construction!
+@end@
+
+@paragraph@
+A natural transformation from a constant functor to a diagram is called a "cone," because you draw the one point at the top with arrows going down to all the objects in the diagram which then looks like the bottom of a cone or pyramid. The category of constant functors with natural transformations to a diagram is called a "cone category" for that diagram. The terminal object in a cone category is called a "limit" of the diagram. Thus products are limits. Flipping the arrows (aka looking at the same thing in a dual category), a natural transformation *to* a constant functor *from* a diagram is called a "cocone." The *initial* object in a cocone category is called a "colimit." Thus coproducts are colimits. Note the generality of limits and colimits: they could be about *any* diagram, not just a two-object two-arrow one.
 @end@
 
 @subheading@
@@ -366,5 +403,17 @@ Conclusion
 @end@
 
 @paragraph@
-I should also mention the materials I came across. [https://youtube.com/playlist?list=PLbgaMIhjbmEnaH_LTkxLI7FMa2HsnawM_&](Bartosz Milewski) and [https://ncatlab.org/](nLab) are well-known resources that I found helpful, the first for its beginner-friendly nature and presentation of concepts in a proper order, and the second for details on particular concepts. Milewski also has a famous [https://bartoszmilewski.com/2014/10/28/category-theory-for-programmers-the-preface/](blog), if you prefer the medium of text. I've also found Wikipedia to be helpful at times, in the same way as nLab, but it's known to be inaccurate for fuzzier/more-philosophical concepts like constructivism. Less well-known (but super valuable) resources are [https://youtube.com/playlist?list=PLCTMeyjMKRkqTM2-9HXH81tvpdROs-nz3](Richard Southwell) and [https://www.youtube.com/\@TheCatsters](the Catsters).
+Whew! That was quite a long ride! But by the end of it we're doing fairly serious work in category theory, the sort one might see in academic papers. I know I didn't have much chance to explain the value of many of these concepts, except in defining other concepts of unclear value, but I hope at least that this post can serve as the door to a very impenetrable field. If you find yourself needing to know what "the terminal object in a cone category" is talking about, this post gives direction. When I started out, looking at definitions on Wikipedia since I didn't know any better, I felt that everything was defined in terms of everything else and there were a million names for things, so zero way for me to get even a foot in the door. This post aims to be exactly what I needed in that moment: a slow, measured explanation from the ground up of the concepts, names, and intuitions. You may have notice that I put a particular amount of effort into giving the names and notations for every concept, often putting names in quotations when I define them. This kind of resource would serve as a guide on the side as I attempt to parse a comically-terse Wikipedia entry.
+@end@
+
+@paragraph@
+All of that is just to say that my goal here was both to build up concepts slowly and incrementally with minimal prerequisites, and to be as searchable as possible with command-F, control-F, or search engines. I hope I did a decent job at these two goals.
+@end@
+
+@paragraph@
+I should also mention the materials I came across in my personal self-teaching journey. [https://youtube.com/playlist?list=PLbgaMIhjbmEnaH_LTkxLI7FMa2HsnawM_&](Bartosz Milewski) and [https://ncatlab.org/](nLab) are well-known resources that I found helpful, the first for its beginner-friendly nature and presentation of concepts in a proper order, and the second for details on particular concepts. Be warned, though, that nLab can be hilariously hard to read for beginners. Milewski also has a famous [https://bartoszmilewski.com/2014/10/28/category-theory-for-programmers-the-preface/](blog), if you prefer the medium of text. I've also found Wikipedia to be helpful at times, in the same way as nLab, but it's known to be inaccurate for fuzzier/more-philosophical concepts like constructivism. Less well-known (but super valuable) resources are [https://youtube.com/playlist?list=PLCTMeyjMKRkqTM2-9HXH81tvpdROs-nz3](Richard Southwell) and [https://www.youtube.com/\@TheCatsters](the Catsters). For certain harder concepts, these last two resources were more helpful than nLab or Wikipedia by far, and they cover a few important concepts that Milewski doesn't. I learned the sequent calculus, Heyting algebra, and the theory and intuition of dependent types from Southwell, and can't recommend him enough.
+@end@
+
+@paragraph@
+If you like my work, consider supporting me on [https://ko-fi.com/ryanbrewer](Ko-fi) or [https://github.com/sponsors/RyanBrewer317](GitHub Sponsors)! At the time of writing I'm job-searching, and anything in the meantime really helps! My biggest dream is to be able to make content like this full-time, including videos as well, from this kind of support.
 @end@
