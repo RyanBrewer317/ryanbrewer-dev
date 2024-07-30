@@ -4,6 +4,7 @@
 
 import gleam/bool
 import gleam/int
+import gleam/io
 import gleam/list
 import gleam/result.{map_error, try}
 import gleam/string
@@ -141,7 +142,8 @@ fn parse_block() -> p.Parser(Element(Nil), Nil) {
           ]),
         )
       let assert Ok(exists) =
-        simplifile.verify_is_file("../public/" <> img_filename)
+        simplifile.verify_is_file("public/" <> img_filename)
+      io.debug(exists)
       // very simple caching: if we've generated an image with this name before, don't do it again
       // this works for now because I can always just delete an image file.
       // But in the future I want an actual caching system that detects updates.
@@ -160,7 +162,7 @@ fn parse_block() -> p.Parser(Element(Nil), Nil) {
           run: "pdflatex",
           with: ["-interaction", "nonstopmode", "diagram.tex"],
           in: "diagram-work",
-          opt: [shellout.LetBeStdout],
+          opt: [],
         )
       let assert Ok(_) =
         shellout.command(
