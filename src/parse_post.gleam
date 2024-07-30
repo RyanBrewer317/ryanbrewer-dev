@@ -2,8 +2,8 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
+import gleam/bool
 import gleam/int
-import gleam/io
 import gleam/list
 import gleam/result.{map_error, try}
 import gleam/string
@@ -14,6 +14,11 @@ import lustre/element/html
 import party as p
 import shellout
 import simplifile
+
+// I want to move away from panicking on exceptions,
+// and use Snag instead.
+// I also want to update Party for threading state,
+// instead of this JS ffi.
 
 pub type Error {
   FileError(simplifile.FileError)
@@ -124,6 +129,24 @@ fn parse_block() -> p.Parser(Element(Nil), Nil) {
       html.div([attribute.class("math-block")], [text("\\[" <> line <> "\\]")])
     }
     DiagramBlock -> {
+      inc_counter()
+      let id = get_id()
+      let counter = get_counter()
+      let img_filename =
+        "image-" <> int.to_string(counter) <> "-" <> id <> ".svg"
+      let out =
+        p.return(
+          html.div([attribute.class("diagram")], [
+            html.img([attribute.src("/" <> img_filename)]),
+          ]),
+        )
+      let assert Ok(exists) =
+        simplifile.verify_is_file("../public/" <> img_filename)
+      // very simple caching: if we've generated an image with this name before, don't do it again
+      // this works for now because I can always just delete an image file.
+      // But in the future I want an actual caching system that detects updates.
+      // Perhaps a sqlite db?
+      use <- bool.guard(when: exists, return: out)
       let latex_code = "
 \\documentclass[margin=0pt]{standalone}
 \\usepackage{tikz-cd}
@@ -139,12 +162,6 @@ fn parse_block() -> p.Parser(Element(Nil), Nil) {
           in: "diagram-work",
           opt: [shellout.LetBeStdout],
         )
-      inc_counter()
-      let id = get_id()
-      let counter = get_counter()
-      let img_filename =
-        "image-" <> int.to_string(counter) <> "-" <> id <> ".svg"
-      io.debug(img_filename)
       let assert Ok(_) =
         shellout.command(
           run: "inkscape",
@@ -157,11 +174,7 @@ fn parse_block() -> p.Parser(Element(Nil), Nil) {
           in: "diagram-work",
           opt: [shellout.LetBeStdout],
         )
-      p.return(
-        html.div([attribute.class("diagram")], [
-          html.img([attribute.src("/" <> img_filename)]),
-        ]),
-      )
+      out
     }
   }
 }

@@ -9,12 +9,9 @@ import lustre/element.{type Element, text}
 import lustre/element/html
 
 // This Lustre boilerplate is mostly so I have the option of interactivity if I want. 
-// I'd like to improve the site a lot in a future, with SSR and SPA stuff.
-// That involves switching away from Firebase too, and doing less with lustre_ssg.
-// I'm thinking fly.io with k8s.
-// It might seem ridiculous to optimize and scale so much, but I want to make
-// this stack into a public Gleam library for building personal websites,
-// and I don't think it's too hard to be honest.
+// I want to publish this stack as a Gleam library at some point,
+// for static-site-generation-driven personal websites.
+// I should switch generation to use Snag instead of panicking on exceptions.
 
 type Model {
   Model
