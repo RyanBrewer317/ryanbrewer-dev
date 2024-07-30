@@ -17,7 +17,7 @@ I know not all my explanations here will sufficiently answer all questions; that
 @end@
 
 @paragraph@
-This post assumes some light familiarity with set theory, such as how a function in set theory is a set of pairs, or how there's no set of all sets. I often use the term "collection," implicitly referring to set-theoretical issues such the possibility of needing to use classes instead of sets in some situations. Otherwise, this post tries to be fairly self-contained. (Hence its length.)
+This post assumes some light familiarity with set theory, such as how a function in set theory is a set of pairs, or how there's no set of all sets. I often use the term "collection," implicitly referring to set-theoretical issues such as the possibility of needing to use classes instead of sets in some situations. Otherwise, this post tries to be fairly self-contained. (Hence its length.)
 @end@
 
 @paragraph@
