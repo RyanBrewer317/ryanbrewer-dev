@@ -4,8 +4,17 @@
 
 import lustre
 import lustre/attribute.{href}
+import lustre/effect.{type Effect}
 import lustre/element.{type Element, text}
 import lustre/element/html
+
+// This Lustre boilerplate is mostly so I have the option of interactivity if I want. 
+// I'd like to improve the site a lot in a future, with SSR and SPA stuff.
+// That involves switching away from Firebase too, and doing less with lustre_ssg.
+// I'm thinking fly.io with k8s.
+// It might seem ridiculous to optimize and scale so much, but I want to make
+// this stack into a public Gleam library for building personal websites,
+// and I don't think it's too hard to be honest.
 
 type Model {
   Model
@@ -14,18 +23,18 @@ type Model {
 pub type Msg
 
 pub fn main() {
-  let app = lustre.simple(init, update, view)
+  let app = lustre.application(init, update, view)
   let assert Ok(dispatch) = lustre.start(app, "[data-lustre-app]", Nil)
 
   dispatch
 }
 
-fn init(_) -> Model {
-  Model
+fn init(_) -> #(Model, Effect(Msg)) {
+  #(Model, effect.none())
 }
 
-fn update(model: Model, _msg: Msg) -> Model {
-  model
+fn update(model: Model, _msg: Msg) -> #(Model, Effect(Msg)) {
+  #(model, effect.none())
 }
 
 fn view(_model: Model) -> Element(Msg) {
