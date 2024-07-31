@@ -174,7 +174,10 @@ fn parse_block() -> p.Parser(fn(State) -> #(Result(Element(Nil)), State), Nil) {
           "image-" <> int.to_string(state.counter) <> "-" <> state.id <> ".svg"
         let out =
           html.div([attribute.class("diagram")], [
-            html.img([attribute.src("/" <> img_filename)]),
+            html.img([
+              attribute.src("/" <> img_filename),
+              attribute.attribute("onload", "this.width *= 2.25;"),
+            ]),
           ])
         use <- fn(k) { #(k(), new_state) }
         use exists <- result.try(
