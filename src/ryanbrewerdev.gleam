@@ -11,7 +11,6 @@ import lustre/element/html
 // This Lustre boilerplate is mostly so I have the option of interactivity if I want. 
 // I want to publish this stack as a Gleam library at some point,
 // for static-site-generation-driven personal websites.
-// I should switch generation to use Snag instead of panicking on exceptions.
 
 type Model {
   Model

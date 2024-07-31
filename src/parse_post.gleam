@@ -6,7 +6,7 @@ import gleam/bool
 import gleam/int
 import gleam/io
 import gleam/list
-import gleam/result.{map_error, try}
+import gleam/result.{map_error}
 import gleam/string
 import helpers.{type Post, Post}
 import lustre/attribute.{type Attribute, attribute}
@@ -15,9 +15,7 @@ import lustre/element/html
 import party as p
 import shellout
 import simplifile
-
-// I want to move away from panicking on exceptions,
-// and use Snag instead.
+import snag.{type Result}
 
 pub type State {
   State(id: String, counter: Int)
@@ -36,22 +34,48 @@ type Command {
   DiagramBlock
 }
 
-pub fn go(filename: String) -> Result(Post, Error) {
-  use content <- try(map_error(simplifile.read(filename), FileError))
-  map_error(p.go(parse(), content), ParseError)
+fn pretty_pos(pos: p.Position) -> String {
+  "line " <> int.to_string(pos.row) <> ", column " <> int.to_string(pos.col)
 }
 
-fn parse() -> p.Parser(Post, Nil) {
+pub fn go(filename: String) -> Result(Post) {
+  use content <- result.try(
+    map_error(simplifile.read(filename), fn(err) {
+      snag.new(
+        "could not load file `"
+        <> filename
+        <> "`: "
+        <> simplifile.describe_error(err),
+      )
+    }),
+  )
+  map_error(p.go(parse(), content), fn(err) {
+    snag.new("parse error at " <> pretty_pos(err.pos))
+  })
+  |> result.flatten
+}
+
+fn parse() -> p.Parser(Result(Post), Nil) {
   use id <- p.do(parse_id())
   use name <- p.do(parse_name())
-  use date <- p.do(parse_date())
+  use mb_date <- p.do(parse_date())
   use tags <- p.do(parse_tags())
   use desc <- p.do(parse_description())
-  use #(els, _) <- p.do(p.stateful_many(
+  use #(mb_els, _) <- p.do(p.stateful_many(
     State(id: id, counter: 0),
     parse_block(),
   ))
-  p.return(Post(name, id, date, tags, desc, els))
+  p.return(
+    {
+      use date <- result.try(mb_date)
+      use els <- result.try(
+        result.all(mb_els)
+        |> snag.context("couldn't parse post body"),
+      )
+      Ok(Post(name, id, date, tags, desc, els))
+    }
+    |> snag.context("couldn't parse post"),
+  )
 }
 
 fn parse_id() -> p.Parser(String, Nil) {
@@ -71,13 +95,14 @@ fn parse_name() -> p.Parser(String, Nil) {
   p.return(string.concat(name))
 }
 
-fn parse_date() -> p.Parser(helpers.Date, Nil) {
+fn parse_date() -> p.Parser(Result(helpers.Date), Nil) {
   use _ <- p.do(p.string("date:"))
   use _ <- p.do(p.many1(p.either(p.char(" "), p.char("\t"))))
-  use datestr <- p.do(p.many1(p.satisfy(fn(c) { c != "\n" })))
-  let assert Ok(date) = helpers.string_to_date(string.concat(datestr))
+  use datestr <- p.do(p.many1_concat(p.satisfy(fn(c) { c != "\n" })))
   use _ <- p.do(p.char("\n"))
-  p.return(date)
+  helpers.string_to_date(datestr)
+  |> map_error(fn(_) { snag.new("couldn't parse date `" <> datestr <> "`") })
+  |> p.return
 }
 
 fn parse_description() -> p.Parser(String, Nil) {
@@ -100,7 +125,7 @@ fn stateful(a: a) -> fn(s) -> #(a, s) {
   fn(s) { #(a, s) }
 }
 
-fn parse_block() -> p.Parser(fn(State) -> #(Element(Nil), State), Nil) {
+fn parse_block() -> p.Parser(fn(State) -> #(Result(Element(Nil)), State), Nil) {
   use cmd <- p.do(parse_command())
   use _ <- p.do(p.many(p.either(p.char(" "), p.char("\t"))))
   use _ <- p.do(p.char("\n"))
@@ -121,11 +146,13 @@ fn parse_block() -> p.Parser(fn(State) -> #(Element(Nil), State), Nil) {
     Subheading ->
       p.return(
         html.h3([], [text(str)])
+        |> Ok
         |> stateful,
       )
     CodeBlock ->
       p.return(
         html.pre([], [html.code([], [text(str)])])
+        |> Ok
         |> stateful,
       )
     MathBlock -> {
@@ -133,6 +160,7 @@ fn parse_block() -> p.Parser(fn(State) -> #(Element(Nil), State), Nil) {
         fn(k) {
           p.return(
             html.div([], k())
+            |> Ok
             |> stateful,
           )
         }
@@ -141,38 +169,65 @@ fn parse_block() -> p.Parser(fn(State) -> #(Element(Nil), State), Nil) {
     }
     DiagramBlock -> {
       p.return(fn(state: State) {
+        let new_state = State(id: state.id, counter: state.counter + 1)
         let img_filename =
           "image-" <> int.to_string(state.counter) <> "-" <> state.id <> ".svg"
-        let out = #(
+        let out =
           html.div([attribute.class("diagram")], [
             html.img([attribute.src("/" <> img_filename)]),
-          ]),
-          State(id: state.id, counter: state.counter + 1),
-        )
-        let assert Ok(exists) =
+          ])
+        use <- fn(k) { #(k(), new_state) }
+        use exists <- result.try(
           simplifile.verify_is_file("public/" <> img_filename)
+          |> map_error(fn(err) {
+            snag.new(
+              "couldn't check `public/"
+              <> img_filename
+              <> "` ("
+              <> simplifile.describe_error(err)
+              <> ")",
+            )
+          }),
+        )
         io.debug(exists)
         // very simple caching: if we've generated an image with this name before, don't do it again
         // this works for now because I can always just delete an image file.
         // But in the future I want an actual caching system that detects updates.
         // Perhaps a sqlite db?
-        use <- bool.guard(when: exists, return: out)
+        use <- bool.guard(when: exists, return: Ok(out))
         let latex_code = "
 \\documentclass[margin=0pt]{standalone}
 \\usepackage{tikz-cd}
 \\begin{document}
 \\begin{tikzcd}\n" <> str <> "\\end{tikzcd}
 \\end{document}"
-        let assert Ok(_) =
+        use _ <- result.try(
           simplifile.write(latex_code, to: "./diagram-work/diagram.tex")
-        let assert Ok(_) =
+          |> map_error(fn(err) {
+            snag.new(
+              "couldn't write to `diagram-work/diagram.tex` ("
+              <> simplifile.describe_error(err)
+              <> ")",
+            )
+          }),
+        )
+        use _ <- result.try(
           shellout.command(
             run: "pdflatex",
             with: ["-interaction", "nonstopmode", "diagram.tex"],
             in: "diagram-work",
             opt: [],
           )
-        let assert Ok(_) =
+          |> map_error(fn(err) {
+            snag.new(
+              "couldn't execute `pdflatex -interaction nonstopmode diagram.tex` in `diagram-work` (Code "
+              <> int.to_string(err.0)
+              <> ": "
+              <> err.1,
+            )
+          }),
+        )
+        use _ <- result.try(
           shellout.command(
             run: "inkscape",
             with: [
@@ -184,14 +239,26 @@ fn parse_block() -> p.Parser(fn(State) -> #(Element(Nil), State), Nil) {
             in: "diagram-work",
             opt: [shellout.LetBeStdout],
           )
-        out
+          |> map_error(fn(err) {
+            snag.new(
+              "couldn't execute `inkscape -l --export-filename ../public/"
+              <> img_filename
+              <> " diagram.pdf` in `diagram-work` (Code "
+              <> int.to_string(err.0)
+              <> ": "
+              <> err.1
+              <> ")",
+            )
+          }),
+        )
+        Ok(out)
       })
     }
   }
 }
 
-fn parse_paragraph(p: String) -> Element(Nil) {
-  let assert Ok(els) =
+fn parse_paragraph(s: String) -> Result(Element(Nil)) {
+  use els <- result.try(
     p.go(
       {
         use els <- p.do(
@@ -210,9 +277,11 @@ fn parse_paragraph(p: String) -> Element(Nil) {
         )
         p.return(els)
       },
-      p,
+      s,
     )
-  html.p([], els)
+    |> map_error(fn(_err) { snag.new("parse error in paragraph") }),
+  )
+  Ok(html.p([], els))
 }
 
 fn escape(char: String) -> p.Parser(Element(Nil), Nil) {

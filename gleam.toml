@@ -18,6 +18,7 @@ party = ">= 1.0.3 and < 2.0.0"
 simplifile = ">= 1.7.0 and < 2.0.0"
 birl = ">= 1.7.1 and < 2.0.0"
 shellout = ">= 1.6.0 and < 2.0.0"
+snag = ">= 0.3.0 and < 1.0.0"
 
 [dev-dependencies]
 gleeunit = "~> 1.0"
