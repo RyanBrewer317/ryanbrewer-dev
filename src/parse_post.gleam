@@ -18,8 +18,10 @@ import simplifile
 
 // I want to move away from panicking on exceptions,
 // and use Snag instead.
-// I also want to update Party for threading state,
-// instead of this JS ffi.
+
+pub type State {
+  State(id: String, counter: Int)
+}
 
 pub type Error {
   FileError(simplifile.FileError)
@@ -34,24 +36,8 @@ type Command {
   DiagramBlock
 }
 
-@external(javascript, "./js.mjs", "get_id")
-fn get_id() -> String
-
-@external(javascript, "./js.mjs", "set_id")
-fn set_id(id: String) -> String
-
-@external(javascript, "./js.mjs", "get_counter")
-fn get_counter() -> Int
-
-@external(javascript, "./js.mjs", "inc_counter")
-fn inc_counter() -> Nil
-
-@external(javascript, "./js.mjs", "reset_counter")
-fn reset_counter() -> Nil
-
 pub fn go(filename: String) -> Result(Post, Error) {
   use content <- try(map_error(simplifile.read(filename), FileError))
-  reset_counter()
   map_error(p.go(parse(), content), ParseError)
 }
 
@@ -61,7 +47,10 @@ fn parse() -> p.Parser(Post, Nil) {
   use date <- p.do(parse_date())
   use tags <- p.do(parse_tags())
   use desc <- p.do(parse_description())
-  use els <- p.do(p.many(parse_block()))
+  use #(els, _) <- p.do(p.stateful_many(
+    State(id: id, counter: 0),
+    parse_block(),
+  ))
   p.return(Post(name, id, date, tags, desc, els))
 }
 
@@ -71,7 +60,6 @@ fn parse_id() -> p.Parser(String, Nil) {
   use id_strs <- p.do(p.many1(p.satisfy(fn(c) { c != "\n" })))
   let id = string.concat(id_strs)
   use _ <- p.do(p.char("\n"))
-  set_id(id)
   p.return(id)
 }
 
@@ -108,7 +96,11 @@ fn parse_tags() -> p.Parser(List(String), Nil) {
   p.return(string.split(string.concat(tags_str), ","))
 }
 
-fn parse_block() -> p.Parser(Element(Nil), Nil) {
+fn stateful(a: a) -> fn(s) -> #(a, s) {
+  fn(s) { #(a, s) }
+}
+
+fn parse_block() -> p.Parser(fn(State) -> #(Element(Nil), State), Nil) {
   use cmd <- p.do(parse_command())
   use _ <- p.do(p.many(p.either(p.char(" "), p.char("\t"))))
   use _ <- p.do(p.char("\n"))
@@ -121,62 +113,79 @@ fn parse_block() -> p.Parser(Element(Nil), Nil) {
   let str = string.concat(strs)
   use _ <- p.do(p.string("@end@"))
   case cmd {
-    Paragraph -> p.return(parse_paragraph(str))
-    Subheading -> p.return(html.h3([], [text(str)]))
-    CodeBlock -> p.return(html.pre([], [html.code([], [text(str)])]))
+    Paragraph ->
+      p.return(
+        parse_paragraph(str)
+        |> stateful,
+      )
+    Subheading ->
+      p.return(
+        html.h3([], [text(str)])
+        |> stateful,
+      )
+    CodeBlock ->
+      p.return(
+        html.pre([], [html.code([], [text(str)])])
+        |> stateful,
+      )
     MathBlock -> {
-      use <- fn(k) { p.return(html.div([], k())) }
+      use <-
+        fn(k) {
+          p.return(
+            html.div([], k())
+            |> stateful,
+          )
+        }
       use line <- list.map(string.split(str, on: "\n"))
       html.div([attribute.class("math-block")], [text("\\[" <> line <> "\\]")])
     }
     DiagramBlock -> {
-      inc_counter()
-      let id = get_id()
-      let counter = get_counter()
-      let img_filename =
-        "image-" <> int.to_string(counter) <> "-" <> id <> ".svg"
-      let out =
-        p.return(
+      p.return(fn(state: State) {
+        let img_filename =
+          "image-" <> int.to_string(state.counter) <> "-" <> state.id <> ".svg"
+        let out = #(
           html.div([attribute.class("diagram")], [
             html.img([attribute.src("/" <> img_filename)]),
           ]),
+          State(id: state.id, counter: state.counter + 1),
         )
-      let assert Ok(exists) =
-        simplifile.verify_is_file("public/" <> img_filename)
-      io.debug(exists)
-      // very simple caching: if we've generated an image with this name before, don't do it again
-      // this works for now because I can always just delete an image file.
-      // But in the future I want an actual caching system that detects updates.
-      // Perhaps a sqlite db?
-      use <- bool.guard(when: exists, return: out)
-      let latex_code = "
+        let assert Ok(exists) =
+          simplifile.verify_is_file("public/" <> img_filename)
+        io.debug(exists)
+        // very simple caching: if we've generated an image with this name before, don't do it again
+        // this works for now because I can always just delete an image file.
+        // But in the future I want an actual caching system that detects updates.
+        // Perhaps a sqlite db?
+        use <- bool.guard(when: exists, return: out)
+        let latex_code = "
 \\documentclass[margin=0pt]{standalone}
 \\usepackage{tikz-cd}
 \\begin{document}
 \\begin{tikzcd}\n" <> str <> "\\end{tikzcd}
 \\end{document}"
-      let assert Ok(_) =
-        simplifile.write(latex_code, to: "./diagram-work/diagram.tex")
-      let assert Ok(_) =
-        shellout.command(
-          run: "pdflatex",
-          with: ["-interaction", "nonstopmode", "diagram.tex"],
-          in: "diagram-work",
-          opt: [],
-        )
-      let assert Ok(_) =
-        shellout.command(
-          run: "inkscape",
-          with: [
-            "-l",
-            "--export-filename",
-            "../public/" <> img_filename,
-            "diagram.pdf",
-          ],
-          in: "diagram-work",
-          opt: [shellout.LetBeStdout],
-        )
-      out
+        let assert Ok(_) =
+          simplifile.write(latex_code, to: "./diagram-work/diagram.tex")
+        let assert Ok(_) =
+          shellout.command(
+            run: "pdflatex",
+            with: ["-interaction", "nonstopmode", "diagram.tex"],
+            in: "diagram-work",
+            opt: [],
+          )
+        let assert Ok(_) =
+          shellout.command(
+            run: "inkscape",
+            with: [
+              "-l",
+              "--export-filename",
+              "../public/" <> img_filename,
+              "diagram.pdf",
+            ],
+            in: "diagram-work",
+            opt: [shellout.LetBeStdout],
+          )
+        out
+      })
     }
   }
 }
