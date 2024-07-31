@@ -3,8 +3,8 @@
 window.dataLayer = window.dataLayer || [];
 function gtag(){dataLayer.push(arguments);}
 gtag('js', new Date());
-        </script><title>Safe Manual Memory Management with Coeffects - Ryan Brewer</title><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="description" content="Using ideas from Crary et al.&#39;s Calculus of Capabilities, I discuss the coeffectful memory management used in SaberVM."><link rel="icon" type="image/x-icon" href="/favicon.ico"><link rel="alternate" type="application/rss+xml" title="Ryan Brewer&#39;s Blog" href="https://ryanbrewer.dev/feed.rss"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="true"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto&amp;display=swap"><script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script><script type="text/javascript" async="true" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script><link rel="stylesheet" type="text/css" href="https://tikzjax.com/v1/fonts.css"><script src="https://tikzjax.com/v1/tikzjax.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css"><script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script><script>hljs.highlightAll();</script>  <script type="module" crossorigin src="/assets/style-9c4db842.js"></script>
-  <link rel="stylesheet" href="/assets/style-ddc81f21.css">
+        </script><title>Safe Manual Memory Management with Coeffects - Ryan Brewer</title><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="description" content="Using ideas from Crary et al.&#39;s Calculus of Capabilities, I discuss the coeffectful memory management used in SaberVM."><link rel="icon" type="image/x-icon" href="/favicon.ico"><link rel="alternate" type="application/rss+xml" title="Ryan Brewer&#39;s Blog" href="https://ryanbrewer.dev/feed.rss"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="true"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto&amp;display=swap"><script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script><script type="text/javascript" async="true" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script><link rel="stylesheet" type="text/css" href="https://tikzjax.com/v1/fonts.css"><script src="https://tikzjax.com/v1/tikzjax.js"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css"><script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script><script>hljs.highlightAll();</script>  <script type="module" crossorigin src="/assets/style-f76121df.js"></script>
+  <link rel="stylesheet" href="/assets/style-4b16f1cc.css">
 </head><body><nav><a href="/" id="nav-home">Ryan Brewer</a><a href="/search" id="nav-search">Posts</a><a href="/contact.html" id="nav-contact">Contact</a><a href="/demos.html" id="nav-demos">Demos</a><a href="/feed.rss" id="nav-subscribe"><img src="/rss-icon.png" id="rss-subscribe-icon">Subscribe</a></nav><div id="body"><h1>Safe Manual Memory Management with Coeffects</h1><div class="date">January 25, 2024</div><p>Recently I <a href="https://ryanbrewer.dev/posts/announcing-svm.html">announced</a> SaberVM,
 which uses a fun combination of features to express quite a lot in a safe way.
 One of the big interesting parts of SaberVM is its memory safety scheme.
@@ -190,4 +190,12 @@ backend of your functional language, consider
 starring it on <a href="https://github.com/RyanBrewer317/SaberVM">github</a>, or even
 sponsoring my work on <a href="https://github.com/sponsors/RyanBrewer317">github</a> or 
 <a href="https://ko-fi.com/ryanbrewer">ko-fi</a>!
-</p></div><div><div style="height:100pt;"></div><p id="copyright-notice" class="subtle-text">© 2024 Ryan Brewer.</p><script src="/__/firebase/8.10.1/firebase-app.js"></script><script src="/__/firebase/8.10.1/firebase-analytics.js"></script><script src="/__/firebase/init.js"></script><script>firebase.analytics();</script></div></body></html>
+</p></div><div><script>
+let elements = document.getElementsByClassName("diagram");
+for (let i = 0; i < elements.length; i++) {
+  let img = elements[i].children[0];
+  img.addEventListener("load", () => {
+    img.width *= 2.25;
+  });
+}
+    </script><div style="height:100pt;"></div><p id="copyright-notice" class="subtle-text">© 2024 Ryan Brewer.</p><script src="/__/firebase/8.10.1/firebase-app.js"></script><script src="/__/firebase/8.10.1/firebase-analytics.js"></script><script src="/__/firebase/init.js"></script><script>firebase.analytics();</script></div></body></html>

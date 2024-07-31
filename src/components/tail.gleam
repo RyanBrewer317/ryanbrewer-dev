@@ -8,6 +8,18 @@ import lustre/element/html
 
 pub fn tail() -> Element(a) {
   html.div([], [
+    html.script(
+      [],
+      "
+let elements = document.getElementsByClassName(\"diagram\");
+for (let i = 0; i < elements.length; i++) {
+  let img = elements[i].children[0];
+  img.addEventListener(\"load\", () => {
+    img.width *= 2.25;
+  });
+}
+    ",
+    ),
     html.div([attribute.style([#("height", "100pt")])], []),
     html.p([attribute.id("copyright-notice"), attribute.class("subtle-text")], [
       text("© 2024 Ryan Brewer."),
