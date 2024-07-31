@@ -155,7 +155,7 @@ fn build() -> Result(Nil) {
 
 pub fn main() {
   case build() {
-    Ok(Nil) -> io.println("success!")
+    Ok(Nil) -> io.println("Success!")
     Error(err) -> {
       io.print(snag.pretty_print(err))
     }
