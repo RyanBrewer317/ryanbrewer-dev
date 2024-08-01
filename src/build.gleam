@@ -8,23 +8,25 @@ import feed
 import gleam/io
 import gleam/list
 import gleam/result.{map_error}
-import helpers.{type Post}
+import helpers.{type Post, type Wiki}
 import homepage
 import list_posts
 import lustre/ssg
-import parse_post
-import render_post
+import parse
+import render
 import simplifile
 import snag.{type Result}
 import unknown_page
 
 const posts_dir = "posts"
 
+const wiki_dir = "wiki"
+
 const out_dir = "site"
 
 const assets_dir = "public"
 
-fn read_all() -> Result(List(Post)) {
+fn read_all_posts() -> Result(List(Post)) {
   use paths <- result.try(
     simplifile.get_files(in: posts_dir)
     |> map_error(fn(err) {
@@ -38,15 +40,36 @@ fn read_all() -> Result(List(Post)) {
     }),
   )
   list.try_fold(over: paths, from: [], with: fn(so_far, path) {
-    use p <- result.try(parse_post.go(path))
+    use p <- result.try(parse.post(path))
+    Ok([p, ..so_far])
+  })
+  |> result.map(list.reverse)
+}
+
+fn read_all_wikis() -> Result(List(Wiki)) {
+  use paths <- result.try(
+    simplifile.get_files(in: posts_dir)
+    |> map_error(fn(err) {
+      snag.new(
+        "couldn't get files in `"
+        <> wiki_dir
+        <> "` ("
+        <> simplifile.describe_error(err)
+        <> ")",
+      )
+    }),
+  )
+  list.try_fold(over: paths, from: [], with: fn(so_far, path) {
+    use p <- result.try(parse.wiki(path))
     Ok([p, ..so_far])
   })
   |> result.map(list.reverse)
 }
 
 fn build() -> Result(Nil) {
-  use posts_unsorted <- result.try(read_all())
+  use posts_unsorted <- result.try(read_all_posts())
   let posts = list.sort(posts_unsorted, helpers.after)
+  use wikis <- result.try(read_all_wikis())
 
   use _ <- result.try(
     ssg.new(out_dir)
@@ -56,7 +79,14 @@ fn build() -> Result(Nil) {
       over: posts,
       from: _,
       with: fn(s, p: Post) {
-        ssg.add_static_route(s, "/posts/" <> p.id, render_post.render(p))
+        ssg.add_static_route(s, "/posts/" <> p.id, render.post(p))
+      },
+    )
+    |> list.fold(
+      over: wikis,
+      from: _,
+      with: fn(s, w: Wiki) {
+        ssg.add_static_route(s, "/wiki/" <> w.id, render.wiki(w))
       },
     )
     |> ssg.add_static_route("/search", list_posts.list_posts(posts))

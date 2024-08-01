@@ -1,0 +1,8 @@
+id: first-wiki
+name: My First Wiki Page
+tags: first wiki
+description: A test post for the blog.
+
+@paragraph@
+This is my first wiki page! It's mostly to test out the codebase.
+@end@

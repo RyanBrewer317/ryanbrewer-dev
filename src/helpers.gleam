@@ -40,3 +40,7 @@ pub type Post {
     body: List(Element(Nil)),
   )
 }
+
+pub type Wiki {
+  Wiki(title: String, id: String, tags: List(String), body: List(Element(Nil)))
+}

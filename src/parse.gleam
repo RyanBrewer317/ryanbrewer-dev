@@ -8,7 +8,7 @@ import gleam/io
 import gleam/list
 import gleam/result.{map_error}
 import gleam/string
-import helpers.{type Post, Post}
+import helpers.{type Post, type Wiki, Post, Wiki}
 import lustre/attribute.{type Attribute, attribute}
 import lustre/element.{type Element, text}
 import lustre/element/html
@@ -19,11 +19,6 @@ import snag.{type Result}
 
 pub type State {
   State(id: String, counter: Int)
-}
-
-pub type Error {
-  FileError(simplifile.FileError)
-  ParseError(p.ParseError(Nil))
 }
 
 type Command {
@@ -38,24 +33,43 @@ fn pretty_pos(pos: p.Position) -> String {
   "line " <> int.to_string(pos.row) <> ", column " <> int.to_string(pos.col)
 }
 
-pub fn go(filename: String) -> Result(Post) {
+pub fn post(filename: String) -> Result(Post) {
   use content <- result.try(
     map_error(simplifile.read(filename), fn(err) {
       snag.new(
         "could not load file `"
         <> filename
-        <> "`: "
-        <> simplifile.describe_error(err),
+        <> "` ("
+        <> simplifile.describe_error(err)
+        <> ")",
       )
     }),
   )
-  map_error(p.go(parse(), content), fn(err) {
+  map_error(p.go(parse_post(), content), fn(err) {
     snag.new("parse error at " <> pretty_pos(err.pos))
   })
   |> result.flatten
 }
 
-fn parse() -> p.Parser(Result(Post), Nil) {
+pub fn wiki(filename: String) -> Result(Wiki) {
+  use content <- result.try(
+    map_error(simplifile.read(filename), fn(err) {
+      snag.new(
+        "could not load file `"
+        <> filename
+        <> "` ("
+        <> simplifile.describe_error(err)
+        <> ")",
+      )
+    }),
+  )
+  map_error(p.go(parse_wiki(), content), fn(err) {
+    snag.new("parse error at " <> pretty_pos(err.pos))
+  })
+  |> result.flatten
+}
+
+fn parse_post() -> p.Parser(Result(Post), Nil) {
   use id <- p.do(parse_id())
   use name <- p.do(parse_name())
   use mb_date <- p.do(parse_date())
@@ -73,6 +87,26 @@ fn parse() -> p.Parser(Result(Post), Nil) {
         |> snag.context("couldn't parse post body"),
       )
       Ok(Post(name, id, date, tags, desc, els))
+    }
+    |> snag.context("couldn't parse post"),
+  )
+}
+
+fn parse_wiki() -> p.Parser(Result(Wiki), Nil) {
+  use id <- p.do(parse_id())
+  use name <- p.do(parse_name())
+  use tags <- p.do(parse_tags())
+  use #(mb_els, _) <- p.do(p.stateful_many(
+    State(id: id, counter: 0),
+    parse_block(),
+  ))
+  p.return(
+    {
+      use els <- result.try(
+        result.all(mb_els)
+        |> snag.context("couldn't parse post body"),
+      )
+      Ok(Wiki(name, id, tags, els))
     }
     |> snag.context("couldn't parse post"),
   )
