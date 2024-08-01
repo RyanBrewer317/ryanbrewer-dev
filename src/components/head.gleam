@@ -86,12 +86,6 @@ gtag('js', new Date());
         ),
         html.link([
           attribute.rel("stylesheet"),
-          attribute.type_("text/css"),
-          attribute.href("https://tikzjax.com/v1/fonts.css"),
-        ]),
-        html.script([attribute.src("https://tikzjax.com/v1/tikzjax.js")], ""),
-        html.link([
-          attribute.rel("stylesheet"),
           attribute.href(
             "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css",
           ),
