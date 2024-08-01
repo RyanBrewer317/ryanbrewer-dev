@@ -4,9 +4,11 @@ import { defineConfig } from "vite";
 import * as fs from "fs";
 
 const input_obj = fs.readdirSync("site/posts").reduce((obj, filename)=>{
-  obj[filename] = "site/posts/"+filename;
+  obj[filename] = "site/posts/"+filename+"/index.html";
   return obj;
-}, { main: "site/index.html", search: "site/search.html", contact: "site/contact.html", demos: "site/demos.html", "404": "site/404.html" })
+}, { main: "site/index.html", search: "site/search/index.html", contact: "site/contact/index.html", demos: "site/demos/index.html", "404": "site/404/index.html" })
+
+console.log(input_obj);
 
 export default defineConfig({
   root: "site",

@@ -5,7 +5,6 @@
 import contact
 import demos
 import feed
-import gleam/dict
 import gleam/io
 import gleam/list
 import gleam/result.{map_error}
@@ -48,17 +47,21 @@ fn read_all() -> Result(List(Post)) {
 fn build() -> Result(Nil) {
   use posts_unsorted <- result.try(read_all())
   let posts = list.sort(posts_unsorted, helpers.after)
-  let indexed_posts =
-    list.map(posts, fn(p) { #(p.id <> "/index", p) })
-    |> dict.from_list
 
   use _ <- result.try(
     ssg.new(out_dir)
-    |> ssg.add_dynamic_route("/posts/", indexed_posts, render_post.render)
-    |> ssg.add_static_route("/index", homepage.homepage(posts))
-    |> ssg.add_static_route("/search/index", list_posts.list_posts(posts))
-    |> ssg.add_static_route("/contact/index", contact.contact())
-    |> ssg.add_static_route("/demos/index", demos.demos_page())
+    |> ssg.use_index_routes()
+    |> ssg.add_static_route("/", homepage.homepage(posts))
+    |> list.fold(
+      over: posts,
+      from: _,
+      with: fn(s, p: Post) {
+        ssg.add_static_route(s, "/posts/" <> p.id, render_post.render(p))
+      },
+    )
+    |> ssg.add_static_route("/search", list_posts.list_posts(posts))
+    |> ssg.add_static_route("/contact", contact.contact())
+    |> ssg.add_static_route("/demos", demos.demos_page())
     |> ssg.add_static_route("/404", unknown_page.unknown_page())
     |> ssg.build
     |> map_error(fn(err) {

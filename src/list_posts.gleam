@@ -54,7 +54,7 @@ pub fn list_posts(posts: List(Post)) -> Element(Nil) {
     head("Search Posts - Ryan Brewer", "Look through Ryan's past posts", [
       html.script(
         [attribute.attribute("type", "module")],
-        "import '../style.css';",
+        "import '../../style.css';",
       ),
       script_posts(posts),
       script(),

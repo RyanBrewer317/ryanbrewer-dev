@@ -12,7 +12,7 @@ import lustre/element/html
 pub fn unknown_page() -> Element(Nil) {
   html.html([attribute.attribute("lang", "en")], [
     head("404 - Ryan Brewer", "Unknown Page", [
-      html.script([attribute.type_("module")], "import '../style.css';"),
+      html.script([attribute.type_("module")], "import '../../style.css';"),
     ]),
     html.body([], [
       navbar(),

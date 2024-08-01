@@ -29,7 +29,7 @@ fn render_as_list(post: Post) -> List(Element(Nil)) {
 pub fn render(post: Post) -> Element(Nil) {
   html.html([attribute("lang", "en")], [
     head(post.title, post.description, [
-      html.script([attribute.type_("module")], "import '../../style.css';"),
+      html.script([attribute.type_("module")], "import '../../../style.css';"),
     ]),
     html.body([], [
       navbar(),
