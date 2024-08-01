@@ -213,6 +213,12 @@ textarea:focus, input:focus, #search-posts:focus {
 .diagram {
   padding: 10pt 0;
   overflow-x: scroll;
+  scrollbar-width: none; /* firefox */
+  -ms-overflow-style: none; /* IE 10+ */
+}
+
+.diagram::-webkit-scrollbar { /* Chrome, Safari */
+  display: none;
 }
 
 .diagram img {
