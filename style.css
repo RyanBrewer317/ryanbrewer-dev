@@ -20,6 +20,10 @@ html,
   font-family: var(--font);
 }
 
+body.noscroll {
+  overflow: hidden;
+}
+
 h3 {
   margin-top: 25pt;
 }
@@ -34,10 +38,36 @@ h3 {
 nav {
   padding: 10pt;
   color: var(--secondary-color-dark);
+  position: sticky;
+  top: 0pt;
+  background-color: var(--dark-background);
+  z-index: 1;
 }
 
 #nav-search, #nav-subscribe, #nav-contact, #nav-demos {
+  float: right;
   margin-left: 15pt;
+}
+
+nav.dropdown #nav-search, 
+nav.dropdown #nav-subscribe, 
+nav.dropdown #nav-contact, 
+nav.dropdown #nav-demos {
+  float: unset;
+}
+
+nav.dropdown a { 
+  display: block; 
+  margin: 10pt 0 10pt 15pt;
+}
+
+nav.dropdown {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: var(--dark-background);
 }
 
 p {
@@ -93,10 +123,6 @@ textarea:focus, input:focus, #search-posts:focus {
   outline: none;
   border: 1px solid var(--secondary-color-dark);
   border-radius: 5pt;
-}
-
-#nav-search, #nav-subscribe, #nav-contact, #nav-demos {
-  float: right;
 }
 
 #search-posts {
@@ -186,8 +212,22 @@ textarea:focus, input:focus, #search-posts:focus {
 
 .diagram {
   padding: 10pt 0;
+  overflow-x: scroll;
 }
 
 .diagram img {
   filter: invert(1);
+}
+
+#nav-dropdown {
+  display: none;
+}
+
+@media (max-width: 700px) {
+  nav a { 
+    display: none; 
+  }
+  #nav-dropdown { 
+    display: inline-block; 
+  }
 }

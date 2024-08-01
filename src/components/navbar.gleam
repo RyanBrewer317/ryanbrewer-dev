@@ -7,7 +7,17 @@ import lustre/element.{type Element, text}
 import lustre/element/html
 
 pub fn navbar() -> Element(a) {
-  html.nav([], [
+  html.nav([attribute.id("nav")], [
+    html.div(
+      [
+        attribute.id("nav-dropdown"),
+        attribute(
+          "onclick",
+          "document.getElementById('nav').classList.toggle('dropdown');document.body.classList.toggle('noscroll');",
+        ),
+      ],
+      [text("☰")],
+    ),
     html.a([attribute.href("/"), attribute.id("nav-home")], [
       text("Ryan Brewer"),
     ]),
