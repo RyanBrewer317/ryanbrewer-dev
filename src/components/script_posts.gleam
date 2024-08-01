@@ -29,7 +29,7 @@ pub fn script_posts(posts: List(Post)) -> Element(a) {
   |> append("\": {\"id\": \"")
   |> append(p.id)
   |> append("\", \"url\": \"")
-  |> append("/posts/" <> p.id <> ".html")
+  |> append("/posts/" <> p.id <> "/index.html")
   |> append("\", \"title\": \"")
   |> append(string.replace(each: "\"", with: "\\\"", in: p.title))
   |> append("\", \"date\": \"")

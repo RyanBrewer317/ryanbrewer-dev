@@ -12,16 +12,60 @@
         "destination": "/index.html"
       },
       {
-        "source": "/search",
-        "destination": "/search.html"
+        "source": "/search.html",
+        "destination": "/search/"
       },
       {
-        "source": "/contact",
-        "destination": "/contact.html"
+        "source": "/contact.html",
+        "destination": "/contact/"
       },
       {
-        "source": "/demos",
-        "destination": "/demos.html"
+        "source": "/demos.html",
+        "destination": "/demos/"
+      },
+      {
+        "source": "/announcing-svm.html",
+        "destination": "/announcing-sabervm/"
+      },
+      {
+        "source": "/beginners-guide-pl-academia.html",
+        "destination": "/beginners-guide-pl-academia/"
+      },
+      {
+        "source": "/first-post.html",
+        "destination": "/first-post/"
+      },
+      {
+        "source": "/getting-started-category-theory.html",
+        "destination": "/getting-started-category-theory/"
+      },
+      {
+        "source": "/implicit-products-better-forall.html",
+        "destination": "/implicit-products-better-forall/"
+      },
+      {
+        "source": "/logic-in-types.html",
+        "destination": "/logic-in-types/"
+      },
+      {
+        "source": "/safe-mmm-with-coeffects.html",
+        "destination": "/safe-mmm-with-coeffects/"
+      },
+      {
+        "source": "/security-crashing-modal-logic.html",
+        "destination": "/security-crashing-modal-logic/"
+      },
+      {
+        "source": "/simple-programming-languages.html",
+        "destination": "/simple-programming-languages/"
+      },
+      {
+        "source": "/type-of-sprintf.html",
+        "destination": "/type-of-sprintf/"
+      },
+      {
+        "source": "/typechecking-sabervm.html",
+        "destination": "/typechecking-sabervm/"
       }
     ]
   }

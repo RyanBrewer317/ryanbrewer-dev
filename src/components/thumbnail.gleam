@@ -10,7 +10,7 @@ import lustre/element/html
 pub fn thumbnail(post: Post) -> Element(a) {
   html.li([attribute.class("post-thumbnail"), attribute.id(post.id)], [
     html.h3([], [
-      html.a([attribute.href("posts/" <> post.id <> ".html")], [
+      html.a([attribute.href("posts/" <> post.id <> "/index.html")], [
         text(post.title),
       ]),
     ]),
