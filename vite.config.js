@@ -8,14 +8,19 @@ const input_obj = fs.readdirSync("site/posts").reduce((obj, filename)=>{
   return obj;
 }, { main: "site/index.html", search: "site/search/index.html", contact: "site/contact/index.html", demos: "site/demos/index.html", "404": "site/404/index.html" })
 
-console.log(input_obj);
+const input_obj2 = fs.readdirSync("site/wiki").reduce((obj, filename)=>{
+  obj[filename] = "site/wiki/"+filename+"/index.html";
+  return obj;
+}, input_obj);
+
+console.log(input_obj2);
 
 export default defineConfig({
   root: "site",
   build: {
     outDir: "../dist",
     rollupOptions: {
-      input: input_obj,
+      input: input_obj2,
     },
   },
   plugins: [gleam(), ClosePlugin()],

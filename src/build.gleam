@@ -48,7 +48,7 @@ fn read_all_posts() -> Result(List(Post)) {
 
 fn read_all_wikis() -> Result(List(Wiki)) {
   use paths <- result.try(
-    simplifile.get_files(in: posts_dir)
+    simplifile.get_files(in: wiki_dir)
     |> map_error(fn(err) {
       snag.new(
         "couldn't get files in `"

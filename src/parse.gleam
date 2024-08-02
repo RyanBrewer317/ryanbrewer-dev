@@ -94,22 +94,22 @@ fn parse_post() -> p.Parser(Result(Post), Nil) {
 
 fn parse_wiki() -> p.Parser(Result(Wiki), Nil) {
   use id <- p.do(parse_id())
+  io.debug(id)
   use name <- p.do(parse_name())
+  io.debug(name)
   use tags <- p.do(parse_tags())
+  io.debug(tags)
   use #(mb_els, _) <- p.do(p.stateful_many(
     State(id: id, counter: 0),
     parse_block(),
   ))
-  p.return(
-    {
-      use els <- result.try(
-        result.all(mb_els)
-        |> snag.context("couldn't parse post body"),
-      )
-      Ok(Wiki(name, id, tags, els))
-    }
-    |> snag.context("couldn't parse post"),
-  )
+  p.return({
+    use els <- result.try(
+      result.all(mb_els)
+      |> snag.context("couldn't parse post body"),
+    )
+    Ok(Wiki(name, id, tags, els))
+  })
 }
 
 fn parse_id() -> p.Parser(String, Nil) {
