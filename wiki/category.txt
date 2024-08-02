@@ -49,3 +49,7 @@ In programming, we typically use a slightly different-looking category. Namely, 
 @paragraph@
 I think these categories-of-collections are also very useful and underappreciated for analytic philosophers, which is why the first example category I gave was an analysis of possible worlds. That category is an example where objects have an enormous amount of information (the entire state of the world), and arrows are transformations (sequences of events).
 @end@
+
+@paragraph@
+Small categories form a famous and powerful category called [/wiki/cat](Cat).
+@end@
