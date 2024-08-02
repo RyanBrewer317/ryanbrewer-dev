@@ -34,7 +34,7 @@ All of that is just boilerplate stuff for being able to define monoidal categori
 @end@
 
 @paragraph@
-Any object \\(X\\) in a 2-category has a monoidal category that is the hom-object \\(\\texttt{Hom}(X,X)\\): we know it's a category because \\(X\\) is in a 2-category, we know that its objects are arrows from \\(X\\) to \\(X\\), and thus we know we can map any pair of objects into a third object, using composition, which is associative and which has \\(id_X\\) as its unit. Thus \\(\\otimes\\) is \\(\\circ\\) and \\(I\\) is \\(id_X\\). This helps keep in mind the mind-expanding fact that \\(\\circ\\) is a bifunctor!
+Any object \\(X\\) in a 2-category has a monoidal category that is the hom-object \\(\\texttt{Hom}(X,X)\\): we know it's a category because \\(X\\) is in a 2-category, we know that its objects are arrows from \\(X\\) to \\(X\\), and thus we know we can map any pair of objects into a third object, using composition, which is associative and which has \\(id_X\\) as its unit. Thus \\(\\otimes\\) is \\(\\circ\\) and \\(I\\) is \\(id_X\\). This also helps keep in mind the mind-expanding fact that, for certain categories, \\(\\circ\\) is a bifunctor!
 @end@
 
 @paragraph@
@@ -75,10 +75,10 @@ Monoidal categories have one of the most awesome notational systems of all time:
 @end@
 
 @diagram@
-    {}\ar[d,dash] & {}\ar[ddd,dash,"Y"] & & {}\ar[ddd,dash,"X"] & {}\ar[d,dash] \\
-    f\ar[ddd,dash,"X"] & & & & g\ar[ddd,dash,"Y"]  \\
+    {}\ar[d,dash,"X"] & {}\ar[ddd,dash,"Z"] & & {}\ar[ddd,dash,"X"] & {}\ar[d,dash,"Z"] \\
+    f\ar[ddd,dash,"Y"] & & & & g\ar[ddd,dash,"W"]  \\
     & & = & & \\
-    & g\ar[d,dash] & & f\ar[d,dash] & \\
+    & g\ar[d,dash,"W"] & & f\ar[d,dash,"Y"] & \\
     {} & {} & & {} & {}
 @end@
 
@@ -87,13 +87,13 @@ Here's a string diagram representing the morphism \\(f^{-1}\\circ f: X\\otimes Y
 @end@
 
 @diagram@
-    {}\ar[dr,bend left=50,dash,"X"] & & {}\ar[dl,bend right=50,dash,"Y"] \\
-    & f^{-1}\ar[dd,bend left=50,dash,"Y"]\ar[dd,bend right=50,dash,"X"] & \\
+    {}\ar[dr,bend right=50,dash,"X"] & & {}\ar[dl,bend left=50,dash,"Y"] \\
+    & f^{-1}\ar[dd,bend right=50,dash,"Y"]\ar[dd,bend left=50,dash,"X"] & \\
     \\
-    & f\ar[dl,bend left=50,dash,"X"]\ar[dr,bend right=50,dash,"Y"] & \\
+    & f\ar[dl,bend right=50,dash,"X"]\ar[dr,bend left=50,dash,"Y"] & \\
     {} & & {}
 @end@
 
 @paragraph@
-This string diagram is representing *another* rigorous wiggly-ness, which is that in some situations you can have lines overlap and then come back without meaning anything by it. Notice that the string diagram is representing a morphism that equals the identity morphism on \\(X\\otimes Y\\). Namely, it's okay if there's an applicable isomorphism between \\(X\\otimes Y\\) and \\(Y\\otimes X\\). If the tensor product is symmetric then this happens all the time!
+This string diagram is representing *another* rigorous wiggly-ness, which is that in some situations you can have lines overlap and then come back without meaning anything by it. Namely, it's okay if there's an applicable isomorphism between \\(X\\otimes Y\\) and \\(Y\\otimes X\\). If the tensor product is symmetric then this happens all the time! Notice that the string diagram is representing a morphism that equals the identity morphism on \\(X\\otimes Y\\).
 @end@
