@@ -230,7 +230,7 @@ textarea:focus, input:focus, #search-posts:focus, #search-wiki:focus {
   display: none;
 }
 
-@media (max-width: 700px) {
+@media (max-width: 500px) {
   nav a { 
     display: none; 
   }
