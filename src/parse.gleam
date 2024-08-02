@@ -4,7 +4,6 @@
 
 import gleam/bool
 import gleam/int
-import gleam/io
 import gleam/list
 import gleam/result.{map_error}
 import gleam/string
@@ -94,11 +93,8 @@ fn parse_post() -> p.Parser(Result(Post), Nil) {
 
 fn parse_wiki() -> p.Parser(Result(Wiki), Nil) {
   use id <- p.do(parse_id())
-  io.debug(id)
   use name <- p.do(parse_name())
-  io.debug(name)
   use tags <- p.do(parse_tags())
-  io.debug(tags)
   use #(mb_els, _) <- p.do(p.stateful_many(
     State(id: id, counter: 0),
     parse_block(),
@@ -226,7 +222,6 @@ fn parse_block() -> p.Parser(fn(State) -> #(Result(Element(Nil)), State), Nil) {
             )
           }),
         )
-        io.debug(exists)
         // very simple caching: if we've generated an image with this name before, don't do it again
         // this works for now because I can always just delete an image file.
         // But in the future I want an actual caching system that detects updates.
