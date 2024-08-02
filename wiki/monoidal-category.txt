@@ -16,7 +16,7 @@ Monoidal categories are famous enough that you may hear their coherence conditio
 @end@
 
 @paragraph@
-The notation \\(\\id_X\\otimes\\lambda_Y\\) is taking advantage of the bifunctoriality of \\(\\otimes\\), mapping a pair of morphisms \\(id_X:X\\to X\\) and \\(\\lambda_Y:(I\\otimes Y)\\to Y\\) into the morphism \\(id_X\\otimes\\lambda_Y:X\\otimes(I\\otimes Y)\\to X\\otimes Y\\). You have to do some mental grammar-checking to realize that \\(\\id_X\\otimes\\lambda_Y\\) is nonsense because \\(id_X\\) and \\(\\lambda_Y\\) are morphisms in this category, not objects, to realize that we're using this second usage of the \\(\\otimes\\) notation.
+The notation \\(id_X\\otimes\\lambda_Y\\) is taking advantage of the bifunctoriality of \\(\\otimes\\), mapping a pair of morphisms \\(id_X:X\\to X\\) and \\(\\lambda_Y:(I\\otimes Y)\\to Y\\) into the morphism \\(id_X\\otimes\\lambda_Y:X\\otimes(I\\otimes Y)\\to X\\otimes Y\\). You have to do some mental grammar-checking to realize that \\(id_X\\otimes\\lambda_Y\\) is nonsense because \\(id_X\\) and \\(\\lambda_Y\\) are morphisms in this category, not objects, to realize that we're using this second usage of the \\(\\otimes\\) notation.
 @end@
 
 @paragraph@
@@ -63,7 +63,7 @@ Because \\(\\otimes\\) is a bifunctor, there's no ambiguity when you're in a sit
 @end@
 
 @paragraph@
-You can compose horizontally into a column and then compose vertically, or you can compose vertically into a row and the compose horizontally. The bifunctoriality equation states that \\((h\\circ f)\\otimes(k\\circ g)=(h\\otimes k)\\circ(f\\otimes g\\)\\). The fact that these compositions can be done in any order is called the Interchange Law.
+You can compose horizontally into a column and then compose vertically, or you can compose vertically into a row and the compose horizontally. The bifunctoriality equation states that \\((h\\circ f)\\otimes(k\\circ g)=(h\\otimes k)\\circ(f\\otimes g)\\). The fact that these compositions can be done in any order is called the Interchange Law.
 @end@
 
 @paragraph@
