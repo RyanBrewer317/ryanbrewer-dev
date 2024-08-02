@@ -3,7 +3,7 @@ name: Natural Isomorphism
 tags: natural,transformation,transformations,functor,category,isomorphism
 
 @paragraph@
-Given two functors \\(F:C\\to D\\) and \\(G:\\to D\\), a "natural isomorphism" between them \\(\\alpha: F\\cong G\\) is an isomorphism in the functor category \\([C,D]\\). Then \\(F\\) and \\(G\\) are called "naturally isomorphic."
+Given two functors \\(F:C\\to D\\) and \\(G:C\\to D\\), a "natural isomorphism" between them \\(\\alpha: F\\cong G\\) is an isomorphism in the functor category \\([C,D]\\). Then \\(F\\) and \\(G\\) are called "naturally isomorphic."
 @end@
 
 @paragraph@
