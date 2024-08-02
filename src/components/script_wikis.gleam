@@ -12,7 +12,7 @@ import helpers.{type Wiki}
 import lustre/element.{type Element}
 import lustre/element/html
 
-pub fn script_wikis(posts: List(Wiki)) -> Element(a) {
+pub fn script_wikis(wikis: List(Wiki)) -> Element(a) {
   use <-
     fn(k: fn() -> List(StringBuilder)) {
       html.script(
@@ -23,23 +23,23 @@ pub fn script_wikis(posts: List(Wiki)) -> Element(a) {
           |> to_string(),
       )
     }
-  use p <- list.map(posts)
+  use w <- list.map(wikis)
   from_string("\"")
-  |> append(p.id)
+  |> append(w.id)
   |> append("\": {\"id\": \"")
-  |> append(p.id)
+  |> append(w.id)
   |> append("\", \"url\": \"")
-  |> append("/posts/" <> p.id)
+  |> append("/posts/" <> w.id)
   |> append("\", \"title\": \"")
-  |> append(string.replace(each: "\"", with: "\\\"", in: p.title))
+  |> append(string.replace(each: "\"", with: "\\\"", in: w.title))
   |> append("\", \"tags\": [")
   |> append_builder(join(
-    list.map(p.tags, fn(tag) {
+    list.map(w.tags, fn(tag) {
       from_string("\"")
       |> append(tag)
       |> append("\"")
     }),
     ", ",
   ))
-  |> append("\"},\n")
+  |> append("]},\n")
 }
