@@ -21,9 +21,10 @@ pub fn navbar() -> Element(a) {
     html.a([attribute.href("/"), attribute.id("nav-home")], [
       text("Ryan Brewer"),
     ]),
-    html.a([attribute.href("/search"), attribute.id("nav-search")], [
+    html.a([attribute.href("/posts"), attribute.id("nav-posts")], [
       text("Posts"),
     ]),
+    html.a([attribute.href("/wiki"), attribute.id("nav-wiki")], [text("Wiki")]),
     html.a([attribute.href("/contact"), attribute.id("nav-contact")], [
       text("Contact"),
     ]),

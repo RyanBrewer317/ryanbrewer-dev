@@ -11,6 +11,7 @@ import gleam/result.{map_error}
 import helpers.{type Post, type Wiki}
 import homepage
 import list_posts
+import list_wikis
 import lustre/ssg
 import parse
 import render
@@ -89,7 +90,8 @@ fn build() -> Result(Nil) {
         ssg.add_static_route(s, "/wiki/" <> w.id, render.wiki(w))
       },
     )
-    |> ssg.add_static_route("/search", list_posts.list_posts(posts))
+    |> ssg.add_static_route("/posts", list_posts.list_posts(posts))
+    |> ssg.add_static_route("/wiki", list_wikis.list_wikis(wikis))
     |> ssg.add_static_route("/contact", contact.contact())
     |> ssg.add_static_route("/demos", demos.demos_page())
     |> ssg.add_static_route("/404", unknown_page.unknown_page())

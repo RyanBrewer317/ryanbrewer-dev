@@ -44,12 +44,13 @@ nav {
   z-index: 1;
 }
 
-#nav-search, #nav-subscribe, #nav-contact, #nav-demos {
+#nav-posts, #nav-wiki, #nav-subscribe, #nav-contact, #nav-demos {
   float: right;
   margin-left: 15pt;
 }
 
-nav.dropdown #nav-search, 
+nav.dropdown #nav-posts, 
+nav.dropdown #nav-wiki,
 nav.dropdown #nav-subscribe, 
 nav.dropdown #nav-contact, 
 nav.dropdown #nav-demos {
@@ -119,13 +120,13 @@ a:hover {
   transition: 0.2s;
 }
 
-textarea:focus, input:focus, #search-posts:focus {
+textarea:focus, input:focus, #search-posts:focus, #search-wiki:focus {
   outline: none;
   border: 1px solid var(--secondary-color-dark);
   border-radius: 5pt;
 }
 
-#search-posts {
+#search-posts, #search-wiki {
   width: 100%;
   font-size: 18px;
   padding: 11px;
@@ -134,13 +135,13 @@ textarea:focus, input:focus, #search-posts:focus {
   background-color: var(--dark-background);
 }
 
-#search-posts-menu {
+#search-posts-menu, #search-wiki-menu {
   list-style-type: none;
   padding: 0;
   margin: 0;
 }
 
-#search-posts-menu li {
+#search-posts-menu li, #search-wiki-menu li {
   padding: 12px;
   display: block
 }

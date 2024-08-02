@@ -4,11 +4,11 @@
 
 import components/head.{head}
 import components/navbar.{navbar}
-import components/script_posts.{script_posts}
+import components/script_wikis.{script_wikis}
 import components/tail.{tail}
 import components/thumbnail
 import gleam/list
-import helpers.{type Post}
+import helpers.{type Wiki}
 import lustre/attribute.{attribute}
 import lustre/element.{type Element}
 import lustre/element/html
@@ -19,22 +19,20 @@ fn script() -> Element(Nil) {
   html.script(
     [],
     "
-function searchPostsKeyUp() {
+function searchWikisKeyUp() {
   // Declare variables
-  const $input = document.getElementById(\"search-posts\");
+  const $input = document.getElementById(\"search-wiki\");
   const q = $input.value.toLowerCase();
-  const $menu = document.getElementById(\"search-posts-menu\");
+  const $menu = document.getElementById(\"search-wiki-menu\");
   $menu.replaceChildren(...Array.from($menu.children).sort((a, b) => {
-    const aHits = getHits(q, POSTS[a.id]);
-    const bHits = getHits(q, POSTS[b.id]);
+    const aHits = getHits(q, WIKIS[a.id]);
+    const bHits = getHits(q, WIKIS[b.id]);
     return bHits - aHits;
   }));
 }
-function getHits(q, p) {
+function getHits(q, w) {
   let hits = 0;
-  for (const i in p.tags) if (q.includes(p.tags[i])) hits += 2;
-  const words = p.description.split(\" \");
-  for (const i in words) if (q.includes(words[i])) hits += 1;
+  for (const i in w.tags) if (q.includes(w.tags[i])) hits += 2;
   return hits;
 }
   ",
@@ -44,21 +42,21 @@ function getHits(q, p) {
 fn searchbox() -> Element(Nil) {
   html.input([
     attribute.type_("text"),
-    attribute.id("search-posts"),
+    attribute.id("search-wiki"),
     attribute.placeholder("Search..."),
-    attribute("onkeyup", "searchPostsKeyUp()"),
+    attribute("onkeyup", "searchWikisKeyUp()"),
     attribute("title", "Enter search terms"),
   ])
 }
 
-pub fn list_posts(posts: List(Post)) -> Element(Nil) {
+pub fn list_wikis(wikis: List(Wiki)) -> Element(Nil) {
   html.html([attribute.attribute("lang", "en")], [
-    head("Search Posts - Ryan Brewer", "Look through Ryan's past posts", [
+    head("Search Wiki - Ryan Brewer", "Look through Ryan's personal wiki", [
       html.script(
         [attribute.attribute("type", "module")],
         "import '../../style.css';",
       ),
-      script_posts(posts),
+      script_wikis(wikis),
       script(),
     ]),
     html.body([], [
@@ -66,8 +64,8 @@ pub fn list_posts(posts: List(Post)) -> Element(Nil) {
       html.div([attribute.id("body")], [
         searchbox(),
         html.ul(
-          [attribute.id("search-posts-menu")],
-          list.map(posts, thumbnail.post),
+          [attribute.id("search-wiki-menu")],
+          list.map(wikis, thumbnail.wiki),
         ),
       ]),
       tail(),

@@ -5,3 +5,7 @@ tags: first wiki
 @paragraph@
 This is my first wiki page! It's mostly to test out the codebase.
 @end@
+
+@paragraph@
+I'm going to start publishing pages for this wiki that are a bit shorter than my blog posts. This will act as my digital brain, knowledge garden, whatever you call it. I'll also be updating each post a bunch over time, instead of hoping to get it all right when I first publish it.
+@end@

@@ -5,7 +5,7 @@
 import components/head.{head}
 import components/navbar.{navbar}
 import components/tail.{tail}
-import components/thumbnail.{thumbnail}
+import components/thumbnail
 import gleam/list
 import helpers.{type Post}
 import lustre/attribute
@@ -38,7 +38,7 @@ pub fn homepage(posts: List(Post)) -> Element(Nil) {
         html.h3([attribute.style([#("padding-top", "50pt")])], [
           element.text("Blog Posts"),
         ]),
-        html.ul([attribute.id("posts-list")], list.map(posts, thumbnail)),
+        html.ul([attribute.id("posts-list")], list.map(posts, thumbnail.post)),
       ]),
       tail(),
     ]),

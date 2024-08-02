@@ -13,7 +13,11 @@
       },
       {
         "source": "/search.html",
-        "destination": "/search/"
+        "destination": "/posts/"
+      },
+      {
+        "source": "/search",
+        "destination": "/posts/"
       },
       {
         "source": "/contact.html",
