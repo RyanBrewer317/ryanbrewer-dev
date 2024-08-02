@@ -1,0 +1,99 @@
+id: monoidal-category
+name: Monoidal Category
+tags: monoid,monoidal,category,categories,string,diagram,diagrams,bicategory,bicategories,2-category,2-categories,bifunctor
+
+@paragraph@
+A monoidal category is a [/wiki/category](category) \\(C\\) with a bifunctor \\(\\otimes:C\\times C\\to C\\) and an object \\(I\\) such that \\(\\otimes\\) is associative and \\(I\\otimes X=X=X\\otimes I\\) for any object \\(X\\) in \\(C\\). \\(\\otimes\\) is called the "tensor product." Well, that's just a *strict* monoidal category; monoidal categories, on the other hand, only need these equations to be isomorphisms. This means they additionally have three [/wiki/natural-isomorphism](natural isomorphisms): an "associator" \\(\\alpha_{X,Y,Z}:X\\otimes(Y\\otimes Z)\\cong(X\\otimes Y)\\otimes Z\\), a "left unitor" \\(\\lambda_X:I\\otimes X\\cong X\\), and a "right unitor" \\(\\rho_X:X\\otimes I\\cong X\\). These have to satisfy two coherence conditions.
+@end@
+
+@paragraph@
+Monoidal categories are famous enough that you may hear their coherence conditions referenced by name without any extra explanation. That is, you may be expected to know them by name. The first is called the "triangle identity," though there are many things called that. It is depicted by the following commuting diagram:
+@end@
+
+@diagram@
+    X\otimes(I\otimes Y)\ar[rr,"\alpha_{X,I,Y}"]\ar[dr,"id_X\otimes\lambda_Y"] & & (X\otimes I)\otimes Y\ar[dl,"\rho_X\otimes id_Y"] \\
+    & X\otimes Y &
+@end@
+
+@paragraph@
+The notation \\(\\id_X\\otimes\\lambda_Y\\) is taking advantage of the bifunctoriality of \\(\\otimes\\), mapping a pair of morphisms \\(id_X:X\\to X\\) and \\(\\lambda_Y:(I\\otimes Y)\\to Y\\) into the morphism \\(id_X\\otimes\\lambda_Y:X\\otimes(I\\otimes Y)\\to X\\otimes Y\\). You have to do some mental grammar-checking to realize that \\(\\id_X\\otimes\\lambda_Y\\) is nonsense because \\(id_X\\) and \\(\\lambda_Y\\) are morphisms in this category, not objects, to realize that we're using this second usage of the \\(\\otimes\\) notation.
+@end@
+
+@paragraph@
+The second coherence condition is far more famous, in the sense that I've heard people reference it by name instead of saying what it is, quite a number of times. This is called the "pentagon identity," depicted with the following commuting diagram:
+@end@
+
+@diagram@
+    & (X\otimes Y)\otimes(Z\otimes W)\ar[dr,"\alpha_{X\otimes Y,Z,W}"] & \\
+    X\otimes(Y\otimes(Z\otimes W))\ar[ur,"\alpha_{X,Y,Z\otimes W}"]\ar[d,"id_X\otimes\alpha_{Y,Z,W}"] & & ((X\otimes Y)\otimes Z)\otimes W \\
+    X\otimes((Y\otimes Z)\otimes W)\ar[rr,"\alpha_{X,Y\otimes Z,W}"] & & (X\otimes(Y\otimes Z))\otimes W\ar[u,"\alpha_{X,Y,Z}\otimes id_W"]
+@end@
+
+@paragraph@
+All of that is just boilerplate stuff for being able to define monoidal categories with natural isomorphisms instead of equalities (where I'd just call \\(\\otimes\\) associative and say \\(I\\) is its left and right unit).
+@end@
+
+@paragraph@
+Any object \\(X\\) in a 2-category has a monoidal category that is the hom-object \\(\\texttt{Hom}(X,X)\\): we know it's a category because \\(X\\) is in a 2-category, we know that its objects are arrows from \\(X\\) to \\(X\\), and thus we know we can map any pair of objects into a third object, using composition, which is associative and which has \\(id_X\\) as its unit. Thus \\(\\otimes\\) is \\(\\circ\\) and \\(I\\) is \\(id_X\\). This helps keep in mind the mind-expanding fact that \\(\\circ\\) is a bifunctor!
+@end@
+
+@paragraph@
+Monoidal categories have two directions of composition: "vertical" composition and "horizontal" composition, depicted in the following two diagrams respectively:
+@end@
+
+@diagram@
+    X\ar[d,"f"] \\
+    Y\ar[d,"g"] \\
+    Z
+@end@
+
+@diagram@
+    X\otimes Y\ar[d,"f\otimes g"] \\
+    Z\otimes W
+@end@
+
+@paragraph@
+Because \\(\\otimes\\) is a bifunctor, there's no ambiguity when you're in a situation like the following:
+@end@
+
+@diagram@
+    X\otimes Y\ar[d,"f\otimes g"] \\
+    Z\otimes W\ar[d,"h\otimes k"] \\
+    U\otimes V
+@end@
+
+@paragraph@
+You can compose horizontally into a column and then compose vertically, or you can compose vertically into a row and the compose horizontally. The bifunctoriality equation states that \\((h\\circ f)\\otimes(k\\circ g)=(h\\otimes k)\\circ(f\\otimes g\\)\\). The fact that these compositions can be done in any order is called the Interchange Law.
+@end@
+
+@paragraph@
+If you've only heard the terms "horizontal compostion," "vertical composition," and "the Interchange Law" in discussions about natural transformations, it's likely because of the correspondence between monoidal categories and hom-objects \\(\\texttt{Hom}(X,X)\\) in 2-categories, mentioned above. [/wiki/cat](Cat) is the most famous 2-category after all.
+@end@
+
+@paragraph@
+Monoidal categories have one of the most awesome notational systems of all time: string diagrams. String diagrams are a very wiggly, loosey-goosey notation, *except that all the wiggle-room comes from equations,* so it's a perfectly rigorous notation, just like commuting diagrams. The way string diagrams work is as follows: you draw vertical lines for objects, and any horizontal slice refers to the tensor product (\\(\\otimes\\)) of the objects in that slice. You can draw these lines as close or far from each other as you want, since all the empty space between them is seen as a bunch of implicit unit objects, which of course don't affect the final product (pun intended). So, each vertical line is an object, and blank space is the unit \\(I\\). In the other dimension, each *horizontal* line is a *morphism,* from the product of the lines below it to the product of the lines above it. Places where morphisms aren't drawn are interpreted as a bunch of identity morphisms, so again the spacing doesn't matter. Often there are different morphisms for different parts of the horizontal line; these are interpreted as being mapped by the bifunctor \\(\\otimes\\) into a single morphism for the whole line. Places on the horizontal line that don't have a morphism drawn are, again, interpreted as identity morphisms. Finally, because of the Interchange Law, morphisms don't have to line up exactly on the same horizontal line; they can be on horizontal lines above or below and the meaning doesn't change. Here's an example of the interchange law:
+@end@
+
+@diagram@
+    {}\ar[d,dash] & {}\ar[ddd,dash,"Y"] & & {}\ar[ddd,dash,"X"] & {}\ar[d,dash] \\
+    f\ar[ddd,dash,"X"] & & & & g\ar[ddd,dash,"Y"]  \\
+    & & = & & \\
+    & g\ar[d,dash] & & f\ar[d,dash] & \\
+    {} & {} & & {} & {}
+@end@
+
+@paragraph@
+Here's a string diagram representing the morphism \\(f^{-1}\\circ f: X\\otimes Y\\to X\\otimes Y\\), where \\(f:X\\otimes Y\\to Y\\otimes X\\) and \\(f^{-1}\\) is its inverse:
+@end@
+
+@diagram@
+    {}\ar[dr,bend left=50,dash,"X"] & & {}\ar[dl,bend right=50,dash,"Y"] \\
+    & f^{-1}\ar[dd,bend left=50,dash,"Y"]\ar[dd,bend right=50,dash,"X"] & \\
+    \\
+    & f\ar[dl,bend left=50,dash,"X"]\ar[dr,bend right=50,dash,"Y"] & \\
+    {} & & {}
+@end@
+
+@paragraph@
+This string diagram is representing *another* rigorous wiggly-ness, which is that in some situations you can have lines overlap and then come back without meaning anything by it. Notice that the string diagram is representing a morphism that equals the identity morphism on \\(X\\otimes Y\\). Namely, it's okay if there's an applicable isomorphism between \\(X\\otimes Y\\) and \\(Y\\otimes X\\). If the tensor product is symmetric then this happens all the time!
+@end@

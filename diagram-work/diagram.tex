@@ -3,7 +3,10 @@
 \usepackage{tikz-cd}
 \begin{document}
 \begin{tikzcd}
-    C\ar[r,bend left=50,""{name=U,below},"F"]\ar[r,bend right=50,""{name=D},"G"{below}] & D
-    \ar[from=U,to=D,"\alpha"]
+    {}\ar[dr,bend left=50,dash,"X"] & & {}\ar[dl,bend right=50,dash,"Y"] \\
+    & f^{-1}\ar[dd,bend left=50,dash,"Y"]\ar[dd,bend right=50,dash,"X"] & \\
+    \\
+    & f\ar[dl,bend left=50,dash,"X"]\ar[dr,bend right=50,dash,"Y"] & \\
+    {} & & {}
 \end{tikzcd}
 \end{document}
