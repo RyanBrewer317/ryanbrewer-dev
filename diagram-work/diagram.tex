@@ -3,7 +3,7 @@
 \usepackage{tikz-cd}
 \begin{document}
 \begin{tikzcd}
-    Z\otimes X\ar[d,"u\otimes id_X"']\ar[dr,"e"] & \\
-    Y^X\otimes X\ar[r,"\texttt{eval}"'] & Y
+    C\ar[r,bend left=50,""{name=U,below},"F"]\ar[r,bend right=50,""{name=D},"G"{below}] & D
+    \ar[from=U,to=D,"\alpha"]
 \end{tikzcd}
 \end{document}
