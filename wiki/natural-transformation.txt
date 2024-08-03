@@ -1,0 +1,104 @@
+id: natural-transformation
+name: Natural Transformation
+tags: natural,transformation,naturality,transformations,functor,cat,functors,theory,categories,category,2-category,2-cell,2-morphism
+
+@paragraph@
+A morphism in a [/wiki/functor-category](functor category) is called a "natural transformation." given two functors \\(F:C\\to D\\) and \\(G:C\\to D\\), a natural transformation \\(\\alpha:F\\to G\\) maps every object \\(FX\\) in \\(D\\) into some object \\(GX\\) in \\(D\\), such that following \\(F\\) and then \\(\\alpha\\) is the same as following \\(G\\). There's an equation that must be satsified, called the "naturality condition," which is why these transformations are called "natural." Categories of functors could be thought of that had something else as arrows, but natural transformations are particularly useful, so we decide to define [/wiki/cat](Cat) as having functor categories as exponential objects, instead of other imagineable categories of functors.
+@end@
+
+@paragraph@
+Formally, for two functors \\(F,G:C\\to D\\), a natural transformation \\(\\alpha:F\\Rightarrow G\\) is a family of morphisms in \\(D\\) transforming "outputs" of \\(F\\) into "outputs" of \\(G\\). Namely, \\(\\alpha_X:FX\\to GX\\). The naturality condition that natural transformations must satisfy is depicted below as a diagram that must commute, and also illuminates how the transformation works:
+@end@   
+
+@diagram@
+    FX\ar[r,"Ff"]\ar[d,"\alpha_X"] & FY\ar[d,"\alpha_Y"] \\
+    GX\ar[r,"Gf"] & GY
+@end@
+
+@paragraph@
+That is, \\(Gf\\circ\\alpha_X=\\alpha_Y\\circ Ff\\). Note that this entire diagram takes place in \\(D\\), and the only mention of \\(C\\) are \\(X\\) and \\(Y\\), which are objects in \\(C\\).
+@end@
+
+@paragraph@
+I've heard many times that being able to talk about and study natural transformations is the original "point" of category theory. Note once more that natural transformations, transforming functors into other functors, aren't some new special feature we just added to category theory. They're just arrows in categories! Not only that, but their abstract meaning in a functor category is more concrete in the categories functors act on, where they are just families of arrows. In functional programming we're quite comfortable with families of morphisms: they're (parametrically) polymorphic functions! Indeed, it's been proven that a parametrically-polymorphic function `f<T>: F<T> -> G<T>` (or, in a more Haskelly notation, `f :: F a -> G a`) satisfies the naturality condition and and is a natural transformation if `F` and `G` are functors. So the abstract-ness of natural transformations gets concrete pretty quickly in, say, a language like Haskell.
+@end@
+
+@paragraph@
+One of the main reasons natural transformations felt like arcane magic to me for a long time was that people often draw them as arrows between arrows, like so:
+@end@
+
+@diagram@
+    C\ar[r,bend left=50,""{name=U,below},"F"]\ar[r,bend right=50,""{name=D},"G"{below}] & D
+    \ar[from=U,to=D,"\alpha"]
+@end@
+
+@paragraph@
+This makes it appear as though there's some new thing we're allowed to do with categories, while in reality a natural transformation is just another regular morphism in some category somewhere. This notation does, however, help illustrate a complication with natural transformations: there are two different ways to compose them! "Vertical" composition is the kind you might expect:
+@end@
+
+@diagram@
+    C\ar[rr,bend left=50,"F",""{below,name=U}]\ar[rr,""{name=M1},"G" near start,""{name=M2,below}]\ar[rr,bend right=50,""{name=D},"H"{below}] & & D
+    \ar[from=U,to=M1,"\alpha"]
+    \ar[from=M2,to=D,"\beta"]
+@end@
+
+@paragraph@
+But there's also "horizontal" composition, which I could draw either of two ways:
+@end@
+
+@diagram@
+    C\ar[r,bend left=50,""{name=U1,below},"F"]\ar[r,bend right=50,"G"{below},""{name=D1}] & D\ar[r,bend left=50,""{name=U2,below},"H"]\ar[r,bend right=50,""{name=D2},"K"{below}] & E 
+    \ar[from=U1,to=D1,"\alpha"]
+    \ar[from=U2,to=D2,"\beta"]
+@end@
+
+@paragraph@
+@end@
+
+@diagram@
+    C\ar[rr,bend left=50,"H\circ F",""{name=U,below}]\ar[rr,bend right=50,"K\circ G"{below},""{name=D}] & & E
+    \ar[from=U,to=D,"\beta\circ\alpha"]
+@end@
+
+@paragraph@
+This is a powerful form of composition that gets used a lot but one that took me a while to wrap my head around. A composition of functors \\(H\\circ F\\) is just some functor out there, and so is \\(K\\circ G\\). They may behave quite differently from \\(H\\) or \\(F\\) or \\(K\\) or \\(G\\). It seems strange that transformations from \\(F\\) to \\(G\\) and \\(H\\) to \\(K\\) would be enough to find a natural transformation between these two mysterious functors. But indeed they are! Consider the natural transformation written "pointwise" or "by components:" \\(\\gamma_X:H(FX)\\to K(GX)\\). (\\(\\gamma\\) is what I'm calling the natural transformation \\(\\beta\\circ \\alpha\\).) If we think just for a moment for cases where objects are types and arrows are functions, this is a polymorphic function that takes a value of type `H (F a)` (using a Haskelly notation) and returns a value of type `K (G a)`. Available to us are two polymorphic functions `alpha: F a -> G a` and `beta: H a -> K a`. So we can define \\(\\gamma_X\\) as `gamma hfa = beta (fmap alpha hfa)` in Haskell, or \\(\\gamma_X=\\beta_X\\circ H\\alpha_X\\) in category theory notation. You could have instead done \\(\\gamma_X=K\\alpha_X\\circ \\beta_X\\), and because of the naturality condition these two definitions are equal. So we define the horizontal composition \\(\\beta\\circ\\alpha=\\gamma\\).
+@end@
+
+@paragraph@
+Now one last tricky thing is that if we have two ways to compose, is the following diagram potentially ambiguous?
+@end@
+
+@diagram@
+    X\ar[r,bend left=50,""{name=U1,below},"F"]\ar[r,""{name=UM1},""{name=DM1,below},"G" near start]\ar[r,bend right=50,""{name=D1},"H"{below}] & Y\ar[r,bend left=50,""{name=U2,below},"K"]\ar[r,""{name=UM2},""{name=DM2,below},"L" near start]\ar[r,bend right=50,""{name=D2},"M"{below}] & Z
+    \ar[from=U1,to=UM1,"\alpha"] \ar[from=U2,to=UM2,"\gamma"]
+    \ar[from=DM1,to=D1,"\beta"]  \ar[from=DM2,to=D2,"\delta"]
+@end@
+
+@paragraph@
+We've got a square of natural transformations here, and it's unclear if we horizontally compose into a column first and then vertically compose, or if we vertically compose into a row first and then horizontally compose. Luckily, the naturality condition of natural transformations guarantees that either way produces the same result! Either way you end up with the same \\(K\\circ F\\to M\\circ H\\) natural transformation. This is called the Interchange Law, and it has some pretty cool consequences I'll get to in future posts.
+@end@
+
+@paragraph@
+A popular example of natural transformations in a language like Haskell are monads. Note that my explanation here won't help much with understanding how to use monads in your code, I'm just discussing the math. A monad is an endofunctor \\(T:C\\to C\\) with two natural transformations \\(\\eta:id_C\\Rightarrow T\\) and \\(\\mu:T\\circ T\\Rightarrow T\\). There are also some conditions to satisfy, but let's start by unpacking just that much! \\(id_C\\) is an identity arrow in \\(\\texttt{Cat}\\), so it's a functor that maps every object and morphism in \\(C\\) into that same object or morphism. \\(T\\circ T\\) is the composition of \\(T\\) with itself, which is a thing you can do when an arrow loops from an object back to the same object (remember, \\(T\\) is an endofunctor, aka a looping arrow in \\(\\texttt{Cat}\\)). So we've got three functors we're talking about here (\\(id_C\\), \\(T\\), and \\(T\\circ T\\)) and two natural transformations to get between them. Now, the restrictions on these natural transformations are nicely illustrated in two commutating diagrams:
+@end@
+
+@diagram@
+    T\ar[r,"\eta\circ id_T"]\ar[dr,<->,"="'] & T\circ T\ar[d,"\mu"] & T\ar[l,"id_T\circ\eta"']\ar[ld,<->,"="] \\
+    & T &
+@end@
+
+@paragraph@
+@end@
+
+@diagram@
+    T\circ T\circ T\ar[r,"id_T\circ\mu"]\ar[d,"\mu\circ id_T"] & T\circ T\ar[d,"\mu"] \\
+    T\circ T\ar[r,"\mu"] & T
+@end@
+
+@paragraph@
+Note that compositions in these arrows are compositions of natural transformations. In particular, they are *horizontal* compositions, which you can only really know by context. Recall that \\(id_C\\circ T=T\\), so \\(\\eta\\) transforms the implicit \\(id_C\\) into \\(T\\) and \\(id_T\\) (an identity arrow in the functor category \\([C,C]\\)) does nothing \\(T\\), so horizontally composed into \\(\\eta\\circ id_T\\) they transform \\(T\\) into \\(T\\circ T\\). If the arrow were a *vertical* composition instead, then it would mean \\(id_T\\) would transform \\(T\\) into \\(T\\) and then you'd do \\(\\eta\\) on \\(T\\), which makes no sense because \\(\\eta:id_C\\to T\\) and isn't an arrow coming out of \\(T\\). In the second diagram, \\(id_T\\circ\\mu:T\\circ T\\circ T\\to T\\circ T\\) might be more clear when written as \\(id_T\\circ\\mu:T\\circ(T\\circ T)\\to T\\circ T\\), which is equal because composition is associative.
+@end@
+
+@paragraph@
+Sometimes writing natural transformations as \\(\\alpha_X: FX\\to GX\\) instead of \\(\\alpha:F\\to G\\) clarifies what's going on, making it feel more concrete. Note that in Haskell we'd write `return :: a -> T a` for some monad `T` instead of \\(\\eta:id_C\\to T\\), because we write natural transformations as polymorphic functions `alpha :: F a -> G a` and \\(id_C\\) applied to any type `a` is just equal to that same type `a`. And for \\(\\mu\\) we have the polymorphic function `join :: T (T a) -> T a` for any monad `T`.
+@end@

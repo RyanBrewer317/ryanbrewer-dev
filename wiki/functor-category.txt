@@ -1,0 +1,20 @@
+id: functor-category
+name: Functor Category
+tags: functor,functors,category,categories,theory,natural,transformation,transformations,exponential,object,cat
+
+@paragraph@
+For any two objects ([/wiki/category](categories)) \\(C\\) and \\(D\\) in [/wiki/cat](Cat), the collection of morphisms ([/wiki/functor](functors)) from \\(C\\) to \\(D\\) form a category called a "functor category," written \\([C,D]\\). This is an [/wiki/exponential-object](exponential object) in \\(\\texttt{Cat}\\), so it might also be written \\(D^C\\). The objects in a functor category are functors from \\(C\\) to \\(D\\). The arrows are [/wiki/natural-transformation](natural transformations), which transform one functor into another.
+@end@
+
+@paragraph@
+Similar to how functors are like functions with an extra restriction that makes them useful, natural transformations are transformations that satisfy a "naturality condition," hence calling them "natural." Formally, for two functors \\(F,G:C\\to D\\), a natural transformation \\(\\alpha:F\\Rightarrow G\\) is a family of morphisms in \\(D\\) transforming "outputs" of \\(F\\) into "outputs" of \\(G\\). Namely, \\(\\alpha_X:FX\\to GX\\). The naturality condition that natural transformations must satisfy is depicted below as a diagram that must commute, and also illuminates how the transformation works:
+@end@   
+
+@diagram@
+    FX\ar[r,"Ff"]\ar[d,"\alpha_X"] & FY\ar[d,"\alpha_Y"] \\
+    GX\ar[r,"Gf"] & GY
+@end@
+
+@paragraph@
+That is, \\(Gf\\circ\\alpha_X=\\alpha_Y\\circ Ff\\). Note that this entire diagram takes place in \\(D\\), and the only mention of \\(C\\) are \\(X\\) and \\(Y\\), which are objects in \\(C\\).
+@end@
