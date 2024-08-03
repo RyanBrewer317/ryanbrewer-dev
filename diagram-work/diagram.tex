@@ -3,10 +3,6 @@
 \usepackage{tikz-cd}
 \begin{document}
 \begin{tikzcd}
-    {}\ar[dr,bend right=30,dash,"X"] & & {}\ar[dl,bend left=30,dash,"Y"] \\
-    & f^{-1}\ar[dd,bend right=70,dash,"Y"]\ar[dd,bend left=70,dash,"X"] & \\
-    \\
-    & f\ar[dl,bend right=30,dash,"X"]\ar[dr,bend left=30,dash,"Y"] & \\
-    {} & & {}
+    M_+\ar[loop left,"3"]\ar[loop below,"2"]\ar[loop above,"2+3=5"] & {}\ar[r,"F"] & {} & M_\cdot\ar[loop right,"8"]\ar[loop above,"4"]\ar[loop below,"F(2)\cdot F(3)=F(5)=32"]
 \end{tikzcd}
 \end{document}

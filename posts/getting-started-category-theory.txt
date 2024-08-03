@@ -104,16 +104,10 @@ Now we have a bunch of definitions and intuition about what a category is, but t
 A particularly powerful example of this are categories where the *objects are categories.* These categories mean that when you're doing some work with a category, you're also working in larger categories where your category is an object, and those categories have arrows to and from your category that you can actually use to help with your reasoning. The primary example of this is called \\(\\texttt{Cat}\\), a large category where the objects are all small categories. The arrows in \\(\\texttt{Cat}\\) are called "functors," and they're functions (really *mappings,* in the event of a large or locally large category where they can't be functions) mapping objects of some category \\(C\\) into objects of some category \\(D\\), and mapping the arrows in \\(C\\) to arrows in \\(D\\). Functors also get an extra restriction: functors must preserve commuting diagrams. What this means is that composition and identity must be preserved: \\(F(g\\circ f)=Fg\\circ Ff\\) and \\(F(id_X)=id_{FX}\\). (Category theory doesn't do parentheses for applying mappings to things; \\(Fg\\) might be written \\(F(g)\\) in what you're used to.) That preservation condition is an important idea and worth thinking about a little, and hopefully will become more clear in the coming paragraphs. It makes functors a sort of homomorphisms, if you're familiar with group theory or related fields of abstract algebra. In more friendly language, functors are required to preserve the structure of a category. So if I have some diagram in my category \\(C\\) then a functor \\(F:C\\to D\\) gives me a diagram in \\(D\\) that can be drawn in a very similar way: 
 @end@
 
-@paragraph@
-@end@
-
 @diagram@
     C            & X\ar[ddl,"p"']\ar[ddr,"q"] &              &                & FX\ar[ddl,"Fp"']\ar[ddr,"Fq"] & D  \\
                  &                            & {}\ar[r,"F"] & {}             &                               &    \\
     Y\ar[rr,"f"] &                            & Z            & FY\ar[rr,"Ff"] &                               & FZ
-@end@
-
-@paragraph@
 @end@
 
 @paragraph@
