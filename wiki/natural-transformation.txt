@@ -3,7 +3,7 @@ name: Natural Transformation
 tags: natural,transformation,naturality,transformations,functor,cat,functors,theory,categories,category,2-category,2-cell,2-morphism
 
 @paragraph@
-A morphism in a [/wiki/functor-category](functor category) is called a "natural transformation." given two functors \\(F:C\\to D\\) and \\(G:C\\to D\\), a natural transformation \\(\\alpha:F\\to G\\) maps every object \\(FX\\) in \\(D\\) into some object \\(GX\\) in \\(D\\), such that following \\(F\\) and then \\(\\alpha\\) is the same as following \\(G\\). There's an equation that must be satsified, called the "naturality condition," which is why these transformations are called "natural." Categories of functors could be thought of that had something else as arrows, but natural transformations are particularly useful, so we decide to define [/wiki/cat](Cat) as having functor categories as exponential objects, instead of other imagineable categories of functors.
+A morphism in a [/wiki/functor-category](functor category) is called a "natural transformation." given two functors \\(F:C\\to D\\) and \\(G:C\\to D\\), a natural transformation \\(\\alpha:F\\to G\\) maps every object \\(FX\\) in \\(D\\) into some object \\(GX\\) in \\(D\\), such that following \\(F\\) and then \\(\\alpha\\) is the same as following \\(G\\). There's an equation that must be satsified, called the "naturality condition," which is why these transformations are called "natural." Categories of functors could be constructed that had something else as arrows, but the naturality condition can be derived from the construction of [/wiki/exponential-object](exponential objects) and the fact that \\(\\texttt{Cat}\\)'s morphisms are functorial, so it's a particularly fundamental condition, not to mention immensely useful.
 @end@
 
 @paragraph@
@@ -17,6 +17,10 @@ Formally, for two functors \\(F,G:C\\to D\\), a natural transformation \\(\\alph
 
 @paragraph@
 That is, \\(Gf\\circ\\alpha_X=\\alpha_Y\\circ Ff\\). Note that this entire diagram takes place in \\(D\\), and the only mention of \\(C\\) are \\(X\\) and \\(Y\\), which are objects in \\(C\\).
+@end@
+
+@paragraph@
+Note that because functor categories are exponential objects in \\(\\texttt{Cat}\\), there's a family of functors \\(\\texttt{eval}_{C,D}:[C,D]\\times C\\to D\\) (since \\(\\texttt{Cat}\\) is cartesian closed our tensor product is \\(\\times\\)). On objects, of course, this family is defined \\(\\texttt{eval}_{C,D}(F:C\\to D,X:C)=FX\\). On morphisms, it could be defined \\(\\texttt{eval}_{C,D}(\\alpha:F\\to G,f:X\\to Y\\)=Gf\\circ\\alpha_X\\) or \\(\\texttt{eval}_{C,D}(\\alpha:F\\to G,f:X\\to Y\\)=\\alpha_Y\\circ Ff\\). The equation \\(Gf\\circ\\alpha_X=\\alpha_Y\\circ Ff\\) is exactly the naturality condition! So while other categories of functors from \\(C\\) to \\(D\\) exist, with their own notions of morphisms, none of them are exponential objects in \\(\\texttt{Cat}\\). This argument isn't very formal, of course, but I'm yet to find a completely formal argument that isn't long, painful, and unenlightening. I'm sure one exists; if you find one, let me know!
 @end@
 
 @paragraph@
