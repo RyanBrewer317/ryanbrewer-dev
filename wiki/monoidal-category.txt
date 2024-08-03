@@ -67,7 +67,7 @@ You can compose horizontally into a column and then compose vertically, or you c
 @end@
 
 @paragraph@
-If you've only heard the terms "horizontal compostion," "vertical composition," and "the Interchange Law" in discussions about natural transformations, it's likely because of the correspondence between monoidal categories and hom-objects \\(\\texttt{Hom}(X,X)\\) in 2-categories, mentioned above. [/wiki/cat](Cat) is the most famous 2-category after all.
+If you've only heard the terms "horizontal compostion," "vertical composition," and "the Interchange Law" in discussions about [/wiki/natural-transformation](natural transformations), it's likely because of the correspondence between monoidal categories and hom-objects \\(\\texttt{Hom}(X,X)\\) in 2-categories, mentioned above. [/wiki/cat](Cat) is the most famous 2-category, after all.
 @end@
 
 @paragraph@

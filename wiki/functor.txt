@@ -3,7 +3,7 @@ name: Functor
 tags: category,cat,categories,bifunctor,functoriality,bifunctoriality,functors,bifunctors,homomorphism,homomorphisms,structure,preserving,theory
 
 @paragraph@
-A morphism in [/wiki/cat](Cat). A functor is a mapping objects of some category \\(C\\) into objects of some category \\(D\\), and mapping the arrows in \\(C\\) to arrows in \\(D\\). There is additionally a condition that must be satisfied called "functoriality," which is that composition and identities are preserved: \\(F(g\\circ f)=Fg\\circ Ff\\), and \\(F(id_X)=id_{FX}\\). This leads some to call functors a "homomorphism of categories," if you're familiar with abstract algebra.
+A morphism in [/wiki/cat](Cat) is called a "functor." A functor is a mapping objects of some category \\(C\\) into objects of some category \\(D\\), and mapping the arrows in \\(C\\) to arrows in \\(D\\). There is additionally a condition that must be satisfied called "functoriality," which is that composition and identities are preserved: \\(F(g\\circ f)=Fg\\circ Ff\\), and \\(F(id_X)=id_{FX}\\). This leads some to call functors a "homomorphism of categories," if you're familiar with abstract algebra.
 @end@
 
 @paragraph@
@@ -41,5 +41,5 @@ In programming we often deal with categories of collections. So an object (say, 
 @end@
 
 @paragraph@
-For any two categories \\(C\\) and \\(D\\) in \\(\\texttt{Cat}\\), the collection of morphisms between them forms a category called a "functor category," written \\([C,D]\\). This being an object in \\(\\texttt{Cat}\\) itself, it's an exponential object. The morphisms in a functor category are called natural transformations.
+For any two categories \\(C\\) and \\(D\\) in \\(\\texttt{Cat}\\), the collection of morphisms between them forms a category called a "[/wiki/functor-category](functor category)," written \\([C,D]\\). This being an object in \\(\\texttt{Cat}\\) itself, it's an [/wiki/exponential-object](exponential object). The morphisms in a functor category are called [/wiki/natural-transformation](natural transformations).
 @end@

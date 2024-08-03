@@ -3,11 +3,11 @@ name: Exponential Object
 tags: exponential,object,objects,category,categories,arrow,arrows,morphism,morphisms,function,functions,type,types
 
 @paragraph@
-In many cases, the arrows of a [/wiki/category](category) will also have some representation as objects in that same category. For example, in a category of sets and functions, functions are also sets, so may be present as both arrows and objects in the category. Categories where *every* arrow has a corresponding object are called "closed," though this adjective doesn't appear by itself because there are several types of "closed," which I'll get to in a moment. The object of an arrow \\(f:X\\to Y\\) is called an "exponential" or "exponential object" and is written \\(Y^X\\). This notation comes from the idea that if \\(X\\) and \\(Y\\) are sets, the number of elements (functions) in the set \\(X\\to Y\\) is equal to the number of elements in \\(Y\\) raised to the power of the number of elements in \\(X\\), which is kinda fun I think.
+In many cases, the arrows of a [/wiki/category](category) will also have some representation as objects in that same category. For example, in a category of sets and functions, functions are also sets, so may be present as both arrows and objects in the category. Categories where *every* arrow has a corresponding object are called "closed," though this adjective doesn't appear by itself because there are several types of "closed:" "monoidal closed," "cartesian closed," and other's; I'll discuss them in a moment. The object of an arrow \\(f:X\\to Y\\) is called an "exponential" or "exponential object" and is written \\(Y^X\\). This notation comes from the idea that if \\(X\\) and \\(Y\\) are sets, the number of elements (functions) in the set \\(X\\to Y\\) is equal to the number of elements in \\(Y\\) raised to the power of the number of elements in \\(X\\), which is kinda fun I think.
 @end@
 
 @paragraph@
-In a monoidal category, given objects \\(X\\) and \\(Y\\), an exponential object \\(Y^X\\) is an object such that there's an arrow \\(\\texttt{eval}:Y^X\\otimes X\\to Y\\). It's a universal construction, so for any candidate exponential object \\(Z\\) with its arrow \\(e:Z\\otimes X\\to Y\\), there's exactly one arrow \\(u: Z\\to Y^X\\) such that the following diagram commutes:
+In a [/wiki/monoidal-category](monoidal category), given objects \\(X\\) and \\(Y\\), an exponential object \\(Y^X\\) is an object such that there's an arrow \\(\\texttt{eval}:Y^X\\otimes X\\to Y\\). It's a universal construction, so for any candidate exponential object \\(Z\\) with its arrow \\(e:Z\\otimes X\\to Y\\), there's exactly one arrow \\(u: Z\\to Y^X\\) such that the following diagram commutes:
 @end@
 
 @diagram@
@@ -16,7 +16,7 @@ In a monoidal category, given objects \\(X\\) and \\(Y\\), an exponential object
 @end@
 
 @paragraph@
-The notation \\(u\\otimes id_X\\) is taking advantage of the fact that \\(\\otimes\\) is a bifunctor, so can map a pair of morphisms \\(u:Z\\to Y^X\\) and \\(id_X:X\\to X\\) into a morphism from \\(Z\\otimes X\\) to \\(Y^X\\otimes X\\). With this sort of notation you have to just know that the things on either side of the \\(\\otimes\\) are morphisms, not objects, to know what's going on. Note that when the tensor product is a (cartesian) product, we write \\(\\times\\) instead of \\(\\otimes\\).
+The notation \\(u\\otimes id_X\\) is taking advantage of the fact that \\(\\otimes\\) is a bifunctor, so can map a pair of morphisms \\(u:Z\\to Y^X\\) and \\(id_X:X\\to X\\) into a morphism from \\(Z\\otimes X\\) to \\(Y^X\\otimes X\\). With this sort of notation you have to just know that the things on either side of the \\(\\otimes\\) are morphisms, not objects, to know what's going on. Note that when the tensor product is some specific bifunctor (like a cartesian product), we write that instead of \\(\\otimes\\) (like \\(\\times\\)).
 @end@
 
 @paragraph@

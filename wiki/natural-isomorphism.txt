@@ -3,11 +3,11 @@ name: Natural Isomorphism
 tags: natural,transformation,transformations,functor,category,isomorphism
 
 @paragraph@
-Given two functors \\(F:C\\to D\\) and \\(G:C\\to D\\), a "natural isomorphism" between them \\(\\alpha: F\\cong G\\) is an isomorphism in the functor category \\([C,D]\\). Then \\(F\\) and \\(G\\) are called "naturally isomorphic."
+Given two [/wiki/functor](functors) \\(F:C\\to D\\) and \\(G:C\\to D\\), a "natural isomorphism" between them \\(\\alpha: F\\cong G\\) is an isomorphism in the [/wiki/functor-category](functor category) \\([C,D]\\). Then \\(F\\) and \\(G\\) are called "naturally isomorphic."
 @end@
 
 @paragraph@
-In other words, there are two natural transformations \\(\\alpha_\\to: F\\to G\\) and \\(\\alpha_\\leftarrow:G\\to F\\) such that \\(\\alpha_\\to\\circ\\alpha_\\leftarrow=id_G\\) and \\(\\alpha_\\leftarrow\\circ\\alpha_\\to=id_F\\). That is, the natural transformation (either of them, doesn't matter which) is *reversible.* Note that \\(\\circ\\) here is referring to the typical (vertical) composition of a functor category, not horizontal composition.
+In other words, there are two [/wiki/natural-transformation](natural transformations) \\(\\alpha_\\to: F\\to G\\) and \\(\\alpha_\\leftarrow:G\\to F\\) such that \\(\\alpha_\\to\\circ\\alpha_\\leftarrow=id_G\\) and \\(\\alpha_\\leftarrow\\circ\\alpha_\\to=id_F\\). That is, the natural transformation (either of them, doesn't matter which) is *reversible.* Note that \\(\\circ\\) here is referring to the typical (vertical) composition of a functor category, not horizontal composition.
 @end@
 
 @paragraph@
