@@ -2,22 +2,22 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-import contact
-import demos
-import feed
 import gleam/io
 import gleam/list
 import gleam/result.{map_error}
 import helpers.{type Post, type Wiki}
-import homepage
-import list_posts
-import list_wikis
 import lustre/ssg
+import pages/contact
+import pages/demos
+import pages/feed
+import pages/homepage
+import pages/list_posts
+import pages/list_wikis
+import pages/unknown_page
 import parse
 import render
 import simplifile
 import snag.{type Result}
-import unknown_page
 
 const posts_dir = "posts"
 
@@ -93,7 +93,7 @@ fn build() -> Result(Nil) {
     |> ssg.add_static_route("/posts", list_posts.list_posts(posts))
     |> ssg.add_static_route("/wiki", list_wikis.list_wikis(wikis))
     |> ssg.add_static_route("/contact", contact.contact())
-    |> ssg.add_static_route("/demos", demos.demos_page())
+    |> ssg.add_static_route("/demos", demos.demos())
     |> ssg.add_static_route("/404", unknown_page.unknown_page())
     |> ssg.build
     |> map_error(fn(err) {
