@@ -2,17 +2,17 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
+import arctic.{type Page}
 import components/head.{head}
 import components/navbar.{navbar}
 import components/tail.{tail}
 import components/thumbnail
 import gleam/list
-import helpers.{type Post}
 import lustre/attribute
 import lustre/element.{type Element}
 import lustre/element/html
 
-pub fn homepage(posts: List(Post)) -> Element(Nil) {
+pub fn homepage(posts: List(Page)) -> Element(Nil) {
   html.html([attribute.attribute("lang", "en")], [
     head(
       "Ryan Brewer's Blog",
@@ -24,7 +24,7 @@ pub fn homepage(posts: List(Post)) -> Element(Nil) {
         ),
         html.script(
           [attribute.attribute("type", "module")],
-          "import { main } from \"../src/client/ryanbrewerdev.gleam\";
+          "import { main } from \"../src/client/homepage.gleam\";
  document.addEventListener(\"DOMContentLoaded\", () => {
    const dispatch = main({});
  });",

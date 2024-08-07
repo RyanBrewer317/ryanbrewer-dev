@@ -7,8 +7,7 @@
 echo "enter a commit message:" &&
 read msg &&
 gleam format &&
-gleam build &&
-gleam run -m build && # lustre_ssg build step
+gleam run && # lustre_ssg build step
 npx vite build && # this doesn't hang because of vite-plugin-close.ts
 git add . &&
 git commit -m "$msg" &&

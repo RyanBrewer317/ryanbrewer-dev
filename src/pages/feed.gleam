@@ -2,25 +2,27 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
+import arctic.{type Page}
 import birl
 import gleam/int
 import gleam/list
+import gleam/option.{Some}
 import gleam/string_builder.{append, append_builder, from_string, to_string}
-import helpers.{type Post}
 
-pub fn feed(posts: List(Post)) -> String {
+pub fn feed(posts: List(Page)) -> String {
   let items = {
     use post <- list.map(list.reverse(posts))
-    let date = birl.get_day(post.date)
-    let time = birl.get_time_of_day(post.date)
+    let assert Some(post_date) = post.date
+    let date = birl.get_day(post_date)
+    let time = birl.get_time_of_day(post_date)
     from_string("    <item>\n      <title>")
     |> append(post.title)
     |> append("</title>\n      <pubDate>")
-    |> append(day(post.date))
+    |> append(day(post_date))
     |> append(", ")
     |> append(pad(date.date))
     |> append(" ")
-    |> append(month(post.date))
+    |> append(month(post_date))
     |> append(" ")
     |> append(int.to_string(date.year))
     |> append(" ")
@@ -34,7 +36,7 @@ pub fn feed(posts: List(Post)) -> String {
     |> append(".html</link>\n      <guid>https://ryanbrewer.dev/posts/")
     |> append(post.id)
     |> append(".html</guid>\n      <description><![CDATA[")
-    |> append(post.description)
+    |> append(post.blerb)
     |> append("  Read more <a href=\"https://ryanbrewer.dev/posts/")
     |> append(post.id)
     |> append(".html\">here</a>!]]></description>\n    </item>\n")

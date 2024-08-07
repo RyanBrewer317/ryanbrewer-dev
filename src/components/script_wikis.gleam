@@ -2,17 +2,17 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
+import arctic.{type Page}
 import gleam/list
 import gleam/string
 import gleam/string_builder.{
   type StringBuilder, append, append_builder, concat, from_string, join,
   to_string,
 }
-import helpers.{type Wiki}
 import lustre/element.{type Element}
 import lustre/element/html
 
-pub fn script_wikis(wikis: List(Wiki)) -> Element(a) {
+pub fn script_wikis(wikis: List(Page)) -> Element(a) {
   use <-
     fn(k: fn() -> List(StringBuilder)) {
       html.script(

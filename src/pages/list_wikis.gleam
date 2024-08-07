@@ -2,13 +2,13 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
+import arctic.{type Page}
 import components/head.{head}
 import components/navbar.{navbar}
 import components/script_wikis.{script_wikis}
 import components/tail.{tail}
 import components/thumbnail
 import gleam/list
-import helpers.{type Wiki}
 import lustre/attribute.{attribute}
 import lustre/element.{type Element}
 import lustre/element/html
@@ -49,7 +49,7 @@ fn searchbox() -> Element(Nil) {
   ])
 }
 
-pub fn list_wikis(wikis: List(Wiki)) -> Element(Nil) {
+pub fn list_wikis(wikis: List(Page)) -> Element(Nil) {
   html.html([attribute.attribute("lang", "en")], [
     head("Search Wiki - Ryan Brewer", "Look through Ryan's personal wiki", [
       html.script(

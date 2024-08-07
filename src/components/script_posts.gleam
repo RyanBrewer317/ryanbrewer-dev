@@ -2,17 +2,19 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
+import arctic.{type Page}
 import gleam/list
+import gleam/option.{Some}
 import gleam/string
 import gleam/string_builder.{
   type StringBuilder, append, append_builder, concat, from_string, join,
   to_string,
 }
-import helpers.{type Post, pretty_date}
+import helpers.{pretty_date}
 import lustre/element.{type Element}
 import lustre/element/html
 
-pub fn script_posts(posts: List(Post)) -> Element(a) {
+pub fn script_posts(posts: List(Page)) -> Element(a) {
   use <-
     fn(k: fn() -> List(StringBuilder)) {
       html.script(
@@ -24,6 +26,7 @@ pub fn script_posts(posts: List(Post)) -> Element(a) {
       )
     }
   use p <- list.map(posts)
+  let assert Some(date) = p.date
   from_string("\"")
   |> append(p.id)
   |> append("\": {\"id\": \"")
@@ -33,7 +36,7 @@ pub fn script_posts(posts: List(Post)) -> Element(a) {
   |> append("\", \"title\": \"")
   |> append(string.replace(each: "\"", with: "\\\"", in: p.title))
   |> append("\", \"date\": \"")
-  |> append(pretty_date(p.date))
+  |> append(pretty_date(date))
   |> append("\", \"tags\": [")
   |> append_builder(join(
     list.map(p.tags, fn(tag) {
@@ -44,6 +47,6 @@ pub fn script_posts(posts: List(Post)) -> Element(a) {
     ", ",
   ))
   |> append("], \"description\": \"")
-  |> append(string.replace(each: "\"", with: "\\\"", in: p.description))
+  |> append(string.replace(each: "\"", with: "\\\"", in: p.blerb))
   |> append("\"},\n")
 }
