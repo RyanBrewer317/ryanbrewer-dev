@@ -26,7 +26,7 @@ tags:
 Hello world!
 @end@
 EOF
-    touch $draft_filename &&
-    echo "${String}" >> $draft_filename
+    touch $prod_filename &&
+    echo "${String}" >> $prod_filename
   fi
 fi

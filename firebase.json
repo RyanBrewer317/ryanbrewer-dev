@@ -28,48 +28,48 @@
         "destination": "/demos/"
       },
       {
-        "source": "/announcing-svm.html",
-        "destination": "/announcing-sabervm/"
+        "source": "/posts/announcing-svm.html",
+        "destination": "/posts/announcing-sabervm/"
       },
       {
-        "source": "/beginners-guide-pl-academia.html",
-        "destination": "/beginners-guide-pl-academia/"
+        "source": "/posts/beginners-guide-pl-academia.html",
+        "destination": "/posts/beginners-guide-pl-academia/"
       },
       {
-        "source": "/first-post.html",
-        "destination": "/first-post/"
+        "source": "/posts/first-post.html",
+        "destination": "/posts/first-post/"
       },
       {
-        "source": "/getting-started-category-theory.html",
-        "destination": "/getting-started-category-theory/"
+        "source": "/posts/getting-started-category-theory.html",
+        "destination": "/posts/getting-started-category-theory/"
       },
       {
-        "source": "/implicit-products-better-forall.html",
-        "destination": "/implicit-products-better-forall/"
+        "source": "/posts/implicit-products-better-forall.html",
+        "destination": "/posts/implicit-products-better-forall/"
       },
       {
-        "source": "/logic-in-types.html",
-        "destination": "/logic-in-types/"
+        "source": "/posts/logic-in-types.html",
+        "destination": "/posts/logic-in-types/"
       },
       {
-        "source": "/safe-mmm-with-coeffects.html",
-        "destination": "/safe-mmm-with-coeffects/"
+        "source": "/posts/safe-mmm-with-coeffects.html",
+        "destination": "/posts/safe-mmm-with-coeffects/"
       },
       {
-        "source": "/security-crashing-modal-logic.html",
-        "destination": "/security-crashing-modal-logic/"
+        "source": "/posts/security-crashing-modal-logic.html",
+        "destination": "/posts/security-crashing-modal-logic/"
       },
       {
-        "source": "/simple-programming-languages.html",
-        "destination": "/simple-programming-languages/"
+        "source": "/posts/simple-programming-languages.html",
+        "destination": "/posts/simple-programming-languages/"
       },
       {
-        "source": "/type-of-sprintf.html",
-        "destination": "/type-of-sprintf/"
+        "source": "/posts/type-of-sprintf.html",
+        "destination": "/posts/type-of-sprintf/"
       },
       {
-        "source": "/typechecking-sabervm.html",
-        "destination": "/typechecking-sabervm/"
+        "source": "/posts/typechecking-sabervm.html",
+        "destination": "/posts/typechecking-sabervm/"
       }
     ]
   }

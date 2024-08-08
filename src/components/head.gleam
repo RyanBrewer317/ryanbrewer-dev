@@ -84,6 +84,15 @@ gtag('js', new Date());
           ],
           "",
         ),
+        html.script(
+          [],
+          "
+window.MathJax = {
+  loader: {load: ['[tex]/unicode']},
+  tex: {packages: {'[+]': ['unicode']}},
+};
+        ",
+        ),
         html.link([
           attribute.rel("stylesheet"),
           attribute.href(
