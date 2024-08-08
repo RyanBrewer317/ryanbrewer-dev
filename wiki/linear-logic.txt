@@ -23,7 +23,7 @@ Linear logic can be described as the result of throwing away weakening and contr
 @end@
 
 @paragraph@
-Implication in linear logic is written \\(A\\unicode{22B8} B\\) and is pronounced "lolli" or "the lollipop operator," which proves \\(B\\) in a way that uses \\(A\\) exactly once. Note that \\(A\\unicode{22B8} B\\) is *itself* a proposition that must be used exactly once.
+Implication in linear logic is written \\(A\\unicode{8888} B\\) and is pronounced "lolli" or "the lollipop operator," which proves \\(B\\) in a way that uses \\(A\\) exactly once. Note that \\(A\\unicode{8888} B\\) is *itself* a proposition that must be used exactly once.
 @end@
 
 @paragraph@
@@ -35,11 +35,11 @@ The answer to these questions isn't to pick one way and stick with it, but inste
 @end@
 
 @paragraph@
-"Additive conjunction," written \\(A&B\\) and pronounced "with," allows you to prove \\(A\\) or \\(B\\), your choice, but not both. This gives the notion mentioned above, where \\(A\\land B\\Rightarrow A\\) "drops" a \\(B\\), lost to the infinite platonic abyss. The unit of conjunction is True, because \\(True\\land A\\equiv A\\) for any proposition \\(A\\); the unit of additive conjunction is called "top," written \\(\\top\\).
+"Additive conjunction," written \\(A\\&B\\) and pronounced "with," allows you to prove \\(A\\) or \\(B\\), your choice, but not both. This gives the notion mentioned above, where \\(A\\land B\\Rightarrow A\\) "drops" a \\(B\\), lost to the infinite platonic abyss. The unit of conjunction is True, because \\(True\\land A\\equiv A\\) for any proposition \\(A\\); the unit of additive conjunction is called "top," written \\(\\top\\).
 @end@
 
 @paragraph@
-"Additive disjunction," written \\(A\\oplus B\\) and pronounced "plus," allows you to prove two implications \\(A\\unicode{22B8} C,B\\unicode{22B8} C\\) in a way where they each have full access to the context, because we know we will use only one of the implications for our final \\(A\\oplus B\\unicode{22B8} C\\), we just don't know which. The unit for additive disjunction is \\(0\\).
+"Additive disjunction," written \\(A\\oplus B\\) and pronounced "plus," allows you to prove two implications \\(A\\unicode{8888} C,B\\unicode{8888} C\\) in a way where they each have full access to the context, because we know we will use only one of the implications for our final \\(A\\oplus B\\unicode{8888} C\\), we just don't know which. The unit for additive disjunction is \\(0\\).
 @end@
 
 @paragraph@
@@ -47,5 +47,5 @@ The answer to these questions isn't to pick one way and stick with it, but inste
 @end@
 
 @paragraph@
-Finally, "multiplicative disjunction," written \\(A\\unicode{214B}B\\) and pronounced "par," requires that the two implications \\(A\\unicode{22B8}C,B\\unicode{22B8}C\\) used to prove \\(A\\unicode{214B}B\\unicode{22B8}C\\) share resources, meaning they may both happen. This is often used in contexts where you don't know which side of the disjunction is true and you want to just pick the first one, knowing that you'll change your mind and go pack if some new information reveals that it was actually the second one. For example, \\(A\\par(\\neg A)\\) is perfectly valid, even if \\(A\\) is "this turing machine halts," because you can assume it doesn't halt and change your mind if it actually halts. For this kind of thing to be allowed, it has to be okay for both implications to "happen," so they share resources. The unit of multiplicative disjunction is \\(\\bot\\).
+Finally, "multiplicative disjunction," written \\(A\\unicode{8523}B\\) and pronounced "par," requires that the two implications \\(A\\unicode{8888}C,B\\unicode{8888}C\\) used to prove \\(A\\unicode{8523}B\\unicode{8888}C\\) share resources, meaning they may both happen. This is often used in contexts where you don't know which side of the disjunction is true and you want to just pick the first one, knowing that you'll change your mind and go pack if some new information reveals that it was actually the second one. For example, \\(A\\unicode{8523}(\\neg A)\\) is perfectly valid, even if \\(A\\) is "this turing machine halts," because you can assume it doesn't halt and change your mind if it actually halts. For this kind of thing to be allowed, it has to be okay for both implications to "happen," so they share resources. The unit of multiplicative disjunction is called "bottom," written \\(\\bot\\).
 @end@
