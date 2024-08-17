@@ -10,6 +10,7 @@ import gleam/option.{None, Some}
 import gleam/order
 import helpers
 import pages/contact
+import pages/cricket
 import pages/demos
 import pages/feed
 import pages/homepage
@@ -27,6 +28,7 @@ pub fn main() {
         arctic.MainPage(id: "contact", html: contact.contact()),
         arctic.MainPage(id: "demos", html: demos.demos()),
         arctic.MainPage(id: "404", html: unknown_page.unknown_page()),
+        arctic.MainPage(id: "cricket", html: cricket.cricket()),
       ],
       render_home: fn(collections) {
         let assert Ok(posts) =
