@@ -9,7 +9,7 @@ const input_obj = fs.readdirSync("arctic_build/posts").reduce((obj, filename)=>{
   if (filename != "index.html")
     obj[filename] = "arctic_build/posts/"+filename+"/index.html";
   return obj;
-}, { main: "arctic_build/index.html", posts: "arctic_build/posts/index.html", wiki: "arctic_build/wiki/index.html", contact: "arctic_build/contact/index.html", demos: "arctic_build/demos/index.html", "404": "arctic_build/404/index.html" })
+}, { main: "arctic_build/index.html", posts: "arctic_build/posts/index.html", wiki: "arctic_build/wiki/index.html", contact: "arctic_build/contact/index.html", demos: "arctic_build/demos/index.html", "404": "arctic_build/404/index.html", cricket: "arctic_build/cricket/index.html"})
 
 const input_obj2 = fs.readdirSync("arctic_build/wiki").reduce((obj, filename)=>{
   if (filename != "index.html")

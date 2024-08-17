@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en"><head><script async="true" src="https://www.googletagmanager.com/gtag/js?id=G-BDZJ8SX3Y1"></script><script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+        </script><title>Cricket - Ryan Brewer - Ryan Brewer</title><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="description" content="The Cricket Programming Language"><link rel="icon" type="image/x-icon" href="/favicon.ico"><link rel="alternate" type="application/rss+xml" title="Ryan Brewer&#39;s Blog" href="https://ryanbrewer.dev/feed.rss"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="true"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto&amp;display=swap"><script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script><script type="text/javascript" async="true" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script><script>
+window.MathJax = {
+  loader: {load: ['[tex]/unicode']},
+  tex: {packages: {'[+]': ['unicode']}},
+};
+        </script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css"><script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script><script>hljs.highlightAll();</script>  <script type="module" crossorigin src="/assets/style-55236cb7.js"></script>
+  <link rel="stylesheet" href="/assets/style-4373fd41.css">
+</head><body><nav id="nav"><div id="nav-dropdown" onclick="document.getElementById(&#39;nav&#39;).classList.toggle(&#39;dropdown&#39;);document.body.classList.toggle(&#39;noscroll&#39;);">☰</div><a href="/" id="nav-home">Ryan Brewer</a><a href="/posts" id="nav-posts">Posts</a><a href="/wiki" id="nav-wiki">Wiki</a><a href="/contact" id="nav-contact">Contact</a><a href="/demos" id="nav-demos">Demos</a><a href="/feed.rss" id="nav-subscribe"><img src="/rss-icon.png" id="rss-subscribe-icon">Subscribe</a></nav><div id="body"><h3>Cricket</h3><p>
+Cricket is a tiny little functional language.
+It can be implemented very quickly on various platforms.
+Cricket is lazy, specifically call-by-name.
+Side effects are done with explicitly-forced evaluation.
+Cricket is dynamically typed, and uses objects or lambdas for data.
+Cricket objects can refer to themselves in their methods, enabling much of OOP.
+Cricket is immutable, with object updates returning new objects.
+        </p><p>
+Cricket is designed such that ordinary programmers who aren&#39;t much into
+the academic theory behind functional programming can still find it easy and intuitive.
+No monads, for one.
+However, if you like the confidence in your code that comes with such solid theoretical foundations,
+rest assured that Cricket is inspired by fascinating categorical <a src="https://ncatlab.org/nlab/show/polarity+in+type+theory">connections</a>.
+The keywords are call-by-name, negative types, and side effects.
+        </p><pre><code>
+let iter = {
+  this.go: args-&gt;{
+    val: args.start, 
+    next: this.go{start: args.step(args.start), step: args.step}
+  }
+} in 
+console.write(iter.go{start: 7, step: n-&gt;n-1}.next.next.val)
+        </code></pre><p>To read more about Cricket, look <a src="https://github.com/RyanBrewer317/cricket">here</a>.</p></div><div><div style="height:100pt;"></div><p id="copyright-notice" class="subtle-text">© 2024 Ryan Brewer.</p><script src="/__/firebase/8.10.1/firebase-app.js"></script><script src="/__/firebase/8.10.1/firebase-analytics.js"></script><script src="/__/firebase/init.js"></script><script>firebase.analytics();</script></div></body></html>
