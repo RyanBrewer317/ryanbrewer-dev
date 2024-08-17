@@ -9,7 +9,7 @@ const input_obj = fs.readdirSync("site/posts").reduce((obj, filename)=>{
   if (filename != "index.html")
     obj[filename] = "site/posts/"+filename+"/index.html";
   return obj;
-}, { main: "site/index.html", posts: "site/posts/index.html", wiki: "site/wiki/index.html", contact: "site/contact/index.html", demos: "site/demos/index.html", "404": "site/404/index.html" })
+}, { main: "site/index.html", posts: "site/posts/index.html", wiki: "site/wiki/index.html", contact: "site/contact/index.html", demos: "site/demos/index.html", "404": "site/404/index.html", cricket: "site/cricket/index.html" })
 
 const input_obj2 = fs.readdirSync("site/wiki").reduce((obj, filename)=>{
   if (filename != "index.html")
