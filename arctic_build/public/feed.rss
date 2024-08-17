@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Ryan's Blog</title>
+    <link>https://ryanbrewer.dev</link>
+    <atom:link href="https://ryanbrewer.dev/feed.rss" rel="self" type="application/rss+xml" />
+    <description>
+      Ryan Brewer's personal blog, covering ideas in programming languages, software, logic, abstract math, and analytic philosophy.
+    </description>
+    <language>en-us</language>
+    <item>
+      <title></title>
+      <pubDate>Wed, 01 Nov 2023 00:00:00 PST</pubDate>
+      <link>https://ryanbrewer.dev/posts/first-post.html</link>
+      <guid>https://ryanbrewer.dev/posts/first-post.html</guid>
+      <description><![CDATA[  Read more <a href="https://ryanbrewer.dev/posts/first-post.html">here</a>!]]></description>
+    </item>
+    <item>
+      <title></title>
+      <pubDate>Fri, 01 Dec 2023 00:00:00 PST</pubDate>
+      <link>https://ryanbrewer.dev/posts/security-crashing-modal-logic.html</link>
+      <guid>https://ryanbrewer.dev/posts/security-crashing-modal-logic.html</guid>
+      <description><![CDATA[  Read more <a href="https://ryanbrewer.dev/posts/security-crashing-modal-logic.html">here</a>!]]></description>
+    </item>
+    <item>
+      <title></title>
+      <pubDate>Fri, 01 Dec 2023 00:00:00 PST</pubDate>
+      <link>https://ryanbrewer.dev/posts/logic-in-types.html</link>
+      <guid>https://ryanbrewer.dev/posts/logic-in-types.html</guid>
+      <description><![CDATA[  Read more <a href="https://ryanbrewer.dev/posts/logic-in-types.html">here</a>!]]></description>
+    </item>
+    <item>
+      <title></title>
+      <pubDate>Fri, 01 Dec 2023 00:00:00 PST</pubDate>
+      <link>https://ryanbrewer.dev/posts/implicit-products-better-forall.html</link>
+      <guid>https://ryanbrewer.dev/posts/implicit-products-better-forall.html</guid>
+      <description><![CDATA[  Read more <a href="https://ryanbrewer.dev/posts/implicit-products-better-forall.html">here</a>!]]></description>
+    </item>
+    <item>
+      <title></title>
+      <pubDate>Mon, 01 Jan 2024 00:00:00 PST</pubDate>
+      <link>https://ryanbrewer.dev/posts/announcing-sabervm.html</link>
+      <guid>https://ryanbrewer.dev/posts/announcing-sabervm.html</guid>
+      <description><![CDATA[  Read more <a href="https://ryanbrewer.dev/posts/announcing-sabervm.html">here</a>!]]></description>
+    </item>
+    <item>
+      <title></title>
+      <pubDate>Mon, 01 Jan 2024 00:00:00 PST</pubDate>
+      <link>https://ryanbrewer.dev/posts/safe-mmm-with-coeffects.html</link>
+      <guid>https://ryanbrewer.dev/posts/safe-mmm-with-coeffects.html</guid>
+      <description><![CDATA[  Read more <a href="https://ryanbrewer.dev/posts/safe-mmm-with-coeffects.html">here</a>!]]></description>
+    </item>
+    <item>
+      <title></title>
+      <pubDate>Mon, 01 Jan 2024 00:00:00 PST</pubDate>
+      <link>https://ryanbrewer.dev/posts/beginners-guide-pl-academia.html</link>
+      <guid>https://ryanbrewer.dev/posts/beginners-guide-pl-academia.html</guid>
+      <description><![CDATA[  Read more <a href="https://ryanbrewer.dev/posts/beginners-guide-pl-academia.html">here</a>!]]></description>
+    </item>
+    <item>
+      <title></title>
+      <pubDate>Thu, 01 Feb 2024 00:00:00 PST</pubDate>
+      <link>https://ryanbrewer.dev/posts/typechecking-svm.html</link>
+      <guid>https://ryanbrewer.dev/posts/typechecking-svm.html</guid>
+      <description><![CDATA[  Read more <a href="https://ryanbrewer.dev/posts/typechecking-svm.html">here</a>!]]></description>
+    </item>
+    <item>
+      <title></title>
+      <pubDate>Fri, 01 Mar 2024 00:00:00 PST</pubDate>
+      <link>https://ryanbrewer.dev/posts/simple-programming-languages.html</link>
+      <guid>https://ryanbrewer.dev/posts/simple-programming-languages.html</guid>
+      <description><![CDATA[  Read more <a href="https://ryanbrewer.dev/posts/simple-programming-languages.html">here</a>!]]></description>
+    </item>
+    <item>
+      <title></title>
+      <pubDate>Wed, 01 May 2024 00:00:00 PST</pubDate>
+      <link>https://ryanbrewer.dev/posts/type-of-sprintf.html</link>
+      <guid>https://ryanbrewer.dev/posts/type-of-sprintf.html</guid>
+      <description><![CDATA[  Read more <a href="https://ryanbrewer.dev/posts/type-of-sprintf.html">here</a>!]]></description>
+    </item>
+    <item>
+      <title></title>
+      <pubDate>Mon, 01 Jul 2024 00:00:00 PST</pubDate>
+      <link>https://ryanbrewer.dev/posts/getting-started-category-theory.html</link>
+      <guid>https://ryanbrewer.dev/posts/getting-started-category-theory.html</guid>
+      <description><![CDATA[  Read more <a href="https://ryanbrewer.dev/posts/getting-started-category-theory.html">here</a>!]]></description>
+    </item>
+  </channel>
+</rss>

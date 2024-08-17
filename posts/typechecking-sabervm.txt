@@ -4,81 +4,42 @@ date: 2024-02-18
 tags: sabervm,advanced,type,types,typechecking,checking,check,typecheck,stack,based,stack-based,language,languages
 description: This post discusses the interesting typechecker of SaberVM, which uses a stack-based bytecode language with a powerful type system.
 
-@paragraph@
 It's been a while since I posted anything, because I've been hard at work on SaberVM's [https://github.com/RyanBrewer317/SaberVM](implementation) and a little lambda calculus [https://github.com/RyanBrewer317/SaberLC](compiler) that targets SaberVM. I thought I should take the time to write a short post discussing one of the interesting aspects of my implementation, a performant typechecker for SaberVM's type system. As SaberVM uses a stack-based bytecode language, there isn't much out there on how to typecheck it. The best example I could find of a similar language was Web Assembly's typed stack-based bytecode, but that type system is extremely simple compared to SaberVM's.
-@end@
 
-@subheading@
-Simple Stack-Based Typechecking
-@end@
+### Simple Stack-Based Typechecking
 
-@paragraph@
 The basics of typechecking stack-based code is extremely simple and elegant. You could think of it as a form of abstract interpretation, if you're familiar with that idea. All you do is you have a stack at compile-time, specifically a stack of *types.* It's called the "type stack." You run through each instruction in each function, and if you see, say, an `add_f64` instruction with a type of `(float64,float64)->float64`, then you pop two types off the type stack, confirm that they're `float64`, and then push a `float64` onto the type stack.
-@end@
 
-@paragraph@
 What's beautiful about this process is how it mirrors program execution. But, instead of pushing and popping *values,* you push and pop the *types* of those values. If the type stack doesn't have enough types to pop off, then you know the run-time stack won't have enough *values* to pop off, which is now something that is caught at compile-time. If you pop the wrong type, then the run-time stack would have a value of the wrong type, so you have a type error, discovered at compile-time.
-@end@
 
-@paragraph@
 But instead of being undecidable, like actually running the program would be, this typechecker runs in *linear time,* because of how it treats *control flow.* When you get to a jump point in either Web Assembly or SaberVM, you're jumping to a place which is expecting the type stack to look a certain way, and that fact is known at compile-time, and can be used to typecheck the jump itself. In Web Assembly, this is done with their structured control flow system: `if`/`else`, `while`, etc. (instead of arbitrary `goto`s). In SaberVM, this is instead done using the Continuation-Passing Style structure of the language, so all control flow is represented as function calls.
-@end@
 
-@paragraph@
 That's all very pretty and everything, but it only allows for very simple type systems, where types themselves don't need to be *constructed.* In the scheme I just described, its unclear how one would, say, instantiate a polymorphic function with `(int64, int64->void)` or some other complex type. I mean, SaberVM has type polymorphism (universal and existential), region polymorphism, and (bounded) capability polymorphism. How do we get from here to there?
-@end@
 
-@subheading@
-Advanced Stack-Based Typechecking
-@end@
+### Advanced Stack-Based Typechecking
 
-@paragraph@
 Where SaberVM diverges from Web Assembly is by introducing a *second* compile-time stack (called the "compile-time stack" :). This stack is exposed to the user through a bunch (about 20) of instructions that manipulate it. If you want to instantiate a polymorphic function call with the type `(int64, int64)`, then before the call you write the instructions `int64`, `int64`, `tuple 2`. `tuple n` is an instruction that pops `n` values off the compile-time stack (not the type stack) and pushes a tuple of those types onto the compile-time stack. (For memory safety, tuple types are a little more complex than this, but the point stands.) This way SaberVM can let you specify very complex types in the same way you write runtime code.
-@end@
 
-@paragraph@
 Now when the typechecker sees an `add_f64` instruction, it does the same as before, pushing and popping from the type stack. But when it sees a compile-time instruction like `tuple n`, it pushes and pops from the compile-time stack instead, and then the compile-time instruction disappears. Where the type stack is like an abstract interpretation of the run-time stack, the compile-time stack is like its own run-time stack, but where all execution is at compile-time.
-@end@
 
-@paragraph@
 The compile-time stack itself is "dynamically typed" in some sense, but the "run-time" for this stack is all at compile-time, so any errors here are still caught at compile-time. For example, there's no check that `tuple n` is always called when there are at least `n` types on the compile-time stack. Since `tuple n` is evaluated at compile-time, we can just wait for it to fail, and if it does then its a compile-time error. This is particularly significant since SaberVM has a reasonably powerful *kind* system too. Not like a kind-level lambda calculus (aka kind-polymorphism) or anything, but there are types, regions, capabilities, and representations, so there are a lot of ways to have a "kind error," like by `req`-ing a representation instead of a type. Since the compile-time stack is just compile-time execution with these values, anything that could possibly go wrong here is caught at compile-time. And since there's no control flow for this compile-time language, everything takes linear time.
-@end@
 
-@paragraph@
 To actually *use* this new compile-time stack, a few instructions manipulate *both* the compile-time stack and type stack. `req` pops a type off the compile-time stack and puts it at the end of the type stack (which really makes it a "type VecDeque," to use the Rust term). This allows functions to specify "arguments," that is, what they expect the top of the type stack to look like: each `req` in a function is recorded to know the full type of the function by the end, and ultimately typecheck function calls in other functions (or recursive ones). Other uses of the compile-time stack include what I mentioned earlier: polymorphic function calls pop their compile-time arguments from the compile-time stack (and perform the necessary substitutions in their type signature). One last notable example is `malloc`, which pops a type from the compile-time stack to know what its allocating and returning. There are many more uses of the compile-time stack in SaberVM's bytecode language; it's proven extremely useful, flexible, and ergonomic.
-@end@
 
-@subheading@
-Benefits
-@end@
+### Benefits
 
-@paragraph@
 This compile-time stack approach removes the upper bound on the power of the type specification language. With its own stack, there's no reason it couldn't be as powerful as the run-time language itself, a la dependent types. SaberVM doesn't use that power, in favor of faster typechecking and no need for user-provided proofs, but as a designer its nice to know how forward-compatible the typechecking system is with unpredictable extensions to the type system in the future. Hopefully no such extensions are needed, but SaberVM is still a young project, currently in the prototyping stage. This is very much a part of the design stage, so things can definitely change a lot.
-@end@
 
-@paragraph@
-Another benefit is performance. SaberVM uses the fact that functions are in Continuation-Passing Style (that is, function calls are only the last instruction of functions, never earlier) for an extremely parallel algorithm: function types have no return type component to them, and all the compile-time instructions are before any `call` instructions. Therefore, SaberVM can get the type of each function without *any* knowledge of the types of other functions, by simply stopping when it gets to a call that calls a global function. Therefore, functions can be typechecked in parallel in any order. Once all the types are known, SaberVM goes through any calls to global (ie. not from a function parameter) functions and makes sure that those types are correct. This second pass is quick for each function call (functions aren't re-processed) and only happens for global function calls. Calling a parameter is very normal in Continuation-Passing Style code, so global function calls aren't as common as you'd think anyway. The second pass is linear (big-O of N) in the number of global function calls, like how the first pass is linear in the size of the program, but both passes are trivial to parallelize; each iteration creates no information needed by future iterations. @end@
+Another benefit is performance. SaberVM uses the fact that functions are in Continuation-Passing Style (that is, function calls are only the last instruction of functions, never earlier) for an extremely parallel algorithm: function types have no return type component to them, and all the compile-time instructions are before any `call` instructions. Therefore, SaberVM can get the type of each function without *any* knowledge of the types of other functions, by simply stopping when it gets to a call that calls a global function. Therefore, functions can be typechecked in parallel in any order. Once all the types are known, SaberVM goes through any calls to global (ie. not from a function parameter) functions and makes sure that those types are correct. This second pass is quick for each function call (functions aren't re-processed) and only happens for global function calls. Calling a parameter is very normal in Continuation-Passing Style code, so global function calls aren't as common as you'd think anyway. The second pass is linear (big-O of N) in the number of global function calls, like how the first pass is linear in the size of the program, but both passes are trivial to parallelize; each iteration creates no information needed by future iterations. 
 
-@paragraph@
 Typechecking in a parallel way like this also makes the type errors trivially recoverable, see [https://matklad.github.io/2023/08/01/on-modularity-of-lexical-analysis.html](this fantastic blog post) for more about that. 
-@end@
 
-@paragraph@
 Lastly, the language is easy to compile to, for the same reasons stack-based bytecode always is. Type annotations are lowered in a recursive algorithm to make them in a sort of reverse-polish-notation form, and that Just Works™.
-@end@
 
-@subheading@
-Conclusion
-@end@
+### Conclusion
 
-@paragraph@
 This was one of those ideas that I felt really proud of for some reason, even if it's basically just like Zig's `comptime`-based polymorphism but for stack-based bytecode. I don't know of any language that's doing anything like this. Having worked with the system for a while now, I'm really really pleased with it.
-@end@
 
-@paragraph@
 The main reference I have for prior work is [https://binji.github.io/posts/webassembly-type-checking/](this) great article on Web Assembly's typechecker.
-@end@
 
-@paragraph@
 If you're interested in this project and want to know more, I have another post about it [https://ryanbrewer.dev/posts/announcing-svm.html](here). If you're excited about SaberVM's future, consider starring it on [https://github.com/RyanBrewer317/SaberVM](github) (which has a more in-depth description of the project), or even [https://github.com/sponsors/RyanBrewer317](sponsoring) me or supporting me on [https://ko-fi.com/ryanbrewer](ko-fi)!
-@end@

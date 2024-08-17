@@ -2,44 +2,27 @@ id: functor
 name: Functor
 tags: category,cat,categories,bifunctor,functoriality,bifunctoriality,functors,bifunctors,homomorphism,homomorphisms,structure,preserving,theory
 
-@paragraph@
+
 A morphism in [/wiki/cat](Cat) is called a "functor." A functor is a mapping objects of some category \\(C\\) into objects of some category \\(D\\), and mapping the arrows in \\(C\\) to arrows in \\(D\\). There is additionally a condition that must be satisfied called "functoriality," which is that composition and identities are preserved: \\(F(g\\circ f)=Fg\\circ Ff\\), and \\(F(id_X)=id_{FX}\\). This leads some to call functors a "homomorphism of categories," if you're familiar with abstract algebra.
-@end@
 
-@paragraph@
 (Category theory doesn't do parentheses for applying mappings to things; \\(Fg\\) might be written \\(F(g)\\) in what you're used to.)
-@end@
 
-@paragraph@
 So if I have some diagram in my category \\(C\\) then a functor \\(F:C\\to D\\) gives me a diagram in \\(D\\) that can be drawn in a very similar way: 
-@end@
 
-@diagram@
+@diagram
     C            & X\ar[ddl,"p"']\ar[ddr,"q"] &              &                & FX\ar[ddl,"Fp"']\ar[ddr,"Fq"] & D  \\
                  &                            & {}\ar[r,"F"] & {}             &                               &    \\
     Y\ar[rr,"f"] &                            & Z            & FY\ar[rr,"Ff"] &                               & FZ
-@end@
 
-@paragraph@
 This does *not* mean that if \\(X\\), \\(Y\\), and \\(Z\\) are different from each other, then \\(FX\\), \\(FY\\), and \\(FZ\\) are too. It *only* means that, assuming the first diagram commutes, the second one does too. \\(FX\\) could be equal to \\(FY\\), and \\(Fp\\) could even just be \\(id_{FX}\\)! So long as commuting diagrams are mapped to diagrams that also commute. One example of a functor that I like is from the monoid-based category of addition on natural numbers to the monoid-based category of multiplication on natural numbers. The single monoid object gets mapped into the other single monoid object, of course. There are a bunch of functors to choose from here, but I like powers of 2 so I'll map every morphism \\(n\\) in the addition category to the morphism \\(2^n\\) in the multiplication category. That's a functor because if I compose two morphisms in the addition category (say, \\(2+3\\)) then does the right thing in the multiplication category. Functors are often written with a dash in the place of the parameter, so this functor would be written \\(2^-\\). Here's a diagram to help illustrate:
-@end@
 
-@diagram@
+@diagram
     M_+\ar[loop left,"3"]\ar[loop below,"2"]\ar[loop above,"2+3=5"] & {}\ar[r,"F"] & {} & M_\cdot\ar[loop right,"8"]\ar[loop above,"4"]\ar[loop below,"F(2)\cdot F(3)=F(5)=32"]
-@end@
 
-@paragraph@
 This represents how exponentiation turns multiplication into addition! Composition in these categories are addition and multiplication respectively, and the functor is raising 2 to a power, so the functors-preserve-composition equation \\(F(g\\circ f)=Fg\\circ Ff\\) becomes \\(2^{n+m}=2^n\cdot 2^m\\), a rule for exponentials we learn in high school!
-@end@
 
-@paragraph@
 I find it helpful to remember that functors are just arrows in \\(\\texttt{Cat}\\). They're just transformations from collections of objects and morphisms to other collections of objects and morphisms, and we've attached a restriction to them that we've found useful and commonly-satisfied. A category of all small categories could be created where the arrows aren't functors, and functors aren't some new axiomatic thing in category theory. It's still all just objects and arrows, and functors are just an example of morphisms. They just feel different when we use them because we're not working in \\(\\texttt{Cat}\\) but *within some object* in \\(\\texttt{Cat}\\), so the arrows of \\(\\texttt{Cat}\\) have a sort of strange (but useful!) effect.
-@end@
 
-@paragraph@
 In programming we often deal with categories of collections. So an object (say, a set) contains elements within it. It's very important to keep in mind that functors just map objects to objects and can't touch the elements within at all. A functor might map the set \\(\\{4\\}\\) to the empty set \\(\\{\\}\\), and note that there isn't any function from \\(\\{4\\}\\) to the empty set, since there's no way to transform \\(4\\) into nothing! The real function is on the collections of objects (and morphisms), of which \\(\\{4\\}\\) and \\(\\{\\}\\) are just regular old members. This fact makes functors useful in programming. An "endofunctor" is a looping morphism in \\(\\texttt{Cat}\\), so it goes from a category back to the same category. A popular example in programming is the List functor, which maps any type `T` into the type of lists whose elements are of type `T`, called something like `List<T>`. Again, `T` could be `void` and this mapping is still perfectly fine, because we're just transforming types, not the values of those types. `List<void>` is a perfectly valid type and has exactly one value, namely `[]`. The List functor maps morphisms (functions) \\(f:T\\to U\\) to \\(\\texttt{map}\\;f:\\texttt{List}\\;T\\to\\texttt{List}\\;U\\), functions which apply \\(f\\) to each element in the list to produce a new list. That's something we do a lot in functional programming and I think that's awesome!
-@end@
 
-@paragraph@
 For any two categories \\(C\\) and \\(D\\) in \\(\\texttt{Cat}\\), the collection of morphisms between them forms a category called a "[/wiki/functor-category](functor category)," written \\([C,D]\\). This being an object in \\(\\texttt{Cat}\\) itself, it's an [/wiki/exponential-object](exponential object). The morphisms in a functor category are called [/wiki/natural-transformation](natural transformations).
-@end@

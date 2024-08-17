@@ -4,32 +4,23 @@ date: 2023-11-16
 tags: first post
 description: A test post for the blog.
 
-@paragraph@
 This is my first blog post! It's mostly to test out the codebase.
-@end@
 
-@paragraph@
 This project is using a few neat tools together.
 The code for the home page is written in gleam (compiled to javascript).
 Blog posts like these are written in text files in a custom format.
 A build step uses Lustre and Vite to parse the files, produce html files, and bundle the site for deployment.
 All the code can be found on [https://github.com/RyanBrewer317/ryanbrewer-dev](my github). 
-@end@
 
-@paragraph@
 The styles on this site are a work in progress. `code`, *italics*, \\\*escaping, [https://ryanbrewer.dev](links), \\(math+2^2\\).
-@end@
 
-@math@
+@math
 A^1 math_2 block^3!
-@end@
 
-@diagram@
+@diagram
     D\ar[r,"i"] & a\ar[d,"g"] \\
     m\ar[u,"s"] & r\ar[l,"a"]
-@end@
 
-@code@
+@code
 print("A code block!") 
 # language is auto-detected atm.
-@end@

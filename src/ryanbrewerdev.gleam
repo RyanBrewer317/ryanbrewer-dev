@@ -2,12 +2,11 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-import arctic.{type Config, Config}
 import arctic/build
+import arctic/collection
+import arctic/config
 import gleam/io
 import gleam/list
-import gleam/option.{None, Some}
-import gleam/order
 import helpers
 import pages/contact
 import pages/demos
@@ -21,38 +20,31 @@ import render
 import snag
 
 pub fn main() {
+  let posts =
+    collection.new("posts")
+    |> collection.with_parser(parse.parse)
+    |> collection.with_feed("feed.rss", feed.feed)
+    |> collection.with_index(list_posts.list_posts)
+    |> collection.with_ordering(helpers.after)
+    |> collection.with_renderer(render.post)
+  let wiki =
+    collection.new("wiki")
+    |> collection.with_parser(parse.parse)
+    |> collection.with_index(list_wikis.list_wikis)
+    |> collection.with_renderer(render.wiki)
   let config =
-    Config(
-      main_pages: [
-        arctic.MainPage(id: "contact", html: contact.contact()),
-        arctic.MainPage(id: "demos", html: demos.demos()),
-        arctic.MainPage(id: "404", html: unknown_page.unknown_page()),
-      ],
-      render_home: fn(collections) {
-        let assert Ok(posts) =
-          list.find(collections, fn(c) { c.collection.directory == "posts" })
-        homepage.homepage(posts.pages)
-      },
-    )
-  let res =
-    build.build(config, [
-      arctic.Collection(
-        directory: "posts",
-        parse: parse.post,
-        index: Some(list_posts.list_posts),
-        rss: Some(feed.feed),
-        ordering: helpers.after,
-        render: render.post,
-      ),
-      arctic.Collection(
-        directory: "wiki",
-        parse: parse.wiki,
-        index: Some(list_wikis.list_wikis),
-        rss: None,
-        ordering: fn(_, _) { order.Eq },
-        render: render.wiki,
-      ),
-    ])
+    config.new()
+    |> config.add_collection(posts)
+    |> config.add_collection(wiki)
+    |> config.add_main_page("contact", contact.contact())
+    |> config.add_main_page("demos", demos.demos())
+    |> config.add_main_page("404", unknown_page.unknown_page())
+    |> config.home_renderer(fn(collections) {
+      let assert Ok(posts) =
+        list.find(collections, fn(c) { c.collection.directory == "posts" })
+      homepage.homepage(posts.pages)
+    })
+  let res = build.build(config)
   case res {
     Ok(Nil) -> io.println("Success!")
     Error(err) -> io.println(snag.pretty_print(err))

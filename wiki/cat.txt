@@ -2,50 +2,31 @@ id: cat
 name: Cat
 tags: cat,category,categories,functor,functors,natural,transformation,transformations
 
-@paragraph@
 \\(\\texttt{Cat}\\) is a large [/wiki/category](category) where all small categories are its objects. This means that when you're doing some work with a small category, you're also working in \\(\\texttt{Cat}\\), giving you arrows, between your category and other categories, that you can actually use to help with your reasoning. The arrows in \\(\\texttt{Cat}\\) are called "[/wiki/functor](functors)," and they're functions (really *mappings,* in the event of a large or locally large category where they can't be functions) mapping objects of some category \\(C\\) into objects of some category \\(D\\), and mapping the arrows in \\(C\\) to arrows in \\(D\\).
-@end@
 
-@paragraph@
 Functors also get an extra restriction: functors must preserve commuting diagrams. What this means is that composition and identity must be preserved: \\(F(g\\circ f)=Fg\\circ Ff\\) and \\(F(id_X)=id_{FX}\\). (Category theory doesn't do parentheses for applying mappings to things; \\(Fg\\) might be written \\(F(g)\\) in what you're used to.) That preservation condition is an important idea and worth thinking about a little, and hopefully will become more clear in the coming paragraphs. It makes functors a sort of homomorphisms, if you're familiar with group theory or related fields of abstract algebra. In more friendly language, functors are required to preserve the structure of a category. So if I have some diagram in my category \\(C\\) then a functor \\(F:C\\to D\\) gives me a diagram in \\(D\\) that can be drawn in a very similar way: 
-@end@
 
-@diagram@
+@diagram
     C            & X\ar[ddl,"p"']\ar[ddr,"q"] &              &                & FX\ar[ddl,"Fp"']\ar[ddr,"Fq"] & D  \\
                  &                            & {}\ar[r,"F"] & {}             &                               &    \\
     Y\ar[rr,"f"] &                            & Z            & FY\ar[rr,"Ff"] &                               & FZ
-@end@
 
-@paragraph@
 \\(\\texttt{Cat}\\) has [/wiki/exponential-object](exponential objects) too (objects representing arrows), called "functor categories." Remember, the objects of \\(\\texttt{Cat}\\) are categories, so exponential objects are categories. A functor category representing the arrows in \\(\\texttt{Cat}\\) from a category \\(C\\) to a category \\(D\\) is written \\([C,D]\\) (or, in typical exponential notation, \\(D^C\\)). The objects in such a category are functors from \\(C\\) to \\(D\\). The arrows transform one functor to another, and are called "[/wiki/natural-transformation](natural transformations)." Similar to how functors are like functions with an extra restriction that makes them useful, natural transformations are transformations that satisfy a "naturality condition," hence calling them "natural." Formally, for two functors \\(F,G:C\\to D\\), a natural transformation \\(\\alpha:F\\Rightarrow G\\) is a family of morphisms in \\(D\\) transforming "outputs" of \\(F\\) into "outputs" of \\(G\\). Namely, \\(\\alpha_X:FX\\to GX\\). The naturality condition that natural transformations must satisfy is depicted below as a diagram that must commute, and also illuminates how the transformation works:
-@end@
 
-@diagram@
+@diagram
     FX\ar[r,"Ff"]\ar[d,"\alpha_X"] & FY\ar[d,"\alpha_Y"] \\
     GX\ar[r,"Gf"] & GY
-@end@
 
-@paragraph@
 That is, \\(Gf\\circ\\alpha_X=\\alpha_Y\\circ Ff\\). Note that this entire diagram takes place in \\(D\\), and the only mention of \\(C\\) are \\(X\\) and \\(Y\\), which are objects in \\(C\\).
-@end@
 
-@paragraph@
 I've heard many times that being able to talk about and study natural transformations is the original "point" of category theory. Note once more that natural transformations, transforming functors into other functors, aren't some new special feature we just added to category theory. They're just arrows in categories! Not only that, but their abstract meaning in a functor category is more concrete in the categories functors act on, where they are just families of arrows. In functional programming we're quite comfortable with families of morphisms: they're (parametrically) polymorphic functions! Indeed, it's been proven that a parametrically-polymorphic function `f<T>: F<T> -> G<T>` (or, in a more Haskelly notation, `f :: F a -> G a`) satisfies the naturality condition and and is a natural transformation if `F` and `G` are functors. So the abstract-ness of natural transformations gets concrete pretty quickly in, say, a language like Haskell.
-@end@
 
-@paragraph@
 One of the main reasons natural transformations felt like arcane magic to me for a long time was that people often draw them as arrows between arrows, like so:
-@end@
 
-@diagram@
+@diagram
     C\ar[r,bend left=50,""{name=U,below},"F"]\ar[r,bend right=50,""{name=D},"G"{below}] & D
     \ar[from=U,to=D,"\alpha"]
-@end@
 
-@paragraph@
 This makes it appear as though there's some new thing we're allowed to do with categories, while in reality a natural transformation is just another regular morphism in some category somewhere.
-@end@
 
-@paragraph@
 Because \\(\\texttt{Cat}\\) is enriched over \\(\\texttt{Cat}\\), the arrows between two objects (categories) form a category, and we can say there are arrows between the arrows. That's what leads to the above notation of natural transformations as arrows between arrows. We call \\(\\texttt{Cat}\\) a "2-category" because there are arrows between the arrows, the idea being that a set is only objects and is a "0-category," and then adding arrows between objects is a "1-category." If you have arrows between arrows between arrows then it's a 3-category. Note that the category of 1-categories (which is \\(\\texttt{Cat}\\)) is a 2-category; the category of 2-categories is a 3-category and this pattern continues indefinitely. I'm told advanced researchers are studying \\(\\infty\\)-categories but we're well beyond what I know now!
-@end@

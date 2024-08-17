@@ -4,39 +4,29 @@ date: 2023-12-17
 tags: security,crash,crashing,modal,logic,monad,monadic,comonad,comonadic,assert,assertion,noninterference,secret,public,possibility,necessity,possibly,necessarily,tech,technology,software,coding,dependency,execution
 description: Modal logic is a beautiful field of logic that can be applied to computer science in a few ways, one of which we explore in this post. It can elucidate security concepts and how and why to crash software.
 
-@paragraph@
 Modal logic is a fascinating field which has been applied to computer science in all sorts of weird ways.
 In this post I'll talk about an interpretation of modal logic that I've been exploring
 which gives type-theoretic interpretations to crashing and security.
-@end@
 
-@paragraph@
 This post assumes a familiarity with logic,
 and a very vague familiarity with monads, comonads, and the [/logic-in-types.html](Curry-Howard correspondance).
 Also, I need to say from the start that this post is not very rigorous;
 it's meant as interesting food for thought and intuition.
-@end@
 
-@subheading@
-What's Modal Logic?
-@end@
+### What's Modal Logic?
 
-@paragraph@
 Modal logic is a version of logic that has two new and fascinating operators, `Possibly` and `Necessarily`. 
 These operators work exactly as you'd expect, but it's hard to say exactly *what* it is that we expect,
 so I'll simplify the idea. Consider the python program below:
-@end@
 
-@code@
+@code
 # this is equivalent to print(input() + 4) 
 # but the variables make it easier to talk about
 x = input()
 y = 2 + 2 # always evaluates to 4
 z = y + x # depends on user input
 print(z)
-@end@
 
-@paragraph@
 When a program is run, it has some set of inputs that change how the program progresses to completion.
 In this case, it's the value assigned to `x`.
 For a given run of the program, it only has one concrete input, and only unfolds in one way.
@@ -51,14 +41,10 @@ A vocabulary for talking about different runs of a given program.
 Regular propositions are for the "current run," 
 necessary ones are true in all runs,
 and possible ones are true in some runs, which could be the current one but might not be.
-@end@
 
-@paragraph@
 In logic, "\\(P\\) is possible" is written \\(\\Diamond P\\)
 and "\\(P\\) is necessary" is written \\(\\Box P\\).
-@end@
 
-@paragraph@
 First of all, it's worth taking a moment to appreciate the beauty of modal logic.
 Possibility and necessity are dual in the same way conjunction and disjunction are,
 or universal and existential quantification are. 
@@ -69,33 +55,24 @@ is equivalent to \\(\\Box P\\), or "\\(P\\) is necessary."
 is equivalent to \\(\\Diamond P\\), or "\\(P\\) is possible."
 That is, negating the inputs and outputs of one gets you the other, 
 just like conjunction/disjunction and just like existential/universal quantification.
-@end@
 
-@paragraph@
 They're also dual in a sort of category-theory way:
 possibility is a monad and necessity is a comonad.
 Showing why is a nice demonstration of the modalities,
 so here it is: for any proposition \\(P\\), 
-@end@
 
-@math@
+@math
 P\implies\Diamond P
 \Diamond (\Diamond P)\implies\Diamond P
 \Box P\implies P
 \Box P\implies\Box (\Box P)
-@end@
 
-@paragraph@
 You can see in these rules the monadic "return" and "join" operations
 and comonadic "extract" and "duplicate" operations.
 It's also worth going through them and intuitively checking if they make sense.
-@end@
 
-@subheading@
-Security
-@end@
+### Security
 
-@paragraph@
 If you're familiar with language-based security theory,
 you might immediately see a use for this.
 LBS is largely built around a concept called [https://en.wikipedia.org/wiki/Non-interference_(security)](noninterference),
@@ -107,9 +84,7 @@ Sound familiar?
 In our modal vocabulary we might say that public outputs are
 *necessary* with respect to secret inputs;
 they aren't affected in any run of the program by those inputs.
-@end@
 
-@paragraph@
 This is a little bit different from how LBS is usually studied.
 To oversimplify, there's usually a `Secret` monad that
 ensures the values it holds can only affect other `Secret` values.
@@ -125,13 +100,9 @@ This is like noticing that `y` is necessarily `4` in the python code above,
 and removing the addition.
 Choudhury extends this idea for language-based security, 
 combining it with the `Secret` monad I just mentioned.
-@end@
 
-@subheading@
-Crashing
-@end@
+### Crashing
 
-@paragraph@
 Consider for a moment what it is that an [https://www.w3schools.com/python/ref_keyword_assert.asp](assert statement) 
 does in a program. Hopefully it does nothing!
 It has some proposition that it expects to be true in the current run of the program,
@@ -145,9 +116,7 @@ It's like an "extract" operation for monads: it doesn't generally exist.
 (Side note: Rust's `unwrap` operation for the `Result` monad comes to mind.)
 Therefore it's an implication that you don't want to be applying unless you really think 
 it's true for the proposition in question.
-@end@
 
-@paragraph@
 We talked a lot about duality in this post so far,
 so just for some informal fun, what would the dual of an assertion be?
 If an assertion is an implication \\(\\Diamond P\\implies P\\) then its dual
@@ -156,9 +125,7 @@ What does it mean?
 If \\(P\\) is true in *this* run then it's true in *every other run.*
 This is obviously not true in general but we can imagine that it works like assertions,
 simply crashing the program when it's false.
-@end@
 
-@paragraph@
 This is a *weird* operation: take some fact about the current run of the program,
 and crash the program if it's not true in every other run of the program.
 Is there anything like this in computer science?
@@ -172,13 +139,9 @@ This can easily be seen in terms of the `Public` comonad I mentioned earlier:
 dynamic taint tracking takes a value and coerces it to be `Public`, and thus publicly viewable,
 crashing if the value depends on sensitive information.
 That is, the program crashes if the value isn't *necessary* with respect to the secret inputs.
-@end@
 
-@subheading@
-Conclusion
-@end@
+### Conclusion
 
-@paragraph@
 That's all I have to say about this stuff for now but I hope to keep exploring
 modal logic as a language for security and crashing.
 I care a lot about crashing because I like the [https://en.wikipedia.org/wiki/Crash-only_software](crash-only software)
@@ -187,4 +150,3 @@ but I'm a type theorist and logician primarily.
 I have a crash-based project I'm working on that I'll hopefully post about soon.
 Also, if you're interested in how comonads are useful I've *got* to link [https://dl.acm.org/doi/10.1145/3408993](this).
 I hope this was interesting!
-@end@
