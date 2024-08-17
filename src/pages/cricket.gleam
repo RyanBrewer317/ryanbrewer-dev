@@ -42,7 +42,7 @@ rest assured that Cricket is inspired by fascinating categorical ",
           ),
           html.a(
             [
-              attribute.src(
+              attribute.href(
                 "https://ncatlab.org/nlab/show/polarity+in+type+theory",
               ),
             ],
@@ -71,7 +71,7 @@ console.write(iter.go{start: 7, step: n->n-1}.next.next.val)
         ]),
         html.p([], [
           text("To read more about Cricket, look "),
-          html.a([attribute.src("https://github.com/RyanBrewer317/cricket")], [
+          html.a([attribute.href("https://github.com/RyanBrewer317/cricket")], [
             text("here"),
           ]),
           text("."),
