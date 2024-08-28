@@ -54,10 +54,7 @@ fn searchbox() -> Element(Nil) {
 pub fn list_posts(posts: List(Page)) -> Element(Nil) {
   html.html([attribute.attribute("lang", "en")], [
     head("Search Posts - Ryan Brewer", "Look through Ryan's past posts", [
-      html.script(
-        [attribute.attribute("type", "module")],
-        "import '../../style.css';",
-      ),
+      html.link([attribute.rel("stylesheet"), attribute.href("/style.css")]),
       script_posts(posts),
       script(),
     ]),

@@ -1,0 +1,71 @@
+import * as $arctic from "../../arctic/arctic.mjs";
+import * as $option from "../../gleam_stdlib/gleam/option.mjs";
+import { Some } from "../../gleam_stdlib/gleam/option.mjs";
+import * as $attribute from "../../lustre/lustre/attribute.mjs";
+import { attribute } from "../../lustre/lustre/attribute.mjs";
+import * as $element from "../../lustre/lustre/element.mjs";
+import { text } from "../../lustre/lustre/element.mjs";
+import * as $html from "../../lustre/lustre/element/html.mjs";
+import { toList, makeError } from "../gleam.mjs";
+import * as $helpers from "../helpers.mjs";
+import { pretty_date } from "../helpers.mjs";
+
+export function post(p) {
+  let $ = p.date;
+  if (!($ instanceof Some)) {
+    throw makeError(
+      "assignment_no_match",
+      "components/thumbnail",
+      13,
+      "post",
+      "Assignment pattern did not match",
+      { value: $ }
+    )
+  }
+  let date = $[0];
+  return $html.li(
+    toList([$attribute.class$("post-thumbnail"), $attribute.id(p.id)]),
+    toList([
+      $html.h3(
+        toList([]),
+        toList([
+          $html.a(
+            toList([$attribute.href("../posts/" + p.id)]),
+            toList([text(p.title)]),
+          ),
+        ]),
+      ),
+      $html.div(
+        toList([$attribute.class$("subtle-text")]),
+        toList([text(pretty_date(date))]),
+      ),
+      $html.p(toList([]), toList([text(p.blerb)])),
+    ]),
+  );
+}
+
+export function wiki(w) {
+  return $html.li(
+    toList([$attribute.class$("wiki-thumbnail"), $attribute.id(w.id)]),
+    toList([
+      $html.h3(
+        toList([]),
+        toList([
+          $html.a(
+            toList([$attribute.href("../wiki/" + w.id)]),
+            toList([text(w.title)]),
+          ),
+        ]),
+      ),
+      (() => {
+        let $ = w.body;
+        if ($.hasLength(0)) {
+          return $html.p(toList([]), toList([]));
+        } else {
+          let el = $.head;
+          return el;
+        }
+      })(),
+    ]),
+  );
+}

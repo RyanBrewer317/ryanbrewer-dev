@@ -18,13 +18,10 @@ pub fn homepage(posts: List(Page)) -> Element(Nil) {
       "Ryan Brewer's Blog",
       "The place Ryan writes his thoughts and shows off SaberVM and other cool projects.",
       [
+        html.link([attribute.rel("stylesheet"), attribute.href("/style.css")]),
         html.script(
           [attribute.attribute("type", "module")],
-          "import '../style.css';",
-        ),
-        html.script(
-          [attribute.attribute("type", "module")],
-          "import { main } from \"../src/client/homepage.gleam\";
+          "import { main } from \"/priv/ryanbrewerdev/client/homepage.mjs\";
  document.addEventListener(\"DOMContentLoaded\", () => {
    const dispatch = main({});
  });",

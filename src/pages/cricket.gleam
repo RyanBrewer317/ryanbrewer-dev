@@ -12,7 +12,7 @@ import lustre/element/html
 pub fn cricket() -> Element(Nil) {
   html.html([attribute.attribute("lang", "en")], [
     head("Cricket - Ryan Brewer", "The Cricket Programming Language", [
-      html.script([attribute.type_("module")], "import '../../style.css';"),
+      html.link([attribute.rel("stylesheet"), attribute.href("/style.css")]),
     ]),
     html.body([], [
       navbar(),

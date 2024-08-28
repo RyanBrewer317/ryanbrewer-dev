@@ -15,10 +15,10 @@ pub fn demos() -> Element(Nil) {
       "Demos - Ryan Brewer",
       "Interactive demonstrations of concepts from programming language theory",
       [
-        script([attribute("type", "module")], "import '../../style.css';"),
+        html.link([attribute.rel("stylesheet"), attribute.href("/style.css")]),
         script(
           [attribute("type", "module")],
-          "import { main } from \"../../src/client/demos.gleam\";
+          "import { main } from \"/priv/ryanbrewerdev/client/demos.mjs\";
  document.addEventListener(\"DOMContentLoaded\", () => {
    const dispatch = main({});
  });",

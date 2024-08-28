@@ -1,8 +1,8 @@
 id: type-of-sprintf
-name: The Type of Sprintf
+title: The Type of Sprintf
 date: 2024-05-14
 tags: dependent,type,types,theory,dependently,large,elimination,eliminations,sprintf,agda,printf,format,string,refinement
-description: Most static type systems wouldn't let you make something like sprintf, whose type is determined by a format string. Dependent types can save the day!
+blerb: Most static type systems wouldn't let you make something like sprintf, whose type is determined by a format string. Dependent types can save the day!
 
 Today I decided to write a little post about giving a type to the `sprintf` function via dependent types. The idea of this and related functions (like `printf`) is to have the first argument be a string, and special patterns in the string determine what the following arguments should be. For example:
 
@@ -21,7 +21,7 @@ void my_sprintf(char* format, ???) {
 
 ...because `my_sprintf` doesn't have the same special case that the `sprintf` function has in the typechecker.
 
-However, in a *dependent* type system, we actually *do* have the power to make functions like these. In fact, `sprintf` is sometimes given as the main example of what dependent types allow you to do that you couldn't do with only refinement types. For full transparency, I got this example from the [http://www.danielgratzer.com/courses/type-theory-s-2024/lecture-notes.pdf](lecture notes) of Daniel Gratzer. Hopefully this blog post makes a cool example a little more accessible.
+However, in a *dependent* type system, we actually *do* have the power to make functions like these. In fact, `sprintf` is sometimes given as the main example of what dependent types allow you to do that you couldn't do with only refinement types. For full transparency, I got this example from the [lecture notes](http://www.danielgratzer.com/courses/type-theory-s-2024/lecture-notes.pdf) of Daniel Gratzer. Hopefully this blog post makes a cool example a little more accessible.
 
 Without further ado, the set-up goes like this. As you can imagine, we have to parse the format string at compile-time to determine the types of the arguments. Therefore we'll start by making a simple `Token` datatype:
 
@@ -60,7 +60,7 @@ tokens_to_type tokens = case tokens of
     StrFormat :: rest => String -> tokens_to_type rest
     [] => String
 
-This is worth taking a moment to unpack. Normal characters get dropped on the floor since they have no impact on the type we're constructing. Format characters, on the other hand, each prepend a new argument type to the overall function type. The base case, when there are no more characters in the format string, produces the final return type of the function: a `String`. For example, if the format string was `"%d %s"`, the tokenization would be `[IntFormat, NormalChar ' ', StrFormat], so the resulting type would be `Int -> String -> String`. This might be confusing because it's a post-order traversal of the list, and might feel kind of backwards.
+This is worth taking a moment to unpack. Normal characters get dropped on the floor since they have no impact on the type we're constructing. Format characters, on the other hand, each prepend a new argument type to the overall function type. The base case, when there are no more characters in the format string, produces the final return type of the function: a `String`. For example, if the format string was `"%d %s"`, the tokenization would be `\[IntFormat, NormalChar ' ', StrFormat], so the resulting type would be `Int -> String -> String`. This might be confusing because it's a post-order traversal of the list, and might feel kind of backwards.
 
 This process of producing different types based on a case-statement inspection ("elimination") of a value is called a "Large Elimination" and can be thought of as a definitive feature of dependent types that is absent from refinement types. It's extremely important for writing proofs of, say, mathematical theorems, but it's also very useful for programming tasks like the `sprintf` example we're exploring.
 
@@ -90,4 +90,4 @@ Obviously this code doesn't meet a full specification of `sprintf`, and is imple
 
 Maybe this is just a toy example, and languages without dependent types get by with special-cased `sprintf` functions just fine. But I think that this example is quite a nice demonstration of what's *possible* with dependent types that wouldn't be possible with other systems, including even refinement types. Personally, I find large eliminations very useful for writing proofs, such as when I want to prove that certain ADT constructors are impossible at a certain point. But that's a story for another time :)
 
-discussion [https://news.ycombinator.com/item?id=40361197](here).
+discussion [here](https://news.ycombinator.com/item?id=40361197).

@@ -1,224 +1,74 @@
 id: safe-mmm-with-coeffects
-name: Safe Manual Memory Management with Coeffects
+title: Safe Manual Memory Management with Coeffects
 date: 2024-01-25
 tags: safe,safety,manual,memory,management,coeffect,coeffects,sabervm,saber,tech,programming,language,languages,static,analysis
-description: Using ideas from Crary et al.'s Calculus of Capabilities, I discuss the coeffectful memory management used in SaberVM.
+blerb: Using ideas from Crary et al.'s Calculus of Capabilities, I discuss the coeffectful memory management used in SaberVM.
 
-Recently I [https://ryanbrewer.dev/posts/announcing-svm.html](announced) SaberVM,
-which uses a fun combination of features to express quite a lot in a safe way.
-One of the big interesting parts of SaberVM is its memory safety scheme.
-Part of SaberVM's strategy is at compiletime, like how Rust guarantees memory safety at compiletime.
-These sorts of approaches have seen a lot of interest lately.
-SaberVM's compiletime strategy is quite a bit different from Rust's, however, and isn't a well-known strategy outside of academia,
-so it might be an exciting new opening in the design space for language designers who haven't seen it before.
-For marketing purposes I'll call it "capability-based memory safety," but I didn't invent it.
-I thought it could be helpful if I devoted a post to explain capability-based memory safety and why I chose it for SaberVM.
+Recently I [announced](https://ryanbrewer.dev/posts/announcing-svm.html) SaberVM, which uses a fun combination of features to express quite a lot in a safe way. One of the big interesting parts of SaberVM is its memory safety scheme. Part of SaberVM's strategy is at compiletime, like how Rust guarantees memory safety at compiletime. These sorts of approaches have seen a lot of interest lately. SaberVM's compiletime strategy is quite a bit different from Rust's, however, and isn't a well-known strategy outside of academia, so it might be an exciting new opening in the design space for language designers who haven't seen it before. For marketing purposes I'll call it "capability-based memory safety," but I didn't invent it. I thought it could be helpful if I devoted a post to explain capability-based memory safety and why I chose it for SaberVM.
 
-This post assumes a passing familiarity with use-after-free bugs,
-[https://en.wikipedia.org/wiki/Continuation-passing_style](continuation-passing style),
-and memory arenas.
+This post assumes a passing familiarity with use-after-free bugs, [continuation-passing style](https://en.wikipedia.org/wiki/Continuation-passing_style), and memory arenas.
 
 ### A Calculus of Capabilities
 
-The system I'm using is almost entirely taken from the 1999 paper 
-[https://dl.acm.org/doi/10.1145/292540.292564](Typed Memory Management in a Calculus of Capabilities),
-by Karl Crary, David Walker, and Greg Morrisett. 
-My adjustments are generally about making it work for a stack-based bytecode language, and I don't discuss them here.
-I highly recommend reading the paper, as it's short and accessible for an academic paper.
-However, for those unfamiliar with programming language papers and that sort of academic writing,
-this post attempts to talk through the ideas in a more informal, casual style.
+The system I'm using is almost entirely taken from the 1999 paper [Typed Memory Management in a Calculus of Capabilities](https://dl.acm.org/doi/10.1145/292540.292564), by Karl Crary, David Walker, and Greg Morrisett. My adjustments are generally about making it work for a stack-based bytecode language, and I don't discuss them here. I highly recommend reading the paper, as it's short and accessible for an academic paper. However, for those unfamiliar with programming language papers and that sort of academic writing, this post attempts to talk through the ideas in a more informal, casual style.
 
-I want to emphasize that I didn't come up with this idea, and the paper is fairly well-cited.
-Compile-time memory safety ideas are much more well-known within academia than outside of it,
-where most people only know of what Rust is doing.
-Some of these ideas made it into the Cyclone language, which actually had a significant 
-[https://doc.rust-lang.org/reference/influences.html](influence) on Rust's design.
+I want to emphasize that I didn't come up with this idea, and the paper is fairly well-cited. Compile-time memory safety ideas are much more well-known within academia than outside of it, where most people only know of what Rust is doing. Some of these ideas made it into the Cyclone language, which actually had a significant [influence](https://doc.rust-lang.org/reference/influences.html) on Rust's design.
 
-First, we think of all our memory being divided up into *regions,* which are basically arenas. 
-To simplify, we won't consider nested regions, nor an unfreeable "heap region" for allocating without a region.
-If you want to allocate something in the heap, you must have made a region first.
+First, we think of all our memory being divided up into *regions,* which are basically arenas. To simplify, we won't consider nested regions, nor an unfreeable "heap region" for allocating without a region. If you want to allocate something in the heap, you must have made a region first.
 
-To access the memory in a region, we need *capabilities.*
-A capability is basically a set of memory access privileges.
-Say we're using a region called `r`.
-If I want to store a point `(3, 4)` in `r`, I need a *read-write* capability for `r`, which I'll write as `+r`. 
-Then the type of the point will be `(int, int)\@r` where `r` is the name of the region.
-Then if I want to access the contents of this point, like `fst(p)`, I *also* need the `+r` capability.
+To access the memory in a region, we need *capabilities.* A capability is basically a set of memory access privileges. Say we're using a region called `r`. If I want to store a point `(3, 4)` in `r`, I need a *read-write* capability for `r`, which I'll write as `+r`. Then the type of the point will be `(int, int)\@r` where `r` is the name of the region. Then if I want to access the contents of this point, like `fst(p)`, I *also* need the `+r` capability.
 
-In this system there's no way to free the point, since regions are like arenas. 
-SaberVM has an extension to the idea that allows freeing individual values, but I won't go into that here.
-Whole regions can be freed together, though, which needs a *unique* capability `1r`.
-Unique capabilities grant read-write permission but they additionally can't be duplicated in a set of capabilities; hence the name.
-That means if you have a capability `{+r1, 1r2}`, then you know for sure that `r1` and `r2` are different regions.
-If region polymorphism is involved, you know the region variables won't be instantiated with the same region,
-since `r2` would then exist in the capability set twice.
-This is really important, because otherwise you could free `r2` and then read and write in `r1`, which might be the memory you just freed!
+In this system there's no way to free the point, since regions are like arenas. SaberVM has an extension to the idea that allows freeing individual values, but I won't go into that here. Whole regions can be freed together, though, which needs a *unique* capability `1r`. Unique capabilities grant read-write permission but they additionally can't be duplicated in a set of capabilities; hence the name. That means if you have a capability `{+r1, 1r2}`, then you know for sure that `r1` and `r2` are different regions. If region polymorphism is involved, you know the region variables won't be instantiated with the same region, since `r2` would then exist in the capability set twice. This is really important, because otherwise you could free `r2` and then read and write in `r1`, which might be the memory you just freed!
 
-Note that this means capability sets aren't *really* sets.
-`{+r}` is equivalent to `{+r, +r}`, but `{1r}` and `{1r, 1r}`
-aren't equivalent because `{1r, 1r}` is an unsatisfiable capability
-asserting that `r`\\(\\neq\\)`r`.
+Note that this means capability sets aren't *really* sets. `{+r}` is equivalent to `{+r, +r}`, but `{1r}` and `{1r, 1r}` aren't equivalent because `{1r, 1r}` is an unsatisfiable capability asserting that `r`\\(\\neq\\)`r`.
 
 ### Region Borrowing
 
-If creating a region gives you the unique right to free it,
-and that right is needed and consumed when you free it,
-then how do read-write (nonunique) capabilities come about?
-You could instantiate a `+r` with a `1r`, and duplicate the `+r` as much as you want, but then
-you couldn't get back the access you need to free the region later, so what do you do?
-The amazing answer is *bounded capability polymorphism.*
+If creating a region gives you the unique right to free it, and that right is needed and consumed when you free it, then how do read-write (nonunique) capabilities come about? You could instantiate a `+r` with a `1r`, and duplicate the `+r` as much as you want, but then you couldn't get back the access you need to free the region later, so what do you do? The amazing answer is *bounded capability polymorphism.*
 
-Functions can be capability-polymorphic, meaning they can have capability variables that are instantiated at each callsite.
-These variables can have a *bound,* which is some set of privileges that they at least grant.
-For example, `{1r}`\\(\\le\\)`{+r}` is always true and means that the set `{1r}` satisfies anything that the set `{+r}` satisfies 
-(but not necessarily vice versa).
-Therefore, a bounded capability variable looks like `c≤C` for some set of capabilities `C`, 
-and can only be instantiated with a set of capabilities that satisfies `C`.
-So if we have `c≤{+r1}`, we know that it could be instantiated with, say, `{+r1}`, `{1r1}`, or `{+r1, +r2}`,
-but not `{+r2}` or `{}`.
-Why is this so helpful? Well for one we know that `c` grants at least as much privilege as `{+r1}`, so we can safely read and write to `r1`.
-But the much more interesting consequence for a [https://en.wikipedia.org/wiki/Continuation-passing_style](CPS)-based language 
-like SaberVM and the language in the paper is *region borrowing.*
+Functions can be capability-polymorphic, meaning they can have capability variables that are instantiated at each callsite. These variables can have a *bound,* which is some set of privileges that they at least grant. For example, `{1r}`\\(\\le\\)`{+r}` is always true and means that the set `{1r}` satisfies anything that the set `{+r}` satisfies (but not necessarily vice versa). Therefore, a bounded capability variable looks like `c≤C` for some set of capabilities `C`, and can only be instantiated with a set of capabilities that satisfies `C`. So if we have `c≤{+r1}`, we know that it could be instantiated with, say, `{+r1}`, `{1r1}`, or `{+r1, +r2}`, but not `{+r2}` or `{}`. Why is this so helpful? Well for one we know that `c` grants at least as much privilege as `{+r1}`, so we can safely read and write to `r1`. But the much more interesting consequence for a [CPS](https://en.wikipedia.org/wiki/Continuation-passing_style)-based language like SaberVM and the language in the paper is *region borrowing.*
 
-Say I have a CPS function of type `forall r: Rgn, c≤{+r}. [c](int, int, [c](int)->void)->void`.
-What does this mean? It has a polymorphic region variable `r` and a bounded polymorphic capability variable `c`
-which has at least the privilege to read and write in `r`.
-The `[c]` notation means that the function can only be called in a context where capability set `c` (our bounded variable) is satisfied. 
-That is, we know this function will at least be allowed to read and write in the instantiated `r` regions.
-It takes as arguments two integers and a continuation that also needs `c` to be satisfied, and which takes an integer.
-You can think of this as a CPS'd addition or multiplication function or something like that,
-that uses heap allocation for some reason.
+Say I have a CPS function of type `forall r: Rgn, c≤{+r}. \[c](int, int, \[c](int)->void)->void`. What does this mean? It has a polymorphic region variable `r` and a bounded polymorphic capability variable `c` which has at least the privilege to read and write in `r`. The `\[c]` notation means that the function can only be called in a context where capability set `c` (our bounded variable) is satisfied. That is, we know this function will at least be allowed to read and write in the instantiated `r` regions. It takes as arguments two integers and a continuation that also needs `c` to be satisfied, and which takes an integer. You can think of this as a CPS'd addition or multiplication function or something like that, that uses heap allocation for some reason.
 
-We can call that function instantiating `r` with a region `r2` and instantiating `c` with `{1r2}`, since `{1r2}`\\(\\le\\)`{+r2}`. 
-That means our function type becomes `[{1r2}](int, int, [{1r2}](int)->void)->void`, 
-and can be given a continuation that is able to free `r2`.
-This is in spite of the fact that the code inside the function is using a duplicable `c≤{+r2}` capability and is accessing `r2` willy-nilly.
-This is perfectly safe, because either the continuation gets dropped and the program continues with only the `+r2` capability
-(never again being able to free `r2`) or the continuation is eventually called (via the `c≤{+r}` capability) and the `1r2` capability is regained,
-with the `+r2` capability forever lost (until the next borrow :).
-These ideas can be used in a non-CPS setting too (see [https://cyclone.thelanguage.org/wiki/Type-Checking%20Regions/](Cyclone)), 
-but CPS simplifies this process a lot.
+We can call that function instantiating `r` with a region `r2` and instantiating `c` with `{1r2}`, since `{1r2}`\\(\\le\\)`{+r2}`. That means our function type becomes `\[{1r2}](int, int, \[{1r2}](int)->void)->void`, and can be given a continuation that is able to free `r2`. This is in spite of the fact that the code inside the function is using a duplicable `c≤{+r2}` capability and is accessing `r2` willy-nilly. This is perfectly safe, because either the continuation gets dropped and the program continues with only the `+r2` capability (never again being able to free `r2`) or the continuation is eventually called (via the `c≤{+r}` capability) and the `1r2` capability is regained, with the `+r2` capability forever lost (until the next borrow :). These ideas can be used in a non-CPS setting too (see [Cyclone](https://cyclone.thelanguage.org/wiki/Type-Checking%20Regions/)), but CPS simplifies this process a lot.
 
 As you can see, this allows a kind of region borrowing, where `1r` capabilities are temporarily made `+r` in a safe way.
 
-Capabilities are purely compiletime things, like types,
-and each point in the program has a capability for everything that's allowed at that point.
-Note that a uniqueness capability doesn't put any uniqueness restriction on the values the 
-program computes with; pointers can always be duplicated as much as you want, and the type system still
-prevents use-after-free bugs.
-When a region `r` is freed, it's impossible to obtain a capability for it, so pointers into the region
-can't be dereferenced, even though they can still be passed around.
+Capabilities are purely compiletime things, like types, and each point in the program has a capability for everything that's allowed at that point. Note that a uniqueness capability doesn't put any uniqueness restriction on the values the  program computes with; pointers can always be duplicated as much as you want, and the type system still prevents use-after-free bugs. When a region `r` is freed, it's impossible to obtain a capability for it, so pointers into the region can't be dereferenced, even though they can still be passed around.
 
 ### Coeffects
 
-This part of the post assumes some familiarity with monads and effect systems. 
-A passing familiarity of comonads or category theory will help. 
-Feel free to skip to the conclusion of the post if this isn't understandable!
+This part of the post assumes some familiarity with monads and effect systems. A passing familiarity of comonads or category theory will help. Feel free to skip to the conclusion of the post if this isn't understandable!
 
-I wanted to close out the body of this post with a fun theoretical discussion.
-Recall that function types are written like `[C](a)->b`, 
-where `C` is a set of capabilities that must be satisfied for the function to be safely called.
-This approach to guaranteeing safety at compiletime is called *coeffectful.*
-You may have heard of *effects,* and how they are modeled with *monads.*
-Coeffects are the dual of effects: they don't change the environment as they execute,
-they *require* some fact about the environment *to be able* to start executing.
+I wanted to close out the body of this post with a fun theoretical discussion. Recall that function types are written like `\[C](a)->b`, where `C` is a set of capabilities that must be satisfied for the function to be safely called. This approach to guaranteeing safety at compiletime is called *coeffectful.* You may have heard of *effects,* and how they are modeled with *monads.* Coeffects are the dual of effects: they don't change the environment as they execute, they *require* some fact about the environment *to be able* to start executing.
 
-Comonads are the duals of monads.
-Instead of `return: a -> m a` they have `extract: c a -> a`.
-Instead of `join: m (m a) -> m a` they have `duplicate: c a -> c (c a)`.
-Instead of `bind: m a -> (a -> m b) -> m b` they have `cobind: c a -> (c a -> b) -> c b`.
-We won't generally assume comonads have an `fmap: (a -> b) -> (c a -> c b)`
-since that requirement can get in the way and isn't needed in true category theory.
-(It's referred to as *tensorial strength* if you need a search term).
+Comonads are the duals of monads. Instead of `return: a -> m a` they have `extract: c a -> a`. Instead of `join: m (m a) -> m a` they have `duplicate: c a -> c (c a)`. Instead of `bind: m a -> (a -> m b) -> m b` they have `cobind: c a -> (c a -> b) -> c b`. We won't generally assume comonads have an `fmap: (a -> b) -> (c a -> c b)` since that requirement can get in the way and isn't needed in true category theory. (It's referred to as *tensorial strength* if you need a search term).
 
-Effects don't make monads. They only make sense for functions, not values.
-So there's no `IO(a)` in an effect system, to use `IO` effects as a running example.
-There's no `return: a->IO(a)` unless `return` actually performs an IO effect.
-There's no way for `join: IO(IO(a)) -> IO(a)` to make sense for an effect system; almost because it's too trivial.
-This is why effect systems often write `a -[IO]-> b` instead of `a -> IO(b)` for effectful functions.
+Effects don't make monads. They only make sense for functions, not values. So there's no `IO(a)` in an effect system, to use `IO` effects as a running example. There's no `return: a->IO(a)` unless `return` actually performs an IO effect. There's no way for `join: IO(IO(a)) -> IO(a)` to make sense for an effect system; almost because it's too trivial. This is why effect systems often write `a -\[IO]-> b` instead of `a -> IO(b)` for effectful functions.
 
-Coeffects are the same with comonads. They only make sense for functions, not values.
-So I won't be able to define `extract` or `duplicate` for this capability system.
-However, it's imaginable that you can *simulate* this capability system with comonads.
-A very fascinating discussion of this happens in [https://arxiv.org/abs/1907.07283](this paper)
-by Vikraman Choudhury and Neel Krishnaswami, two fantastic researchers to keep an eye on.
-They use comonads in a nonpure language to simulate purity, instead of the typical reverse of
-using monads in a pure language to simulate nonpurity.
-They also make a very explicit connection between comonads and capability-based security,
-and offer some fascinating category theory relating capability systems and linear logic.
-Choudhury in particular is a top researcher on comonadic security right now,
-and I'll recommend another interesting [https://dl.acm.org/doi/abs/10.1145/3563335](paper) of his
-on using comonads, this time for information security. I talked more about that paper in this 
-[https://ryanbrewer.dev/posts/security-crashing-modal-logic.html](post).
+Coeffects are the same with comonads. They only make sense for functions, not values. So I won't be able to define `extract` or `duplicate` for this capability system. However, it's imaginable that you can *simulate* this capability system with comonads. A very fascinating discussion of this happens in [this paper](https://arxiv.org/abs/1907.07283) by Vikraman Choudhury and Neel Krishnaswami, two fantastic researchers to keep an eye on. They use comonads in a nonpure language to simulate purity, instead of the typical reverse of using monads in a pure language to simulate nonpurity. They also make a very explicit connection between comonads and capability-based security, and offer some fascinating category theory relating capability systems and linear logic. Choudhury in particular is a top researcher on comonadic security right now, and I'll recommend another interesting [paper](https://dl.acm.org/doi/abs/10.1145/3563335) of his on using comonads, this time for information security. I talked more about that paper in this [post](https://ryanbrewer.dev/posts/security-crashing-modal-logic.html).
 
-The Crary, et al. paper on capabilities doesn't make any mention of comonads, coeffects, or category theory.
-However, the Choudhury and Krishnaswami paper fills me with confidence about my intuition that 
-this is indeed a coeffect system at heart. The Crary, et al. paper *does* mention *effect* systems, though, saying,
+The Crary, et al. paper on capabilities doesn't make any mention of comonads, coeffects, or category theory. However, the Choudhury and Krishnaswami paper fills me with confidence about my intuition that this is indeed a coeffect system at heart. The Crary, et al. paper *does* mention *effect* systems, though, saying,
 
-*"The relationship between effects and capabilities is quite close. 
-A necessary prerequisite for the use of either system is type inference, 
-performed by a programmer or compiler, and much of the research into effects systems has concentrated on this difficult task. 
-Because of the focus on inference, effect systems are usually formulated as a bottom-up synthesis of effects. 
-Our work may viewed as producing verifiable evidence of the correctness of an inference. 
-Hence, while effect systems typically work bottom-up, specifying the effects that might occur, 
-we take a top-down approach, specifying by capabilities the effects that are* permitted to occur."
+*"The relationship between effects and capabilities is quite close. A necessary prerequisite for the use of either system is type inference, performed by a programmer or compiler, and much of the research into effects systems has concentrated on this difficult task. Because of the focus on inference, effect systems are usually formulated as a bottom-up synthesis of effects. Our work may viewed as producing verifiable evidence of the correctness of an inference. Hence, while effect systems typically work bottom-up, specifying the effects that might occur, we take a top-down approach, specifying by capabilities the effects that are* permitted to occur."
 
-This again sounds like the dual of an effect system, and like much of the literature on coeffects.
-Functions are annotated with labels specifying what is allowed to occur in the function,
-and thus the function can only be called when those things are allowed for the caller.
+This again sounds like the dual of an effect system, and like much of the literature on coeffects. Functions are annotated with labels specifying what is allowed to occur in the function, and thus the function can only be called when those things are allowed for the caller.
 
-I think coeffects are a really interesting way to handle memory safety.
-SaberVM doesn't require that any values are used linearly, so there are no
-"move semantics" or anything like that.
-To do something with memory in a function, you just give that function the capability
-to do that thing, and the type system guarantees that the function will only be 
-called when the memory operations are safe to perform. 
-The memory in freed regions will never be read or written, using a very permissive compiletime analysis
-that is completely compositional (so functions can be analyzed individually).
+I think coeffects are a really interesting way to handle memory safety. SaberVM doesn't require that any values are used linearly, so there are no "move semantics" or anything like that. To do something with memory in a function, you just give that function the capability to do that thing, and the type system guarantees that the function will only be called when the memory operations are safe to perform. The memory in freed regions will never be read or written, using a very permissive compiletime analysis that is completely compositional (so functions can be analyzed individually).
 
 ### SaberVM
 
-As a final detail, it's worth mentioning why I chose this for SaberVM instead of other approaches.
-I talk about this at length in my [https://ryanbrewer.dev/posts/announcing-svm.html](announcement)
-and even more on the README of the SaberVM [https://github.com/RyanBrewer317/SaberVM](github),
-so I won't go into much detail here.
+As a final detail, it's worth mentioning why I chose this for SaberVM instead of other approaches. I talk about this at length in my [announcement](https://ryanbrewer.dev/posts/announcing-svm.html) and even more on the README of the SaberVM [github](https://github.com/RyanBrewer317/SaberVM), so I won't go into much detail here.
 
-SaberVM should be able to support garbage collection, since it's intended to be a target for functional languages. 
-Ideally it can do this without FFI, since SaberVM binaries that use FFI can no longer be blindly trusted. 
-That means there can be very few limitations on how memory is accessed.
-I'm pairing this system with Vale's [https://verdagon.dev/blog/generational-references](generational references)
-so that values within a region can be freed and reused, without freeing the whole region.
-This gives a lot of expressivity, and I'm a big fan of what Vale is doing.
-The region system offers a way to deal with the fragmentation issues generational references can cause,
-because there are certain points in a program where we can guarantee at compiletime
-that some memory won't be accessed ever again (namely, when we free the region),
-which means we can combine all that memory into a single chunk to start allocating out of
-without fear of how old pointers could dereference into it.
+SaberVM should be able to support garbage collection, since it's intended to be a target for functional languages. Ideally it can do this without FFI, since SaberVM binaries that use FFI can no longer be blindly trusted. That means there can be very few limitations on how memory is accessed. I'm pairing this system with Vale's [generational references](https://verdagon.dev/blog/generational-references) so that values within a region can be freed and reused, without freeing the whole region. This gives a lot of expressivity, and I'm a big fan of what Vale is doing. The region system offers a way to deal with the fragmentation issues generational references can cause, because there are certain points in a program where we can guarantee at compiletime that some memory won't be accessed ever again (namely, when we free the region), which means we can combine all that memory into a single chunk to start allocating out of without fear of how old pointers could dereference into it.
 
-That really is the primary reason for using regions, but they offer a number of other benefits as well.
-You can use many small regions if you don't want to be reusing the memory in them for some reason,
-and they work like arenas at runtime so have very fast allocation and deallocation.
-I'd love to see more languages start incorporating capability-based (or coeffectful) memory safety guarantees.
+That really is the primary reason for using regions, but they offer a number of other benefits as well. You can use many small regions if you don't want to be reusing the memory in them for some reason, and they work like arenas at runtime so have very fast allocation and deallocation. I'd love to see more languages start incorporating capability-based (or coeffectful) memory safety guarantees.
 
 ### Conclusion
 
-This post is perhaps longer and more technical than some of my others.
-Public interest in SaberVM since I [https://ryanbrewer.dev/posts/announcing-svm.html](announced) 
-it has far exceeded my expectations, 
+This post is perhaps longer and more technical than some of my others. Public interest in SaberVM since I [announced](https://ryanbrewer.dev/posts/announcing-svm.html) it has far exceeded my expectations, 
 so I thought it might be appreciated if I wrote a few posts explaining the magic sauce that makes it work.
 
-Aside from that, I've thought for a long time that coeffects are very underappreciated
-for programming language safety guarantees. 
-That was a big part of why I wrote this [https://ryanbrewer.dev/posts/security-crashing-modal-logic.html](post)
-which talked a little more about how comonads (and the necessity operator from modal logic, which is a comonad)
-can be used for information security.
+Aside from that, I've thought for a long time that coeffects are very underappreciated for programming language safety guarantees. That was a big part of why I wrote this [post](https://ryanbrewer.dev/posts/security-crashing-modal-logic.html) which talked a little more about how comonads (and the necessity operator from modal logic, which is a comonad) can be used for information security.
 
-I hope this post is interesting for people.
-If you found it interesting, I recommend reading the original [https://dl.acm.org/doi/10.1145/292540.292564](paper),
-and checking out the [https://cyclone.thelanguage.org/](Cyclone) language.
-I also of course recommend checking out [https://github.com/RyanBrewer317/SaberVM](SaberVM) if you haven't.
-If you want to see SaberVM's progress and are maybe even considering using it as the
-backend of your functional language, consider
-starring it on [https://github.com/RyanBrewer317/SaberVM](github), or even
-sponsoring my work on [https://github.com/sponsors/RyanBrewer317](github) or 
-[https://ko-fi.com/ryanbrewer](ko-fi)!
+I hope this post is interesting for people. If you found it interesting, I recommend reading the original [paper](https://dl.acm.org/doi/10.1145/292540.292564), and checking out the [Cyclone](https://cyclone.thelanguage.org/) language. I also of course recommend checking out [SaberVM](https://github.com/RyanBrewer317/SaberVM) if you haven't. If you want to see SaberVM's progress and are maybe even considering using it as the backend of your functional language, consider starring it on [github](https://github.com/RyanBrewer317/SaberVM), or even sponsoring my work on [github](https://github.com/sponsors/RyanBrewer317) or [ko-fi](https://ko-fi.com/ryanbrewer)!

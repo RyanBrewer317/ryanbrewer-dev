@@ -1,5 +1,5 @@
 id: first-wiki
-name: My First Wiki Page
+title: My First Wiki Page
 tags: first wiki
 
 This is my first wiki page! It's mostly to test out the codebase.

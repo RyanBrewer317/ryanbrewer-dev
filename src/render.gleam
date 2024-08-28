@@ -37,7 +37,7 @@ fn render_wiki_as_list(wiki: Page) -> List(Element(Nil)) {
 pub fn post(post: Page) -> Element(Nil) {
   html.html([attribute("lang", "en")], [
     head(post.title, post.blerb, [
-      html.script([attribute.type_("module")], "import '../../../style.css';"),
+      html.link([attribute.rel("stylesheet"), attribute.href("/style.css")]),
     ]),
     html.body([], [
       navbar(),
@@ -50,7 +50,7 @@ pub fn post(post: Page) -> Element(Nil) {
 pub fn wiki(wiki: Page) -> Element(Nil) {
   html.html([attribute("lang", "en")], [
     head(wiki.title, "", [
-      html.script([attribute.type_("module")], "import '../../../style.css';"),
+      html.link([attribute.rel("stylesheet"), attribute.href("/style.css")]),
     ]),
     html.body([], [
       navbar(),

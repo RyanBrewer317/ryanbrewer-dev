@@ -1,132 +1,52 @@
 id: implicit-products-better-forall
-name: Implicit Products: A Better Type-Theoretic "Forall"
+title: Implicit Products: A Better Type-Theoretic "Forall"
 date: 2023-12-10
 tags: implicit,product,products,type,types,dependent,dependently,theory,forall,for all,set,logic,universal,quantifier,quantifiers,lambda,intersection,runtime,erasure,proof,irrelevance,cedille,cdle
-description: Implicit products are a fascinating approach to universal quantification in dependent type theory, as well as proof irrelevance/erasure in compiler implementation.
+blerb: Implicit products are a fascinating approach to universal quantification in dependent type theory, as well as proof irrelevance/erasure in compiler implementation.
 
-In this post I'll talk about a type theory idea that deserves more attention: implicit products.
-They came about in the 1998 dissertation of Alexandre Miquel, 
-but for English speakers a common citation would be 
-[https://www.semanticscholar.org/paper/The-Implicit-Calculus-of-Constructions-Extending-an-Miquel/990f8f44e011192122dfd35617f8cabf08052d60](The Implicit Calculus of Constructions).
-They are used most notably in the [https://cedille.github.io/](Cedille) proof assistant.
+In this post I'll talk about a type theory idea that deserves more attention: implicit products. They came about in the 1998 dissertation of Alexandre Miquel, but for English speakers a common citation would be [The Implicit Calculus of Constructions](https://www.semanticscholar.org/paper/The-Implicit-Calculus-of-Constructions-Extending-an-Miquel/990f8f44e011192122dfd35617f8cabf08052d60). They are used most notably in the [Cedille](https://cedille.github.io/) proof assistant.
 
-This post assumes familiarity with logic (including the universal quantifer "for all"), 
-[/posts/logic-in-types.html](dependent types), very basic set theory, and the \\(\\lambda\\)-calculus.
+This post assumes familiarity with logic (including the universal quantifer "for all"), [dependent types](/posts/logic-in-types.html), very basic set theory, and the \\(\\lambda\\)-calculus.
 
 ### What is it?
 
-For a moment, you'll have to ignore the strange name *implicit product.*
-It makes a lot of sense once you know how they're used, but I'll get to that later.
-Think of an implicit product like a universal quantifer ("for all") in logic.
-It's written like:
+For a moment, you'll have to ignore the strange name *implicit product.* It makes a lot of sense once you know how they're used, but I'll get to that later. Think of an implicit product like a universal quantifer ("for all") in logic. It's written like:
 
 @math
 \forall x: A. B(x)
 
-where \\(A\\) is a type (proposition) and \\(B\\) is a type that may refer to \\(x\\) (predicate).
-An implicit product is a type that is inhabited if \\(B(x)\\) is inhabited for every \\(x\\) in \\(A\\).
+where \\(A\\) is a type (proposition) and \\(B\\) is a type that may refer to \\(x\\) (predicate). An implicit product is a type that is inhabited if \\(B(x)\\) is inhabited for every \\(x\\) in \\(A\\).
 
-In the most recent iterations of the theory, you make a value of this type by writing \\(\\Lambda x: A. e\\)
-where, crucially, \\(x\\) can appear in the types in \\(e\\) but not in anything that could stick around 'til runtime.
-That is, if you erase all the types of \\(e\\), the \\(x\\) isn't used in it at all.
-To use such a term \\(\\Lambda x: A. e\\) you call it like a \\(\\lambda\\)-abstraction.
-For the purpose of type-inference you might mark the call with some additional symbol to make it clear
-that the function is a \\(\\Lambda\\)-abstraction and not a \\(\\lambda\\)-abstraction.
+In the most recent iterations of the theory, you make a value of this type by writing \\(\\Lambda x: A. e\\) where, crucially, \\(x\\) can appear in the types in \\(e\\) but not in anything that could stick around 'til runtime. That is, if you erase all the types of \\(e\\), the \\(x\\) isn't used in it at all. To use such a term \\(\\Lambda x: A. e\\) you call it like a \\(\\lambda\\)-abstraction. For the purpose of type-inference you might mark the call with some additional symbol to make it clear that the function is a \\(\\Lambda\\)-abstraction and not a \\(\\lambda\\)-abstraction.
 
 ### Infinite Intersection
 
-On the surface this might just seem like a worse \\(\\Pi\\)-type, which is the usual "for all" in something
-like Coq, Agda, or Lean. 
-The only real difference, from what I've said so far, is that the parameter of the abstraction isn't used at runtime. 
-But this makes all the difference. 
+On the surface this might just seem like a worse \\(\\Pi\\)-type, which is the usual "for all" in something like Coq, Agda, or Lean. The only real difference, from what I've said so far, is that the parameter of the abstraction isn't used at runtime. But this makes all the difference. 
 
-A \\(\\Pi\\)-type represents "for all" in a strange, roundabout way: it's a function (implication) from *data* (not a proposition)
-to a proposition about that data, and can only be constructed if every proposition it returns can be constructed given the data of that
-proposition.
+A \\(\\Pi\\)-type represents "for all" in a strange, roundabout way: it's a function (implication) from *data* (not a proposition) to a proposition about that data, and can only be constructed if every proposition it returns can be constructed given the data of that proposition.
 
-When you learn about "for all" and "there exists" in logic, that isn't at all how you normally learn it.
-Instead, "for all" is seen as a possibly-infinite conjunction for every element of a possibly-infinite domain.
-"There exists" is, dually, a possibly-infinite *disjunction* for every element of a possibly-infinite domain.
-\\(\\Sigma\\)-types can kind of be seen that way for existential quantification, but \\(\\Pi\\)-types definitely can't,
-because again, they're a bit like an implication from a non-proposition.
-They work for doing logic, of course; they're just a little weird.
+When you learn about "for all" and "there exists" in logic, that isn't at all how you normally learn it. Instead, "for all" is seen as a possibly-infinite conjunction for every element of a possibly-infinite domain. "There exists" is, dually, a possibly-infinite *disjunction* for every element of a possibly-infinite domain. \\(\\Sigma\\)-types can kind of be seen that way for existential quantification, but \\(\\Pi\\)-types definitely can't, because again, they're a bit like an implication from a non-proposition. They work for doing logic, of course; they're just a little weird.
 
-Implicit products fix this. 
-An implicit product is a possibly-infinite *intersection* (conjunction) of all the possible "return types."
-\\(\\forall x: A. B(x)\\) is an intersection of all types \\(B(x)\\) for each \\(x\\) in \\(A\\).
+Implicit products fix this. An implicit product is a possibly-infinite *intersection* (conjunction) of all the possible "return types." \\(\\forall x: A. B(x)\\) is an intersection of all types \\(B(x)\\) for each \\(x\\) in \\(A\\).
 
-What's an intersection type? 
-They're what you get when you say that a term (say, \\(e\\)) could have one type (say, \\(A\\)) or another type (say, \\(B\\)).
-Then you might say \\(e: A\\cap B\\), that is, \\(e\\) is in the *intersection* between the types \\(A\\) and \\(B\\).
-This isn't the standard way of doing conjunction in logic (pairs/structs/records/tuples are), 
-but it should be clear that if \\(A\\cap B\\) has a value in it (and is therefore "true"), 
-then \\(A\\) and \\(B\\) also have values in them (are "true"), namely that same value in their intersection.
-So it acts like a conjunction here.
+What's an intersection type? They're what you get when you say that a term (say, \\(e\\)) could have one type (say, \\(A\\)) or another type (say, \\(B\\)). Then you might say \\(e: A\\cap B\\), that is, \\(e\\) is in the *intersection* between the types \\(A\\) and \\(B\\). This isn't the standard way of doing conjunction in logic (pairs/structs/records/tuples are), but it should be clear that if \\(A\\cap B\\) has a value in it (and is therefore "true"), then \\(A\\) and \\(B\\) also have values in them (are "true"), namely that same value in their intersection. So it acts like a conjunction here.
 
-But wait, if it's just an intersection of all the return types, it's not really a function, right?
-How is that possible? We literally have calls to \\(\\Lambda\\)-abstractions!
-The secret is, since they don't use their parameter for evaluation, it's perfectly fine to evaluate them with no argument at all!
-(In the absense of side-effects, of course.)
-At runtime, \\((\\Lambda x: A. \\lambda y: B. e)(a)(b)\\) evaluates as \\((\\lambda y. e)(b)\\). 
-Therefore, values of type \\(\\forall x: A. B(x)\\) execute as some kind of \\(B\\), 
-and we know that its argument (\\(x\\)) doesn't matter.
+But wait, if it's just an intersection of all the return types, it's not really a function, right? How is that possible? We literally have calls to \\(\\Lambda\\)-abstractions! The secret is, since they don't use their parameter for evaluation, it's perfectly fine to evaluate them with no argument at all! (In the absense of side-effects, of course.) At runtime, \\((\\Lambda x: A. \\lambda y: B. e)(a)(b)\\) evaluates as \\((\\lambda y. e)(b)\\). Therefore, values of type \\(\\forall x: A. B(x)\\) execute as some kind of \\(B\\), and we know that its argument (\\(x\\)) doesn't matter.
 
-Implicit products are generalization in their truest form: some aspect of a value could work for multiple types,
-so the type gets replaced with a type variable, and the whole type becomes an intersection of all the possible
-instantiations of that type variable. 
-This is why I argue that implicit products make for a "better" interpretation of the universal quantifier than \\(\\Pi\\)-types.
+Implicit products are generalization in their truest form: some aspect of a value could work for multiple types, so the type gets replaced with a type variable, and the whole type becomes an intersection of all the possible instantiations of that type variable. This is why I argue that implicit products make for a "better" interpretation of the universal quantifier than \\(\\Pi\\)-types.
 
 ### What's with that name though?
 
-The other reason implicit products are interesting is from a compiler engineering perspective.
-When developing a dependently typed language, a huge optimization to make is erasing the proofs at runtime,
-much like one erases the types at runtime. 
-The only thing that should remain are values of actual *data*types, like `int`, 
-as opposed to proofs of propositions (which are technically still values of types).
+The other reason implicit products are interesting is from a compiler engineering perspective. When developing a dependently typed language, a huge optimization to make is erasing the proofs at runtime, much like one erases the types at runtime. The only thing that should remain are values of actual *data*types, like `int`, as opposed to proofs of propositions (which are technically still values of types).
 
-To that end, languages like Idris and Agda, and the extraction of OCaml code from Coq code, 
-have put a lot of effort into *proof irrelevance,* the property that proofs don't affect runtime execution.
-Idris has Quantitative Type Theory for this, which allows it to say that the variables bound by some 
-\\(\\lambda\\)-abstractions aren't used "relevantly" in the body of the abstraction. 
-That is, it can be used in things that get erased, but nothing that makes it to runtime.
-Sound familiar? These "0-quantity" \\(\\lambda\\)-abstractions are very similar to implicit products.
-The only real difference is that they're philosophically still functions, not giant intersections.
-The erasure of the argument is an optimization, nothing more. 
-Regardless, this similarity shows how using implicit products in your language automatically gives you a big optimization.
+To that end, languages like Idris and Agda, and the extraction of OCaml code from Coq code, have put a lot of effort into *proof irrelevance,* the property that proofs don't affect runtime execution. Idris has Quantitative Type Theory for this, which allows it to say that the variables bound by some \\(\\lambda\\)-abstractions aren't used "relevantly" in the body of the abstraction. That is, it can be used in things that get erased, but nothing that makes it to runtime. Sound familiar? These "0-quantity" \\(\\lambda\\)-abstractions are very similar to implicit products. The only real difference is that they're philosophically still functions, not giant intersections. The erasure of the argument is an optimization, nothing more. Regardless, this similarity shows how using implicit products in your language automatically gives you a big optimization.
 
-The "0-quantity" \\(\\lambda\\)-abstractions of Idris' QTT are called "implicit."
-This is a common term for arguments that we expect to disappear at runtime.
-There is the risk of confusion with another meaning for "implicit" in this context:
-arguments which you *don't* write but which (possibly) *are* present at runtime.
-This kind of "implicit" is a basic form of type inference for dependently typed languages.
-If you have a polymorphic identity function \\(id=\\lambda t: *.\\lambda x: t. x\\) then
-you'd like to be able to call it like \\(id(7)\\) instead of \\(id(\\mathbb{N})(7)\\), but
-you would consider this a notational shorthand, nothing more.
-That's called an "implicit" argument but it isn't the type of "implicit" we consider here for implicit products.
+The "0-quantity" \\(\\lambda\\)-abstractions of Idris' QTT are called "implicit." This is a common term for arguments that we expect to disappear at runtime. There is the risk of confusion with another meaning for "implicit" in this context: arguments which you *don't* write but which (possibly) *are* present at runtime. This kind of "implicit" is a basic form of type inference for dependently typed languages. If you have a polymorphic identity function \\(id=\\lambda t: *.\\lambda x: t. x\\) then you'd like to be able to call it like \\(id(7)\\) instead of \\(id(\\mathbb{N})(7)\\), but you would consider this a notational shorthand, nothing more. That's called an "implicit" argument but it isn't the type of "implicit" we consider here for implicit products.
 
-So now we know why they're called *implicit* products.
-Why are they called implicit *products?*
+So now we know why they're called *implicit* products. Why are they called implicit *products?*
 
-This might be a more basic point for those quite familiar with dependent types,
-but it's an easy source of confusion so I figured I'd touch on it anyway.
-In general in type theory, a product is a type of tuple: 
-the product of \\(\\mathbb{N}\\) and \\(\\mathbb{Z}\\) is the type of pairs of natural numbers and integers,
-and is written \\(\\mathbb{N}\\times\\mathbb{Z}\\). 
-It's a Cartesian product, to use a term more broadly familiar.
-This is really confusing because \\(\\Pi\\)-types are often referred to as "products,"
-or "dependent product types," as well as being called "dependent function types."
-My understanding for why this is the case is that we can think of a tuple (an element of a product type) as a function from
-\\(\\mathbb{N}\\) to values of various types. 
-These are "indexed" by the natural number given.
-So \\((5, {4})\\) is a tiny function mapping \\(0\\) to \\(5\\) and \\(1\\) to \\({4}\\).
-The return type of this function depends on the integer given as its argument: it's a dependent function type!
-A \\(\\Pi\\)-type indexes values of various types (the family of return types) using the values of the argument type.
-It is this function-type meaning of "product" that is used in the term "implicit product."
+This might be a more basic point for those quite familiar with dependent types, but it's an easy source of confusion so I figured I'd touch on it anyway. In general in type theory, a product is a type of tuple: the product of \\(\\mathbb{N}\\) and \\(\\mathbb{Z}\\) is the type of pairs of natural numbers and integers, and is written \\(\\mathbb{N}\\times\\mathbb{Z}\\). It's a Cartesian product, to use a term more broadly familiar. This is really confusing because \\(\\Pi\\)-types are often referred to as "products," or "dependent product types," as well as being called "dependent function types." My understanding for why this is the case is that we can think of a tuple (an element of a product type) as a function from \\(\\mathbb{N}\\) to values of various types. These are "indexed" by the natural number given. So \\((5, {4})\\) is a tiny function mapping \\(0\\) to \\(5\\) and \\(1\\) to \\({4}\\). The return type of this function depends on the integer given as its argument: it's a dependent function type! A \\(\\Pi\\)-type indexes values of various types (the family of return types) using the values of the argument type. It is this function-type meaning of "product" that is used in the term "implicit product."
 
 ### Conclusion
 
-That's all I have to say about implicit products for now.
-I think they're a really cool idea and I'm adding them to my own dependently-typed language
-[https://github.com/RyanBrewer317/Saber](Saber).
-If you want to play with a finished implemenation, though,
-the most famous by far would be [https://cedille.github.io/](Cedille).
+That's all I have to say about implicit products for now. I think they're a really cool idea and I'm adding them to my own dependently-typed language [Saber](https://github.com/RyanBrewer317/Saber). If you want to play with a finished implemenation, though, the most famous by far would be [Cedille](https://cedille.github.io/).

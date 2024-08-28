@@ -7,9 +7,17 @@
 if lsof -Pi :8085 -sTCP:LISTEN -t >/dev/null ; then
   echo "killing port in prep for server"
   commands/kill-port.sh
-fi
-gleam run && # lustre_ssg build step
-npx vite build && # this doesn't hang because of vite-plugin-close.ts
+fi &&
+gleam run && # build step
+rm -r dist &&
+mkdir dist &&
+mkdir dist/priv &&
+cp -r arctic_build/* dist &&
+rm -r dist/public &&
+cp -r public/* dist &&
+cp -r build/dev/javascript/* dist/priv &&
+cp style.css dist/ &&
+# npx vite build && # this doesn't hang because of vite-plugin-close.ts
 ( # subshell so we don't *actually* change directories
   cd $(pwd)/dist &&
   ( # subshell so we don't actually change directories

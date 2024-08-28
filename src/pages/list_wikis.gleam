@@ -52,10 +52,7 @@ fn searchbox() -> Element(Nil) {
 pub fn list_wikis(wikis: List(Page)) -> Element(Nil) {
   html.html([attribute.attribute("lang", "en")], [
     head("Search Wiki - Ryan Brewer", "Look through Ryan's personal wiki", [
-      html.script(
-        [attribute.attribute("type", "module")],
-        "import '../../style.css';",
-      ),
+      html.link([attribute.rel("stylesheet"), attribute.href("/style.css")]),
       script_wikis(wikis),
       script(),
     ]),

@@ -17,10 +17,6 @@ import shellout
 import simplifile
 import snag.{type Result}
 
-fn pretty_pos(pos: parse.Position) -> String {
-  "line " <> int.to_string(pos.line) <> ", column " <> int.to_string(pos.column)
-}
-
 pub fn parse(path: String, content: String) -> Result(Page) {
   parse.new(0)
   |> parse.add_inline_rule("*", "*", parse.wrap_inline(html.i))
@@ -28,11 +24,7 @@ pub fn parse(path: String, content: String) -> Result(Page) {
   |> parse.add_inline_rule("[", "]", fn(el, args, data) {
     use url <- result.try(
       list.first(args)
-      |> map_error(fn(_) {
-        snag.new(
-          "bad parameters for link at " <> pretty_pos(parse.get_pos(data)),
-        )
-      }),
+      |> map_error(fn(_) { snag.new("bad parameters for link") }),
     )
     Ok(#(html.a([attribute.src(url)], [el]), parse.get_state(data)))
   })

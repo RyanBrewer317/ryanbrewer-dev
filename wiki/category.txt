@@ -1,5 +1,5 @@
 id: category
-name: Category
+title: Category
 tags: category,categories,theory,object,objects,arrow,arrows,morphism,morphisms
 
 Informally, a category is just a collection of things, along with a particular relationship between these things. For example, imagine the collection of all possible states our world could be in (Einstein being the American president, dogs not existing, and any other wacky thing you can come up with). In any particular world \\(W_1\\), there are other worlds \\(W_2\\) that we can "get to" if some sequence of events were to occur, transforming \\(W_1\\) into \\(W_2\\). At the very least, every state can "get to" *itself* by "doing nothing." For example, I can get from a world where I have an apple to a world where I don't by eating the apple, or giving it away, or throwing it in a lake, etc.
@@ -30,4 +30,4 @@ In programming, we typically use a slightly different-looking category. Namely, 
 
 I think these categories-of-collections are also very useful and underappreciated for analytic philosophers, which is why the first example category I gave was an analysis of possible worlds. That category is an example where objects have an enormous amount of information (the entire state of the world), and arrows are transformations (sequences of events).
 
-Small categories form a famous and powerful category called [/wiki/cat](Cat).
+Small categories form a famous and powerful category called [Cat](/wiki/cat).

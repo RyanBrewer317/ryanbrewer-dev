@@ -12,7 +12,7 @@ import lustre/element/html
 pub fn contact() -> Element(Nil) {
   html.html([attribute.attribute("lang", "en")], [
     head("Contact - Ryan Brewer", "Contact information", [
-      html.script([attribute.type_("module")], "import '../../style.css';"),
+      html.link([attribute.rel("stylesheet"), attribute.href("/style.css")]),
     ]),
     html.body([], [
       navbar(),

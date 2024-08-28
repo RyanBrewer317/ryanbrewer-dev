@@ -1,10 +1,10 @@
 id: typechecking-svm
-name: Advanced Typechecking for Stack-Based Languages
+title: Advanced Typechecking for Stack-Based Languages
 date: 2024-02-18
 tags: sabervm,advanced,type,types,typechecking,checking,check,typecheck,stack,based,stack-based,language,languages
-description: This post discusses the interesting typechecker of SaberVM, which uses a stack-based bytecode language with a powerful type system.
+blerb: This post discusses the interesting typechecker of SaberVM, which uses a stack-based bytecode language with a powerful type system.
 
-It's been a while since I posted anything, because I've been hard at work on SaberVM's [https://github.com/RyanBrewer317/SaberVM](implementation) and a little lambda calculus [https://github.com/RyanBrewer317/SaberLC](compiler) that targets SaberVM. I thought I should take the time to write a short post discussing one of the interesting aspects of my implementation, a performant typechecker for SaberVM's type system. As SaberVM uses a stack-based bytecode language, there isn't much out there on how to typecheck it. The best example I could find of a similar language was Web Assembly's typed stack-based bytecode, but that type system is extremely simple compared to SaberVM's.
+It's been a while since I posted anything, because I've been hard at work on SaberVM's [implementation](https://github.com/RyanBrewer317/SaberVM) and a little lambda calculus [compiler](https://github.com/RyanBrewer317/SaberLC) that targets SaberVM. I thought I should take the time to write a short post discussing one of the interesting aspects of my implementation, a performant typechecker for SaberVM's type system. As SaberVM uses a stack-based bytecode language, there isn't much out there on how to typecheck it. The best example I could find of a similar language was Web Assembly's typed stack-based bytecode, but that type system is extremely simple compared to SaberVM's.
 
 ### Simple Stack-Based Typechecking
 
@@ -32,7 +32,7 @@ This compile-time stack approach removes the upper bound on the power of the typ
 
 Another benefit is performance. SaberVM uses the fact that functions are in Continuation-Passing Style (that is, function calls are only the last instruction of functions, never earlier) for an extremely parallel algorithm: function types have no return type component to them, and all the compile-time instructions are before any `call` instructions. Therefore, SaberVM can get the type of each function without *any* knowledge of the types of other functions, by simply stopping when it gets to a call that calls a global function. Therefore, functions can be typechecked in parallel in any order. Once all the types are known, SaberVM goes through any calls to global (ie. not from a function parameter) functions and makes sure that those types are correct. This second pass is quick for each function call (functions aren't re-processed) and only happens for global function calls. Calling a parameter is very normal in Continuation-Passing Style code, so global function calls aren't as common as you'd think anyway. The second pass is linear (big-O of N) in the number of global function calls, like how the first pass is linear in the size of the program, but both passes are trivial to parallelize; each iteration creates no information needed by future iterations. 
 
-Typechecking in a parallel way like this also makes the type errors trivially recoverable, see [https://matklad.github.io/2023/08/01/on-modularity-of-lexical-analysis.html](this fantastic blog post) for more about that. 
+Typechecking in a parallel way like this also makes the type errors trivially recoverable, see [this fantastic blog post](https://matklad.github.io/2023/08/01/on-modularity-of-lexical-analysis.html) for more about that. 
 
 Lastly, the language is easy to compile to, for the same reasons stack-based bytecode always is. Type annotations are lowered in a recursive algorithm to make them in a sort of reverse-polish-notation form, and that Just Works™.
 
@@ -40,6 +40,6 @@ Lastly, the language is easy to compile to, for the same reasons stack-based byt
 
 This was one of those ideas that I felt really proud of for some reason, even if it's basically just like Zig's `comptime`-based polymorphism but for stack-based bytecode. I don't know of any language that's doing anything like this. Having worked with the system for a while now, I'm really really pleased with it.
 
-The main reference I have for prior work is [https://binji.github.io/posts/webassembly-type-checking/](this) great article on Web Assembly's typechecker.
+The main reference I have for prior work is [this](https://binji.github.io/posts/webassembly-type-checking/) great article on Web Assembly's typechecker.
 
-If you're interested in this project and want to know more, I have another post about it [https://ryanbrewer.dev/posts/announcing-svm.html](here). If you're excited about SaberVM's future, consider starring it on [https://github.com/RyanBrewer317/SaberVM](github) (which has a more in-depth description of the project), or even [https://github.com/sponsors/RyanBrewer317](sponsoring) me or supporting me on [https://ko-fi.com/ryanbrewer](ko-fi)!
+If you're interested in this project and want to know more, I have another post about it [here](https://ryanbrewer.dev/posts/announcing-svm.html). If you're excited about SaberVM's future, consider starring it on [github](https://github.com/RyanBrewer317/SaberVM) (which has a more in-depth description of the project), or even [sponsoring](https://github.com/sponsors/RyanBrewer317) me or supporting me on [ko-fi](https://ko-fi.com/ryanbrewer)!
