@@ -4,16 +4,17 @@
 -export([frontmatter/1, metadata/1, content/1, default_renderer/0, render/2, render_with_metadata/2]).
 -export_type([renderer/1]).
 
--type renderer(PTG) :: {renderer,
-        fun((gleam@dict:dict(binary(), binary()), gleam@option:option(binary()), binary()) -> PTG),
-        fun((list(PTG)) -> PTG),
-        fun((gleam@dict:dict(binary(), binary()), integer(), list(PTG)) -> PTG),
-        fun((jot:destination(), gleam@dict:dict(binary(), binary()), list(PTG)) -> PTG),
-        fun((gleam@dict:dict(binary(), binary()), list(PTG)) -> PTG),
-        fun((list(PTG)) -> PTG),
-        fun((binary()) -> PTG),
-        fun((binary()) -> PTG),
-        fun((jot:destination(), binary()) -> PTG)}.
+-type renderer(PZH) :: {renderer,
+        fun((gleam@dict:dict(binary(), binary()), gleam@option:option(binary()), binary()) -> PZH),
+        fun((list(PZH)) -> PZH),
+        fun((gleam@dict:dict(binary(), binary()), integer(), list(PZH)) -> PZH),
+        fun((jot:destination(), gleam@dict:dict(binary(), binary()), list(PZH)) -> PZH),
+        fun((gleam@dict:dict(binary(), binary()), list(PZH)) -> PZH),
+        fun((list(PZH)) -> PZH),
+        fun((binary()) -> PZH),
+        fun((binary()) -> PZH),
+        fun((jot:destination(), binary()) -> PZH),
+        fun(() -> PZH)}.
 
 -spec frontmatter(binary()) -> {ok, binary()} | {error, nil}.
 frontmatter(Document) ->
@@ -34,7 +35,7 @@ frontmatter(Document) ->
                                 value => _assert_fail,
                                 module => <<"lustre/ssg/djot"/utf8>>,
                                 function => <<"frontmatter"/utf8>>,
-                                line => 133})
+                                line => 135})
             end,
             case gleam@regex:scan(Re, Document) of
                 [{match, Frontmatter, _} | _] ->
@@ -88,7 +89,7 @@ linkify(Text) ->
                         value => _assert_fail,
                         module => <<"lustre/ssg/djot"/utf8>>,
                         function => <<"linkify"/utf8>>,
-                        line => 278})
+                        line => 284})
     end,
     _pipe = Text,
     _pipe@1 = gleam@regex:split(Re, _pipe),
@@ -190,7 +191,8 @@ default_renderer() ->
                     lustre@element@html:img(
                         [lustre@attribute:src(Url@2), lustre@attribute:alt(Alt)]
                     )
-            end end}.
+            end end,
+        fun() -> lustre@element@html:br([]) end}.
 
 -spec text_content(list(jot:inline())) -> binary().
 text_content(Segments) ->
@@ -211,14 +213,17 @@ text_content(Segments) ->
                     <<Text/binary, Content@4/binary>>;
 
                 {image, _, _} ->
+                    Text;
+
+                linebreak ->
                     Text
             end end).
 
 -spec render_inline(
     jot:inline(),
     gleam@dict:dict(binary(), binary()),
-    renderer(PUG)
-) -> PUG.
+    renderer(QAH)
+) -> QAH.
 render_inline(Inline, References, Renderer) ->
     case Inline of
         {text, Text} ->
@@ -260,14 +265,17 @@ render_inline(Inline, References, Renderer) ->
             (erlang:element(9, Renderer))(Content@3);
 
         {image, Alt, Destination@1} ->
-            (erlang:element(10, Renderer))(Destination@1, text_content(Alt))
+            (erlang:element(10, Renderer))(Destination@1, text_content(Alt));
+
+        linebreak ->
+            (erlang:element(11, Renderer))()
     end.
 
 -spec render_block(
     jot:container(),
     gleam@dict:dict(binary(), binary()),
-    renderer(PUC)
-) -> PUC.
+    renderer(QAD)
+) -> QAD.
 render_block(Block, References, Renderer) ->
     case Block of
         {paragraph, Attrs, Inline} ->
@@ -297,7 +305,7 @@ render_block(Block, References, Renderer) ->
             (erlang:element(2, Renderer))(Attrs@2, Language, Code)
     end.
 
--spec render(binary(), renderer(PTQ)) -> list(PTQ).
+-spec render(binary(), renderer(PZR)) -> list(PZR).
 render(Document, Renderer) ->
     Content = content(Document),
     {document, Content@1, References} = jot:parse(Content),
@@ -309,8 +317,8 @@ render(Document, Renderer) ->
 
 -spec render_with_metadata(
     binary(),
-    fun((gleam@dict:dict(binary(), tom:toml())) -> renderer(PTV))
-) -> {ok, list(PTV)} | {error, tom:parse_error()}.
+    fun((gleam@dict:dict(binary(), tom:toml())) -> renderer(PZW))
+) -> {ok, list(PZW)} | {error, tom:parse_error()}.
 render_with_metadata(Document, Renderer) ->
     Toml = frontmatter(Document),
     gleam@result:'try'(

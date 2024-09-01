@@ -25,24 +25,6 @@ function view(_) {
         toList([]),
         toList([
           $html.div(
-            toList([$attribute.id("ryan-and-ivy-img")]),
-            toList([
-              $html.img(
-                toList([
-                  $attribute.src("/ryan-and-ivy.jpg"),
-                  $attribute.width(300),
-                ]),
-              ),
-              $html.div(
-                toList([
-                  $attribute.class$("caption"),
-                  $attribute.class$("subtle-text"),
-                ]),
-                toList([text("Me and my lovely wife, Ivy!")]),
-              ),
-            ]),
-          ),
-          $html.div(
             toList([]),
             toList([
               $html.h3(toList([]), toList([text("Me.")])),

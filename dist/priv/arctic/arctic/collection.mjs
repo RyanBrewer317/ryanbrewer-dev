@@ -15,15 +15,7 @@ import * as $parse from "../arctic/parse.mjs";
 import { Ok, toList, prepend as listPrepend } from "../gleam.mjs";
 
 export function with_parser(c, parser) {
-  return new Collection(
-    c.directory,
-    parser,
-    c.index,
-    c.feed,
-    c.ordering,
-    c.render,
-    c.raw_pages,
-  );
+  return c.withFields({ parse: parser });
 }
 
 export function default_parser() {
@@ -94,61 +86,23 @@ export function new$(dir) {
 }
 
 export function with_index(c, index) {
-  return new Collection(
-    c.directory,
-    c.parse,
-    new Some(index),
-    c.feed,
-    c.ordering,
-    c.render,
-    c.raw_pages,
-  );
+  return c.withFields({ index: new Some(index) });
 }
 
 export function with_feed(c, filename, render) {
-  return new Collection(
-    c.directory,
-    c.parse,
-    c.index,
-    new Some([filename, render]),
-    c.ordering,
-    c.render,
-    c.raw_pages,
-  );
+  return c.withFields({ feed: new Some([filename, render]) });
 }
 
 export function with_ordering(c, ordering) {
-  return new Collection(
-    c.directory,
-    c.parse,
-    c.index,
-    c.feed,
-    ordering,
-    c.render,
-    c.raw_pages,
-  );
+  return c.withFields({ ordering: ordering });
 }
 
 export function with_renderer(c, renderer) {
-  return new Collection(
-    c.directory,
-    c.parse,
-    c.index,
-    c.feed,
-    c.ordering,
-    renderer,
-    c.raw_pages,
-  );
+  return c.withFields({ render: renderer });
 }
 
 export function with_raw_page(c, id, body) {
-  return new Collection(
-    c.directory,
-    c.parse,
-    c.index,
-    c.feed,
-    c.ordering,
-    c.render,
-    listPrepend(new RawPage(id, body), c.raw_pages),
-  );
+  return c.withFields({
+    raw_pages: listPrepend(new RawPage(id, body), c.raw_pages)
+  });
 }

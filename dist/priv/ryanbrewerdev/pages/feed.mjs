@@ -68,13 +68,14 @@ function month(date) {
 export function feed(posts) {
   let items = $list.map(
     $list.reverse(posts),
-    (post) => {
+    (cacheable_post) => {
+      let post = $arctic.to_dummy_page(cacheable_post);
       let $ = post.date;
       if (!($ instanceof Some)) {
         throw makeError(
           "assignment_no_match",
           "pages/feed",
-          15,
+          16,
           "",
           "Assignment pattern did not match",
           { value: $ }

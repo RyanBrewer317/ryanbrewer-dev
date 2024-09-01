@@ -26,7 +26,7 @@ new() ->
     fun((list(arctic:processed_collection())) -> lustre@internals@vdom:element(nil))
 ) -> arctic:config().
 home_renderer(Config, Renderer) ->
-    {config, Renderer, erlang:element(3, Config), erlang:element(4, Config)}.
+    erlang:setelement(2, Config, Renderer).
 
 -spec add_main_page(
     arctic:config(),
@@ -34,14 +34,12 @@ home_renderer(Config, Renderer) ->
     lustre@internals@vdom:element(nil)
 ) -> arctic:config().
 add_main_page(Config, Id, Body) ->
-    {config,
-        erlang:element(2, Config),
-        [{raw_page, Id, Body} | erlang:element(3, Config)],
-        erlang:element(4, Config)}.
+    erlang:setelement(
+        3,
+        Config,
+        [{raw_page, Id, Body} | erlang:element(3, Config)]
+    ).
 
 -spec add_collection(arctic:config(), arctic:collection()) -> arctic:config().
 add_collection(Config, Collection) ->
-    {config,
-        erlang:element(2, Config),
-        erlang:element(3, Config),
-        [Collection | erlang:element(4, Config)]}.
+    erlang:setelement(4, Config, [Collection | erlang:element(4, Config)]).

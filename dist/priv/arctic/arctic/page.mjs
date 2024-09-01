@@ -12,45 +12,29 @@ export function new$(id) {
 }
 
 export function with_body(p, body) {
-  return new Page(p.id, body, p.metadata, p.title, p.blerb, p.tags, p.date);
+  return p.withFields({ body: body });
 }
 
 export function with_metadata(p, key, val) {
-  return new Page(
-    p.id,
-    p.body,
-    $dict.insert(p.metadata, key, val),
-    p.title,
-    p.blerb,
-    p.tags,
-    p.date,
-  );
+  return p.withFields({ metadata: $dict.insert(p.metadata, key, val) });
 }
 
 export function replace_metadata(p, metadata) {
-  return new Page(p.id, p.body, metadata, p.title, p.blerb, p.tags, p.date);
+  return p.withFields({ metadata: metadata });
 }
 
 export function with_title(p, title) {
-  return new Page(p.id, p.body, p.metadata, title, p.blerb, p.tags, p.date);
+  return p.withFields({ title: title });
 }
 
 export function with_blerb(p, blerb) {
-  return new Page(p.id, p.body, p.metadata, p.title, blerb, p.tags, p.date);
+  return p.withFields({ blerb: blerb });
 }
 
 export function with_tags(p, tags) {
-  return new Page(p.id, p.body, p.metadata, p.title, p.blerb, tags, p.date);
+  return p.withFields({ tags: tags });
 }
 
 export function with_date(p, date) {
-  return new Page(
-    p.id,
-    p.body,
-    p.metadata,
-    p.title,
-    p.blerb,
-    p.tags,
-    new Some(date),
-  );
+  return p.withFields({ date: new Some(date) });
 }

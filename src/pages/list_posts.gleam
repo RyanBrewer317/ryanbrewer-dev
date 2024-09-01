@@ -2,7 +2,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-import arctic.{type Page}
+import arctic.{type CacheablePage}
 import components/head.{head}
 import components/navbar.{navbar}
 import components/script_posts.{script_posts}
@@ -51,7 +51,7 @@ fn searchbox() -> Element(Nil) {
   ])
 }
 
-pub fn list_posts(posts: List(Page)) -> Element(Nil) {
+pub fn list_posts(posts: List(CacheablePage)) -> Element(Nil) {
   html.html([attribute.attribute("lang", "en")], [
     head("Search Posts - Ryan Brewer", "Look through Ryan's past posts", [
       html.link([attribute.rel("stylesheet"), attribute.href("/style.css")]),

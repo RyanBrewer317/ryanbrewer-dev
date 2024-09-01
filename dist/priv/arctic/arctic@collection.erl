@@ -8,14 +8,7 @@
     fun((binary(), binary()) -> {ok, arctic:page()} | {error, snag:snag()})
 ) -> arctic:collection().
 with_parser(C, Parser) ->
-    {collection,
-        erlang:element(2, C),
-        Parser,
-        erlang:element(4, C),
-        erlang:element(5, C),
-        erlang:element(6, C),
-        erlang:element(7, C),
-        erlang:element(8, C)}.
+    erlang:setelement(3, C, Parser).
 
 -spec default_parser() -> fun((binary(), binary()) -> {ok, arctic:page()} |
     {error, snag:snag()}).
@@ -93,60 +86,32 @@ new(Dir) ->
 
 -spec with_index(
     arctic:collection(),
-    fun((list(arctic:page())) -> lustre@internals@vdom:element(nil))
+    fun((list(arctic:cacheable_page())) -> lustre@internals@vdom:element(nil))
 ) -> arctic:collection().
 with_index(C, Index) ->
-    {collection,
-        erlang:element(2, C),
-        erlang:element(3, C),
-        {some, Index},
-        erlang:element(5, C),
-        erlang:element(6, C),
-        erlang:element(7, C),
-        erlang:element(8, C)}.
+    erlang:setelement(4, C, {some, Index}).
 
 -spec with_feed(
     arctic:collection(),
     binary(),
-    fun((list(arctic:page())) -> binary())
+    fun((list(arctic:cacheable_page())) -> binary())
 ) -> arctic:collection().
 with_feed(C, Filename, Render) ->
-    {collection,
-        erlang:element(2, C),
-        erlang:element(3, C),
-        erlang:element(4, C),
-        {some, {Filename, Render}},
-        erlang:element(6, C),
-        erlang:element(7, C),
-        erlang:element(8, C)}.
+    erlang:setelement(5, C, {some, {Filename, Render}}).
 
 -spec with_ordering(
     arctic:collection(),
     fun((arctic:page(), arctic:page()) -> gleam@order:order())
 ) -> arctic:collection().
 with_ordering(C, Ordering) ->
-    {collection,
-        erlang:element(2, C),
-        erlang:element(3, C),
-        erlang:element(4, C),
-        erlang:element(5, C),
-        Ordering,
-        erlang:element(7, C),
-        erlang:element(8, C)}.
+    erlang:setelement(6, C, Ordering).
 
 -spec with_renderer(
     arctic:collection(),
     fun((arctic:page()) -> lustre@internals@vdom:element(nil))
 ) -> arctic:collection().
 with_renderer(C, Renderer) ->
-    {collection,
-        erlang:element(2, C),
-        erlang:element(3, C),
-        erlang:element(4, C),
-        erlang:element(5, C),
-        erlang:element(6, C),
-        Renderer,
-        erlang:element(8, C)}.
+    erlang:setelement(7, C, Renderer).
 
 -spec with_raw_page(
     arctic:collection(),
@@ -154,11 +119,4 @@ with_renderer(C, Renderer) ->
     lustre@internals@vdom:element(nil)
 ) -> arctic:collection().
 with_raw_page(C, Id, Body) ->
-    {collection,
-        erlang:element(2, C),
-        erlang:element(3, C),
-        erlang:element(4, C),
-        erlang:element(5, C),
-        erlang:element(6, C),
-        erlang:element(7, C),
-        [{raw_page, Id, Body} | erlang:element(8, C)]}.
+    erlang:setelement(8, C, [{raw_page, Id, Body} | erlang:element(8, C)]).

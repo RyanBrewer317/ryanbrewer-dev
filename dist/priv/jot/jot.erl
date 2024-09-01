@@ -17,7 +17,8 @@
         gleam@option:option(binary()),
         binary()}.
 
--type inline() :: {text, binary()} |
+-type inline() :: linebreak |
+    {text, binary()} |
     {link, list(inline()), destination()} |
     {image, list(inline()), destination()} |
     {emphasis, list(inline())} |
@@ -30,7 +31,7 @@
 add_attribute(Attributes, Key, Value) ->
     case Key of
         <<"class"/utf8>> ->
-            gleam@dict:update(Attributes, Key, fun(Previous) -> case Previous of
+            gleam@dict:upsert(Attributes, Key, fun(Previous) -> case Previous of
                         none ->
                             Value;
 
@@ -672,7 +673,10 @@ take_inline_text(Inlines, Acc) ->
 
                 {image, Nested, _} ->
                     Acc@1 = take_inline_text(Nested, Acc),
-                    take_inline_text(Rest, Acc@1)
+                    take_inline_text(Rest, Acc@1);
+
+                linebreak ->
+                    take_inline_text(Rest, Acc)
             end
     end.
 
@@ -748,44 +752,49 @@ open_tag(Html, Tag, Attributes) ->
 -spec inline_to_html(binary(), inline(), gleam@dict:dict(binary(), binary())) -> binary().
 inline_to_html(Html, Inline, Refs) ->
     case Inline of
+        linebreak ->
+            _pipe = Html,
+            _pipe@1 = open_tag(_pipe, <<"br"/utf8>>, gleam@dict:new()),
+            gleam@string:append(_pipe@1, <<"\n"/utf8>>);
+
         {text, Text} ->
             <<Html/binary, Text/binary>>;
 
         {strong, Inlines} ->
-            _pipe = Html,
-            _pipe@1 = open_tag(_pipe, <<"strong"/utf8>>, gleam@dict:new()),
-            _pipe@2 = inlines_to_html(_pipe@1, Inlines, Refs),
-            close_tag(_pipe@2, <<"strong"/utf8>>);
+            _pipe@2 = Html,
+            _pipe@3 = open_tag(_pipe@2, <<"strong"/utf8>>, gleam@dict:new()),
+            _pipe@4 = inlines_to_html(_pipe@3, Inlines, Refs),
+            close_tag(_pipe@4, <<"strong"/utf8>>);
 
         {emphasis, Inlines@1} ->
-            _pipe@3 = Html,
-            _pipe@4 = open_tag(_pipe@3, <<"em"/utf8>>, gleam@dict:new()),
-            _pipe@5 = inlines_to_html(_pipe@4, Inlines@1, Refs),
-            close_tag(_pipe@5, <<"em"/utf8>>);
+            _pipe@5 = Html,
+            _pipe@6 = open_tag(_pipe@5, <<"em"/utf8>>, gleam@dict:new()),
+            _pipe@7 = inlines_to_html(_pipe@6, Inlines@1, Refs),
+            close_tag(_pipe@7, <<"em"/utf8>>);
 
         {link, Text@1, Destination} ->
-            _pipe@6 = Html,
-            _pipe@7 = open_tag(
-                _pipe@6,
+            _pipe@8 = Html,
+            _pipe@9 = open_tag(
+                _pipe@8,
                 <<"a"/utf8>>,
                 destination_attribute(<<"href"/utf8>>, Destination, Refs)
             ),
-            _pipe@8 = inlines_to_html(_pipe@7, Text@1, Refs),
-            close_tag(_pipe@8, <<"a"/utf8>>);
+            _pipe@10 = inlines_to_html(_pipe@9, Text@1, Refs),
+            close_tag(_pipe@10, <<"a"/utf8>>);
 
         {image, Text@2, Destination@1} ->
-            _pipe@9 = Html,
+            _pipe@11 = Html,
             open_tag(
-                _pipe@9,
+                _pipe@11,
                 <<"img"/utf8>>,
                 begin
-                    _pipe@10 = destination_attribute(
+                    _pipe@12 = destination_attribute(
                         <<"src"/utf8>>,
                         Destination@1,
                         Refs
                     ),
                     gleam@dict:insert(
-                        _pipe@10,
+                        _pipe@12,
                         <<"alt"/utf8>>,
                         take_inline_text(Text@2, <<""/utf8>>)
                     )
@@ -793,10 +802,10 @@ inline_to_html(Html, Inline, Refs) ->
             );
 
         {code, Content} ->
-            _pipe@11 = Html,
-            _pipe@12 = open_tag(_pipe@11, <<"code"/utf8>>, gleam@dict:new()),
-            _pipe@13 = gleam@string:append(_pipe@12, Content),
-            close_tag(_pipe@13, <<"code"/utf8>>)
+            _pipe@13 = Html,
+            _pipe@14 = open_tag(_pipe@13, <<"code"/utf8>>, gleam@dict:new()),
+            _pipe@15 = gleam@string:append(_pipe@14, Content),
+            close_tag(_pipe@15, <<"code"/utf8>>)
     end.
 
 -spec inlines_to_html(
@@ -900,11 +909,124 @@ parse_inline(In, Text, Acc) ->
         [] ->
             parse_inline([], <<""/utf8>>, [{text, Text} | Acc]);
 
-        [<<"_"/utf8>>, C | Rest] when ((C =/= <<" "/utf8>>) andalso (C =/= <<"\t"/utf8>>)) andalso (C =/= <<"\n"/utf8>>) ->
-            Rest@1 = [C | Rest],
-            case parse_emphasis(Rest@1, <<"_"/utf8>>) of
+        [<<"\\"/utf8>>, C | Rest] ->
+            Aft = parse_inline(Rest, <<""/utf8>>, Acc),
+            case C of
+                <<"\n"/utf8>> ->
+                    lists:append([{text, Text}, linebreak], Aft);
+
+                <<" "/utf8>> ->
+                    parse_inline(Rest, <<Text/binary, "&nbsp;"/utf8>>, Acc);
+
+                <<"!"/utf8>> ->
+                    parse_inline(Rest, <<Text/binary, C/binary>>, Acc);
+
+                <<"\""/utf8>> ->
+                    parse_inline(Rest, <<Text/binary, C/binary>>, Acc);
+
+                <<"#"/utf8>> ->
+                    parse_inline(Rest, <<Text/binary, C/binary>>, Acc);
+
+                <<"$"/utf8>> ->
+                    parse_inline(Rest, <<Text/binary, C/binary>>, Acc);
+
+                <<"%"/utf8>> ->
+                    parse_inline(Rest, <<Text/binary, C/binary>>, Acc);
+
+                <<"&"/utf8>> ->
+                    parse_inline(Rest, <<Text/binary, C/binary>>, Acc);
+
+                <<"'"/utf8>> ->
+                    parse_inline(Rest, <<Text/binary, C/binary>>, Acc);
+
+                <<"("/utf8>> ->
+                    parse_inline(Rest, <<Text/binary, C/binary>>, Acc);
+
+                <<")"/utf8>> ->
+                    parse_inline(Rest, <<Text/binary, C/binary>>, Acc);
+
+                <<"*"/utf8>> ->
+                    parse_inline(Rest, <<Text/binary, C/binary>>, Acc);
+
+                <<"+"/utf8>> ->
+                    parse_inline(Rest, <<Text/binary, C/binary>>, Acc);
+
+                <<","/utf8>> ->
+                    parse_inline(Rest, <<Text/binary, C/binary>>, Acc);
+
+                <<"-"/utf8>> ->
+                    parse_inline(Rest, <<Text/binary, C/binary>>, Acc);
+
+                <<"."/utf8>> ->
+                    parse_inline(Rest, <<Text/binary, C/binary>>, Acc);
+
+                <<"/"/utf8>> ->
+                    parse_inline(Rest, <<Text/binary, C/binary>>, Acc);
+
+                <<":"/utf8>> ->
+                    parse_inline(Rest, <<Text/binary, C/binary>>, Acc);
+
+                <<";"/utf8>> ->
+                    parse_inline(Rest, <<Text/binary, C/binary>>, Acc);
+
+                <<"<"/utf8>> ->
+                    parse_inline(Rest, <<Text/binary, C/binary>>, Acc);
+
+                <<"="/utf8>> ->
+                    parse_inline(Rest, <<Text/binary, C/binary>>, Acc);
+
+                <<">"/utf8>> ->
+                    parse_inline(Rest, <<Text/binary, C/binary>>, Acc);
+
+                <<"?"/utf8>> ->
+                    parse_inline(Rest, <<Text/binary, C/binary>>, Acc);
+
+                <<"@"/utf8>> ->
+                    parse_inline(Rest, <<Text/binary, C/binary>>, Acc);
+
+                <<"["/utf8>> ->
+                    parse_inline(Rest, <<Text/binary, C/binary>>, Acc);
+
+                <<"\\"/utf8>> ->
+                    parse_inline(Rest, <<Text/binary, C/binary>>, Acc);
+
+                <<"]"/utf8>> ->
+                    parse_inline(Rest, <<Text/binary, C/binary>>, Acc);
+
+                <<"^"/utf8>> ->
+                    parse_inline(Rest, <<Text/binary, C/binary>>, Acc);
+
+                <<"_"/utf8>> ->
+                    parse_inline(Rest, <<Text/binary, C/binary>>, Acc);
+
+                <<"`"/utf8>> ->
+                    parse_inline(Rest, <<Text/binary, C/binary>>, Acc);
+
+                <<"{"/utf8>> ->
+                    parse_inline(Rest, <<Text/binary, C/binary>>, Acc);
+
+                <<"|"/utf8>> ->
+                    parse_inline(Rest, <<Text/binary, C/binary>>, Acc);
+
+                <<"}"/utf8>> ->
+                    parse_inline(Rest, <<Text/binary, C/binary>>, Acc);
+
+                <<"~"/utf8>> ->
+                    parse_inline(Rest, <<Text/binary, C/binary>>, Acc);
+
+                _ ->
+                    parse_inline(
+                        lists:append([C], Rest),
+                        <<Text/binary, "\\"/utf8>>,
+                        Acc
+                    )
+            end;
+
+        [<<"_"/utf8>>, C@1 | Rest@1] when ((C@1 =/= <<" "/utf8>>) andalso (C@1 =/= <<"\t"/utf8>>)) andalso (C@1 =/= <<"\n"/utf8>>) ->
+            Rest@2 = [C@1 | Rest@1],
+            case parse_emphasis(Rest@2, <<"_"/utf8>>) of
                 none ->
-                    parse_inline(Rest@1, <<Text/binary, "_"/utf8>>, Acc);
+                    parse_inline(Rest@2, <<Text/binary, "_"/utf8>>, Acc);
 
                 {some, {Inner, In@1}} ->
                     parse_inline(
@@ -914,11 +1036,11 @@ parse_inline(In, Text, Acc) ->
                     )
             end;
 
-        [<<"*"/utf8>>, C@1 | Rest@2] when ((C@1 =/= <<" "/utf8>>) andalso (C@1 =/= <<"\t"/utf8>>)) andalso (C@1 =/= <<"\n"/utf8>>) ->
-            Rest@3 = [C@1 | Rest@2],
-            case parse_emphasis(Rest@3, <<"*"/utf8>>) of
+        [<<"*"/utf8>>, C@2 | Rest@3] when ((C@2 =/= <<" "/utf8>>) andalso (C@2 =/= <<"\t"/utf8>>)) andalso (C@2 =/= <<"\n"/utf8>>) ->
+            Rest@4 = [C@2 | Rest@3],
+            case parse_emphasis(Rest@4, <<"*"/utf8>>) of
                 none ->
-                    parse_inline(Rest@3, <<Text/binary, "*"/utf8>>, Acc);
+                    parse_inline(Rest@4, <<Text/binary, "*"/utf8>>, Acc);
 
                 {some, {Inner@1, In@2}} ->
                     parse_inline(
@@ -928,36 +1050,36 @@ parse_inline(In, Text, Acc) ->
                     )
             end;
 
-        [<<"["/utf8>> | Rest@4] ->
+        [<<"["/utf8>> | Rest@5] ->
             case parse_link(
-                Rest@4,
+                Rest@5,
                 fun(Field@0, Field@1) -> {link, Field@0, Field@1} end
             ) of
                 none ->
-                    parse_inline(Rest@4, <<Text/binary, "["/utf8>>, Acc);
+                    parse_inline(Rest@5, <<Text/binary, "["/utf8>>, Acc);
 
                 {some, {Link, In@3}} ->
                     parse_inline(In@3, <<""/utf8>>, [Link, {text, Text} | Acc])
             end;
 
-        [<<"!"/utf8>>, <<"["/utf8>> | Rest@5] ->
+        [<<"!"/utf8>>, <<"["/utf8>> | Rest@6] ->
             case parse_link(
-                Rest@5,
+                Rest@6,
                 fun(Field@0, Field@1) -> {image, Field@0, Field@1} end
             ) of
                 none ->
-                    parse_inline(Rest@5, <<Text/binary, "!["/utf8>>, Acc);
+                    parse_inline(Rest@6, <<Text/binary, "!["/utf8>>, Acc);
 
                 {some, {Image, In@4}} ->
                     parse_inline(In@4, <<""/utf8>>, [Image, {text, Text} | Acc])
             end;
 
-        [<<"`"/utf8>> | Rest@6] ->
-            {Code, In@5} = parse_code(Rest@6, 1),
+        [<<"`"/utf8>> | Rest@7] ->
+            {Code, In@5} = parse_code(Rest@7, 1),
             parse_inline(In@5, <<""/utf8>>, [Code, {text, Text} | Acc]);
 
-        [C@2 | Rest@7] ->
-            parse_inline(Rest@7, <<Text/binary, C@2/binary>>, Acc)
+        [C@3 | Rest@8] ->
+            parse_inline(Rest@8, <<Text/binary, C@3/binary>>, Acc)
     end.
 
 -spec parse_link(

@@ -9,77 +9,28 @@ new(Id) ->
 
 -spec with_body(arctic:page(), list(lustre@internals@vdom:element(nil))) -> arctic:page().
 with_body(P, Body) ->
-    {page,
-        erlang:element(2, P),
-        Body,
-        erlang:element(4, P),
-        erlang:element(5, P),
-        erlang:element(6, P),
-        erlang:element(7, P),
-        erlang:element(8, P)}.
+    erlang:setelement(3, P, Body).
 
 -spec with_metadata(arctic:page(), binary(), binary()) -> arctic:page().
 with_metadata(P, Key, Val) ->
-    {page,
-        erlang:element(2, P),
-        erlang:element(3, P),
-        gleam@dict:insert(erlang:element(4, P), Key, Val),
-        erlang:element(5, P),
-        erlang:element(6, P),
-        erlang:element(7, P),
-        erlang:element(8, P)}.
+    erlang:setelement(4, P, gleam@dict:insert(erlang:element(4, P), Key, Val)).
 
 -spec replace_metadata(arctic:page(), gleam@dict:dict(binary(), binary())) -> arctic:page().
 replace_metadata(P, Metadata) ->
-    {page,
-        erlang:element(2, P),
-        erlang:element(3, P),
-        Metadata,
-        erlang:element(5, P),
-        erlang:element(6, P),
-        erlang:element(7, P),
-        erlang:element(8, P)}.
+    erlang:setelement(4, P, Metadata).
 
 -spec with_title(arctic:page(), binary()) -> arctic:page().
 with_title(P, Title) ->
-    {page,
-        erlang:element(2, P),
-        erlang:element(3, P),
-        erlang:element(4, P),
-        Title,
-        erlang:element(6, P),
-        erlang:element(7, P),
-        erlang:element(8, P)}.
+    erlang:setelement(5, P, Title).
 
 -spec with_blerb(arctic:page(), binary()) -> arctic:page().
 with_blerb(P, Blerb) ->
-    {page,
-        erlang:element(2, P),
-        erlang:element(3, P),
-        erlang:element(4, P),
-        erlang:element(5, P),
-        Blerb,
-        erlang:element(7, P),
-        erlang:element(8, P)}.
+    erlang:setelement(6, P, Blerb).
 
 -spec with_tags(arctic:page(), list(binary())) -> arctic:page().
 with_tags(P, Tags) ->
-    {page,
-        erlang:element(2, P),
-        erlang:element(3, P),
-        erlang:element(4, P),
-        erlang:element(5, P),
-        erlang:element(6, P),
-        Tags,
-        erlang:element(8, P)}.
+    erlang:setelement(7, P, Tags).
 
 -spec with_date(arctic:page(), birl:time()) -> arctic:page().
 with_date(P, Date) ->
-    {page,
-        erlang:element(2, P),
-        erlang:element(3, P),
-        erlang:element(4, P),
-        erlang:element(5, P),
-        erlang:element(6, P),
-        erlang:element(7, P),
-        {some, Date}}.
+    erlang:setelement(8, P, {some, Date}).

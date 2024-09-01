@@ -2,7 +2,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-import arctic.{type Page}
+import arctic.{type CacheablePage}
 import gleam/list
 import gleam/option.{Some}
 import gleam/string
@@ -14,7 +14,7 @@ import helpers.{pretty_date}
 import lustre/element.{type Element}
 import lustre/element/html
 
-pub fn script_posts(posts: List(Page)) -> Element(a) {
+pub fn script_posts(posts: List(CacheablePage)) -> Element(a) {
   use <-
     fn(k: fn() -> List(StringBuilder)) {
       html.script(
@@ -25,7 +25,8 @@ pub fn script_posts(posts: List(Page)) -> Element(a) {
           |> to_string(),
       )
     }
-  use p <- list.map(posts)
+  use cp <- list.map(posts)
+  let p = arctic.to_dummy_page(cp)
   let assert Some(date) = p.date
   from_string("\"")
   |> append(p.id)

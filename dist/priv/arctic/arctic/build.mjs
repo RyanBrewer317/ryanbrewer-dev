@@ -1,16 +1,171 @@
+import * as $birl from "../../birl/birl.mjs";
+import * as $crypto from "../../gleam_crypto/gleam/crypto.mjs";
+import * as $bit_array from "../../gleam_stdlib/gleam/bit_array.mjs";
+import * as $dict from "../../gleam_stdlib/gleam/dict.mjs";
+import * as $int from "../../gleam_stdlib/gleam/int.mjs";
+import * as $io from "../../gleam_stdlib/gleam/io.mjs";
 import * as $list from "../../gleam_stdlib/gleam/list.mjs";
 import * as $option from "../../gleam_stdlib/gleam/option.mjs";
 import { None, Some } from "../../gleam_stdlib/gleam/option.mjs";
+import * as $order from "../../gleam_stdlib/gleam/order.mjs";
 import * as $result from "../../gleam_stdlib/gleam/result.mjs";
 import { map_error } from "../../gleam_stdlib/gleam/result.mjs";
+import * as $string from "../../gleam_stdlib/gleam/string.mjs";
 import * as $ssg from "../../lustre_ssg/lustre/ssg.mjs";
+import * as $party from "../../party/party.mjs";
 import * as $simplifile from "../../simplifile/simplifile.mjs";
 import * as $snag from "../../snag/snag.mjs";
 import * as $arctic from "../arctic.mjs";
-import { ProcessedCollection } from "../arctic.mjs";
-import { Ok, toList, prepend as listPrepend } from "../gleam.mjs";
+import { CachedPage, NewPage, ProcessedCollection } from "../arctic.mjs";
+import { Ok, toList, prepend as listPrepend, makeError, isEqual } from "../gleam.mjs";
 
-function read_collection(collection) {
+function lift_ordering(ordering) {
+  return (a, b) => {
+    return ordering($arctic.to_dummy_page(a), $arctic.to_dummy_page(b));
+  };
+}
+
+function get_id(p) {
+  if (p instanceof CachedPage) {
+    let metadata = p.metadata;
+    let $ = $dict.get(metadata, "id");
+    if (!$.isOk()) {
+      throw makeError(
+        "assignment_no_match",
+        "arctic/build",
+        34,
+        "get_id",
+        "Assignment pattern did not match",
+        { value: $ }
+      )
+    }
+    let id = $[0];
+    return id;
+  } else {
+    let page = p[0];
+    return page.id;
+  }
+}
+
+function to_metadata(csv) {
+  if (csv.hasLength(0)) {
+    return new Ok($dict.new$());
+  } else {
+    let pair_str = csv.head;
+    let rest = csv.tail;
+    let $ = $string.split(pair_str, ":");
+    if ($.hasLength(0)) {
+      return $snag.error("malformed cache (metadata item with no colon)");
+    } else {
+      let key = $.head;
+      let vals = $.tail;
+      return $result.try$(
+        to_metadata(rest),
+        (rest2) => {
+          return new Ok($dict.insert(rest2, key, $string.join(vals, ":")));
+        },
+      );
+    }
+  }
+}
+
+function to_cache(csv) {
+  if (csv.hasLength(0)) {
+    return new Ok($dict.new$());
+  } else if (csv.atLeastLength(1) && csv.head.atLeastLength(2)) {
+    let id = csv.head.head;
+    let hash = csv.head.tail.head;
+    let metadata = csv.head.tail.tail;
+    let rest = csv.tail;
+    return $result.try$(
+      to_cache(rest),
+      (rest2) => {
+        return $result.try$(
+          to_metadata(metadata),
+          (metadata2) => {
+            return $result.try$(
+              (() => {
+                let _pipe = $bit_array.base64_decode(hash);
+                return map_error(
+                  _pipe,
+                  (_) => {
+                    return $snag.new$(
+                      ("malformed cache (`" + hash) + "` is not a valid base-64 hash)",
+                    );
+                  },
+                );
+              })(),
+              (hash_str) => {
+                return new Ok($dict.insert(rest2, id, [hash_str, metadata2]));
+              },
+            );
+          },
+        );
+      },
+    );
+  } else {
+    let malformed_row = csv.head;
+    return $snag.error(
+      ("malformed cache (row `" + $string.join(malformed_row, ", ")) + "`)",
+    );
+  }
+}
+
+function parse_csv(csv) {
+  let res = $party.go(
+    (() => {
+      let _pipe = $party.do$(
+        $party.char("\""),
+        (_) => {
+          return $party.do$(
+            $party.many_concat(
+              $party.either(
+                $party.map($party.string("\"\""), (_) => { return "\""; }),
+                $party.satisfy((c) => { return c !== "\""; }),
+              ),
+            ),
+            (val) => {
+              return $party.do$(
+                $party.char("\""),
+                (_) => { return $party.return$(val); },
+              );
+            },
+          );
+        },
+      );
+      let _pipe$1 = $party.sep(_pipe, $party.char(","));
+      let _pipe$2 = ((p) => {
+        return $party.do$(
+          p,
+          (row) => { return $party.seq($party.char("\n"), $party.return$(row)); },
+        );
+      })(_pipe$1);
+      return $party.many(_pipe$2);
+    })(),
+    csv,
+  );
+  return map_error(
+    res,
+    (e) => {
+      if (e instanceof $party.Unexpected) {
+        let p = e.pos;
+        let s = e.error;
+        return $snag.new$(
+          (((s + " at ") + $int.to_string(p.row)) + ":") + $int.to_string(p.col),
+        );
+      } else {
+        let p = e.pos;
+        return $snag.new$(
+          (("internal Arctic error at " + $int.to_string(p.row)) + ":") + $int.to_string(
+            p.col,
+          ),
+        );
+      }
+    },
+  );
+}
+
+function read_collection(collection, cache) {
   return $result.try$(
     (() => {
       let _pipe = $simplifile.get_files(collection.directory);
@@ -42,10 +197,93 @@ function read_collection(collection) {
               },
             ),
             (content) => {
-              return $result.try$(
-                collection.parse(path, content),
-                (p) => { return new Ok(listPrepend(p, so_far)); },
+              let new_hash = $crypto.hash(
+                new $crypto.Sha256(),
+                $bit_array.from_string(content),
               );
+              $io.debug(path);
+              $io.debug(new_hash);
+              let $ = $dict.get(cache, path);
+              if ($.isOk() && (isEqual($[0][0], new_hash))) {
+                let current_hash = $[0][0];
+                let metadata = $[0][1];
+                return new Ok(
+                  listPrepend(new CachedPage(path, metadata), so_far),
+                );
+              } else {
+                $io.debug("new page!");
+                let $1 = $io.debug($dict.get(cache, path));
+                
+                return $result.try$(
+                  collection.parse(path, content),
+                  (p) => {
+                    return $result.try$(
+                      (() => {
+                        let _pipe = $simplifile.append(
+                          ".arctic_cache.csv",
+                          ((((((((((((((("\"" + $string.replace(
+                            path,
+                            "\"",
+                            "\"\"",
+                          )) + "\",\"") + $bit_array.base64_encode(
+                            new_hash,
+                            false,
+                          )) + "\",\"id:") + $string.replace(p.id, "\"", "\"\"")) + "\",\"title:") + $string.replace(
+                            p.title,
+                            "\"",
+                            "\"\"",
+                          )) + "\"") + $option.unwrap(
+                            $option.map(
+                              p.date,
+                              (d) => {
+                                return (",\"date:" + $birl.to_naive_date_string(
+                                  d,
+                                )) + "\"";
+                              },
+                            ),
+                            "",
+                          )) + ",\"tags:") + $string.join(
+                            $list.map(
+                              p.tags,
+                              (_capture) => {
+                                return $string.replace(_capture, "\"", "\"\"");
+                              },
+                            ),
+                            ",",
+                          )) + "\",\"blerb:") + $string.replace(
+                            p.blerb,
+                            "\"",
+                            "\"\"",
+                          )) + "\"") + $dict.fold(
+                            p.metadata,
+                            "",
+                            (b, k, v) => {
+                              return ((((b + ",\"") + $string.replace(
+                                k,
+                                "\"",
+                                "\"\"",
+                              )) + ":") + $string.replace(v, "\"", "\"\"")) + "\"";
+                            },
+                          )) + "\n",
+                        );
+                        return map_error(
+                          _pipe,
+                          (err) => {
+                            return $snag.new$(
+                              ("couldn't write to cache (" + $simplifile.describe_error(
+                                err,
+                              )) + ")",
+                            );
+                          },
+                        );
+                      })(),
+                      (_) => {
+                        return new Ok(listPrepend(new NewPage(p), so_far));
+                      },
+                    );
+                  },
+                );
+              }
             },
           );
         },
@@ -55,15 +293,18 @@ function read_collection(collection) {
   );
 }
 
-function process(collections) {
+function process(collections, cache) {
   return $list.try_fold(
     collections,
     toList([]),
     (rest, collection) => {
       return $result.try$(
-        read_collection(collection),
+        read_collection(collection, cache),
         (pages_unsorted) => {
-          let pages = $list.sort(pages_unsorted, collection.ordering);
+          let pages = $list.sort(
+            pages_unsorted,
+            lift_ordering(collection.ordering),
+          );
           return new Ok(
             listPrepend(new ProcessedCollection(collection, pages), rest),
           );
@@ -122,11 +363,50 @@ function make_ssg_config(processed_collections, config, k) {
             processed.pages,
             ssg_config3,
             (s, p) => {
-              return $ssg.add_static_route(
-                s,
-                (("/" + processed.collection.directory) + "/") + p.id,
-                processed.collection.render(p),
-              );
+              if (p instanceof NewPage) {
+                let new_page = p[0];
+                return $ssg.add_static_route(
+                  s,
+                  (("/" + processed.collection.directory) + "/") + new_page.id,
+                  processed.collection.render(new_page),
+                );
+              } else {
+                let path = p.path;
+                let $ = $string.split(path, ".txt");
+                if (!$.atLeastLength(1)) {
+                  throw makeError(
+                    "assignment_no_match",
+                    "arctic/build",
+                    288,
+                    "",
+                    "Assignment pattern did not match",
+                    { value: $ }
+                  )
+                }
+                let start = $.head;
+                let cached_path = ("arctic_build/" + start) + "/index.html";
+                let res = $simplifile.read(cached_path);
+                let content = (() => {
+                  if (res.isOk()) {
+                    let c = res[0];
+                    return c;
+                  } else {
+                    throw makeError(
+                      "panic",
+                      "arctic/build",
+                      293,
+                      "",
+                      cached_path,
+                      {}
+                    )
+                  }
+                })();
+                return $ssg.add_static_asset(
+                  s,
+                  ("/" + start) + "/index.html",
+                  content,
+                );
+              }
             },
           );
           return new Ok(_pipe$4);
@@ -301,7 +581,11 @@ function add_vite_config(config, processed_collections, k) {
         processed.pages,
         js,
         (js, page) => {
-          return ((((((((js + "\"") + processed.collection.directory) + "/") + page.id) + "\": \"arctic_build/") + processed.collection.directory) + "/") + page.id) + "/index.html\", ";
+          return ((((((((js + "\"") + processed.collection.directory) + "/") + get_id(
+            page,
+          )) + "\": \"arctic_build/") + processed.collection.directory) + "/") + get_id(
+            page,
+          )) + "/index.html\", ";
         },
       );
     },
@@ -328,25 +612,59 @@ function add_vite_config(config, processed_collections, k) {
 }
 
 export function build(config) {
+  let $ = $simplifile.create_file(".arctic_cache.csv");
+  
   return $result.try$(
-    process(config.collections),
-    (processed_collections) => {
-      return make_ssg_config(
-        processed_collections,
-        config,
-        (ssg_config) => {
-          return ssg_build(
-            ssg_config,
-            () => {
-              return add_public(
-                () => {
-                  return add_feed(
+    (() => {
+      let _pipe = $simplifile.read(".arctic_cache.csv");
+      return map_error(
+        _pipe,
+        (err) => {
+          return $snag.new$(
+            ("couldn't read cache (" + $simplifile.describe_error(err)) + ")",
+          );
+        },
+      );
+    })(),
+    (content) => {
+      return $result.try$(
+        (() => {
+          if (content === "") {
+            return new Ok(toList([]));
+          } else {
+            let _pipe = parse_csv(content);
+            return $snag.context(_pipe, "couldn't parse cache");
+          }
+        })(),
+        (csv) => {
+          return $result.try$(
+            to_cache(csv),
+            (cache) => {
+              return $result.try$(
+                process(config.collections, cache),
+                (processed_collections) => {
+                  return make_ssg_config(
                     processed_collections,
-                    () => {
-                      return add_vite_config(
-                        config,
-                        processed_collections,
-                        () => { return new Ok(undefined); },
+                    config,
+                    (ssg_config) => {
+                      return ssg_build(
+                        ssg_config,
+                        () => {
+                          return add_public(
+                            () => {
+                              return add_feed(
+                                processed_collections,
+                                () => {
+                                  return add_vite_config(
+                                    config,
+                                    processed_collections,
+                                    () => { return new Ok(undefined); },
+                                  );
+                                },
+                              );
+                            },
+                          );
+                        },
                       );
                     },
                   );

@@ -25,21 +25,17 @@ export function new$() {
 }
 
 export function home_renderer(config, renderer) {
-  return new Config(renderer, config.main_pages, config.collections);
+  return config.withFields({ render_home: renderer });
 }
 
 export function add_main_page(config, id, body) {
-  return new Config(
-    config.render_home,
-    listPrepend(new RawPage(id, body), config.main_pages),
-    config.collections,
-  );
+  return config.withFields({
+    main_pages: listPrepend(new RawPage(id, body), config.main_pages)
+  });
 }
 
 export function add_collection(config, collection) {
-  return new Config(
-    config.render_home,
-    config.main_pages,
-    listPrepend(collection, config.collections),
-  );
+  return config.withFields({
+    collections: listPrepend(collection, config.collections)
+  });
 }

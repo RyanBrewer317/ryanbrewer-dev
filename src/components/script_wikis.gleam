@@ -2,7 +2,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-import arctic.{type Page}
+import arctic.{type CacheablePage}
 import gleam/list
 import gleam/string
 import gleam/string_builder.{
@@ -12,7 +12,7 @@ import gleam/string_builder.{
 import lustre/element.{type Element}
 import lustre/element/html
 
-pub fn script_wikis(wikis: List(Page)) -> Element(a) {
+pub fn script_wikis(wikis: List(CacheablePage)) -> Element(a) {
   use <-
     fn(k: fn() -> List(StringBuilder)) {
       html.script(
@@ -23,7 +23,8 @@ pub fn script_wikis(wikis: List(Page)) -> Element(a) {
           |> to_string(),
       )
     }
-  use w <- list.map(wikis)
+  use cw <- list.map(wikis)
+  let w = arctic.to_dummy_page(cw)
   from_string("\"")
   |> append(w.id)
   |> append("\": {\"id\": \"")

@@ -2,14 +2,15 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-import arctic.{type Page}
+import arctic.{type CacheablePage}
 import gleam/option.{Some}
 import helpers.{pretty_date}
 import lustre/attribute.{attribute}
 import lustre/element.{type Element, text}
 import lustre/element/html
 
-pub fn post(p: Page) -> Element(a) {
+pub fn post(cp: CacheablePage) -> Element(a) {
+  let p = arctic.to_dummy_page(cp)
   let assert Some(date) = p.date
   html.li([attribute.class("post-thumbnail"), attribute.id(p.id)], [
     html.h3([], [html.a([attribute.href("../posts/" <> p.id)], [text(p.title)])]),
@@ -18,7 +19,8 @@ pub fn post(p: Page) -> Element(a) {
   ])
 }
 
-pub fn wiki(w: Page) -> Element(Nil) {
+pub fn wiki(cw: CacheablePage) -> Element(Nil) {
+  let w = arctic.to_dummy_page(cw)
   html.li([attribute.class("wiki-thumbnail"), attribute.id(w.id)], [
     html.h3([], [html.a([attribute.href("../wiki/" <> w.id)], [text(w.title)])]),
     case w.body {

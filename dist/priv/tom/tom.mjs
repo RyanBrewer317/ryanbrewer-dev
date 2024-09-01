@@ -268,6 +268,9 @@ export function get(toml, key) {
     if ($.isOk() && $[0] instanceof Table) {
       let t = $[0][0];
       return push_key(get(t, key$1), k);
+    } else if ($.isOk() && $[0] instanceof InlineTable) {
+      let t = $[0][0];
+      return push_key(get(t, key$1), k);
     } else if ($.isOk()) {
       let other = $[0];
       return new Error(new WrongType(toList([k]), "Table", classify(other)));
@@ -446,7 +449,7 @@ function merge(table, key, old, new$) {
 
 function insert_loop(table, key, value) {
   if (key.hasLength(0)) {
-    throw makeError("panic", "tom", 514, "insert_loop", "unreachable", {})
+    throw makeError("panic", "tom", 515, "insert_loop", "unreachable", {})
   } else if (key.hasLength(1)) {
     let k = key.head;
     let $ = $dict.get(table, k);
@@ -632,21 +635,42 @@ function skip_whitespace(loop$input) {
   }
 }
 
-function drop_comments(loop$input, loop$acc) {
+function drop_comments(loop$input, loop$acc, loop$in_string) {
   while (true) {
     let input = loop$input;
     let acc = loop$acc;
-    if (input.atLeastLength(1) && input.head === "#") {
+    let in_string = loop$in_string;
+    if (input.atLeastLength(2) &&
+    input.head === "\\" &&
+    input.tail.head === "\"" &&
+    (in_string)) {
+      let input$1 = input.tail.tail;
+      loop$input = input$1;
+      loop$acc = listPrepend("\"", listPrepend("\\", acc));
+      loop$in_string = in_string;
+    } else if (input.atLeastLength(1) && input.head === "\"") {
+      let input$1 = input.tail;
+      loop$input = input$1;
+      loop$acc = listPrepend("\"", acc);
+      loop$in_string = !in_string;
+    } else if (input.atLeastLength(1) && input.head === "#" && (in_string)) {
+      let input$1 = input.tail;
+      loop$input = input$1;
+      loop$acc = listPrepend("#", acc);
+      loop$in_string = in_string;
+    } else if (input.atLeastLength(1) && input.head === "#" && (!in_string)) {
       let input$1 = input.tail;
       let _pipe = input$1;
       let _pipe$1 = $list.drop_while(_pipe, (g) => { return g !== "\n"; });
       loop$input = _pipe$1;
       loop$acc = acc;
+      loop$in_string = in_string;
     } else if (input.atLeastLength(1)) {
       let g = input.head;
       let input$1 = input.tail;
       loop$input = input$1;
       loop$acc = listPrepend(g, acc);
+      loop$in_string = in_string;
     } else {
       return $list.reverse(acc);
     }
@@ -1188,6 +1212,18 @@ function parse_string(loop$input, loop$string) {
       loop$string = string + "\t";
     } else if (input.atLeastLength(2) &&
     input.head === "\\" &&
+    input.tail.head === "e") {
+      let input$1 = input.tail.tail;
+      loop$input = input$1;
+      loop$string = string + "\u{001b}";
+    } else if (input.atLeastLength(2) &&
+    input.head === "\\" &&
+    input.tail.head === "b") {
+      let input$1 = input.tail.tail;
+      loop$input = input$1;
+      loop$string = string + "\u{0008}";
+    } else if (input.atLeastLength(2) &&
+    input.head === "\\" &&
     input.tail.head === "n") {
       let input$1 = input.tail.tail;
       loop$input = input$1;
@@ -1198,6 +1234,12 @@ function parse_string(loop$input, loop$string) {
       let input$1 = input.tail.tail;
       loop$input = input$1;
       loop$string = string + "\r";
+    } else if (input.atLeastLength(2) &&
+    input.head === "\\" &&
+    input.tail.head === "f") {
+      let input$1 = input.tail.tail;
+      loop$input = input$1;
+      loop$string = string + "\f";
     } else if (input.atLeastLength(2) &&
     input.head === "\\" &&
     input.tail.head === "\"") {
@@ -2824,7 +2866,7 @@ function parse_tables(loop$input, loop$toml) {
 
 export function parse(input) {
   let input$1 = $string.to_graphemes(input);
-  let input$2 = drop_comments(input$1, toList([]));
+  let input$2 = drop_comments(input$1, toList([]), false);
   let input$3 = skip_whitespace(input$2);
   return do$(
     parse_table(input$3, $dict.new$()),

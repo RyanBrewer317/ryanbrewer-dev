@@ -915,6 +915,12 @@ function parse_page(builder, src) {
           }
         }
       })();
+      let id = (() => {
+        let _pipe = metadata.val;
+        let _pipe$1 = $dict.get(_pipe, "id");
+        return $result.unwrap(_pipe$1, "[no id]");
+      })();
+      $io.println(("Starting `" + id) + "`.");
       let $1 = $list.fold(
         body,
         [builder.start_state, toList([])],
@@ -965,7 +971,7 @@ function parse_page(builder, src) {
       );
       let body_ast = $2[0];
       let body_errors = $2[1];
-      $io.debug(metadata.val);
+      $io.println(("Finished `" + id) + "`.");
       return new Ok(
         new ParseResult(
           new ParsedPage(metadata.val, body_ast),

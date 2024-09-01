@@ -2,16 +2,17 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-import arctic.{type Page}
+import arctic.{type CacheablePage}
 import birl
 import gleam/int
 import gleam/list
 import gleam/option.{Some}
 import gleam/string_builder.{append, append_builder, from_string, to_string}
 
-pub fn feed(posts: List(Page)) -> String {
+pub fn feed(posts: List(CacheablePage)) -> String {
   let items = {
-    use post <- list.map(list.reverse(posts))
+    use cacheable_post <- list.map(list.reverse(posts))
+    let post = arctic.to_dummy_page(cacheable_post)
     let assert Some(post_date) = post.date
     let date = birl.get_day(post_date)
     let time = birl.get_time_of_day(post_date)

@@ -10,13 +10,14 @@ import { toList, makeError } from "../gleam.mjs";
 import * as $helpers from "../helpers.mjs";
 import { pretty_date } from "../helpers.mjs";
 
-export function post(p) {
+export function post(cp) {
+  let p = $arctic.to_dummy_page(cp);
   let $ = p.date;
   if (!($ instanceof Some)) {
     throw makeError(
       "assignment_no_match",
       "components/thumbnail",
-      13,
+      14,
       "post",
       "Assignment pattern did not match",
       { value: $ }
@@ -44,7 +45,8 @@ export function post(p) {
   );
 }
 
-export function wiki(w) {
+export function wiki(cw) {
+  let w = $arctic.to_dummy_page(cw);
   return $html.li(
     toList([$attribute.class$("wiki-thumbnail"), $attribute.id(w.id)]),
     toList([

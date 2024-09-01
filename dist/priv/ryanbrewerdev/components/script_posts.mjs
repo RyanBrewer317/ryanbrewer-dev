@@ -26,13 +26,14 @@ export function script_posts(posts) {
     () => {
       return $list.map(
         posts,
-        (p) => {
+        (cp) => {
+          let p = $arctic.to_dummy_page(cp);
           let $ = p.date;
           if (!($ instanceof Some)) {
             throw makeError(
               "assignment_no_match",
               "components/script_posts",
-              29,
+              30,
               "",
               "Assignment pattern did not match",
               { value: $ }

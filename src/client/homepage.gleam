@@ -36,12 +36,12 @@ fn update(model: Model, _msg: Msg) -> #(Model, Effect(Msg)) {
 fn view(_model: Model) -> Element(Msg) {
   html.div([], [
     html.div([], [
-      html.div([attribute.id("ryan-and-ivy-img")], [
-        html.img([attribute.src("/ryan-and-ivy.jpg"), attribute.width(300)]),
-        html.div([attribute.class("caption"), attribute.class("subtle-text")], [
-          text("Me and my lovely wife, Ivy!"),
-        ]),
-      ]),
+      // html.div([attribute.id("ryan-and-ivy-img")], [
+      //   html.img([attribute.src("/ryan-and-ivy.jpg"), attribute.width(300)]),
+      //   html.div([attribute.class("caption"), attribute.class("subtle-text")], [
+      //     text("Me and my lovely wife, Ivy!"),
+      //   ]),
+      // ]),
       html.div([], [
         html.h3([], [text("Me.")]),
         html.p([], [

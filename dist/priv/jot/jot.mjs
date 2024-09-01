@@ -40,6 +40,8 @@ export class Codeblock extends $CustomType {
   }
 }
 
+export class Linebreak extends $CustomType {}
+
 export class Text extends $CustomType {
   constructor(x0) {
     super();
@@ -874,11 +876,14 @@ function take_inline_text(loop$inlines, loop$acc) {
         let acc$1 = take_inline_text(nested, acc);
         loop$inlines = rest;
         loop$acc = acc$1;
-      } else {
+      } else if (first instanceof Image) {
         let nested = first.content;
         let acc$1 = take_inline_text(nested, acc);
         loop$inlines = rest;
         loop$acc = acc$1;
+      } else {
+        loop$inlines = rest;
+        loop$acc = acc;
       }
     }
   }
@@ -949,7 +954,11 @@ function open_tag(html, tag, attributes) {
 }
 
 function inline_to_html(html, inline, refs) {
-  if (inline instanceof Text) {
+  if (inline instanceof Linebreak) {
+    let _pipe = html;
+    let _pipe$1 = open_tag(_pipe, "br", $dict.new$());
+    return $string.append(_pipe$1, "\n");
+  } else if (inline instanceof Text) {
     let text = inline[0];
     return html + text;
   } else if (inline instanceof Strong) {
@@ -1094,6 +1103,149 @@ function parse_inline(loop$in, loop$text, loop$acc) {
       loop$in = toList([]);
       loop$text = "";
       loop$acc = listPrepend(new Text(text), acc);
+    } else if (in$.atLeastLength(2) && in$.head === "\\") {
+      let c = in$.tail.head;
+      let rest = in$.tail.tail;
+      let aft = parse_inline(rest, "", acc);
+      if (c === "\n") {
+        return $list.append(toList([new Text(text), new Linebreak()]), aft);
+      } else if (c === " ") {
+        loop$in = rest;
+        loop$text = text + "&nbsp;";
+        loop$acc = acc;
+      } else if (c === "!") {
+        loop$in = rest;
+        loop$text = text + c;
+        loop$acc = acc;
+      } else if (c === "\"") {
+        loop$in = rest;
+        loop$text = text + c;
+        loop$acc = acc;
+      } else if (c === "#") {
+        loop$in = rest;
+        loop$text = text + c;
+        loop$acc = acc;
+      } else if (c === "$") {
+        loop$in = rest;
+        loop$text = text + c;
+        loop$acc = acc;
+      } else if (c === "%") {
+        loop$in = rest;
+        loop$text = text + c;
+        loop$acc = acc;
+      } else if (c === "&") {
+        loop$in = rest;
+        loop$text = text + c;
+        loop$acc = acc;
+      } else if (c === "'") {
+        loop$in = rest;
+        loop$text = text + c;
+        loop$acc = acc;
+      } else if (c === "(") {
+        loop$in = rest;
+        loop$text = text + c;
+        loop$acc = acc;
+      } else if (c === ")") {
+        loop$in = rest;
+        loop$text = text + c;
+        loop$acc = acc;
+      } else if (c === "*") {
+        loop$in = rest;
+        loop$text = text + c;
+        loop$acc = acc;
+      } else if (c === "+") {
+        loop$in = rest;
+        loop$text = text + c;
+        loop$acc = acc;
+      } else if (c === ",") {
+        loop$in = rest;
+        loop$text = text + c;
+        loop$acc = acc;
+      } else if (c === "-") {
+        loop$in = rest;
+        loop$text = text + c;
+        loop$acc = acc;
+      } else if (c === ".") {
+        loop$in = rest;
+        loop$text = text + c;
+        loop$acc = acc;
+      } else if (c === "/") {
+        loop$in = rest;
+        loop$text = text + c;
+        loop$acc = acc;
+      } else if (c === ":") {
+        loop$in = rest;
+        loop$text = text + c;
+        loop$acc = acc;
+      } else if (c === ";") {
+        loop$in = rest;
+        loop$text = text + c;
+        loop$acc = acc;
+      } else if (c === "<") {
+        loop$in = rest;
+        loop$text = text + c;
+        loop$acc = acc;
+      } else if (c === "=") {
+        loop$in = rest;
+        loop$text = text + c;
+        loop$acc = acc;
+      } else if (c === ">") {
+        loop$in = rest;
+        loop$text = text + c;
+        loop$acc = acc;
+      } else if (c === "?") {
+        loop$in = rest;
+        loop$text = text + c;
+        loop$acc = acc;
+      } else if (c === "@") {
+        loop$in = rest;
+        loop$text = text + c;
+        loop$acc = acc;
+      } else if (c === "[") {
+        loop$in = rest;
+        loop$text = text + c;
+        loop$acc = acc;
+      } else if (c === "\\") {
+        loop$in = rest;
+        loop$text = text + c;
+        loop$acc = acc;
+      } else if (c === "]") {
+        loop$in = rest;
+        loop$text = text + c;
+        loop$acc = acc;
+      } else if (c === "^") {
+        loop$in = rest;
+        loop$text = text + c;
+        loop$acc = acc;
+      } else if (c === "_") {
+        loop$in = rest;
+        loop$text = text + c;
+        loop$acc = acc;
+      } else if (c === "`") {
+        loop$in = rest;
+        loop$text = text + c;
+        loop$acc = acc;
+      } else if (c === "{") {
+        loop$in = rest;
+        loop$text = text + c;
+        loop$acc = acc;
+      } else if (c === "|") {
+        loop$in = rest;
+        loop$text = text + c;
+        loop$acc = acc;
+      } else if (c === "}") {
+        loop$in = rest;
+        loop$text = text + c;
+        loop$acc = acc;
+      } else if (c === "~") {
+        loop$in = rest;
+        loop$text = text + c;
+        loop$acc = acc;
+      } else {
+        loop$in = $list.append(toList([c]), rest);
+        loop$text = text + "\\";
+        loop$acc = acc;
+      }
     } else if (in$.atLeastLength(2) &&
     in$.head === "_" &&
     (((in$.tail.head !== " ") && (in$.tail.head !== "\t")) && (in$.tail.head !== "\n"))) {

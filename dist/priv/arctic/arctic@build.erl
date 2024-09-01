@@ -3,9 +3,117 @@
 
 -export([build/1]).
 
--spec read_collection(arctic:collection()) -> {ok, list(arctic:page())} |
+-spec lift_ordering(fun((arctic:page(), arctic:page()) -> gleam@order:order())) -> fun((arctic:cacheable_page(), arctic:cacheable_page()) -> gleam@order:order()).
+lift_ordering(Ordering) ->
+    fun(A, B) -> Ordering(arctic:to_dummy_page(A), arctic:to_dummy_page(B)) end.
+
+-spec get_id(arctic:cacheable_page()) -> binary().
+get_id(P) ->
+    case P of
+        {cached_page, _, Metadata} ->
+            _assert_subject = gleam@dict:get(Metadata, <<"id"/utf8>>),
+            {ok, Id} = case _assert_subject of
+                {ok, _} -> _assert_subject;
+                _assert_fail ->
+                    erlang:error(#{gleam_error => let_assert,
+                                message => <<"Assertion pattern match failed"/utf8>>,
+                                value => _assert_fail,
+                                module => <<"arctic/build"/utf8>>,
+                                function => <<"get_id"/utf8>>,
+                                line => 31})
+            end,
+            Id;
+
+        {new_page, Page} ->
+            erlang:element(2, Page)
+    end.
+
+-spec to_metadata(list(binary())) -> {ok, gleam@dict:dict(binary(), binary())} |
     {error, snag:snag()}.
-read_collection(Collection) ->
+to_metadata(Csv) ->
+    case Csv of
+        [] ->
+            {ok, gleam@dict:new()};
+
+        [Pair_str | Rest] ->
+            case gleam@string:split(Pair_str, <<":"/utf8>>) of
+                [] ->
+                    snag:error(
+                        <<"malformed cache (metadata item with no colon)"/utf8>>
+                    );
+
+                [Key | Vals] ->
+                    gleam@result:'try'(
+                        to_metadata(Rest),
+                        fun(Rest2) ->
+                            {ok,
+                                gleam@dict:insert(
+                                    Rest2,
+                                    Key,
+                                    gleam@string:join(Vals, <<":"/utf8>>)
+                                )}
+                        end
+                    )
+            end
+    end.
+
+-spec to_cache(list(list(binary()))) -> {ok,
+        gleam@dict:dict(binary(), {bitstring(),
+            gleam@dict:dict(binary(), binary())})} |
+    {error, snag:snag()}.
+to_cache(Csv) ->
+    case Csv of
+        [] ->
+            {ok, gleam@dict:new()};
+
+        [[Id, Hash | Metadata] | Rest] ->
+            gleam@result:'try'(
+                to_cache(Rest),
+                fun(Rest2) ->
+                    gleam@result:'try'(
+                        to_metadata(Metadata),
+                        fun(Metadata2) ->
+                            gleam@result:'try'(
+                                begin
+                                    _pipe = gleam@bit_array:base64_decode(Hash),
+                                    gleam@result:map_error(
+                                        _pipe,
+                                        fun(_) ->
+                                            snag:new(
+                                                <<<<"malformed cache (`"/utf8,
+                                                        Hash/binary>>/binary,
+                                                    "` is not a valid base-64 hash)"/utf8>>
+                                            )
+                                        end
+                                    )
+                                end,
+                                fun(Hash_str) ->
+                                    {ok,
+                                        gleam@dict:insert(
+                                            Rest2,
+                                            Id,
+                                            {Hash_str, Metadata2}
+                                        )}
+                                end
+                            )
+                        end
+                    )
+                end
+            );
+
+        [Malformed_row | _] ->
+            snag:error(
+                <<<<"malformed cache (row `"/utf8,
+                        (gleam@string:join(Malformed_row, <<", "/utf8>>))/binary>>/binary,
+                    "`)"/utf8>>
+            )
+    end.
+
+-spec read_collection(
+    arctic:collection(),
+    gleam@dict:dict(binary(), {bitstring(), gleam@dict:dict(binary(), binary())})
+) -> {ok, list(arctic:cacheable_page())} | {error, snag:snag()}.
+read_collection(Collection, Cache) ->
     gleam@result:'try'(
         begin
             _pipe = simplifile:get_files(erlang:element(2, Collection)),
@@ -23,7 +131,7 @@ read_collection(Collection) ->
             )
         end,
         fun(Paths) ->
-            _pipe@1 = gleam@list:try_fold(
+            _pipe@2 = gleam@list:try_fold(
                 Paths,
                 [],
                 fun(So_far, Path) ->
@@ -41,32 +149,78 @@ read_collection(Collection) ->
                             end
                         ),
                         fun(Content) ->
-                            gleam@result:'try'(
-                                (erlang:element(3, Collection))(Path, Content),
-                                fun(P) -> {ok, [P | So_far]} end
-                            )
+                            New_hash = gleam_crypto_ffi:hash(
+                                sha256,
+                                gleam_stdlib:identity(Content)
+                            ),
+                            case gleam@dict:get(Cache, Path) of
+                                {ok, {Current_hash, Metadata}} when Current_hash =:= New_hash ->
+                                    {ok,
+                                        [{cached_page, Path, Metadata} | So_far]};
+
+                                _ ->
+                                    gleam@result:'try'(
+                                        (erlang:element(3, Collection))(
+                                            Path,
+                                            Content
+                                        ),
+                                        fun(P) ->
+                                            gleam@result:'try'(
+                                                begin
+                                                    _pipe@1 = simplifile:append(
+                                                        <<".arctic_cache.csv"/utf8>>,
+                                                        <<<<<<Path/binary,
+                                                                    ","/utf8>>/binary,
+                                                                (gleam_stdlib:bit_array_base64_encode(
+                                                                    New_hash,
+                                                                    false
+                                                                ))/binary>>/binary,
+                                                            ","/utf8>>
+                                                    ),
+                                                    gleam@result:map_error(
+                                                        _pipe@1,
+                                                        fun(Err@2) ->
+                                                            snag:new(
+                                                                <<<<"couldn't write to cache ("/utf8,
+                                                                        (simplifile:describe_error(
+                                                                            Err@2
+                                                                        ))/binary>>/binary,
+                                                                    ")"/utf8>>
+                                                            )
+                                                        end
+                                                    )
+                                                end,
+                                                fun(_) ->
+                                                    {ok,
+                                                        [{new_page, P} | So_far]}
+                                                end
+                                            )
+                                        end
+                                    )
+                            end
                         end
                     )
                 end
             ),
-            gleam@result:map(_pipe@1, fun lists:reverse/1)
+            gleam@result:map(_pipe@2, fun lists:reverse/1)
         end
     ).
 
--spec process(list(arctic:collection())) -> {ok,
-        list(arctic:processed_collection())} |
-    {error, snag:snag()}.
-process(Collections) ->
+-spec process(
+    list(arctic:collection()),
+    gleam@dict:dict(binary(), {bitstring(), gleam@dict:dict(binary(), binary())})
+) -> {ok, list(arctic:processed_collection())} | {error, snag:snag()}.
+process(Collections, Cache) ->
     gleam@list:try_fold(
         Collections,
         [],
         fun(Rest, Collection) ->
             gleam@result:'try'(
-                read_collection(Collection),
+                read_collection(Collection, Cache),
                 fun(Pages_unsorted) ->
                     Pages = gleam@list:sort(
                         Pages_unsorted,
-                        erlang:element(6, Collection)
+                        lift_ordering(erlang:element(6, Collection))
                     ),
                     {ok, [{processed_collection, Collection, Pages} | Rest]}
                 end
@@ -144,21 +298,46 @@ make_ssg_config(Processed_collections, Config, K) ->
                     _pipe@4 = gleam@list:fold(
                         erlang:element(3, Processed),
                         Ssg_config3,
-                        fun(S@1, P) ->
-                            lustre@ssg:add_static_route(
-                                S@1,
-                                <<<<<<"/"/utf8,
-                                            (erlang:element(
-                                                2,
-                                                erlang:element(2, Processed)
-                                            ))/binary>>/binary,
-                                        "/"/utf8>>/binary,
-                                    (erlang:element(2, P))/binary>>,
-                                (erlang:element(7, erlang:element(2, Processed)))(
-                                    P
-                                )
-                            )
-                        end
+                        fun(S@1, P) -> case P of
+                                {new_page, New_page} ->
+                                    lustre@ssg:add_static_route(
+                                        S@1,
+                                        <<<<<<"/"/utf8,
+                                                    (erlang:element(
+                                                        2,
+                                                        erlang:element(
+                                                            2,
+                                                            Processed
+                                                        )
+                                                    ))/binary>>/binary,
+                                                "/"/utf8>>/binary,
+                                            (erlang:element(2, New_page))/binary>>,
+                                        (erlang:element(
+                                            7,
+                                            erlang:element(2, Processed)
+                                        ))(New_page)
+                                    );
+
+                                {cached_page, Path, _} ->
+                                    _assert_subject = simplifile:read(Path),
+                                    {ok, Content} = case _assert_subject of
+                                        {ok, _} -> _assert_subject;
+                                        _assert_fail ->
+                                            erlang:error(
+                                                    #{gleam_error => let_assert,
+                                                        message => <<"Assertion pattern match failed"/utf8>>,
+                                                        value => _assert_fail,
+                                                        module => <<"arctic/build"/utf8>>,
+                                                        function => <<"make_ssg_config"/utf8>>,
+                                                        line => 210}
+                                                )
+                                    end,
+                                    lustre@ssg:add_static_asset(
+                                        S@1,
+                                        Path,
+                                        Content
+                                    )
+                            end end
                     ),
                     {ok, _pipe@4}
                 end
@@ -260,8 +439,8 @@ add_public(K) ->
     ).
 
 -spec option_to_result_nil(
-    gleam@option:option(TAU),
-    fun((TAU) -> {ok, nil} | {error, snag:snag()})
+    gleam@option:option(TOK),
+    fun((TOK) -> {ok, nil} | {error, snag:snag()})
 ) -> {ok, nil} | {error, snag:snag()}.
 option_to_result_nil(Opt, F) ->
     case Opt of
@@ -364,14 +543,14 @@ add_vite_config(Config, Processed_collections, K) ->
                                                         )
                                                     ))/binary>>/binary,
                                                 "/"/utf8>>/binary,
-                                            (erlang:element(2, Page@1))/binary>>/binary,
+                                            (get_id(Page@1))/binary>>/binary,
                                         "\": \"arctic_build/"/utf8>>/binary,
                                     (erlang:element(
                                         2,
                                         erlang:element(2, Processed)
                                     ))/binary>>/binary,
                                 "/"/utf8>>/binary,
-                            (erlang:element(2, Page@1))/binary>>/binary,
+                            (get_id(Page@1))/binary>>/binary,
                         "/index.html\", "/utf8>>
                 end
             )
@@ -405,25 +584,68 @@ add_vite_config(Config, Processed_collections, K) ->
 
 -spec build(arctic:config()) -> {ok, nil} | {error, snag:snag()}.
 build(Config) ->
+    _ = simplifile:create_file(<<".arctic_cache.csv"/utf8>>),
     gleam@result:'try'(
-        process(erlang:element(4, Config)),
-        fun(Processed_collections) ->
-            make_ssg_config(
-                Processed_collections,
-                Config,
-                fun(Ssg_config) ->
-                    ssg_build(
-                        Ssg_config,
-                        fun() ->
-                            add_public(
-                                fun() ->
-                                    add_feed(
+        begin
+            _pipe = simplifile:read(<<".arctic_cache.csv"/utf8>>),
+            gleam@result:map_error(
+                _pipe,
+                fun(Err) ->
+                    snag:new(
+                        <<<<"couldn't read cache ("/utf8,
+                                (simplifile:describe_error(Err))/binary>>/binary,
+                            ")"/utf8>>
+                    )
+                end
+            )
+        end,
+        fun(Content) ->
+            gleam@result:'try'(
+                begin
+                    _pipe@1 = gsv:to_lists_or_error(Content),
+                    gleam@result:map_error(
+                        _pipe@1,
+                        fun(Err@1) ->
+                            snag:new(
+                                <<<<"couldn't parse cache ("/utf8,
+                                        Err@1/binary>>/binary,
+                                    ")"/utf8>>
+                            )
+                        end
+                    )
+                end,
+                fun(Csv) ->
+                    gleam@result:'try'(
+                        to_cache(Csv),
+                        fun(Cache) ->
+                            gleam@result:'try'(
+                                process(erlang:element(4, Config), Cache),
+                                fun(Processed_collections) ->
+                                    make_ssg_config(
                                         Processed_collections,
-                                        fun() ->
-                                            add_vite_config(
-                                                Config,
-                                                Processed_collections,
-                                                fun() -> {ok, nil} end
+                                        Config,
+                                        fun(Ssg_config) ->
+                                            ssg_build(
+                                                Ssg_config,
+                                                fun() ->
+                                                    add_public(
+                                                        fun() ->
+                                                            add_feed(
+                                                                Processed_collections,
+                                                                fun() ->
+                                                                    add_vite_config(
+                                                                        Config,
+                                                                        Processed_collections,
+                                                                        fun() ->
+                                                                            {ok,
+                                                                                nil}
+                                                                        end
+                                                                    )
+                                                                end
+                                                            )
+                                                        end
+                                                    )
+                                                end
                                             )
                                         end
                                     )

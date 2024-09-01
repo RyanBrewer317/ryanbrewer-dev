@@ -4,13 +4,13 @@
 -export([new/1, add_static_dir/2, use_index_routes/1, add_static_route/3, add_static_xml/3, add_dynamic_route/4, add_static_asset/3, build/1]).
 -export_type([config/3, no_static_routes/0, no_static_dir/0, has_static_routes/0, has_static_dir/0, use_direct_routes/0, use_index_routes/0, route/0, build_error/0]).
 
--opaque config(PBO, PBP, PBQ) :: {config,
+-opaque config(PHP, PHQ, PHR) :: {config,
         binary(),
         gleam@option:option(binary()),
         gleam@dict:dict(binary(), binary()),
         list(route()),
         boolean()} |
-    {gleam_phantom, PBO, PBP, PBQ}.
+    {gleam_phantom, PHP, PHQ, PHR}.
 
 -type no_static_routes() :: any().
 
@@ -40,12 +40,12 @@
 new(Out_dir) ->
     {config, Out_dir, none, gleam@dict:new(), [], false}.
 
--spec add_static_dir(config(PDL, no_static_dir(), PDM), binary()) -> config(PDL, has_static_dir(), PDM).
+-spec add_static_dir(config(PJM, no_static_dir(), PJN), binary()) -> config(PJM, has_static_dir(), PJN).
 add_static_dir(Config, Path) ->
     {config, Out_dir, _, Static_assets, Routes, Use_index_routes} = Config,
     {config, Out_dir, {some, Path}, Static_assets, Routes, Use_index_routes}.
 
--spec use_index_routes(config(PEC, PED, any())) -> config(PEC, PED, use_index_routes()).
+-spec use_index_routes(config(PKD, PKE, any())) -> config(PKD, PKE, use_index_routes()).
 use_index_routes(Config) ->
     {config, Out_dir, Static_dir, Static_assets, Routes, _} = Config,
     {config, Out_dir, Static_dir, Static_assets, Routes, true}.
@@ -68,10 +68,10 @@ routify(Path) ->
     gleam@string:lowercase(_pipe@1).
 
 -spec add_static_route(
-    config(any(), PCC, PCD),
+    config(any(), PID, PIE),
     binary(),
     lustre@internals@vdom:element(any())
-) -> config(has_static_routes(), PCC, PCD).
+) -> config(has_static_routes(), PID, PIE).
 add_static_route(Config, Path, Page) ->
     {config, Out_dir, Static_dir, Static_assets, Routes, Use_index_routes} = Config,
     Route = {static, routify(Path), lustre@element:map(Page, fun(_) -> nil end)},
@@ -83,10 +83,10 @@ add_static_route(Config, Path, Page) ->
         Use_index_routes}.
 
 -spec add_static_xml(
-    config(PCM, PCN, PCO),
+    config(PIN, PIO, PIP),
     binary(),
     lustre@internals@vdom:element(any())
-) -> config(PCM, PCN, PCO).
+) -> config(PIN, PIO, PIP).
 add_static_xml(Config, Path, Page) ->
     {config, Out_dir, Static_dir, Static_assets, Routes, Use_index_routes} = Config,
     Route = {xml, routify(Path), lustre@element:map(Page, fun(_) -> nil end)},
@@ -98,11 +98,11 @@ add_static_xml(Config, Path, Page) ->
         Use_index_routes}.
 
 -spec add_dynamic_route(
-    config(PCX, PCY, PCZ),
+    config(PIY, PIZ, PJA),
     binary(),
-    gleam@dict:dict(binary(), PDD),
-    fun((PDD) -> lustre@internals@vdom:element(any()))
-) -> config(PCX, PCY, PCZ).
+    gleam@dict:dict(binary(), PJE),
+    fun((PJE) -> lustre@internals@vdom:element(any()))
+) -> config(PIY, PIZ, PJA).
 add_dynamic_route(Config, Path, Data, Page) ->
     Route = begin
         Path@1 = routify(Path),
@@ -116,7 +116,7 @@ add_dynamic_route(Config, Path, Data, Page) ->
     end,
     erlang:setelement(5, Config, [Route | erlang:element(5, Config)]).
 
--spec add_static_asset(config(PDT, PDU, PDV), binary(), binary()) -> config(PDT, PDU, PDV).
+-spec add_static_asset(config(PJU, PJV, PJW), binary(), binary()) -> config(PJU, PJV, PJW).
 add_static_asset(Config, Path, Content) ->
     Static_assets = gleam@dict:insert(
         erlang:element(4, Config),

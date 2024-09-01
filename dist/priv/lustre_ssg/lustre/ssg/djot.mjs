@@ -23,7 +23,7 @@ import {
 } from "../../gleam.mjs";
 
 export class Renderer extends $CustomType {
-  constructor(codeblock, emphasis, heading, link, paragraph, strong, text, code, image) {
+  constructor(codeblock, emphasis, heading, link, paragraph, strong, text, code, image, linebreak) {
     super();
     this.codeblock = codeblock;
     this.emphasis = emphasis;
@@ -34,6 +34,7 @@ export class Renderer extends $CustomType {
     this.text = text;
     this.code = code;
     this.image = image;
+    this.linebreak = linebreak;
   }
 }
 
@@ -48,7 +49,7 @@ export function frontmatter(document) {
         throw makeError(
           "assignment_no_match",
           "lustre/ssg/djot",
-          133,
+          135,
           "",
           "Assignment pattern did not match",
           { value: $ }
@@ -98,7 +99,7 @@ function linkify(text) {
     throw makeError(
       "assignment_no_match",
       "lustre/ssg/djot",
-      278,
+      284,
       "linkify",
       "Assignment pattern did not match",
       { value: $ }
@@ -187,6 +188,7 @@ export function default_renderer() {
         return $html.img(toList([$attribute.src(url), $attribute.alt(alt)]));
       }
     },
+    () => { return $html.br(toList([])); },
   );
 }
 
@@ -210,6 +212,8 @@ function text_content(segments) {
       } else if (inline instanceof $jot.Code) {
         let content$1 = inline.content;
         return text + content$1;
+      } else if (inline instanceof $jot.Image) {
+        return text;
       } else {
         return text;
       }
@@ -251,10 +255,12 @@ function render_inline(inline, references, renderer) {
   } else if (inline instanceof $jot.Code) {
     let content$1 = inline.content;
     return renderer.code(content$1);
-  } else {
+  } else if (inline instanceof $jot.Image) {
     let alt = inline.content;
     let destination = inline.destination;
     return renderer.image(destination, text_content(alt));
+  } else {
+    return renderer.linebreak();
   }
 }
 

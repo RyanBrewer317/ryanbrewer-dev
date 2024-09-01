@@ -47,7 +47,7 @@ export function cricket() {
                   ),
                   $html.a(
                     toList([
-                      $attribute.src(
+                      $attribute.href(
                         "https://ncatlab.org/nlab/show/polarity+in+type+theory",
                       ),
                     ]),
@@ -77,7 +77,9 @@ export function cricket() {
                   text("To read more about Cricket, look "),
                   $html.a(
                     toList([
-                      $attribute.src("https://github.com/RyanBrewer317/cricket"),
+                      $attribute.href(
+                        "https://github.com/RyanBrewer317/cricket",
+                      ),
                     ]),
                     toList([text("here")]),
                   ),

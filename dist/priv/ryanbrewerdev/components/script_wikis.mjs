@@ -22,7 +22,8 @@ export function script_wikis(wikis) {
     () => {
       return $list.map(
         wikis,
-        (w) => {
+        (cw) => {
+          let w = $arctic.to_dummy_page(cw);
           let _pipe = from_string("\"");
           let _pipe$1 = append(_pipe, w.id);
           let _pipe$2 = append(_pipe$1, "\": {\"id\": \"");

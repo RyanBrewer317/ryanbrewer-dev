@@ -8,46 +8,46 @@
         gleam@dict:dict(binary(), binary()),
         list(gleam@option:option(lustre@internals@vdom:element(nil)))}.
 
--type parse_result(TIP) :: {parse_result, TIP, list(parse_error())}.
+-type parse_result(TZU) :: {parse_result, TZU, list(parse_error())}.
 
 -type parse_error() :: {parse_error, position(), binary()}.
 
--type arctic_parser(TIQ) :: {arctic_parser,
-        fun((binary(), parse_data(TIQ)) -> parse_result(gleam@option:option({lustre@internals@vdom:element(nil),
-            TIQ})))}.
+-type arctic_parser(TZV) :: {arctic_parser,
+        fun((binary(), parse_data(TZV)) -> parse_result(gleam@option:option({lustre@internals@vdom:element(nil),
+            TZV})))}.
 
--opaque parse_data(TIR) :: {parse_data,
+-opaque parse_data(TZW) :: {parse_data,
         position(),
         gleam@dict:dict(binary(), binary()),
-        TIR}.
+        TZW}.
 
 -type position() :: {position, integer(), integer()}.
 
--type inline_rule(TIS) :: {inline_rule,
+-type inline_rule(TZX) :: {inline_rule,
         binary(),
         binary(),
-        fun((lustre@internals@vdom:element(nil), list(binary()), parse_data(TIS)) -> {ok,
-                {lustre@internals@vdom:element(nil), TIS}} |
+        fun((lustre@internals@vdom:element(nil), list(binary()), parse_data(TZX)) -> {ok,
+                {lustre@internals@vdom:element(nil), TZX}} |
             {error, snag:snag()})}.
 
--type prefix_rule(TIT) :: {prefix_rule,
+-type prefix_rule(TZY) :: {prefix_rule,
         binary(),
-        fun((lustre@internals@vdom:element(nil), parse_data(TIT)) -> {ok,
-                {lustre@internals@vdom:element(nil), TIT}} |
+        fun((lustre@internals@vdom:element(nil), parse_data(TZY)) -> {ok,
+                {lustre@internals@vdom:element(nil), TZY}} |
             {error, snag:snag()})}.
 
--type component(TIU) :: {static_component,
+-type component(TZZ) :: {static_component,
         binary(),
-        fun((list(binary()), binary(), parse_data(TIU)) -> {ok,
-                {lustre@internals@vdom:element(nil), TIU}} |
+        fun((list(binary()), binary(), parse_data(TZZ)) -> {ok,
+                {lustre@internals@vdom:element(nil), TZZ}} |
             {error, snag:snag()})} |
     {dynamic_component, binary()}.
 
--opaque parser_builder(TIV) :: {parser_builder,
-        list(inline_rule(TIV)),
-        list(prefix_rule(TIV)),
-        list(component(TIV)),
-        TIV}.
+-opaque parser_builder(UAA) :: {parser_builder,
+        list(inline_rule(UAA)),
+        list(prefix_rule(UAA)),
+        list(component(UAA)),
+        UAA}.
 
 -spec get_pos(parse_data(any())) -> position().
 get_pos(Data) ->
@@ -57,30 +57,30 @@ get_pos(Data) ->
 get_metadata(Data) ->
     erlang:element(3, Data).
 
--spec get_state(parse_data(TJC)) -> TJC.
+-spec get_state(parse_data(UAH)) -> UAH.
 get_state(Data) ->
     erlang:element(4, Data).
 
--spec with_pos(parse_data(TJE), position()) -> parse_data(TJE).
+-spec with_pos(parse_data(UAJ), position()) -> parse_data(UAJ).
 with_pos(Data, Pos) ->
     {parse_data, Pos, erlang:element(3, Data), erlang:element(4, Data)}.
 
--spec with_state(parse_data(TJH), TJH) -> parse_data(TJH).
+-spec with_state(parse_data(UAM), UAM) -> parse_data(UAM).
 with_state(Data, State) ->
     {parse_data, erlang:element(2, Data), erlang:element(3, Data), State}.
 
--spec new(TJK) -> parser_builder(TJK).
+-spec new(UAP) -> parser_builder(UAP).
 new(Start_state) ->
     {parser_builder, [], [], [], Start_state}.
 
 -spec add_inline_rule(
-    parser_builder(TJM),
+    parser_builder(UAR),
     binary(),
     binary(),
-    fun((lustre@internals@vdom:element(nil), list(binary()), parse_data(TJM)) -> {ok,
-            {lustre@internals@vdom:element(nil), TJM}} |
+    fun((lustre@internals@vdom:element(nil), list(binary()), parse_data(UAR)) -> {ok,
+            {lustre@internals@vdom:element(nil), UAR}} |
         {error, snag:snag()})
-) -> parser_builder(TJM).
+) -> parser_builder(UAR).
 add_inline_rule(P, Left, Right, Action) ->
     {parser_builder,
         [{inline_rule, Left, Right, Action} | erlang:element(2, P)],
@@ -89,12 +89,12 @@ add_inline_rule(P, Left, Right, Action) ->
         erlang:element(5, P)}.
 
 -spec add_prefix_rule(
-    parser_builder(TJU),
+    parser_builder(UAZ),
     binary(),
-    fun((lustre@internals@vdom:element(nil), parse_data(TJU)) -> {ok,
-            {lustre@internals@vdom:element(nil), TJU}} |
+    fun((lustre@internals@vdom:element(nil), parse_data(UAZ)) -> {ok,
+            {lustre@internals@vdom:element(nil), UAZ}} |
         {error, snag:snag()})
-) -> parser_builder(TJU).
+) -> parser_builder(UAZ).
 add_prefix_rule(P, Prefix, Action) ->
     {parser_builder,
         erlang:element(2, P),
@@ -103,12 +103,12 @@ add_prefix_rule(P, Prefix, Action) ->
         erlang:element(5, P)}.
 
 -spec add_static_component(
-    parser_builder(TKB),
+    parser_builder(UBG),
     binary(),
-    fun((list(binary()), binary(), parse_data(TKB)) -> {ok,
-            {lustre@internals@vdom:element(nil), TKB}} |
+    fun((list(binary()), binary(), parse_data(UBG)) -> {ok,
+            {lustre@internals@vdom:element(nil), UBG}} |
         {error, snag:snag()})
-) -> parser_builder(TKB).
+) -> parser_builder(UBG).
 add_static_component(P, Name, Action) ->
     {parser_builder,
         erlang:element(2, P),
@@ -116,7 +116,7 @@ add_static_component(P, Name, Action) ->
         [{static_component, Name, Action} | erlang:element(4, P)],
         erlang:element(5, P)}.
 
--spec add_dynamic_component(parser_builder(TKI), binary()) -> parser_builder(TKI).
+-spec add_dynamic_component(parser_builder(UBN), binary()) -> parser_builder(UBN).
 add_dynamic_component(P, Name) ->
     {parser_builder,
         erlang:element(2, P),
@@ -126,34 +126,34 @@ add_dynamic_component(P, Name) ->
 
 -spec wrap_inline(
     fun((list(lustre@internals@vdom:attribute(any())), list(lustre@internals@vdom:element(nil))) -> lustre@internals@vdom:element(nil))
-) -> fun((lustre@internals@vdom:element(nil), any(), parse_data(TRE)) -> {ok,
-        {lustre@internals@vdom:element(nil), TRE}} |
+) -> fun((lustre@internals@vdom:element(nil), any(), parse_data(UIX)) -> {ok,
+        {lustre@internals@vdom:element(nil), UIX}} |
     {error, any()}).
 wrap_inline(W) ->
     fun(El, _, Data) -> {ok, {W([], [El]), get_state(Data)}} end.
 
 -spec wrap_inline_with_attributes(
-    fun((list(lustre@internals@vdom:attribute(TKV)), list(lustre@internals@vdom:element(nil))) -> lustre@internals@vdom:element(nil)),
-    list(lustre@internals@vdom:attribute(TKV))
-) -> fun((lustre@internals@vdom:element(nil), any(), parse_data(TRL)) -> {ok,
-        {lustre@internals@vdom:element(nil), TRL}} |
+    fun((list(lustre@internals@vdom:attribute(UCA)), list(lustre@internals@vdom:element(nil))) -> lustre@internals@vdom:element(nil)),
+    list(lustre@internals@vdom:attribute(UCA))
+) -> fun((lustre@internals@vdom:element(nil), any(), parse_data(UJE)) -> {ok,
+        {lustre@internals@vdom:element(nil), UJE}} |
     {error, any()}).
 wrap_inline_with_attributes(W, Attrs) ->
     fun(El, _, Data) -> {ok, {W(Attrs, [El]), get_state(Data)}} end.
 
 -spec wrap_prefix(
     fun((list(lustre@internals@vdom:attribute(any())), list(lustre@internals@vdom:element(nil))) -> lustre@internals@vdom:element(nil))
-) -> fun((lustre@internals@vdom:element(nil), parse_data(TRS)) -> {ok,
-        {lustre@internals@vdom:element(nil), TRS}} |
+) -> fun((lustre@internals@vdom:element(nil), parse_data(UJL)) -> {ok,
+        {lustre@internals@vdom:element(nil), UJL}} |
     {error, any()}).
 wrap_prefix(W) ->
     fun(El, Data) -> {ok, {W([], [El]), get_state(Data)}} end.
 
 -spec wrap_prefix_with_attributes(
-    fun((list(lustre@internals@vdom:attribute(TLL)), list(lustre@internals@vdom:element(nil))) -> lustre@internals@vdom:element(nil)),
-    list(lustre@internals@vdom:attribute(TLL))
-) -> fun((lustre@internals@vdom:element(nil), parse_data(TRY)) -> {ok,
-        {lustre@internals@vdom:element(nil), TRY}} |
+    fun((list(lustre@internals@vdom:attribute(UCQ)), list(lustre@internals@vdom:element(nil))) -> lustre@internals@vdom:element(nil)),
+    list(lustre@internals@vdom:attribute(UCQ))
+) -> fun((lustre@internals@vdom:element(nil), parse_data(UJR)) -> {ok,
+        {lustre@internals@vdom:element(nil), UJR}} |
     {error, any()}).
 wrap_prefix_with_attributes(W, Attrs) ->
     fun(El, Data) -> {ok, {W(Attrs, [El]), get_state(Data)}} end.
@@ -275,7 +275,7 @@ escaped_char() ->
                                                                                         value => _assert_fail,
                                                                                         module => <<"arctic/parse"/utf8>>,
                                                                                         function => <<"escaped_char"/utf8>>,
-                                                                                        line => 401}
+                                                                                        line => 402}
                                                                                 )
                                                                     end,
                                                                     party:do(
@@ -330,391 +330,23 @@ escaped_char() ->
         end
     ).
 
--spec parse_markup(
-    list(inline_rule(TME)),
-    party:parser(nil, snag:snag()),
-    parse_data(TME)
-) -> party:parser({ok, {lustre@internals@vdom:element(nil), TME}} |
-    {error, snag:snag()}, snag:snag()).
-parse_markup(Inline_rules, Terminator, Data) ->
-    party:choice(
-        begin
-            _pipe@2 = gleam@list:map(
-                Inline_rules,
-                fun(Rule) ->
-                    party:do(
-                        party:string(erlang:element(2, Rule)),
-                        fun(_) ->
-                            party:do(
-                                party:pos(),
-                                fun(Party_pos) ->
-                                    Pos = get_pos(Data),
-                                    Data2 = begin
-                                        _pipe = Data,
-                                        with_pos(
-                                            _pipe,
-                                            {position,
-                                                erlang:element(2, Pos) + erlang:element(
-                                                    2,
-                                                    Party_pos
-                                                ),
-                                                erlang:element(3, Pos) + erlang:element(
-                                                    3,
-                                                    Party_pos
-                                                )}
-                                        )
-                                    end,
-                                    party:do(
-                                        party:lazy(
-                                            fun() ->
-                                                parse_markup(
-                                                    Inline_rules,
-                                                    party:map(
-                                                        party:string(
-                                                            erlang:element(
-                                                                3,
-                                                                Rule
-                                                            )
-                                                        ),
-                                                        fun(_) -> nil end
-                                                    ),
-                                                    Data2
-                                                )
-                                            end
-                                        ),
-                                        fun(Res) -> (fun(K) -> case Res of
-                                                    {ok, X} ->
-                                                        K(X);
+-spec invert_res({ok, {UOR, UOK}} | {error, UOO}, parse_data(UOK)) -> {{ok, UOR} |
+        {error, UOO},
+    parse_data(UOK)}.
+invert_res(Res, D) ->
+    case Res of
+        {ok, {El, State}} ->
+            {{ok, El},
+                begin
+                    _pipe = D,
+                    with_state(_pipe, State)
+                end};
 
-                                                    {error, Err} ->
-                                                        party:return(
-                                                            {error, Err}
-                                                        )
-                                                end end)(
-                                                fun(_use0) ->
-                                                    {Middle, New_state} = _use0,
-                                                    Data3 = begin
-                                                        _pipe@1 = Data2,
-                                                        with_state(
-                                                            _pipe@1,
-                                                            New_state
-                                                        )
-                                                    end,
-                                                    party:do(
-                                                        party:perhaps(
-                                                            party:char(
-                                                                <<"("/utf8>>
-                                                            )
-                                                        ),
-                                                        fun(Res@1) ->
-                                                            party:do(
-                                                                case Res@1 of
-                                                                    {ok, _} ->
-                                                                        party:do(
-                                                                            party:sep(
-                                                                                party:many_concat(
-                                                                                    party:satisfy(
-                                                                                        fun(
-                                                                                            C
-                                                                                        ) ->
-                                                                                            (C
-                                                                                            /= <<","/utf8>>)
-                                                                                            andalso (C
-                                                                                            /= <<")"/utf8>>)
-                                                                                        end
-                                                                                    )
-                                                                                ),
-                                                                                party:char(
-                                                                                    <<","/utf8>>
-                                                                                )
-                                                                            ),
-                                                                            fun(
-                                                                                Args
-                                                                            ) ->
-                                                                                party:do(
-                                                                                    party:char(
-                                                                                        <<")"/utf8>>
-                                                                                    ),
-                                                                                    fun(
-                                                                                        _
-                                                                                    ) ->
-                                                                                        party:return(
-                                                                                            Args
-                                                                                        )
-                                                                                    end
-                                                                                )
-                                                                            end
-                                                                        );
+        {error, S} ->
+            {{error, S}, D}
+    end.
 
-                                                                    {error, nil} ->
-                                                                        party:return(
-                                                                            []
-                                                                        )
-                                                                end,
-                                                                fun(Args@1) ->
-                                                                    party:return(
-                                                                        (erlang:element(
-                                                                            4,
-                                                                            Rule
-                                                                        ))(
-                                                                            Middle,
-                                                                            Args@1,
-                                                                            Data3
-                                                                        )
-                                                                    )
-                                                                end
-                                                            )
-                                                        end
-                                                    )
-                                                end
-                                            ) end
-                                    )
-                                end
-                            )
-                        end
-                    )
-                end
-            ),
-            lists:append(
-                _pipe@2,
-                [begin
-                        _pipe@3 = party:until(
-                            party:either(
-                                escaped_char(),
-                                party:satisfy(fun(_) -> true end)
-                            ),
-                            Terminator
-                        ),
-                        party:map(
-                            _pipe@3,
-                            fun(Chars) ->
-                                {ok,
-                                    {lustre@element@html:span(
-                                            [],
-                                            begin
-                                                _pipe@4 = gleam@string:concat(
-                                                    Chars
-                                                ),
-                                                _pipe@5 = gleam@string:split(
-                                                    _pipe@4,
-                                                    <<"\n"/utf8>>
-                                                ),
-                                                _pipe@6 = gleam@list:map(
-                                                    _pipe@5,
-                                                    fun lustre@element:text/1
-                                                ),
-                                                gleam@list:intersperse(
-                                                    _pipe@6,
-                                                    lustre@element@html:br([])
-                                                )
-                                            end
-                                        ),
-                                        get_state(Data)}}
-                            end
-                        )
-                    end]
-            )
-        end
-    ).
-
--spec parse_text(list(inline_rule(TMO)), list(prefix_rule(TMO))) -> arctic_parser(TMO).
-parse_text(Inline_rules, Prefix_rules) ->
-    {arctic_parser,
-        fun(Src, Data) ->
-            Pos = get_pos(Data),
-            Res@1 = party:go(
-                (party:do(
-                    parse_prefix(),
-                    fun(Prefix) ->
-                        party:do(
-                            party:many(
-                                party:either(
-                                    party:char(<<" "/utf8>>),
-                                    party:char(<<"\t"/utf8>>)
-                                )
-                            ),
-                            fun(_) ->
-                                party:do(
-                                    party:pos(),
-                                    fun(Party_pos) ->
-                                        Data2 = begin
-                                            _pipe = Data,
-                                            with_pos(
-                                                _pipe,
-                                                {position,
-                                                    erlang:element(2, Pos) + erlang:element(
-                                                        2,
-                                                        Party_pos
-                                                    ),
-                                                    erlang:element(3, Pos) + erlang:element(
-                                                        3,
-                                                        Party_pos
-                                                    )}
-                                            )
-                                        end,
-                                        party:do(
-                                            parse_markup(
-                                                Inline_rules,
-                                                party:'end'(),
-                                                Data2
-                                            ),
-                                            fun(Res) ->
-                                                party:do(
-                                                    party:'try'(
-                                                        party:return(nil),
-                                                        fun(_) -> Res end
-                                                    ),
-                                                    fun(_use0) ->
-                                                        {Rest, New_state} = _use0,
-                                                        Data3 = begin
-                                                            _pipe@1 = Data2,
-                                                            with_state(
-                                                                _pipe@1,
-                                                                New_state
-                                                            )
-                                                        end,
-                                                        party:do(
-                                                            case gleam@list:find(
-                                                                Prefix_rules,
-                                                                fun(Rule) ->
-                                                                    erlang:element(
-                                                                        2,
-                                                                        Rule
-                                                                    )
-                                                                    =:= Prefix
-                                                                end
-                                                            ) of
-                                                                {ok, Rule@1} ->
-                                                                    party:do(
-                                                                        party:pos(
-                                                                            
-                                                                        ),
-                                                                        fun(
-                                                                            Party_pos@1
-                                                                        ) ->
-                                                                            Data4 = begin
-                                                                                _pipe@2 = Data3,
-                                                                                with_pos(
-                                                                                    _pipe@2,
-                                                                                    {position,
-                                                                                        erlang:element(
-                                                                                            2,
-                                                                                            Pos
-                                                                                        )
-                                                                                        + erlang:element(
-                                                                                            2,
-                                                                                            Party_pos@1
-                                                                                        ),
-                                                                                        erlang:element(
-                                                                                            3,
-                                                                                            Pos
-                                                                                        )
-                                                                                        + erlang:element(
-                                                                                            3,
-                                                                                            Party_pos@1
-                                                                                        )}
-                                                                                )
-                                                                            end,
-                                                                            party:do(
-                                                                                party:'try'(
-                                                                                    party:return(
-                                                                                        nil
-                                                                                    ),
-                                                                                    fun(
-                                                                                        _
-                                                                                    ) ->
-                                                                                        (erlang:element(
-                                                                                            3,
-                                                                                            Rule@1
-                                                                                        ))(
-                                                                                            Rest,
-                                                                                            Data4
-                                                                                        )
-                                                                                    end
-                                                                                ),
-                                                                                fun(
-                                                                                    El
-                                                                                ) ->
-                                                                                    party:return(
-                                                                                        El
-                                                                                    )
-                                                                                end
-                                                                            )
-                                                                        end
-                                                                    );
-
-                                                                {error, nil} ->
-                                                                    party:return(
-                                                                        {lustre@element@html:p(
-                                                                                [],
-                                                                                [lustre@element:text(
-                                                                                        Prefix
-                                                                                    ),
-                                                                                    Rest]
-                                                                            ),
-                                                                            get_state(
-                                                                                Data3
-                                                                            )}
-                                                                    )
-                                                            end,
-                                                            fun(El@1) ->
-                                                                party:return(
-                                                                    {some, El@1}
-                                                                )
-                                                            end
-                                                        )
-                                                    end
-                                                )
-                                            end
-                                        )
-                                    end
-                                )
-                            end
-                        )
-                    end
-                )),
-                Src
-            ),
-            case Res@1 of
-                {ok, T} ->
-                    {parse_result, T, []};
-
-                {error, Err} ->
-                    case Err of
-                        {unexpected, Party_pos@2, S} ->
-                            {parse_result,
-                                none,
-                                [{parse_error,
-                                        {position,
-                                            erlang:element(2, Party_pos@2) + erlang:element(
-                                                2,
-                                                Pos
-                                            ),
-                                            erlang:element(3, Party_pos@2) + erlang:element(
-                                                3,
-                                                Pos
-                                            )},
-                                        S}]};
-
-                        {user_error, Party_pos@3, Err@1} ->
-                            {parse_result,
-                                none,
-                                [{parse_error,
-                                        {position,
-                                            erlang:element(2, Party_pos@3) + erlang:element(
-                                                2,
-                                                Pos
-                                            ),
-                                            erlang:element(3, Party_pos@3) + erlang:element(
-                                                3,
-                                                Pos
-                                            )},
-                                        erlang:element(2, Err@1)}]}
-                    end
-            end
-        end}.
-
--spec parse_component(list(component(TMU))) -> arctic_parser(TMU).
+-spec parse_component(list(component(UEN))) -> arctic_parser(UEN).
 parse_component(Components) ->
     {arctic_parser,
         fun(Src, Data) ->
@@ -1004,6 +636,382 @@ parse_component(Components) ->
             end
         end}.
 
+-spec parse_inline_rule(list(inline_rule(UDJ)), parse_data(UDJ)) -> party:parser(fun((parse_data(UDJ)) -> {{ok,
+            lustre@internals@vdom:element(nil)} |
+        {error, snag:snag()},
+    parse_data(UDJ)}), snag:snag()).
+parse_inline_rule(Inline_rules, Data) ->
+    party:choice(
+        gleam@list:map(
+            Inline_rules,
+            fun(Rule) ->
+                party:do(
+                    party:string(erlang:element(2, Rule)),
+                    fun(_) ->
+                        party:do(
+                            party:pos(),
+                            fun(Party_pos) ->
+                                Pos = get_pos(Data),
+                                Data2 = begin
+                                    _pipe = Data,
+                                    with_pos(
+                                        _pipe,
+                                        {position,
+                                            erlang:element(2, Pos) + erlang:element(
+                                                2,
+                                                Party_pos
+                                            ),
+                                            erlang:element(3, Pos) + erlang:element(
+                                                3,
+                                                Party_pos
+                                            )}
+                                    )
+                                end,
+                                party:do(
+                                    party:'try'(
+                                        party:lazy(
+                                            fun() ->
+                                                parse_markup(
+                                                    Inline_rules,
+                                                    party:map(
+                                                        party:string(
+                                                            erlang:element(
+                                                                3,
+                                                                Rule
+                                                            )
+                                                        ),
+                                                        fun(_) -> nil end
+                                                    ),
+                                                    Data2
+                                                )
+                                            end
+                                        ),
+                                        fun(A) -> A end
+                                    ),
+                                    fun(_use0) ->
+                                        {Middle, Data3} = _use0,
+                                        party:do(
+                                            party:string(
+                                                erlang:element(3, Rule)
+                                            ),
+                                            fun(_) ->
+                                                party:do(
+                                                    party:perhaps(
+                                                        party:char(<<"("/utf8>>)
+                                                    ),
+                                                    fun(Res) ->
+                                                        party:do(case Res of
+                                                                {ok, _} ->
+                                                                    party:do(
+                                                                        party:sep(
+                                                                            party:many_concat(
+                                                                                party:satisfy(
+                                                                                    fun(
+                                                                                        C
+                                                                                    ) ->
+                                                                                        (C
+                                                                                        /= <<","/utf8>>)
+                                                                                        andalso (C
+                                                                                        /= <<")"/utf8>>)
+                                                                                    end
+                                                                                )
+                                                                            ),
+                                                                            party:char(
+                                                                                <<","/utf8>>
+                                                                            )
+                                                                        ),
+                                                                        fun(
+                                                                            Args
+                                                                        ) ->
+                                                                            party:do(
+                                                                                party:char(
+                                                                                    <<")"/utf8>>
+                                                                                ),
+                                                                                fun(
+                                                                                    _
+                                                                                ) ->
+                                                                                    party:return(
+                                                                                        Args
+                                                                                    )
+                                                                                end
+                                                                            )
+                                                                        end
+                                                                    );
+
+                                                                {error, nil} ->
+                                                                    party:return(
+                                                                        []
+                                                                    )
+                                                            end, fun(Args@1) ->
+                                                                party:return(
+                                                                    fun(D) ->
+                                                                        D2 = with_pos(
+                                                                            D,
+                                                                            get_pos(
+                                                                                Data3
+                                                                            )
+                                                                        ),
+                                                                        invert_res(
+                                                                            (erlang:element(
+                                                                                4,
+                                                                                Rule
+                                                                            ))(
+                                                                                Middle,
+                                                                                Args@1,
+                                                                                D2
+                                                                            ),
+                                                                            D2
+                                                                        )
+                                                                    end
+                                                                )
+                                                            end)
+                                                    end
+                                                )
+                                            end
+                                        )
+                                    end
+                                )
+                            end
+                        )
+                    end
+                )
+            end
+        )
+    ).
+
+-spec parse_markup(
+    list(inline_rule(UDW)),
+    party:parser(nil, snag:snag()),
+    parse_data(UDW)
+) -> party:parser({ok, {lustre@internals@vdom:element(nil), parse_data(UDW)}} |
+    {error, snag:snag()}, snag:snag()).
+parse_markup(Inline_rules, Terminator, Data) ->
+    _pipe = party:choice(
+        [parse_inline_rule(Inline_rules, Data),
+            party:map(
+                escaped_char(),
+                fun(C) -> fun(D) -> {{ok, lustre@element:text(C)}, D} end end
+            ),
+            (party:do(
+                party:'not'(Terminator),
+                fun(_) ->
+                    party:do(
+                        party:satisfy(fun(_) -> true end),
+                        fun(C@1) ->
+                            party:return(
+                                fun(D@1) ->
+                                    {{ok, lustre@element:text(C@1)}, D@1}
+                                end
+                            )
+                        end
+                    )
+                end
+            ))]
+    ),
+    _pipe@1 = party:stateful_many(Data, _pipe),
+    party:map(
+        _pipe@1,
+        fun(Pair) ->
+            {Results, Last_data} = Pair,
+            gleam@result:'try'(
+                gleam@result:all(Results),
+                fun(Parts) ->
+                    {ok, {lustre@element@html:span([], Parts), Last_data}}
+                end
+            )
+        end
+    ).
+
+-spec parse_text(list(inline_rule(UEH)), list(prefix_rule(UEH))) -> arctic_parser(UEH).
+parse_text(Inline_rules, Prefix_rules) ->
+    {arctic_parser,
+        fun(Src, Data) ->
+            Pos = get_pos(Data),
+            Res@1 = party:go(
+                (party:do(
+                    parse_prefix(),
+                    fun(Prefix) ->
+                        party:do(
+                            party:many(
+                                party:either(
+                                    party:char(<<" "/utf8>>),
+                                    party:char(<<"\t"/utf8>>)
+                                )
+                            ),
+                            fun(_) ->
+                                party:do(
+                                    party:pos(),
+                                    fun(Party_pos) ->
+                                        Data2 = begin
+                                            _pipe = Data,
+                                            with_pos(
+                                                _pipe,
+                                                {position,
+                                                    erlang:element(2, Pos) + erlang:element(
+                                                        2,
+                                                        Party_pos
+                                                    ),
+                                                    erlang:element(3, Pos) + erlang:element(
+                                                        3,
+                                                        Party_pos
+                                                    )}
+                                            )
+                                        end,
+                                        party:do(
+                                            parse_markup(
+                                                Inline_rules,
+                                                party:'end'(),
+                                                Data2
+                                            ),
+                                            fun(Res) ->
+                                                party:do(
+                                                    party:'try'(
+                                                        party:return(nil),
+                                                        fun(_) -> Res end
+                                                    ),
+                                                    fun(_use0) ->
+                                                        {Rest, Data3} = _use0,
+                                                        party:do(
+                                                            case gleam@list:find(
+                                                                Prefix_rules,
+                                                                fun(Rule) ->
+                                                                    erlang:element(
+                                                                        2,
+                                                                        Rule
+                                                                    )
+                                                                    =:= Prefix
+                                                                end
+                                                            ) of
+                                                                {ok, Rule@1} ->
+                                                                    party:do(
+                                                                        party:pos(
+                                                                            
+                                                                        ),
+                                                                        fun(
+                                                                            Party_pos@1
+                                                                        ) ->
+                                                                            Data4 = begin
+                                                                                _pipe@1 = Data3,
+                                                                                with_pos(
+                                                                                    _pipe@1,
+                                                                                    {position,
+                                                                                        erlang:element(
+                                                                                            2,
+                                                                                            Pos
+                                                                                        )
+                                                                                        + erlang:element(
+                                                                                            2,
+                                                                                            Party_pos@1
+                                                                                        ),
+                                                                                        erlang:element(
+                                                                                            3,
+                                                                                            Pos
+                                                                                        )
+                                                                                        + erlang:element(
+                                                                                            3,
+                                                                                            Party_pos@1
+                                                                                        )}
+                                                                                )
+                                                                            end,
+                                                                            party:do(
+                                                                                party:'try'(
+                                                                                    party:return(
+                                                                                        nil
+                                                                                    ),
+                                                                                    fun(
+                                                                                        _
+                                                                                    ) ->
+                                                                                        (erlang:element(
+                                                                                            3,
+                                                                                            Rule@1
+                                                                                        ))(
+                                                                                            Rest,
+                                                                                            Data4
+                                                                                        )
+                                                                                    end
+                                                                                ),
+                                                                                fun(
+                                                                                    El
+                                                                                ) ->
+                                                                                    party:return(
+                                                                                        El
+                                                                                    )
+                                                                                end
+                                                                            )
+                                                                        end
+                                                                    );
+
+                                                                {error, nil} ->
+                                                                    party:return(
+                                                                        {lustre@element@html:p(
+                                                                                [],
+                                                                                [lustre@element:text(
+                                                                                        Prefix
+                                                                                    ),
+                                                                                    Rest]
+                                                                            ),
+                                                                            get_state(
+                                                                                Data3
+                                                                            )}
+                                                                    )
+                                                            end,
+                                                            fun(El@1) ->
+                                                                party:return(
+                                                                    {some, El@1}
+                                                                )
+                                                            end
+                                                        )
+                                                    end
+                                                )
+                                            end
+                                        )
+                                    end
+                                )
+                            end
+                        )
+                    end
+                )),
+                Src
+            ),
+            case Res@1 of
+                {ok, T} ->
+                    {parse_result, T, []};
+
+                {error, Err} ->
+                    case Err of
+                        {unexpected, Party_pos@2, S} ->
+                            {parse_result,
+                                none,
+                                [{parse_error,
+                                        {position,
+                                            erlang:element(2, Party_pos@2) + erlang:element(
+                                                2,
+                                                Pos
+                                            ),
+                                            erlang:element(3, Party_pos@2) + erlang:element(
+                                                3,
+                                                Pos
+                                            )},
+                                        S}]};
+
+                        {user_error, Party_pos@3, Err@1} ->
+                            {parse_result,
+                                none,
+                                [{parse_error,
+                                        {position,
+                                            erlang:element(2, Party_pos@3) + erlang:element(
+                                                2,
+                                                Pos
+                                            ),
+                                            erlang:element(3, Party_pos@3) + erlang:element(
+                                                3,
+                                                Pos
+                                            )},
+                                        erlang:element(2, Err@1)}]}
+                    end
+            end
+        end}.
+
 -spec parse_page(parser_builder(any()), binary()) -> {ok,
         parse_result(parsed_page())} |
     {error, snag:snag()}.
@@ -1075,6 +1083,14 @@ parse_page(Builder, Src) ->
                                         erlang:element(2, Err@1)}]}
                     end
             end,
+            Id = begin
+                _pipe = erlang:element(2, Metadata),
+                _pipe@1 = gleam@dict:get(_pipe, <<"id"/utf8>>),
+                gleam@result:unwrap(_pipe@1, <<"[no id]"/utf8>>)
+            end,
+            gleam@io:print(
+                <<<<"Starting `"/utf8, Id/binary>>/binary, "`."/utf8>>
+            ),
             {_, Body_rev_res} = gleam@list:fold(
                 Body,
                 {erlang:element(5, Builder), []},
@@ -1091,7 +1107,7 @@ parse_page(Builder, Src) ->
                                 {parse_data,
                                     {position, Line, 0},
                                     erlang:element(2, Metadata),
-                                    erlang:element(5, Builder)}
+                                    State}
                             );
 
                         false ->
@@ -1106,7 +1122,7 @@ parse_page(Builder, Src) ->
                                 {parse_data,
                                     {position, Line, 0},
                                     erlang:element(2, Metadata),
-                                    erlang:element(5, Builder)}
+                                    State}
                             )
                     end,
                     New_state = case erlang:element(2, Res) of
@@ -1131,6 +1147,9 @@ parse_page(Builder, Src) ->
                     {[Val | Ast_so_far],
                         lists:append(erlang:element(3, Res@1), Errors_so_far)}
                 end
+            ),
+            gleam@io:println(
+                <<<<"Finished `"/utf8, Id/binary>>/binary, "`."/utf8>>
             ),
             {ok,
                 {parse_result,

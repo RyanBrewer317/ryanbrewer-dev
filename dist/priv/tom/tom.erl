@@ -1,5 +1,5 @@
 -module(tom).
--compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function]).
+-compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch]).
 
 -export([get/2, get_int/2, get_float/2, get_bool/2, get_string/2, get_date/2, get_time/2, get_date_time/2, get_array/2, get_table/2, get_number/2, parse/1]).
 -export_type([toml/0, date_time/0, date/0, time/0, offset/0, sign/0, parse_error/0, number_/0, get_error/0]).
@@ -88,7 +88,7 @@ classify(Toml) ->
             <<"Table"/utf8>>
     end.
 
--spec push_key({ok, FMF} | {error, get_error()}, binary()) -> {ok, FMF} |
+-spec push_key({ok, FMH} | {error, get_error()}, binary()) -> {ok, FMH} |
     {error, get_error()}.
 push_key(Result, Key) ->
     case Result of
@@ -119,6 +119,9 @@ get(Toml, Key) ->
             case gleam@dict:get(Toml, K@1) of
                 {ok, {table, T}} ->
                     push_key(get(T, Key@1), K@1);
+
+                {ok, {inline_table, T@1}} ->
+                    push_key(get(T@1, Key@1), K@1);
 
                 {ok, Other} ->
                     {error,
@@ -321,7 +324,7 @@ insert_loop(Table, Key, Value) ->
                     message => <<"unreachable"/utf8>>,
                     module => <<"tom"/utf8>>,
                     function => <<"insert_loop"/utf8>>,
-                    line => 514});
+                    line => 515});
 
         [K] ->
             case gleam@dict:get(Table, K) of
@@ -386,8 +389,8 @@ insert(Table, Key, Value) ->
 
 -spec expect_end_of_line(
     list(binary()),
-    fun((list(binary())) -> {ok, {FOK, list(binary())}} | {error, parse_error()})
-) -> {ok, {FOK, list(binary())}} | {error, parse_error()}.
+    fun((list(binary())) -> {ok, {FOM, list(binary())}} | {error, parse_error()})
+) -> {ok, {FOM, list(binary())}} | {error, parse_error()}.
 expect_end_of_line(Input, Next) ->
     case Input of
         [<<"\n"/utf8>> | Input@1] ->
@@ -516,28 +519,41 @@ skip_whitespace(Input) ->
             Input@5
     end.
 
--spec drop_comments(list(binary()), list(binary())) -> list(binary()).
-drop_comments(Input, Acc) ->
+-spec drop_comments(list(binary()), list(binary()), boolean()) -> list(binary()).
+drop_comments(Input, Acc, In_string) ->
     case Input of
-        [<<"#"/utf8>> | Input@1] ->
-            _pipe = Input@1,
+        [<<"\\"/utf8>>, <<"\""/utf8>> | Input@1] when In_string ->
+            drop_comments(
+                Input@1,
+                [<<"\""/utf8>>, <<"\\"/utf8>> | Acc],
+                In_string
+            );
+
+        [<<"\""/utf8>> | Input@2] ->
+            drop_comments(Input@2, [<<"\""/utf8>> | Acc], not In_string);
+
+        [<<"#"/utf8>> | Input@3] when In_string ->
+            drop_comments(Input@3, [<<"#"/utf8>> | Acc], In_string);
+
+        [<<"#"/utf8>> | Input@4] when not In_string ->
+            _pipe = Input@4,
             _pipe@1 = gleam@list:drop_while(
                 _pipe,
                 fun(G) -> G /= <<"\n"/utf8>> end
             ),
-            drop_comments(_pipe@1, Acc);
+            drop_comments(_pipe@1, Acc, In_string);
 
-        [G@1 | Input@2] ->
-            drop_comments(Input@2, [G@1 | Acc]);
+        [G@1 | Input@5] ->
+            drop_comments(Input@5, [G@1 | Acc], In_string);
 
         [] ->
             gleam@list:reverse(Acc)
     end.
 
 -spec do(
-    {ok, {FOV, list(binary())}} | {error, parse_error()},
-    fun((FOV, list(binary())) -> {ok, FOY} | {error, parse_error()})
-) -> {ok, FOY} | {error, parse_error()}.
+    {ok, {FOX, list(binary())}} | {error, parse_error()},
+    fun((FOX, list(binary())) -> {ok, FPA} | {error, parse_error()})
+) -> {ok, FPA} | {error, parse_error()}.
 do(Result, Next) ->
     case Result of
         {ok, {A, Input}} ->
@@ -569,8 +585,8 @@ parse_key(Input, Segments) ->
 -spec expect(
     list(binary()),
     binary(),
-    fun((list(binary())) -> {ok, {FPD, list(binary())}} | {error, parse_error()})
-) -> {ok, {FPD, list(binary())}} | {error, parse_error()}.
+    fun((list(binary())) -> {ok, {FPF, list(binary())}} | {error, parse_error()})
+) -> {ok, {FPF, list(binary())}} | {error, parse_error()}.
 expect(Input, Expected, Next) ->
     case Input of
         [G | Input@1] when G =:= Expected ->
@@ -898,17 +914,26 @@ parse_string(Input, String) ->
         [<<"\\"/utf8>>, <<"t"/utf8>> | Input@2] ->
             parse_string(Input@2, <<String/binary, "\t"/utf8>>);
 
-        [<<"\\"/utf8>>, <<"n"/utf8>> | Input@3] ->
-            parse_string(Input@3, <<String/binary, "\n"/utf8>>);
+        [<<"\\"/utf8>>, <<"e"/utf8>> | Input@3] ->
+            parse_string(Input@3, <<String/binary, "\x{001b}"/utf8>>);
 
-        [<<"\\"/utf8>>, <<"r"/utf8>> | Input@4] ->
-            parse_string(Input@4, <<String/binary, "\r"/utf8>>);
+        [<<"\\"/utf8>>, <<"b"/utf8>> | Input@4] ->
+            parse_string(Input@4, <<String/binary, "\x{0008}"/utf8>>);
 
-        [<<"\\"/utf8>>, <<"\""/utf8>> | Input@5] ->
-            parse_string(Input@5, <<String/binary, "\""/utf8>>);
+        [<<"\\"/utf8>>, <<"n"/utf8>> | Input@5] ->
+            parse_string(Input@5, <<String/binary, "\n"/utf8>>);
 
-        [<<"\\"/utf8>>, <<"\\"/utf8>> | Input@6] ->
-            parse_string(Input@6, <<String/binary, "\\"/utf8>>);
+        [<<"\\"/utf8>>, <<"r"/utf8>> | Input@6] ->
+            parse_string(Input@6, <<String/binary, "\r"/utf8>>);
+
+        [<<"\\"/utf8>>, <<"f"/utf8>> | Input@7] ->
+            parse_string(Input@7, <<String/binary, "\f"/utf8>>);
+
+        [<<"\\"/utf8>>, <<"\""/utf8>> | Input@8] ->
+            parse_string(Input@8, <<String/binary, "\""/utf8>>);
+
+        [<<"\\"/utf8>>, <<"\\"/utf8>> | Input@9] ->
+            parse_string(Input@9, <<String/binary, "\\"/utf8>>);
 
         [] ->
             {error, {unexpected, <<"EOF"/utf8>>, <<"\""/utf8>>}};
@@ -919,8 +944,8 @@ parse_string(Input, String) ->
         [<<"\r\n"/utf8>> | _] ->
             {error, {unexpected, <<"\r\n"/utf8>>, <<"\""/utf8>>}};
 
-        [G | Input@7] ->
-            parse_string(Input@7, <<String/binary, G/binary>>)
+        [G | Input@10] ->
+            parse_string(Input@10, <<String/binary, G/binary>>)
     end.
 
 -spec parse_multi_line_string(list(binary()), binary()) -> {ok,
@@ -2097,7 +2122,7 @@ parse_tables(Input, Toml) ->
     {error, parse_error()}.
 parse(Input) ->
     Input@1 = gleam@string:to_graphemes(Input),
-    Input@2 = drop_comments(Input@1, []),
+    Input@2 = drop_comments(Input@1, [], false),
     Input@3 = skip_whitespace(Input@2),
     do(
         parse_table(Input@3, gleam@dict:new()),

@@ -2,7 +2,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-import arctic.{type Page}
+import arctic.{type CacheablePage}
 import components/head.{head}
 import components/navbar.{navbar}
 import components/tail.{tail}
@@ -12,7 +12,7 @@ import lustre/attribute
 import lustre/element.{type Element}
 import lustre/element/html
 
-pub fn homepage(posts: List(Page)) -> Element(Nil) {
+pub fn homepage(posts: List(CacheablePage)) -> Element(Nil) {
   html.html([attribute.attribute("lang", "en")], [
     head(
       "Ryan Brewer's Blog",

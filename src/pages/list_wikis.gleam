@@ -2,7 +2,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-import arctic.{type Page}
+import arctic.{type CacheablePage}
 import components/head.{head}
 import components/navbar.{navbar}
 import components/script_wikis.{script_wikis}
@@ -49,7 +49,7 @@ fn searchbox() -> Element(Nil) {
   ])
 }
 
-pub fn list_wikis(wikis: List(Page)) -> Element(Nil) {
+pub fn list_wikis(wikis: List(CacheablePage)) -> Element(Nil) {
   html.html([attribute.attribute("lang", "en")], [
     head("Search Wiki - Ryan Brewer", "Look through Ryan's personal wiki", [
       html.link([attribute.rel("stylesheet"), attribute.href("/style.css")]),
