@@ -49,6 +49,6 @@ pub fn main() {
   let res = build.build(config)
   case res {
     Ok(Nil) -> io.println("Success!")
-    Error(err) -> io.println(snag.pretty_print(err))
+    Error(err) -> panic as { snag.pretty_print(err) }
   }
 }

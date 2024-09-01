@@ -71,6 +71,13 @@ export function main() {
     return $io.println("Success!");
   } else {
     let err = res[0];
-    return $io.println($snag.pretty_print(err));
+    throw makeError(
+      "panic",
+      "ryanbrewerdev",
+      52,
+      "main",
+      $snag.pretty_print(err),
+      {}
+    )
   }
 }
