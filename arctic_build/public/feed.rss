@@ -16,11 +16,11 @@
       <description><![CDATA[A test post for the blog.  Read more <a href="https://ryanbrewer.dev/posts/first-post.html">here</a>!]]></description>
     </item>
     <item>
-      <title>Security and Crashing with Modal Logic</title>
+      <title>Implicit Products: A Better Type-Theoretic "Forall"</title>
       <pubDate>Fri, 01 Dec 2023 00:00:00 PST</pubDate>
-      <link>https://ryanbrewer.dev/posts/security-crashing-modal-logic.html</link>
-      <guid>https://ryanbrewer.dev/posts/security-crashing-modal-logic.html</guid>
-      <description><![CDATA[Modal logic is a beautiful field of logic that can be applied to computer science in a few ways, one of which we explore in this post. It can elucidate security concepts and how and why to crash software.  Read more <a href="https://ryanbrewer.dev/posts/security-crashing-modal-logic.html">here</a>!]]></description>
+      <link>https://ryanbrewer.dev/posts/implicit-products-better-forall.html</link>
+      <guid>https://ryanbrewer.dev/posts/implicit-products-better-forall.html</guid>
+      <description><![CDATA[Implicit products are a fascinating approach to universal quantification in dependent type theory, as well as proof irrelevance/erasure in compiler implementation.  Read more <a href="https://ryanbrewer.dev/posts/implicit-products-better-forall.html">here</a>!]]></description>
     </item>
     <item>
       <title>An Introduction to Proofs with Dependent Types</title>
@@ -30,11 +30,11 @@
       <description><![CDATA[This post introduces the basic ideas behind dependent-type-based proof assistants, and expressing logic with types and values.  Read more <a href="https://ryanbrewer.dev/posts/logic-in-types.html">here</a>!]]></description>
     </item>
     <item>
-      <title>Implicit Products: A Better Type-Theoretic "Forall"</title>
+      <title>Security and Crashing with Modal Logic</title>
       <pubDate>Fri, 01 Dec 2023 00:00:00 PST</pubDate>
-      <link>https://ryanbrewer.dev/posts/implicit-products-better-forall.html</link>
-      <guid>https://ryanbrewer.dev/posts/implicit-products-better-forall.html</guid>
-      <description><![CDATA[Implicit products are a fascinating approach to universal quantification in dependent type theory, as well as proof irrelevance/erasure in compiler implementation.  Read more <a href="https://ryanbrewer.dev/posts/implicit-products-better-forall.html">here</a>!]]></description>
+      <link>https://ryanbrewer.dev/posts/security-crashing-modal-logic.html</link>
+      <guid>https://ryanbrewer.dev/posts/security-crashing-modal-logic.html</guid>
+      <description><![CDATA[Modal logic is a beautiful field of logic that can be applied to computer science in a few ways, one of which we explore in this post. It can elucidate security concepts and how and why to crash software.  Read more <a href="https://ryanbrewer.dev/posts/security-crashing-modal-logic.html">here</a>!]]></description>
     </item>
     <item>
       <title>Announcing the Saber Virtual Machine</title>
@@ -44,18 +44,18 @@
       <description><![CDATA[This post announces SaberVM, an abstract machine for functional programs that guarantees safety, reliability, and portability.  Read more <a href="https://ryanbrewer.dev/posts/announcing-sabervm.html">here</a>!]]></description>
     </item>
     <item>
-      <title>Safe Manual Memory Management with Coeffects</title>
-      <pubDate>Mon, 01 Jan 2024 00:00:00 PST</pubDate>
-      <link>https://ryanbrewer.dev/posts/safe-mmm-with-coeffects.html</link>
-      <guid>https://ryanbrewer.dev/posts/safe-mmm-with-coeffects.html</guid>
-      <description><![CDATA[Using ideas from Crary et al.'s Calculus of Capabilities, I discuss the coeffectful memory management used in SaberVM.  Read more <a href="https://ryanbrewer.dev/posts/safe-mmm-with-coeffects.html">here</a>!]]></description>
-    </item>
-    <item>
       <title>A Beginner's Guide to Programming Language Academia</title>
       <pubDate>Mon, 01 Jan 2024 00:00:00 PST</pubDate>
       <link>https://ryanbrewer.dev/posts/beginners-guide-pl-academia.html</link>
       <guid>https://ryanbrewer.dev/posts/beginners-guide-pl-academia.html</guid>
       <description><![CDATA[This post briefly maps out many different subfields of programming language theory, in an effort to make it more accessible to those outside academia.  Read more <a href="https://ryanbrewer.dev/posts/beginners-guide-pl-academia.html">here</a>!]]></description>
+    </item>
+    <item>
+      <title>Safe Manual Memory Management with Coeffects</title>
+      <pubDate>Mon, 01 Jan 2024 00:00:00 PST</pubDate>
+      <link>https://ryanbrewer.dev/posts/safe-mmm-with-coeffects.html</link>
+      <guid>https://ryanbrewer.dev/posts/safe-mmm-with-coeffects.html</guid>
+      <description><![CDATA[Using ideas from Crary et al.'s Calculus of Capabilities, I discuss the coeffectful memory management used in SaberVM.  Read more <a href="https://ryanbrewer.dev/posts/safe-mmm-with-coeffects.html">here</a>!]]></description>
     </item>
     <item>
       <title>Advanced Typechecking for Stack-Based Languages</title>

@@ -1,7 +1,7 @@
 -module(arctic).
 -compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch]).
 
--export([to_dummy_page/1]).
+-export([get_id/1, to_dummy_page/1, output_path/1]).
 -export_type([collection/0, page/0, cacheable_page/0, processed_collection/0, raw_page/0, config/0]).
 
 -type collection() :: {collection,
@@ -39,10 +39,31 @@
         list(raw_page()),
         list(collection())}.
 
+-spec get_id(cacheable_page()) -> binary().
+get_id(P) ->
+    case P of
+        {cached_page, _, Metadata} ->
+            _assert_subject = gleam@dict:get(Metadata, <<"id"/utf8>>),
+            {ok, Id} = case _assert_subject of
+                {ok, _} -> _assert_subject;
+                _assert_fail ->
+                    erlang:error(#{gleam_error => let_assert,
+                                message => <<"Assertion pattern match failed"/utf8>>,
+                                value => _assert_fail,
+                                module => <<"arctic"/utf8>>,
+                                function => <<"get_id"/utf8>>,
+                                line => 80})
+            end,
+            Id;
+
+        {new_page, Page} ->
+            erlang:element(2, Page)
+    end.
+
 -spec to_dummy_page(cacheable_page()) -> page().
 to_dummy_page(C) ->
     case C of
-        {cached_page, Path, Metadata} ->
+        {cached_page, _, Metadata} ->
             Title = begin
                 _pipe = Metadata,
                 _pipe@1 = gleam@dict:get(_pipe, <<"title"/utf8>>),
@@ -70,8 +91,23 @@ to_dummy_page(C) ->
                 _pipe@9 = gleam@result:'try'(_pipe@8, fun birl:parse/1),
                 gleam@option:from_result(_pipe@9)
             end,
-            {page, Path, [], Metadata, Title, Blerb, Tags, Date};
+            {page, get_id(C), [], Metadata, Title, Blerb, Tags, Date};
 
         {new_page, P} ->
             P
     end.
+
+-spec output_path(binary()) -> binary().
+output_path(Input_path) ->
+    _assert_subject = gleam@string:split(Input_path, <<".txt"/utf8>>),
+    [Start, <<""/utf8>>] = case _assert_subject of
+        [_, <<""/utf8>>] -> _assert_subject;
+        _assert_fail ->
+            erlang:error(#{gleam_error => let_assert,
+                        message => <<"Assertion pattern match failed"/utf8>>,
+                        value => _assert_fail,
+                        module => <<"arctic"/utf8>>,
+                        function => <<"output_path"/utf8>>,
+                        line => 88})
+    end,
+    <<<<"arctic_build/"/utf8, Start/binary>>/binary, "/index.html"/utf8>>.

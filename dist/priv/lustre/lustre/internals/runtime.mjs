@@ -9,7 +9,6 @@ import * as $option from "../../../gleam_stdlib/gleam/option.mjs";
 import { Some } from "../../../gleam_stdlib/gleam/option.mjs";
 import * as $result from "../../../gleam_stdlib/gleam/result.mjs";
 import { CustomType as $CustomType } from "../../gleam.mjs";
-import { coerce as unsafe_coerce } from "../../lustre-escape.ffi.mjs";
 import * as $effect from "../../lustre/effect.mjs";
 import * as $element from "../../lustre/element.mjs";
 import * as $patch from "../../lustre/internals/patch.mjs";
@@ -17,9 +16,10 @@ import { Diff, Init } from "../../lustre/internals/patch.mjs";
 import * as $vdom from "../../lustre/internals/vdom.mjs";
 
 class State extends $CustomType {
-  constructor(self, model, update, view, html, renderers, handlers, on_attribute_change) {
+  constructor(self, selector, model, update, view, html, renderers, handlers, on_attribute_change) {
     super();
     this.self = self;
+    this.selector = selector;
     this.model = model;
     this.update = update;
     this.view = view;

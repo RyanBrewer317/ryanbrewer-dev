@@ -1,8 +1,8 @@
 -module(simplifile).
 -compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch]).
 
--export([describe_error/1, file_permissions_to_octal/1, file_info/1, read/1, write/2, delete/1, delete_all/1, append/2, read_bits/1, write_bits/2, append_bits/2, verify_is_directory/1, verify_is_file/1, verify_is_symlink/1, create_file/1, set_permissions_octal/2, set_permissions/2, current_directory/0, is_directory/1, create_directory/1, create_symlink/2, read_directory/1, clear_directory/1, get_files/1, is_file/1, create_directory_all/1, copy_directory/2, rename_directory/2, copy_file/2, rename_file/2]).
--export_type([file_error/0, file_info/0, permission/0, file_permissions/0]).
+-export([describe_error/1, file_info_permissions_octal/1, file_info_type/1, file_info/1, link_info/1, delete/1, delete_all/1, read_bits/1, read/1, write_bits/2, write/2, append_bits/2, append/2, is_directory/1, create_directory/1, create_symlink/2, read_directory/1, is_file/1, is_symlink/1, create_file/1, create_directory_all/1, copy_file/2, rename_file/2, copy_directory/2, rename_directory/2, clear_directory/1, get_files/1, file_permissions_to_octal/1, file_info_permissions/1, set_permissions_octal/2, set_permissions/2, current_directory/0]).
+-export_type([file_error/0, file_info/0, file_type/0, permission/0, file_permissions/0]).
 
 -type file_error() :: eacces |
     eagain |
@@ -52,7 +52,7 @@
     etxtbsy |
     exdev |
     not_utf8 |
-    unknown.
+    {unknown, binary()}.
 
 -type file_info() :: {file_info,
         integer(),
@@ -65,6 +65,8 @@
         integer(),
         integer(),
         integer()}.
+
+-type file_type() :: file | directory | symlink | other.
 
 -type permission() :: read | write | execute.
 
@@ -220,55 +222,68 @@ describe_error(Error) ->
         not_utf8 ->
             <<"File not UTF-8 encoded"/utf8>>;
 
-        unknown ->
-            <<"Unknown error"/utf8>>
+        {unknown, Inner} ->
+            <<"Unknown error: "/utf8, Inner/binary>>
     end.
 
--spec permission_to_integer(permission()) -> integer().
-permission_to_integer(Permission) ->
-    case Permission of
-        read ->
-            8#4;
+-spec file_info_permissions_octal(file_info()) -> integer().
+file_info_permissions_octal(File_info) ->
+    erlang:'band'(erlang:element(3, File_info), 8#777).
 
-        write ->
-            8#2;
+-spec file_info_type(file_info()) -> file_type().
+file_info_type(File_info) ->
+    case erlang:'band'(erlang:element(3, File_info), 8#170000) of
+        8#100000 ->
+            file;
 
-        execute ->
-            8#1
+        8#40000 ->
+            directory;
+
+        8#120000 ->
+            symlink;
+
+        _ ->
+            other
     end.
 
--spec file_permissions_to_octal(file_permissions()) -> integer().
-file_permissions_to_octal(Permissions) ->
-    Make_permission_digit = fun(Permissions@1) -> _pipe = Permissions@1,
-        _pipe@1 = gleam@set:to_list(_pipe),
-        _pipe@2 = gleam@list:map(_pipe@1, fun permission_to_integer/1),
-        gleam@int:sum(_pipe@2) end,
-    ((Make_permission_digit(erlang:element(2, Permissions)) * 64) + (Make_permission_digit(
-        erlang:element(3, Permissions)
-    )
-    * 8))
-    + Make_permission_digit(erlang:element(4, Permissions)).
+-spec file_info(binary()) -> {ok, file_info()} | {error, file_error()}.
+file_info(Filepath) ->
+    simplifile_erl:file_info(Filepath).
 
--spec do_current_directory() -> {ok, binary()} | {error, file_error()}.
-do_current_directory() ->
-    _pipe = file:get_cwd(),
-    gleam@result:map(_pipe, fun gleam_stdlib:utf_codepoint_list_to_string/1).
+-spec link_info(binary()) -> {ok, file_info()} | {error, file_error()}.
+link_info(Filepath) ->
+    simplifile_erl:link_info(Filepath).
 
--spec do_append(binary(), binary()) -> {ok, nil} | {error, file_error()}.
-do_append(Content, Filepath) ->
-    _pipe = Content,
-    _pipe@1 = gleam_stdlib:identity(_pipe),
-    simplifile_erl:append_file(_pipe@1, Filepath).
+-spec delete(binary()) -> {ok, nil} | {error, file_error()}.
+delete(Path) ->
+    simplifile_erl:delete(Path).
 
--spec do_write(binary(), binary()) -> {ok, nil} | {error, file_error()}.
-do_write(Content, Filepath) ->
-    _pipe = Content,
-    _pipe@1 = gleam_stdlib:identity(_pipe),
-    simplifile_erl:write_file(_pipe@1, Filepath).
+-spec delete_all(list(binary())) -> {ok, nil} | {error, file_error()}.
+delete_all(Paths) ->
+    case Paths of
+        [] ->
+            {ok, nil};
 
--spec do_read(binary()) -> {ok, binary()} | {error, file_error()}.
-do_read(Filepath) ->
-    case simplifile_erl:read_file(Filepath) of
+        [Path | Rest] ->
+            case simplifile_erl:delete(Path) of
+                {ok, nil} ->
+                    delete_all(Rest);
+
+                {error, enoent} ->
+                    delete_all(Rest);
+
+                E ->
+                    E
+            end
+    end.
+
+-spec read_bits(binary()) -> {ok, bitstring()} | {error, file_error()}.
+read_bits(Filepath) ->
+    simplifile_erl:read_bits(Filepath).
+
+-spec read(binary()) -> {ok, binary()} | {error, file_error()}.
+read(Filepath) ->
+    case simplifile_erl:read_bits(Filepath) of
         {ok, Bits} ->
             case gleam@bit_array:to_string(Bits) of
                 {ok, Str} ->
@@ -282,94 +297,59 @@ do_read(Filepath) ->
             {error, E}
     end.
 
--spec cast_error({ok, FUY} | {error, file_error()}) -> {ok, FUY} |
-    {error, file_error()}.
-cast_error(Input) ->
-    Input.
-
--spec file_info(binary()) -> {ok, file_info()} | {error, file_error()}.
-file_info(A) ->
-    _pipe = simplifile_erl:file_info(A),
-    cast_error(_pipe).
-
--spec read(binary()) -> {ok, binary()} | {error, file_error()}.
-read(Filepath) ->
-    _pipe = do_read(Filepath),
-    cast_error(_pipe).
+-spec write_bits(binary(), bitstring()) -> {ok, nil} | {error, file_error()}.
+write_bits(Filepath, Bits) ->
+    simplifile_erl:write_bits(Filepath, Bits).
 
 -spec write(binary(), binary()) -> {ok, nil} | {error, file_error()}.
 write(Filepath, Contents) ->
-    _pipe = do_write(Contents, Filepath),
-    cast_error(_pipe).
-
--spec delete(binary()) -> {ok, nil} | {error, file_error()}.
-delete(Path) ->
-    _pipe = simplifile_erl:recursive_delete(Path),
-    cast_error(_pipe).
-
--spec delete_all(list(binary())) -> {ok, nil} | {error, file_error()}.
-delete_all(Paths) ->
-    case Paths of
-        [] ->
-            {ok, nil};
-
-        [Path | Rest] ->
-            case delete(Path) of
-                {ok, nil} ->
-                    delete_all(Rest);
-
-                {error, enoent} ->
-                    delete_all(Rest);
-
-                E ->
-                    E
-            end
-    end.
-
--spec append(binary(), binary()) -> {ok, nil} | {error, file_error()}.
-append(Filepath, Contents) ->
-    _pipe = do_append(Contents, Filepath),
-    cast_error(_pipe).
-
--spec read_bits(binary()) -> {ok, bitstring()} | {error, file_error()}.
-read_bits(Filepath) ->
-    _pipe = simplifile_erl:read_file(Filepath),
-    cast_error(_pipe).
-
--spec write_bits(binary(), bitstring()) -> {ok, nil} | {error, file_error()}.
-write_bits(Filepath, Bits) ->
-    _pipe = simplifile_erl:write_file(Bits, Filepath),
-    cast_error(_pipe).
+    _pipe = Contents,
+    _pipe@1 = gleam_stdlib:identity(_pipe),
+    simplifile_erl:write_bits(Filepath, _pipe@1).
 
 -spec append_bits(binary(), bitstring()) -> {ok, nil} | {error, file_error()}.
 append_bits(Filepath, Bits) ->
-    _pipe = simplifile_erl:append_file(Bits, Filepath),
-    cast_error(_pipe).
+    simplifile_erl:append_bits(Filepath, Bits).
 
--spec verify_is_directory(binary()) -> {ok, boolean()} | {error, file_error()}.
-verify_is_directory(Filepath) ->
-    _pipe = simplifile_erl:is_valid_directory(Filepath),
-    cast_error(_pipe).
+-spec append(binary(), binary()) -> {ok, nil} | {error, file_error()}.
+append(Filepath, Contents) ->
+    _pipe = Contents,
+    _pipe@1 = gleam_stdlib:identity(_pipe),
+    simplifile_erl:append_bits(Filepath, _pipe@1).
 
--spec verify_is_file(binary()) -> {ok, boolean()} | {error, file_error()}.
-verify_is_file(Filepath) ->
-    _pipe = simplifile_erl:is_valid_file(Filepath),
-    cast_error(_pipe).
+-spec is_directory(binary()) -> {ok, boolean()} | {error, file_error()}.
+is_directory(Filepath) ->
+    simplifile_erl:is_directory(Filepath).
 
--spec verify_is_symlink(binary()) -> {ok, boolean()} | {error, file_error()}.
-verify_is_symlink(Filepath) ->
-    _pipe = simplifile_erl:is_valid_symlink(Filepath),
-    cast_error(_pipe).
+-spec create_directory(binary()) -> {ok, nil} | {error, file_error()}.
+create_directory(Filepath) ->
+    simplifile_erl:create_directory(Filepath).
+
+-spec create_symlink(binary(), binary()) -> {ok, nil} | {error, file_error()}.
+create_symlink(Target, Symlink) ->
+    simplifile_erl:create_symlink(Target, Symlink).
+
+-spec read_directory(binary()) -> {ok, list(binary())} | {error, file_error()}.
+read_directory(Path) ->
+    simplifile_erl:read_directory(Path).
+
+-spec is_file(binary()) -> {ok, boolean()} | {error, file_error()}.
+is_file(Filepath) ->
+    simplifile_erl:is_file(Filepath).
+
+-spec is_symlink(binary()) -> {ok, boolean()} | {error, file_error()}.
+is_symlink(Filepath) ->
+    simplifile_erl:is_symlink(Filepath).
 
 -spec create_file(binary()) -> {ok, nil} | {error, file_error()}.
 create_file(Filepath) ->
     case {begin
             _pipe = Filepath,
-            verify_is_file(_pipe)
+            simplifile_erl:is_file(_pipe)
         end,
         begin
             _pipe@1 = Filepath,
-            verify_is_directory(_pipe@1)
+            simplifile_erl:is_directory(_pipe@1)
         end} of
         {{ok, true}, _} ->
             {error, eexist};
@@ -378,140 +358,8 @@ create_file(Filepath) ->
             {error, eexist};
 
         {_, _} ->
-            write_bits(Filepath, <<>>)
+            simplifile_erl:write_bits(Filepath, <<>>)
     end.
-
--spec set_permissions_octal(binary(), integer()) -> {ok, nil} |
-    {error, file_error()}.
-set_permissions_octal(Filepath, Permissions) ->
-    _pipe = simplifile_erl:set_permissions(Filepath, Permissions),
-    cast_error(_pipe).
-
--spec set_permissions(binary(), file_permissions()) -> {ok, nil} |
-    {error, file_error()}.
-set_permissions(Filepath, Permissions) ->
-    set_permissions_octal(Filepath, file_permissions_to_octal(Permissions)).
-
--spec current_directory() -> {ok, binary()} | {error, file_error()}.
-current_directory() ->
-    _pipe = do_current_directory(),
-    cast_error(_pipe).
-
--spec is_directory(binary()) -> boolean().
-is_directory(Filepath) ->
-    filelib:is_dir(Filepath).
-
--spec create_directory(binary()) -> {ok, nil} | {error, file_error()}.
-create_directory(Filepath) ->
-    _pipe = simplifile_erl:make_directory(Filepath),
-    cast_error(_pipe).
-
--spec create_symlink(binary(), binary()) -> {ok, nil} | {error, file_error()}.
-create_symlink(Target, Symlink) ->
-    _pipe = simplifile_erl:make_symlink(Target, Symlink),
-    cast_error(_pipe).
-
--spec read_directory(binary()) -> {ok, list(binary())} | {error, file_error()}.
-read_directory(Path) ->
-    _pipe = simplifile_erl:list_directory(Path),
-    cast_error(_pipe).
-
--spec do_copy_directory(binary(), binary()) -> {ok, nil} | {error, file_error()}.
-do_copy_directory(Src, Dest) ->
-    gleam@result:'try'(
-        read_directory(Src),
-        fun(Segments) ->
-            _pipe = Segments,
-            gleam@list:each(
-                _pipe,
-                fun(Segment) ->
-                    Src_path = filepath:join(Src, Segment),
-                    Dest_path = filepath:join(Dest, Segment),
-                    case {verify_is_file(Src_path),
-                        verify_is_directory(Src_path)} of
-                        {{ok, true}, {ok, false}} ->
-                            gleam@result:'try'(
-                                read_bits(Src_path),
-                                fun(Content) -> _pipe@1 = Content,
-                                    write_bits(Dest_path, _pipe@1) end
-                            );
-
-                        {{ok, false}, {ok, true}} ->
-                            gleam@result:'try'(
-                                create_directory(Dest_path),
-                                fun(_) ->
-                                    do_copy_directory(Src_path, Dest_path)
-                                end
-                            );
-
-                        {{error, E}, _} ->
-                            {error, E};
-
-                        {_, {error, E}} ->
-                            {error, E};
-
-                        {{ok, false}, {ok, false}} ->
-                            {error, unknown};
-
-                        {{ok, true}, {ok, true}} ->
-                            {error, unknown}
-                    end
-                end
-            ),
-            {ok, nil}
-        end
-    ).
-
--spec clear_directory(binary()) -> {ok, nil} | {error, file_error()}.
-clear_directory(Path) ->
-    gleam@result:'try'(read_directory(Path), fun(Paths) -> _pipe = Paths,
-            _pipe@1 = gleam@list:map(
-                _pipe,
-                fun(_capture) -> filepath:join(Path, _capture) end
-            ),
-            delete_all(_pipe@1) end).
-
--spec get_files(binary()) -> {ok, list(binary())} | {error, file_error()}.
-get_files(Directory) ->
-    gleam@result:'try'(
-        read_directory(Directory),
-        fun(Contents) ->
-            Paths = begin
-                _pipe = Contents,
-                gleam@list:map(
-                    _pipe,
-                    fun(_capture) -> filepath:join(Directory, _capture) end
-                )
-            end,
-            Files = gleam@list:filter(
-                Paths,
-                fun(Path) -> verify_is_file(Path) =:= {ok, true} end
-            ),
-            case gleam@list:filter(
-                Paths,
-                fun(Path@1) -> verify_is_directory(Path@1) =:= {ok, true} end
-            ) of
-                [] ->
-                    {ok, Files};
-
-                Directories ->
-                    gleam@result:'try'(
-                        gleam@list:try_map(Directories, fun get_files/1),
-                        fun(Nested_files) ->
-                            {ok,
-                                gleam@list:append(
-                                    Files,
-                                    gleam@list:flatten(Nested_files)
-                                )}
-                        end
-                    )
-            end
-        end
-    ).
-
--spec is_file(binary()) -> boolean().
-is_file(Filepath) ->
-    simplifile_erl:is_file(Filepath).
 
 -spec create_directory_all(binary()) -> {ok, nil} | {error, file_error()}.
 create_directory_all(Dirpath) ->
@@ -528,8 +376,69 @@ create_directory_all(Dirpath) ->
         false ->
             Path
     end,
-    _pipe@2 = simplifile_erl:create_dir_all(<<Path@1/binary, "/"/utf8>>),
-    cast_error(_pipe@2).
+    simplifile_erl:create_dir_all(<<Path@1/binary, "/"/utf8>>).
+
+-spec copy_file(binary(), binary()) -> {ok, nil} | {error, file_error()}.
+copy_file(Src, Dest) ->
+    _pipe = file:copy(Src, Dest),
+    gleam@result:replace(_pipe, nil).
+
+-spec rename_file(binary(), binary()) -> {ok, nil} | {error, file_error()}.
+rename_file(Src, Dest) ->
+    simplifile_erl:rename_file(Src, Dest).
+
+-spec do_copy_directory(binary(), binary()) -> {ok, nil} | {error, file_error()}.
+do_copy_directory(Src, Dest) ->
+    gleam@result:'try'(
+        simplifile_erl:read_directory(Src),
+        fun(Segments) ->
+            _pipe = Segments,
+            gleam@list:each(
+                _pipe,
+                fun(Segment) ->
+                    Src_path = filepath:join(Src, Segment),
+                    Dest_path = filepath:join(Dest, Segment),
+                    case {simplifile_erl:is_file(Src_path),
+                        simplifile_erl:is_directory(Src_path)} of
+                        {{ok, true}, {ok, false}} ->
+                            gleam@result:'try'(
+                                simplifile_erl:read_bits(Src_path),
+                                fun(Content) -> _pipe@1 = Content,
+                                    simplifile_erl:write_bits(
+                                        Dest_path,
+                                        _pipe@1
+                                    ) end
+                            );
+
+                        {{ok, false}, {ok, true}} ->
+                            gleam@result:'try'(
+                                simplifile_erl:create_directory(Dest_path),
+                                fun(_) ->
+                                    do_copy_directory(Src_path, Dest_path)
+                                end
+                            );
+
+                        {{error, E}, _} ->
+                            {error, E};
+
+                        {_, {error, E}} ->
+                            {error, E};
+
+                        {{ok, false}, {ok, false}} ->
+                            {error,
+                                {unknown,
+                                    <<"Unknown error copying directory"/utf8>>}};
+
+                        {{ok, true}, {ok, true}} ->
+                            {error,
+                                {unknown,
+                                    <<"Unknown error copying directory"/utf8>>}}
+                    end
+                end
+            ),
+            {ok, nil}
+        end
+    ).
 
 -spec copy_directory(binary(), binary()) -> {ok, nil} | {error, file_error()}.
 copy_directory(Src, Dest) ->
@@ -540,15 +449,156 @@ copy_directory(Src, Dest) ->
 
 -spec rename_directory(binary(), binary()) -> {ok, nil} | {error, file_error()}.
 rename_directory(Src, Dest) ->
-    gleam@result:'try'(copy_directory(Src, Dest), fun(_) -> delete(Src) end).
+    gleam@result:'try'(
+        copy_directory(Src, Dest),
+        fun(_) -> simplifile_erl:delete(Src) end
+    ).
 
--spec copy_file(binary(), binary()) -> {ok, nil} | {error, file_error()}.
-copy_file(Src, Dest) ->
-    _pipe = file:copy(Src, Dest),
-    _pipe@1 = gleam@result:replace(_pipe, nil),
-    cast_error(_pipe@1).
+-spec clear_directory(binary()) -> {ok, nil} | {error, file_error()}.
+clear_directory(Path) ->
+    gleam@result:'try'(
+        simplifile_erl:read_directory(Path),
+        fun(Paths) -> _pipe = Paths,
+            _pipe@1 = gleam@list:map(
+                _pipe,
+                fun(_capture) -> filepath:join(Path, _capture) end
+            ),
+            delete_all(_pipe@1) end
+    ).
 
--spec rename_file(binary(), binary()) -> {ok, nil} | {error, file_error()}.
-rename_file(Src, Dest) ->
-    _pipe = simplifile_erl:rename_file(Src, Dest),
-    cast_error(_pipe).
+-spec get_files(binary()) -> {ok, list(binary())} | {error, file_error()}.
+get_files(Directory) ->
+    gleam@result:'try'(
+        simplifile_erl:read_directory(Directory),
+        fun(Contents) ->
+            gleam@list:try_fold(
+                Contents,
+                [],
+                fun(Acc, Content) ->
+                    Path = filepath:join(Directory, Content),
+                    gleam@result:'try'(
+                        simplifile_erl:file_info(Path),
+                        fun(Info) -> case file_info_type(Info) of
+                                file ->
+                                    {ok, [Path | Acc]};
+
+                                directory ->
+                                    gleam@result:'try'(
+                                        get_files(Path),
+                                        fun(Nested_files) ->
+                                            {ok,
+                                                gleam@list:append(
+                                                    Acc,
+                                                    Nested_files
+                                                )}
+                                        end
+                                    );
+
+                                _ ->
+                                    {ok, Acc}
+                            end end
+                    )
+                end
+            )
+        end
+    ).
+
+-spec permission_to_integer(permission()) -> integer().
+permission_to_integer(Permission) ->
+    case Permission of
+        read ->
+            8#4;
+
+        write ->
+            8#2;
+
+        execute ->
+            8#1
+    end.
+
+-spec integer_to_permissions(integer()) -> gleam@set:set(permission()).
+integer_to_permissions(Integer) ->
+    case erlang:'band'(Integer, 7) of
+        7 ->
+            gleam@set:from_list([read, write, execute]);
+
+        6 ->
+            gleam@set:from_list([read, write]);
+
+        5 ->
+            gleam@set:from_list([read, execute]);
+
+        3 ->
+            gleam@set:from_list([write, execute]);
+
+        4 ->
+            gleam@set:from_list([read]);
+
+        2 ->
+            gleam@set:from_list([write]);
+
+        1 ->
+            gleam@set:from_list([execute]);
+
+        0 ->
+            gleam@set:new();
+
+        _ ->
+            erlang:error(#{gleam_error => panic,
+                    message => <<"panic expression evaluated"/utf8>>,
+                    module => <<"simplifile"/utf8>>,
+                    function => <<"integer_to_permissions"/utf8>>,
+                    line => 616})
+    end.
+
+-spec file_permissions_to_octal(file_permissions()) -> integer().
+file_permissions_to_octal(Permissions) ->
+    Make_permission_digit = fun(Permissions@1) -> _pipe = Permissions@1,
+        _pipe@1 = gleam@set:to_list(_pipe),
+        _pipe@2 = gleam@list:map(_pipe@1, fun permission_to_integer/1),
+        gleam@int:sum(_pipe@2) end,
+    ((Make_permission_digit(erlang:element(2, Permissions)) * 64) + (Make_permission_digit(
+        erlang:element(3, Permissions)
+    )
+    * 8))
+    + Make_permission_digit(erlang:element(4, Permissions)).
+
+-spec octal_to_file_permissions(integer()) -> file_permissions().
+octal_to_file_permissions(Octal) ->
+    {file_permissions,
+        begin
+            _pipe = Octal,
+            _pipe@1 = erlang:'bsr'(_pipe, 6),
+            integer_to_permissions(_pipe@1)
+        end,
+        begin
+            _pipe@2 = Octal,
+            _pipe@3 = erlang:'bsr'(_pipe@2, 3),
+            integer_to_permissions(_pipe@3)
+        end,
+        begin
+            _pipe@4 = Octal,
+            integer_to_permissions(_pipe@4)
+        end}.
+
+-spec file_info_permissions(file_info()) -> file_permissions().
+file_info_permissions(File_info) ->
+    octal_to_file_permissions(file_info_permissions_octal(File_info)).
+
+-spec set_permissions_octal(binary(), integer()) -> {ok, nil} |
+    {error, file_error()}.
+set_permissions_octal(Filepath, Permissions) ->
+    simplifile_erl:set_permissions_octal(Filepath, Permissions).
+
+-spec set_permissions(binary(), file_permissions()) -> {ok, nil} |
+    {error, file_error()}.
+set_permissions(Filepath, Permissions) ->
+    simplifile_erl:set_permissions_octal(
+        Filepath,
+        file_permissions_to_octal(Permissions)
+    ).
+
+-spec current_directory() -> {ok, binary()} | {error, file_error()}.
+current_directory() ->
+    _pipe = file:get_cwd(),
+    gleam@result:map(_pipe, fun gleam_stdlib:utf_codepoint_list_to_string/1).

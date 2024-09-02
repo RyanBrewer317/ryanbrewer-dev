@@ -4,27 +4,53 @@ import * as $int from "../gleam_stdlib/gleam/int.mjs";
 import * as $list from "../gleam_stdlib/gleam/list.mjs";
 import * as $result from "../gleam_stdlib/gleam/result.mjs";
 import * as $set from "../gleam_stdlib/gleam/set.mjs";
-import { Ok, Error, CustomType as $CustomType, isEqual, toBitArray } from "./gleam.mjs";
+import * as $string from "../gleam_stdlib/gleam/string.mjs";
 import {
-  fileInfo as do_file_info,
-  isValidDirectory as do_verify_is_directory,
-  isValidFile as do_verify_is_file,
-  isValidSymlink as do_verify_is_symlink,
-  currentDirectory as do_current_directory,
-  setPermissions as do_set_permissions,
-  deleteFileOrDirRecursive as do_delete,
-  readBits as do_read_bits,
-  writeBits as do_write_bits,
-  appendBits as do_append_bits,
-  isDirectory as do_is_directory,
-  makeDirectory as do_make_directory,
-  makeSymlink as do_make_symlink,
+  Ok,
+  Error,
+  toList,
+  prepend as listPrepend,
+  CustomType as $CustomType,
+  makeError,
+  toBitArray,
+} from "./gleam.mjs";
+import {
+  fileInfo as file_info,
+  linkInfo as link_info,
+  delete_ as delete$,
+  readBits as read_bits,
+  writeBits as write_bits,
+  appendBits as append_bits,
+  isDirectory as is_directory,
+  createDirectory as create_directory,
+  createSymlink as create_symlink,
+  readDirectory as read_directory,
+  isFile as is_file,
+  isSymlink as is_symlink,
   createDirAll as do_create_dir_all,
-  listContents as do_read_directory,
   copyFile as do_copy_file,
-  renameFile as do_rename_file,
-  isFile as do_is_file,
+  renameFile as rename_file,
+  setPermissionsOctal as set_permissions_octal,
+  currentDirectory as current_directory,
 } from "./simplifile_js.mjs";
+
+export {
+  append_bits,
+  create_directory,
+  create_symlink,
+  current_directory,
+  delete$,
+  file_info,
+  is_directory,
+  is_file,
+  is_symlink,
+  link_info,
+  read_bits,
+  read_directory,
+  rename_file,
+  set_permissions_octal,
+  write_bits,
+};
 
 export class Eacces extends $CustomType {}
 
@@ -122,7 +148,12 @@ export class Exdev extends $CustomType {}
 
 export class NotUtf8 extends $CustomType {}
 
-export class Unknown extends $CustomType {}
+export class Unknown extends $CustomType {
+  constructor(inner) {
+    super();
+    this.inner = inner;
+  }
+}
 
 export class FileInfo extends $CustomType {
   constructor(size, mode, nlinks, inode, user_id, group_id, dev, atime_seconds, mtime_seconds, ctime_seconds) {
@@ -139,6 +170,14 @@ export class FileInfo extends $CustomType {
     this.ctime_seconds = ctime_seconds;
   }
 }
+
+export class File extends $CustomType {}
+
+export class Directory extends $CustomType {}
+
+export class Symlink extends $CustomType {}
+
+export class Other extends $CustomType {}
 
 export class Read extends $CustomType {}
 
@@ -253,190 +292,26 @@ export function describe_error(error) {
   } else if (error instanceof NotUtf8) {
     return "File not UTF-8 encoded";
   } else {
-    return "Unknown error";
+    let inner = error.inner;
+    return "Unknown error: " + inner;
   }
 }
 
-function permission_to_integer(permission) {
-  if (permission instanceof Read) {
-    return 0o4;
-  } else if (permission instanceof Write) {
-    return 0o2;
+export function file_info_permissions_octal(file_info) {
+  return $int.bitwise_and(file_info.mode, 0o777);
+}
+
+export function file_info_type(file_info) {
+  let $ = $int.bitwise_and(file_info.mode, 0o170000);
+  if ($ === 0o100000) {
+    return new File();
+  } else if ($ === 0o40000) {
+    return new Directory();
+  } else if ($ === 0o120000) {
+    return new Symlink();
   } else {
-    return 0o1;
+    return new Other();
   }
-}
-
-export function file_permissions_to_octal(permissions) {
-  let make_permission_digit = (permissions) => {
-    let _pipe = permissions;
-    let _pipe$1 = $set.to_list(_pipe);
-    let _pipe$2 = $list.map(_pipe$1, permission_to_integer);
-    return $int.sum(_pipe$2);
-  };
-  return (make_permission_digit(permissions.user) * 64 + make_permission_digit(
-    permissions.group,
-  ) * 8) + make_permission_digit(permissions.other);
-}
-
-function do_read(filepath) {
-  let $ = do_read_bits(filepath);
-  if ($.isOk()) {
-    let bits = $[0];
-    let $1 = $bit_array.to_string(bits);
-    if ($1.isOk()) {
-      let str = $1[0];
-      return new Ok(str);
-    } else {
-      return new Error("NOTUTF8");
-    }
-  } else {
-    let e = $[0];
-    return new Error(e);
-  }
-}
-
-function do_write(content, filepath) {
-  let _pipe = content;
-  let _pipe$1 = $bit_array.from_string(_pipe);
-  return do_write_bits(_pipe$1, filepath);
-}
-
-function do_append(content, filepath) {
-  let _pipe = content;
-  let _pipe$1 = $bit_array.from_string(_pipe);
-  return do_append_bits(_pipe$1, filepath);
-}
-
-export function is_directory(filepath) {
-  return do_is_directory(filepath);
-}
-
-function cast_error(input) {
-  return $result.map_error(
-    input,
-    (e) => {
-      if (e === "EACCES") {
-        return new Eacces();
-      } else if (e === "EAGAIN") {
-        return new Eagain();
-      } else if (e === "EBADF") {
-        return new Ebadf();
-      } else if (e === "EBADMSG") {
-        return new Ebadmsg();
-      } else if (e === "EBUSY") {
-        return new Ebusy();
-      } else if (e === "EDEADLK") {
-        return new Edeadlk();
-      } else if (e === "EDEADLOCK") {
-        return new Edeadlock();
-      } else if (e === "EDQUOT") {
-        return new Edquot();
-      } else if (e === "EEXIST") {
-        return new Eexist();
-      } else if (e === "EFAULT") {
-        return new Efault();
-      } else if (e === "EFBIG") {
-        return new Efbig();
-      } else if (e === "EFTYPE") {
-        return new Eftype();
-      } else if (e === "EINTR") {
-        return new Eintr();
-      } else if (e === "EINVAL") {
-        return new Einval();
-      } else if (e === "EIO") {
-        return new Eio();
-      } else if (e === "EISDIR") {
-        return new Eisdir();
-      } else if (e === "ELOOP") {
-        return new Eloop();
-      } else if (e === "EMFILE") {
-        return new Emfile();
-      } else if (e === "EMLINK") {
-        return new Emlink();
-      } else if (e === "EMULTIHOP") {
-        return new Emultihop();
-      } else if (e === "ENAMETOOLONG") {
-        return new Enametoolong();
-      } else if (e === "ENFILE") {
-        return new Enfile();
-      } else if (e === "ENOBUFS") {
-        return new Enobufs();
-      } else if (e === "ENODEV") {
-        return new Enodev();
-      } else if (e === "ENOLCK") {
-        return new Enolck();
-      } else if (e === "ENOLINK") {
-        return new Enolink();
-      } else if (e === "ENOENT") {
-        return new Enoent();
-      } else if (e === "ENOMEM") {
-        return new Enomem();
-      } else if (e === "ENOSPC") {
-        return new Enospc();
-      } else if (e === "ENOSR") {
-        return new Enosr();
-      } else if (e === "ENOSTR") {
-        return new Enostr();
-      } else if (e === "ENOSYS") {
-        return new Enosys();
-      } else if (e === "ENOBLK") {
-        return new Enotblk();
-      } else if (e === "ENODIR") {
-        return new Enotdir();
-      } else if (e === "ENOTSUP") {
-        return new Enotsup();
-      } else if (e === "ENXIO") {
-        return new Enxio();
-      } else if (e === "EOPNOTSUPP") {
-        return new Eopnotsupp();
-      } else if (e === "EOVERFLOW") {
-        return new Eoverflow();
-      } else if (e === "EPERM") {
-        return new Eperm();
-      } else if (e === "EPIPE") {
-        return new Epipe();
-      } else if (e === "ERANGE") {
-        return new Erange();
-      } else if (e === "EROFS") {
-        return new Erofs();
-      } else if (e === "ESPIPE") {
-        return new Espipe();
-      } else if (e === "ESRCH") {
-        return new Esrch();
-      } else if (e === "ESTALE") {
-        return new Estale();
-      } else if (e === "ETXTBSY") {
-        return new Etxtbsy();
-      } else if (e === "EXDEV") {
-        return new Exdev();
-      } else if (e === "NOTUTF8") {
-        return new NotUtf8();
-      } else {
-        return new Unknown();
-      }
-    },
-  );
-}
-
-export function file_info(a) {
-  let _pipe = do_file_info(a);
-  return cast_error(_pipe);
-}
-
-export function read(filepath) {
-  let _pipe = do_read(filepath);
-  return cast_error(_pipe);
-}
-
-export function write(filepath, contents) {
-  let _pipe = do_write(contents, filepath);
-  return cast_error(_pipe);
-}
-
-export function delete$(path) {
-  let _pipe = do_delete(path);
-  return cast_error(_pipe);
 }
 
 export function delete_all(loop$paths) {
@@ -460,64 +335,43 @@ export function delete_all(loop$paths) {
   }
 }
 
+export function read(filepath) {
+  let $ = read_bits(filepath);
+  if ($.isOk()) {
+    let bits = $[0];
+    let $1 = $bit_array.to_string(bits);
+    if ($1.isOk()) {
+      let str = $1[0];
+      return new Ok(str);
+    } else {
+      return new Error(new NotUtf8());
+    }
+  } else {
+    let e = $[0];
+    return new Error(e);
+  }
+}
+
+export function write(filepath, contents) {
+  let _pipe = contents;
+  let _pipe$1 = $bit_array.from_string(_pipe);
+  return write_bits(filepath, _pipe$1);
+}
+
 export function append(filepath, contents) {
-  let _pipe = do_append(contents, filepath);
-  return cast_error(_pipe);
-}
-
-export function read_bits(filepath) {
-  let _pipe = do_read_bits(filepath);
-  return cast_error(_pipe);
-}
-
-export function write_bits(filepath, bits) {
-  let _pipe = do_write_bits(bits, filepath);
-  return cast_error(_pipe);
-}
-
-export function append_bits(filepath, bits) {
-  let _pipe = do_append_bits(bits, filepath);
-  return cast_error(_pipe);
-}
-
-export function verify_is_directory(filepath) {
-  let _pipe = do_verify_is_directory(filepath);
-  return cast_error(_pipe);
-}
-
-export function create_directory(filepath) {
-  let _pipe = do_make_directory(filepath);
-  return cast_error(_pipe);
-}
-
-export function create_symlink(target, symlink) {
-  let _pipe = do_make_symlink(target, symlink);
-  return cast_error(_pipe);
-}
-
-export function read_directory(path) {
-  let _pipe = do_read_directory(path);
-  return cast_error(_pipe);
-}
-
-export function verify_is_file(filepath) {
-  let _pipe = do_verify_is_file(filepath);
-  return cast_error(_pipe);
-}
-
-export function verify_is_symlink(filepath) {
-  let _pipe = do_verify_is_symlink(filepath);
-  return cast_error(_pipe);
+  let _pipe = contents;
+  let _pipe$1 = $bit_array.from_string(_pipe);
+  return append_bits(filepath, _pipe$1);
 }
 
 export function create_file(filepath) {
   let $ = (() => {
     let _pipe = filepath;
-    return verify_is_file(_pipe);
+    return is_file(_pipe);
   })();
   let $1 = (() => {
     let _pipe = filepath;
-    return verify_is_directory(_pipe);
+    return is_directory(_pipe);
   })();
   if ($.isOk() && $[0]) {
     return new Error(new Eexist());
@@ -542,19 +396,12 @@ export function create_directory_all(dirpath) {
       return path;
     }
   })();
-  let _pipe = do_create_dir_all(path$1 + "/");
-  return cast_error(_pipe);
+  return do_create_dir_all(path$1 + "/");
 }
 
 export function copy_file(src, dest) {
   let _pipe = do_copy_file(src, dest);
-  let _pipe$1 = $result.replace(_pipe, undefined);
-  return cast_error(_pipe$1);
-}
-
-export function rename_file(src, dest) {
-  let _pipe = do_rename_file(src, dest);
-  return cast_error(_pipe);
+  return $result.replace(_pipe, undefined);
 }
 
 function do_copy_directory(src, dest) {
@@ -567,8 +414,8 @@ function do_copy_directory(src, dest) {
         (segment) => {
           let src_path = $filepath.join(src, segment);
           let dest_path = $filepath.join(dest, segment);
-          let $ = verify_is_file(src_path);
-          let $1 = verify_is_directory(src_path);
+          let $ = is_file(src_path);
+          let $1 = is_directory(src_path);
           if ($.isOk() && $[0] && $1.isOk() && !$1[0]) {
             return $result.try$(
               read_bits(src_path),
@@ -589,9 +436,9 @@ function do_copy_directory(src, dest) {
             let e = $1[0];
             return new Error(e);
           } else if ($.isOk() && !$[0] && $1.isOk() && !$1[0]) {
-            return new Error(new Unknown());
+            return new Error(new Unknown("Unknown error copying directory"));
           } else {
-            return new Error(new Unknown());
+            return new Error(new Unknown("Unknown error copying directory"));
           }
         },
       )
@@ -632,50 +479,110 @@ export function get_files(directory) {
   return $result.try$(
     read_directory(directory),
     (contents) => {
-      let paths = (() => {
-        let _pipe = contents;
-        return $list.map(
-          _pipe,
-          (_capture) => { return $filepath.join(directory, _capture); },
-        );
-      })();
-      let files = $list.filter(
-        paths,
-        (path) => { return isEqual(verify_is_file(path), new Ok(true)); },
+      return $list.try_fold(
+        contents,
+        toList([]),
+        (acc, content) => {
+          let path = $filepath.join(directory, content);
+          return $result.try$(
+            file_info(path),
+            (info) => {
+              let $ = file_info_type(info);
+              if ($ instanceof File) {
+                return new Ok(listPrepend(path, acc));
+              } else if ($ instanceof Directory) {
+                return $result.try$(
+                  get_files(path),
+                  (nested_files) => {
+                    return new Ok($list.append(acc, nested_files));
+                  },
+                );
+              } else {
+                return new Ok(acc);
+              }
+            },
+          );
+        },
       );
-      let $ = $list.filter(
-        paths,
-        (path) => { return isEqual(verify_is_directory(path), new Ok(true)); },
-      );
-      if ($.hasLength(0)) {
-        return new Ok(files);
-      } else {
-        let directories = $;
-        return $result.try$(
-          $list.try_map(directories, get_files),
-          (nested_files) => {
-            return new Ok($list.append(files, $list.flatten(nested_files)));
-          },
-        );
-      }
     },
   );
 }
 
-export function set_permissions_octal(filepath, permissions) {
-  let _pipe = do_set_permissions(filepath, permissions);
-  return cast_error(_pipe);
+function permission_to_integer(permission) {
+  if (permission instanceof Read) {
+    return 0o4;
+  } else if (permission instanceof Write) {
+    return 0o2;
+  } else {
+    return 0o1;
+  }
+}
+
+function integer_to_permissions(integer) {
+  let $ = $int.bitwise_and(integer, 7);
+  if ($ === 7) {
+    return $set.from_list(toList([new Read(), new Write(), new Execute()]));
+  } else if ($ === 6) {
+    return $set.from_list(toList([new Read(), new Write()]));
+  } else if ($ === 5) {
+    return $set.from_list(toList([new Read(), new Execute()]));
+  } else if ($ === 3) {
+    return $set.from_list(toList([new Write(), new Execute()]));
+  } else if ($ === 4) {
+    return $set.from_list(toList([new Read()]));
+  } else if ($ === 2) {
+    return $set.from_list(toList([new Write()]));
+  } else if ($ === 1) {
+    return $set.from_list(toList([new Execute()]));
+  } else if ($ === 0) {
+    return $set.new$();
+  } else {
+    throw makeError(
+      "panic",
+      "simplifile",
+      616,
+      "integer_to_permissions",
+      "panic expression evaluated",
+      {}
+    )
+  }
+}
+
+export function file_permissions_to_octal(permissions) {
+  let make_permission_digit = (permissions) => {
+    let _pipe = permissions;
+    let _pipe$1 = $set.to_list(_pipe);
+    let _pipe$2 = $list.map(_pipe$1, permission_to_integer);
+    return $int.sum(_pipe$2);
+  };
+  return (make_permission_digit(permissions.user) * 64 + make_permission_digit(
+    permissions.group,
+  ) * 8) + make_permission_digit(permissions.other);
+}
+
+function octal_to_file_permissions(octal) {
+  return new FilePermissions(
+    (() => {
+      let _pipe = octal;
+      let _pipe$1 = $int.bitwise_shift_right(_pipe, 6);
+      return integer_to_permissions(_pipe$1);
+    })(),
+    (() => {
+      let _pipe = octal;
+      let _pipe$1 = $int.bitwise_shift_right(_pipe, 3);
+      return integer_to_permissions(_pipe$1);
+    })(),
+    (() => {
+      let _pipe = octal;
+      return integer_to_permissions(_pipe);
+    })(),
+  );
+}
+
+export function file_info_permissions(file_info) {
+  return octal_to_file_permissions(file_info_permissions_octal(file_info));
 }
 
 export function set_permissions(filepath, permissions) {
   return set_permissions_octal(filepath, file_permissions_to_octal(permissions));
-}
-
-export function current_directory() {
-  let _pipe = do_current_directory();
-  return cast_error(_pipe);
-}
-
-export function is_file(filepath) {
-  return do_is_file(filepath);
 }

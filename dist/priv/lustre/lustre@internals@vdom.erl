@@ -4,30 +4,30 @@
 -export([attribute_to_event_handler/1, attribute_to_json/2, element_to_string/1, element_to_string_builder/1, element_to_json/2, handlers/1]).
 -export_type([element/1, attribute/1]).
 
--type element(NFO) :: {text, binary()} |
+-type element(NUL) :: {text, binary()} |
     {element,
         binary(),
         binary(),
         binary(),
-        list(attribute(NFO)),
-        list(element(NFO)),
+        list(attribute(NUL)),
+        list(element(NUL)),
         boolean(),
         boolean()} |
-    {map, fun(() -> element(NFO))} |
-    {fragment, list(element(NFO)), binary()}.
+    {map, fun(() -> element(NUL))} |
+    {fragment, list(element(NUL)), binary()}.
 
--type attribute(NFP) :: {attribute,
+-type attribute(NUM) :: {attribute,
         binary(),
         gleam@dynamic:dynamic_(),
         boolean()} |
     {event,
         binary(),
-        fun((gleam@dynamic:dynamic_()) -> {ok, NFP} |
+        fun((gleam@dynamic:dynamic_()) -> {ok, NUM} |
             {error, list(gleam@dynamic:decode_error())})}.
 
--spec attribute_to_event_handler(attribute(NHK)) -> {ok,
+-spec attribute_to_event_handler(attribute(NWH)) -> {ok,
         {binary(),
-            fun((gleam@dynamic:dynamic_()) -> {ok, NHK} |
+            fun((gleam@dynamic:dynamic_()) -> {ok, NWH} |
                 {error, list(gleam@dynamic:decode_error())})}} |
     {error, nil}.
 attribute_to_event_handler(Attribute) ->
@@ -43,8 +43,8 @@ attribute_to_event_handler(Attribute) ->
 -spec attribute_to_json(attribute(any()), binary()) -> {ok, gleam@json:json()} |
     {error, nil}.
 attribute_to_json(Attribute, Key) ->
-    True_atom = gleam@dynamic:from(true),
-    False_atom = gleam@dynamic:from(false),
+    True_atom = gleam_stdlib:identity(true),
+    False_atom = gleam_stdlib:identity(false),
     case Attribute of
         {attribute, _, _, true} ->
             {error, nil};
@@ -139,7 +139,7 @@ attribute_to_string_parts(Attr) ->
             {error, nil};
 
         {attribute, Name, Value, As_property} ->
-            True_atom = gleam@dynamic:from(true),
+            True_atom = gleam_stdlib:identity(true),
             case gleam@dynamic:classify(Value) of
                 <<"String"/utf8>> ->
                     {ok, {Name, lustre_escape_ffi:coerce(Value)}};
@@ -317,7 +317,7 @@ do_element_to_string_builder(Element, Raw_text) ->
                     _ ->
                         [{attribute,
                                 <<"xmlns"/utf8>>,
-                                gleam@dynamic:from(Namespace),
+                                gleam_stdlib:identity(Namespace),
                                 false} |
                             Attrs]
                 end),
@@ -336,7 +336,7 @@ do_element_to_string_builder(Element, Raw_text) ->
                     _ ->
                         [{attribute,
                                 <<"xmlns"/utf8>>,
-                                gleam@dynamic:from(Namespace@1),
+                                gleam_stdlib:identity(Namespace@1),
                                 false} |
                             Attrs@2]
                 end),
@@ -398,7 +398,7 @@ do_element_to_string_builder(Element, Raw_text) ->
                     _ ->
                         [{attribute,
                                 <<"xmlns"/utf8>>,
-                                gleam@dynamic:from(Namespace@2),
+                                gleam_stdlib:identity(Namespace@2),
                                 false} |
                             Attrs@6]
                 end
@@ -505,11 +505,11 @@ element_to_json(Element, Key) ->
     end.
 
 -spec do_element_list_handlers(
-    list(element(NGD)),
-    gleam@dict:dict(binary(), fun((gleam@dynamic:dynamic_()) -> {ok, NGD} |
+    list(element(NVA)),
+    gleam@dict:dict(binary(), fun((gleam@dynamic:dynamic_()) -> {ok, NVA} |
         {error, list(gleam@dynamic:decode_error())})),
     binary()
-) -> gleam@dict:dict(binary(), fun((gleam@dynamic:dynamic_()) -> {ok, NGD} |
+) -> gleam@dict:dict(binary(), fun((gleam@dynamic:dynamic_()) -> {ok, NVA} |
     {error, list(gleam@dynamic:decode_error())})).
 do_element_list_handlers(Elements, Handlers, Key) ->
     gleam@list:index_fold(
@@ -523,11 +523,11 @@ do_element_list_handlers(Elements, Handlers, Key) ->
     ).
 
 -spec do_handlers(
-    element(NFV),
-    gleam@dict:dict(binary(), fun((gleam@dynamic:dynamic_()) -> {ok, NFV} |
+    element(NUS),
+    gleam@dict:dict(binary(), fun((gleam@dynamic:dynamic_()) -> {ok, NUS} |
         {error, list(gleam@dynamic:decode_error())})),
     binary()
-) -> gleam@dict:dict(binary(), fun((gleam@dynamic:dynamic_()) -> {ok, NFV} |
+) -> gleam@dict:dict(binary(), fun((gleam@dynamic:dynamic_()) -> {ok, NUS} |
     {error, list(gleam@dynamic:decode_error())})).
 do_handlers(Element, Handlers, Key) ->
     case Element of
@@ -561,8 +561,8 @@ do_handlers(Element, Handlers, Key) ->
             do_element_list_handlers(Elements, Handlers, Key)
     end.
 
--spec handlers(element(NFQ)) -> gleam@dict:dict(binary(), fun((gleam@dynamic:dynamic_()) -> {ok,
-        NFQ} |
+-spec handlers(element(NUN)) -> gleam@dict:dict(binary(), fun((gleam@dynamic:dynamic_()) -> {ok,
+        NUN} |
     {error, list(gleam@dynamic:decode_error())})).
 handlers(Element) ->
     do_handlers(Element, gleam@dict:new(), <<"0"/utf8>>).

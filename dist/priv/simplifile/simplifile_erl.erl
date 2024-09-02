@@ -7,10 +7,25 @@
 -module(simplifile_erl).
 
 %% API
--export([read_file/1, append_file/2, write_file/2, delete_file/1, delete_directory/1,
-         recursive_delete/1, list_directory/1, make_directory/1, make_symlink/2,
-         is_file/1, create_dir_all/1, rename_file/2, set_permissions/2,
-         is_valid_directory/1, is_valid_file/1, is_valid_symlink/1, file_info/1]).
+-export([
+    append_bits/2,
+    create_directory/1,
+    create_dir_all/1,
+    delete_file/1,
+    create_symlink/2,
+    delete/1,
+    delete_directory/1,
+    file_info/1,
+    link_info/1,
+    is_directory/1,
+    is_file/1,
+    is_symlink/1,
+    read_bits/1,
+    read_directory/1,
+    rename_file/2,
+    set_permissions_octal/2,
+    write_bits/2
+]).
 
 -include_lib("kernel/include/file.hrl").
 
@@ -77,15 +92,15 @@ posix_result(Result) ->
     end.
 
 %% Read the binary contents of a file
-read_file(Filename) ->
+read_bits(Filename) ->
     posix_result(file:read_file(Filename)).
 
 %% Write bytes to a file
-write_file(Contents, Filename) ->
+write_bits(Filename, Contents) ->
     posix_result(file:write_file(Filename, Contents)).
 
 %% Append bytes to a file
-append_file(Contents, Filename) ->
+append_bits(Filename, Contents) ->
     posix_result(file:write_file(Filename, Contents, [append])).
 
 %% Delete the file at the given path
@@ -93,15 +108,15 @@ delete_file(Filename) ->
     posix_result(file:delete(Filename)).
 
 %% Create a directory at the given path. Missing parent directories are not created.
-make_directory(Dir) ->
+create_directory(Dir) ->
     posix_result(file:make_dir(Dir)).
 
 %% Create a symbolic link New to the file or directory Existing (does not need to exist).
-make_symlink(Existing, New) ->
+create_symlink(Existing, New) ->
     posix_result(file:make_symlink(Existing, New)).
 
 %% List the contents of a directory
-list_directory(Dir) ->
+read_directory(Dir) ->
     case file:list_dir(Dir) of
         {ok, Filenames} ->
             {ok, [unicode:characters_to_binary(Filename) || Filename <- Filenames]};
@@ -114,12 +129,8 @@ delete_directory(Dir) ->
     posix_result(file:del_dir(Dir)).
 
 %% Deletes a file/directory and everything in it.
-recursive_delete(Dir) ->
+delete(Dir) ->
     posix_result(file:del_dir_r(Dir)).
-
-%% Checks whether a given file exists and is a file (as opposed to a directory)
-is_file(Filename) ->
-    not (file:read_file_info(Filename) == {error, enoent}) and not filelib:is_dir(Filename).
 
 %% Creates the entire path for a given directory to exist
 create_dir_all(Filename) ->
@@ -130,10 +141,10 @@ rename_file(Source, Destination) ->
     posix_result(file:rename(Source, Destination)).
 
 %% Set the permissions for the given file.
-set_permissions(Filename, Permissions) ->
+set_permissions_octal(Filename, Permissions) ->
     posix_result(file:change_mode(Filename, Permissions)).
 
-is_valid_directory(Path) ->
+is_directory(Path) ->
     case file:read_file_info(Path) of
         {ok, FileInfo} ->
             case FileInfo#file_info.type of
@@ -148,7 +159,7 @@ is_valid_directory(Path) ->
             posix_result({error, Reason})
     end.
 
-is_valid_file(Path) ->
+is_file(Path) ->
     case file:read_file_info(Path) of
         {ok, FileInfo} ->
             case FileInfo#file_info.type of
@@ -163,7 +174,7 @@ is_valid_file(Path) ->
             posix_result({error, Reason})
     end.
 
-is_valid_symlink(Path) ->
+is_symlink(Path) ->
     case file:read_link_info(Path) of
         {ok, FileInfo} ->
             case FileInfo#file_info.type of
@@ -214,3 +225,5 @@ file_info_result(Result) ->
 file_info(Filename) ->
     file_info_result(file:read_file_info(Filename, [{time, posix}])).
 
+link_info(Filename) ->
+    file_info_result(file:read_link_info(Filename, [{time, posix}])).

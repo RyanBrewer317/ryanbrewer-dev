@@ -920,7 +920,7 @@ function parse_page(builder, src) {
         let _pipe$1 = $dict.get(_pipe, "id");
         return $result.unwrap(_pipe$1, "[no id]");
       })();
-      $io.println(("Starting `" + id) + "`.");
+      $io.print(("Starting `" + id) + "`.");
       let $1 = $list.fold(
         body,
         [builder.start_state, toList([])],

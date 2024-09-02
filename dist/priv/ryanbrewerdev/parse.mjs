@@ -94,7 +94,7 @@ export function parse(path, content) {
       ];
       return $result.try$(
         (() => {
-          let _pipe$5 = $simplifile.verify_is_file("public/" + img_filename);
+          let _pipe$5 = $simplifile.is_file("public/" + img_filename);
           return map_error(
             _pipe$5,
             (err) => {

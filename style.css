@@ -237,4 +237,48 @@ textarea:focus, input:focus, #search-posts:focus, #search-wiki:focus {
   #nav-dropdown { 
     display: inline-block; 
   }
+  #sprites {
+    display: none;
+  }
+}
+
+#sprite-1, #sprite-2 {
+  background: var(--primary-color);
+  position: absolute;
+  width: 15pt;
+  height: 15pt;
+  transition: top 350ms, left 350ms;
+}
+
+#sprite-1 {
+  animation-duration: 3s;
+  animation-iteration-count: infinite;
+  animation-direction: alternate;
+  animation-name: vwoop;
+}
+
+@keyframes vwoop {
+  from {
+    transform: rotate(0);
+  }
+  to {
+    transform: rotate(1turn);
+  }
+}
+
+#sprite-2 {
+  animation-duration: 4s;
+  animation-iteration-count: infinite;
+  animation-direction: alternate;
+  animation-name: vwoop2;
+  bottom: 10pt;
+}
+
+@keyframes vwoop2 {
+  from {
+    transform: rotate(0);
+  }
+  to {
+    transform: rotate(-1turn);
+  }
 }

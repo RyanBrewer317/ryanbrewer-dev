@@ -20,7 +20,7 @@ get_id(P) ->
                                 value => _assert_fail,
                                 module => <<"arctic/build"/utf8>>,
                                 function => <<"get_id"/utf8>>,
-                                line => 31})
+                                line => 34})
             end,
             Id;
 
@@ -109,6 +109,63 @@ to_cache(Csv) ->
             )
     end.
 
+-spec parse_csv(binary()) -> {ok, list(list(binary()))} | {error, snag:snag()}.
+parse_csv(Csv) ->
+    Res = party:go(
+        begin
+            _pipe = (party:do(
+                party:char(<<"\""/utf8>>),
+                fun(_) ->
+                    party:do(
+                        party:many_concat(
+                            party:either(
+                                party:map(
+                                    party:string(<<"\"\""/utf8>>),
+                                    fun(_) -> <<"\""/utf8>> end
+                                ),
+                                party:satisfy(fun(C) -> C /= <<"\""/utf8>> end)
+                            )
+                        ),
+                        fun(Val) ->
+                            party:do(
+                                party:char(<<"\""/utf8>>),
+                                fun(_) -> party:return(Val) end
+                            )
+                        end
+                    )
+                end
+            )),
+            _pipe@1 = party:sep(_pipe, party:char(<<","/utf8>>)),
+            _pipe@2 = (fun(P) ->
+                party:do(
+                    P,
+                    fun(Row) ->
+                        party:seq(party:char(<<"\n"/utf8>>), party:return(Row))
+                    end
+                )
+            end)(_pipe@1),
+            party:many(_pipe@2)
+        end,
+        Csv
+    ),
+    gleam@result:map_error(Res, fun(E) -> case E of
+                {unexpected, P@1, S} ->
+                    snag:new(
+                        <<<<<<<<S/binary, " at "/utf8>>/binary,
+                                    (gleam@int:to_string(erlang:element(2, P@1)))/binary>>/binary,
+                                ":"/utf8>>/binary,
+                            (gleam@int:to_string(erlang:element(3, P@1)))/binary>>
+                    );
+
+                {user_error, P@2, nil} ->
+                    snag:new(
+                        <<<<<<"internal Arctic error at "/utf8,
+                                    (gleam@int:to_string(erlang:element(2, P@2)))/binary>>/binary,
+                                ":"/utf8>>/binary,
+                            (gleam@int:to_string(erlang:element(3, P@2)))/binary>>
+                    )
+            end end).
+
 -spec read_collection(
     arctic:collection(),
     gleam@dict:dict(binary(), {bitstring(), gleam@dict:dict(binary(), binary())})
@@ -153,12 +210,18 @@ read_collection(Collection, Cache) ->
                                 sha256,
                                 gleam_stdlib:identity(Content)
                             ),
+                            gleam@io:debug(Path),
+                            gleam@io:debug(New_hash),
                             case gleam@dict:get(Cache, Path) of
                                 {ok, {Current_hash, Metadata}} when Current_hash =:= New_hash ->
                                     {ok,
                                         [{cached_page, Path, Metadata} | So_far]};
 
                                 _ ->
+                                    gleam@io:debug(<<"new page!"/utf8>>),
+                                    _ = gleam@io:debug(
+                                        gleam@dict:get(Cache, Path)
+                                    ),
                                     gleam@result:'try'(
                                         (erlang:element(3, Collection))(
                                             Path,
@@ -169,13 +232,107 @@ read_collection(Collection, Cache) ->
                                                 begin
                                                     _pipe@1 = simplifile:append(
                                                         <<".arctic_cache.csv"/utf8>>,
-                                                        <<<<<<Path/binary,
-                                                                    ","/utf8>>/binary,
-                                                                (gleam_stdlib:bit_array_base64_encode(
-                                                                    New_hash,
-                                                                    false
+                                                        <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"\""/utf8,
+                                                                                                                        (gleam@string:replace(
+                                                                                                                            Path,
+                                                                                                                            <<"\""/utf8>>,
+                                                                                                                            <<"\"\""/utf8>>
+                                                                                                                        ))/binary>>/binary,
+                                                                                                                    "\",\""/utf8>>/binary,
+                                                                                                                (gleam_stdlib:bit_array_base64_encode(
+                                                                                                                    New_hash,
+                                                                                                                    false
+                                                                                                                ))/binary>>/binary,
+                                                                                                            "\",\"id:"/utf8>>/binary,
+                                                                                                        (gleam@string:replace(
+                                                                                                            erlang:element(
+                                                                                                                2,
+                                                                                                                P
+                                                                                                            ),
+                                                                                                            <<"\""/utf8>>,
+                                                                                                            <<"\"\""/utf8>>
+                                                                                                        ))/binary>>/binary,
+                                                                                                    "\",\"title:"/utf8>>/binary,
+                                                                                                (gleam@string:replace(
+                                                                                                    erlang:element(
+                                                                                                        5,
+                                                                                                        P
+                                                                                                    ),
+                                                                                                    <<"\""/utf8>>,
+                                                                                                    <<"\"\""/utf8>>
+                                                                                                ))/binary>>/binary,
+                                                                                            "\""/utf8>>/binary,
+                                                                                        (gleam@option:unwrap(
+                                                                                            gleam@option:map(
+                                                                                                erlang:element(
+                                                                                                    8,
+                                                                                                    P
+                                                                                                ),
+                                                                                                fun(
+                                                                                                    D
+                                                                                                ) ->
+                                                                                                    <<<<",\"date:"/utf8,
+                                                                                                            (birl:to_naive_date_string(
+                                                                                                                D
+                                                                                                            ))/binary>>/binary,
+                                                                                                        "\""/utf8>>
+                                                                                                end
+                                                                                            ),
+                                                                                            <<""/utf8>>
+                                                                                        ))/binary>>/binary,
+                                                                                    ",\"tags:"/utf8>>/binary,
+                                                                                (gleam@string:join(
+                                                                                    gleam@list:map(
+                                                                                        erlang:element(
+                                                                                            7,
+                                                                                            P
+                                                                                        ),
+                                                                                        fun(
+                                                                                            _capture
+                                                                                        ) ->
+                                                                                            gleam@string:replace(
+                                                                                                _capture,
+                                                                                                <<"\""/utf8>>,
+                                                                                                <<"\"\""/utf8>>
+                                                                                            )
+                                                                                        end
+                                                                                    ),
+                                                                                    <<","/utf8>>
+                                                                                ))/binary>>/binary,
+                                                                            "\",\"blerb:"/utf8>>/binary,
+                                                                        (gleam@string:replace(
+                                                                            erlang:element(
+                                                                                6,
+                                                                                P
+                                                                            ),
+                                                                            <<"\""/utf8>>,
+                                                                            <<"\"\""/utf8>>
+                                                                        ))/binary>>/binary,
+                                                                    "\""/utf8>>/binary,
+                                                                (gleam@dict:fold(
+                                                                    erlang:element(
+                                                                        4,
+                                                                        P
+                                                                    ),
+                                                                    <<""/utf8>>,
+                                                                    fun(B, K, V) ->
+                                                                        <<<<<<<<<<B/binary,
+                                                                                            ",\""/utf8>>/binary,
+                                                                                        (gleam@string:replace(
+                                                                                            K,
+                                                                                            <<"\""/utf8>>,
+                                                                                            <<"\"\""/utf8>>
+                                                                                        ))/binary>>/binary,
+                                                                                    ":"/utf8>>/binary,
+                                                                                (gleam@string:replace(
+                                                                                    V,
+                                                                                    <<"\""/utf8>>,
+                                                                                    <<"\"\""/utf8>>
+                                                                                ))/binary>>/binary,
+                                                                            "\""/utf8>>
+                                                                    end
                                                                 ))/binary>>/binary,
-                                                            ","/utf8>>
+                                                            "\n"/utf8>>
                                                     ),
                                                     gleam@result:map_error(
                                                         _pipe@1,
@@ -319,9 +476,12 @@ make_ssg_config(Processed_collections, Config, K) ->
                                     );
 
                                 {cached_page, Path, _} ->
-                                    _assert_subject = simplifile:read(Path),
-                                    {ok, Content} = case _assert_subject of
-                                        {ok, _} -> _assert_subject;
+                                    _assert_subject = gleam@string:split(
+                                        Path,
+                                        <<".txt"/utf8>>
+                                    ),
+                                    [Start | _] = case _assert_subject of
+                                        [_ | _] -> _assert_subject;
                                         _assert_fail ->
                                             erlang:error(
                                                     #{gleam_error => let_assert,
@@ -329,12 +489,28 @@ make_ssg_config(Processed_collections, Config, K) ->
                                                         value => _assert_fail,
                                                         module => <<"arctic/build"/utf8>>,
                                                         function => <<"make_ssg_config"/utf8>>,
-                                                        line => 210}
+                                                        line => 288}
                                                 )
+                                    end,
+                                    Cached_path = <<<<"arctic_build/"/utf8,
+                                            Start/binary>>/binary,
+                                        "/index.html"/utf8>>,
+                                    Res = simplifile:read(Cached_path),
+                                    Content = case Res of
+                                        {ok, C} ->
+                                            C;
+
+                                        {error, _} ->
+                                            erlang:error(#{gleam_error => panic,
+                                                    message => Cached_path,
+                                                    module => <<"arctic/build"/utf8>>,
+                                                    function => <<"make_ssg_config"/utf8>>,
+                                                    line => 293})
                                     end,
                                     lustre@ssg:add_static_asset(
                                         S@1,
-                                        Path,
+                                        <<<<"/"/utf8, Start/binary>>/binary,
+                                            "/index.html"/utf8>>,
                                         Content
                                     )
                             end end
@@ -403,7 +579,9 @@ ssg_build(Ssg_config, K) ->
 add_public(K) ->
     gleam@result:'try'(
         begin
-            _pipe = simplifile:create_directory(<<"arctic_build/public"/utf8>>),
+            _pipe = simplifile_erl:create_directory(
+                <<"arctic_build/public"/utf8>>
+            ),
             gleam@result:map_error(
                 _pipe,
                 fun(Err) ->
@@ -439,8 +617,8 @@ add_public(K) ->
     ).
 
 -spec option_to_result_nil(
-    gleam@option:option(TOK),
-    fun((TOK) -> {ok, nil} | {error, snag:snag()})
+    gleam@option:option(TSP),
+    fun((TSP) -> {ok, nil} | {error, snag:snag()})
 ) -> {ok, nil} | {error, snag:snag()}.
 option_to_result_nil(Opt, F) ->
     case Opt of
@@ -599,22 +777,14 @@ build(Config) ->
                 end
             )
         end,
-        fun(Content) ->
-            gleam@result:'try'(
-                begin
-                    _pipe@1 = gsv:to_lists_or_error(Content),
-                    gleam@result:map_error(
-                        _pipe@1,
-                        fun(Err@1) ->
-                            snag:new(
-                                <<<<"couldn't parse cache ("/utf8,
-                                        Err@1/binary>>/binary,
-                                    ")"/utf8>>
-                            )
-                        end
-                    )
-                end,
-                fun(Csv) ->
+        fun(Content) -> gleam@result:'try'(case Content of
+                    <<""/utf8>> ->
+                        {ok, []};
+
+                    _ ->
+                        _pipe@1 = parse_csv(Content),
+                        snag:context(_pipe@1, <<"couldn't parse cache"/utf8>>)
+                end, fun(Csv) ->
                     gleam@result:'try'(
                         to_cache(Csv),
                         fun(Cache) ->
@@ -653,7 +823,5 @@ build(Config) ->
                             )
                         end
                     )
-                end
-            )
-        end
+                end) end
     ).

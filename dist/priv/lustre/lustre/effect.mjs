@@ -1,3 +1,4 @@
+import * as $process from "../../gleam_erlang/gleam/erlang/process.mjs";
 import * as $json from "../../gleam_json/gleam/json.mjs";
 import * as $list from "../../gleam_stdlib/gleam/list.mjs";
 import { toList, CustomType as $CustomType } from "../gleam.mjs";
@@ -9,12 +10,31 @@ class Effect extends $CustomType {
   }
 }
 
+class Actions extends $CustomType {
+  constructor(dispatch, emit, select) {
+    super();
+    this.dispatch = dispatch;
+    this.emit = emit;
+    this.select = select;
+  }
+}
+
+export function custom(run) {
+  return new Effect(
+    toList([
+      (actions) => {
+        return run(actions.dispatch, actions.emit, actions.select);
+      },
+    ]),
+  );
+}
+
 export function from(effect) {
-  return new Effect(toList([(dispatch, _) => { return effect(dispatch); }]));
+  return custom((dispatch, _, _1) => { return effect(dispatch); });
 }
 
 export function event(name, data) {
-  return new Effect(toList([(_, emit) => { return emit(name, data); }]));
+  return custom((_, emit, _1) => { return emit(name, data); });
 }
 
 export function none() {
@@ -39,14 +59,21 @@ export function map(effect, f) {
     $list.map(
       effect.all,
       (eff) => {
-        return (dispatch, emit) => {
-          return eff((msg) => { return dispatch(f(msg)); }, emit);
+        return (actions) => {
+          return eff(
+            new Actions(
+              (msg) => { return actions.dispatch(f(msg)); },
+              actions.emit,
+              (_) => { return undefined; },
+            ),
+          );
         };
       },
     ),
   );
 }
 
-export function perform(effect, dispatch, emit) {
-  return $list.each(effect.all, (eff) => { return eff(dispatch, emit); });
+export function perform(effect, dispatch, emit, select) {
+  let actions = new Actions(dispatch, emit, select);
+  return $list.each(effect.all, (eff) => { return eff(actions); });
 }

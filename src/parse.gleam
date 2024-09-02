@@ -44,7 +44,7 @@ pub fn parse(path: String, content: String) -> Result(Page) {
       counter + 1,
     )
     use exists <- result.try(
-      simplifile.verify_is_file("public/" <> img_filename)
+      simplifile.is_file("public/" <> img_filename)
       |> map_error(fn(err) {
         snag.new(
           "couldn't check `public/"

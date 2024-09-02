@@ -4,17 +4,17 @@
 -export([frontmatter/1, metadata/1, content/1, default_renderer/0, render/2, render_with_metadata/2]).
 -export_type([renderer/1]).
 
--type renderer(PZH) :: {renderer,
-        fun((gleam@dict:dict(binary(), binary()), gleam@option:option(binary()), binary()) -> PZH),
-        fun((list(PZH)) -> PZH),
-        fun((gleam@dict:dict(binary(), binary()), integer(), list(PZH)) -> PZH),
-        fun((jot:destination(), gleam@dict:dict(binary(), binary()), list(PZH)) -> PZH),
-        fun((gleam@dict:dict(binary(), binary()), list(PZH)) -> PZH),
-        fun((list(PZH)) -> PZH),
-        fun((binary()) -> PZH),
-        fun((binary()) -> PZH),
-        fun((jot:destination(), binary()) -> PZH),
-        fun(() -> PZH)}.
+-type renderer(QDM) :: {renderer,
+        fun((gleam@dict:dict(binary(), binary()), gleam@option:option(binary()), binary()) -> QDM),
+        fun((list(QDM)) -> QDM),
+        fun((gleam@dict:dict(binary(), binary()), integer(), list(QDM)) -> QDM),
+        fun((jot:destination(), gleam@dict:dict(binary(), binary()), list(QDM)) -> QDM),
+        fun((gleam@dict:dict(binary(), binary()), list(QDM)) -> QDM),
+        fun((list(QDM)) -> QDM),
+        fun((binary()) -> QDM),
+        fun((binary()) -> QDM),
+        fun((jot:destination(), binary()) -> QDM),
+        fun(() -> QDM)}.
 
 -spec frontmatter(binary()) -> {ok, binary()} | {error, nil}.
 frontmatter(Document) ->
@@ -222,8 +222,8 @@ text_content(Segments) ->
 -spec render_inline(
     jot:inline(),
     gleam@dict:dict(binary(), binary()),
-    renderer(QAH)
-) -> QAH.
+    renderer(QEM)
+) -> QEM.
 render_inline(Inline, References, Renderer) ->
     case Inline of
         {text, Text} ->
@@ -274,8 +274,8 @@ render_inline(Inline, References, Renderer) ->
 -spec render_block(
     jot:container(),
     gleam@dict:dict(binary(), binary()),
-    renderer(QAD)
-) -> QAD.
+    renderer(QEI)
+) -> QEI.
 render_block(Block, References, Renderer) ->
     case Block of
         {paragraph, Attrs, Inline} ->
@@ -305,7 +305,7 @@ render_block(Block, References, Renderer) ->
             (erlang:element(2, Renderer))(Attrs@2, Language, Code)
     end.
 
--spec render(binary(), renderer(PZR)) -> list(PZR).
+-spec render(binary(), renderer(QDW)) -> list(QDW).
 render(Document, Renderer) ->
     Content = content(Document),
     {document, Content@1, References} = jot:parse(Content),
@@ -317,8 +317,8 @@ render(Document, Renderer) ->
 
 -spec render_with_metadata(
     binary(),
-    fun((gleam@dict:dict(binary(), tom:toml())) -> renderer(PZW))
-) -> {ok, list(PZW)} | {error, tom:parse_error()}.
+    fun((gleam@dict:dict(binary(), tom:toml())) -> renderer(QEB))
+) -> {ok, list(QEB)} | {error, tom:parse_error()}.
 render_with_metadata(Document, Renderer) ->
     Toml = frontmatter(Document),
     gleam@result:'try'(

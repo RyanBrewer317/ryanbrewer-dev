@@ -6,14 +6,18 @@ import * as $dynamic from "../gleam_stdlib/gleam/dynamic.mjs";
 import * as $option from "../gleam_stdlib/gleam/option.mjs";
 import { None, Some } from "../gleam_stdlib/gleam/option.mjs";
 import * as $result from "../gleam_stdlib/gleam/result.mjs";
-import { register } from "./client-component.ffi.mjs";
-import { start as do_start, is_browser, is_registered } from "./client-runtime.ffi.mjs";
 import { Error, CustomType as $CustomType } from "./gleam.mjs";
+import {
+  start as do_start,
+  start_server_application as start_server_component,
+  make_lustre_client_component as register,
+  is_browser,
+  is_registered,
+} from "./lustre.ffi.mjs";
 import * as $effect from "./lustre/effect.mjs";
 import * as $element from "./lustre/element.mjs";
 import * as $patch from "./lustre/internals/patch.mjs";
 import * as $runtime from "./lustre/internals/runtime.mjs";
-import { start as start_server_component } from "./server-runtime.ffi.mjs";
 
 export { is_browser, is_registered, register, start_server_component };
 

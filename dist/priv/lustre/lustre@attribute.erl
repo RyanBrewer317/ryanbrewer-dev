@@ -5,21 +5,21 @@
 
 -spec attribute(binary(), binary()) -> lustre@internals@vdom:attribute(any()).
 attribute(Name, Value) ->
-    {attribute, Name, gleam@dynamic:from(Value), false}.
+    {attribute, Name, gleam_stdlib:identity(Value), false}.
 
 -spec property(binary(), any()) -> lustre@internals@vdom:attribute(any()).
 property(Name, Value) ->
-    {attribute, Name, gleam@dynamic:from(Value), true}.
+    {attribute, Name, gleam_stdlib:identity(Value), true}.
 
 -spec on(
     binary(),
-    fun((gleam@dynamic:dynamic_()) -> {ok, NQE} |
+    fun((gleam@dynamic:dynamic_()) -> {ok, OFB} |
         {error, list(gleam@dynamic:decode_error())})
-) -> lustre@internals@vdom:attribute(NQE).
+) -> lustre@internals@vdom:attribute(OFB).
 on(Name, Handler) ->
     {event, <<"on"/utf8, Name/binary>>, Handler}.
 
--spec map(lustre@internals@vdom:attribute(NQJ), fun((NQJ) -> NQL)) -> lustre@internals@vdom:attribute(NQL).
+-spec map(lustre@internals@vdom:attribute(OFG), fun((OFG) -> OFI)) -> lustre@internals@vdom:attribute(OFI).
 map(Attr, F) ->
     case Attr of
         {attribute, Name, Value, As_property} ->

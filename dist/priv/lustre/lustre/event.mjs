@@ -1,8 +1,8 @@
 import * as $json from "../../gleam_json/gleam/json.mjs";
 import * as $dynamic from "../../gleam_stdlib/gleam/dynamic.mjs";
 import * as $result from "../../gleam_stdlib/gleam/result.mjs";
-import { prevent_default, stop_propagation } from "../client-runtime.ffi.mjs";
 import { Ok } from "../gleam.mjs";
+import { prevent_default, stop_propagation } from "../lustre.ffi.mjs";
 import * as $attribute from "../lustre/attribute.mjs";
 import * as $effect from "../lustre/effect.mjs";
 
