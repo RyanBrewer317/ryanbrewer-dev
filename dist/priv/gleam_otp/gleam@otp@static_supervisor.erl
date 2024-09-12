@@ -27,22 +27,27 @@
         boolean(),
         child_type()}.
 
+-file("/Users/louis/src/gleam/otp/src/gleam/otp/static_supervisor.gleam", 74).
 -spec new(strategy()) -> builder().
 new(Strategy) ->
     {builder, Strategy, 2, 5, never, []}.
 
+-file("/Users/louis/src/gleam/otp/src/gleam/otp/static_supervisor.gleam", 94).
 -spec restart_tolerance(builder(), integer(), integer()) -> builder().
 restart_tolerance(Builder, Intensity, Period) ->
     erlang:setelement(4, erlang:setelement(3, Builder, Intensity), Period).
 
+-file("/Users/louis/src/gleam/otp/src/gleam/otp/static_supervisor.gleam", 104).
 -spec auto_shutdown(builder(), auto_shutdown()) -> builder().
 auto_shutdown(Builder, Value) ->
     erlang:setelement(5, Builder, Value).
 
+-file("/Users/louis/src/gleam/otp/src/gleam/otp/static_supervisor.gleam", 184).
 -spec add(builder(), child_builder()) -> builder().
 add(Builder, Child) ->
     erlang:setelement(6, Builder, [Child | erlang:element(6, Builder)]).
 
+-file("/Users/louis/src/gleam/otp/src/gleam/otp/static_supervisor.gleam", 197).
 -spec worker_child(
     binary(),
     fun(() -> {ok, gleam@erlang@process:pid_()} | {error, any()})
@@ -52,6 +57,7 @@ worker_child(Id, Starter) ->
             gleam@result:map_error(_pipe, fun gleam@dynamic:from/1) end, permanent, false, {worker,
             5000}}.
 
+-file("/Users/louis/src/gleam/otp/src/gleam/otp/static_supervisor.gleam", 219).
 -spec supervisor_child(
     binary(),
     fun(() -> {ok, gleam@erlang@process:pid_()} | {error, any()})
@@ -60,10 +66,12 @@ supervisor_child(Id, Starter) ->
     {child_builder, Id, fun() -> _pipe = Starter(),
             gleam@result:map_error(_pipe, fun gleam@dynamic:from/1) end, permanent, false, supervisor}.
 
+-file("/Users/louis/src/gleam/otp/src/gleam/otp/static_supervisor.gleam", 241).
 -spec significant(child_builder(), boolean()) -> child_builder().
 significant(Child, Significant) ->
     erlang:setelement(5, Child, Significant).
 
+-file("/Users/louis/src/gleam/otp/src/gleam/otp/static_supervisor.gleam", 252).
 -spec timeout(child_builder(), integer()) -> child_builder().
 timeout(Child, Ms) ->
     case erlang:element(6, Child) of
@@ -74,10 +82,12 @@ timeout(Child, Ms) ->
             Child
     end.
 
+-file("/Users/louis/src/gleam/otp/src/gleam/otp/static_supervisor.gleam", 263).
 -spec restart(child_builder(), restart()) -> child_builder().
 restart(Child, Restart) ->
     erlang:setelement(4, Child, Restart).
 
+-file("/Users/louis/src/gleam/otp/src/gleam/otp/static_supervisor.gleam", 293).
 -spec property(
     gleam@dict:dict(gleam@erlang@atom:atom_(), gleam@dynamic:dynamic_()),
     binary(),
@@ -90,6 +100,7 @@ property(Dict, Key, Value) ->
         gleam@dynamic:from(Value)
     ).
 
+-file("/Users/louis/src/gleam/otp/src/gleam/otp/static_supervisor.gleam", 267).
 -spec convert_child(child_builder()) -> gleam@dict:dict(gleam@erlang@atom:atom_(), gleam@dynamic:dynamic_()).
 convert_child(Child) ->
     Mfa = {erlang:binary_to_atom(<<"erlang"/utf8>>),
@@ -111,6 +122,7 @@ convert_child(Child) ->
     _pipe@4 = property(_pipe@3, <<"type"/utf8>>, Type_),
     property(_pipe@4, <<"shutdown"/utf8>>, Shutdown).
 
+-file("/Users/louis/src/gleam/otp/src/gleam/otp/static_supervisor.gleam", 165).
 -spec start_link(builder()) -> {ok, gleam@erlang@process:pid_()} |
     {error, gleam@dynamic:dynamic_()}.
 start_link(Builder) ->
@@ -140,6 +152,7 @@ start_link(Builder) ->
     end,
     gleam_otp_external:static_supervisor_start_link({Flags, Children}).
 
+-file("/Users/louis/src/gleam/otp/src/gleam/otp/static_supervisor.gleam", 303).
 -spec init(gleam@dynamic:dynamic_()) -> {ok, gleam@dynamic:dynamic_()} |
     {error, any()}.
 init(Start_data) ->

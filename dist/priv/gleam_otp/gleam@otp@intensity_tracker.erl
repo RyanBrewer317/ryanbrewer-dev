@@ -11,14 +11,17 @@
 
 -type too_intense() :: too_intense.
 
+-file("/Users/louis/src/gleam/otp/src/gleam/otp/intensity_tracker.gleam", 14).
 -spec new(integer(), integer()) -> intensity_tracker().
 new(Limit, Period) ->
     {intensity_tracker, Limit, Period, []}.
 
+-file("/Users/louis/src/gleam/otp/src/gleam/otp/intensity_tracker.gleam", 21).
 -spec now_seconds() -> integer().
 now_seconds() ->
     erlang:monotonic_time(1).
 
+-file("/Users/louis/src/gleam/otp/src/gleam/otp/intensity_tracker.gleam", 25).
 -spec trim_window(list(integer()), integer(), integer()) -> list(integer()).
 trim_window(Events, Now, Period) ->
     case Events of
@@ -35,6 +38,7 @@ trim_window(Events, Now, Period) ->
             end
     end.
 
+-file("/Users/louis/src/gleam/otp/src/gleam/otp/intensity_tracker.gleam", 36).
 -spec add_event(intensity_tracker()) -> {ok, intensity_tracker()} |
     {error, too_intense()}.
 add_event(Tracker) ->

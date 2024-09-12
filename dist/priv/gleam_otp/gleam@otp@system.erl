@@ -24,19 +24,23 @@
 
 -type do_not_leak() :: any().
 
+-file("/Users/louis/src/gleam/otp/src/gleam/otp/system.gleam", 19).
 -spec debug_state(list(debug_option())) -> debug_state().
 debug_state(A) ->
     sys:debug_options(A).
 
+-file("/Users/louis/src/gleam/otp/src/gleam/otp/system.gleam", 65).
 -spec get_state(gleam@erlang@process:pid_()) -> gleam@dynamic:dynamic_().
 get_state(From) ->
     sys:get_state(From).
 
+-file("/Users/louis/src/gleam/otp/src/gleam/otp/system.gleam", 77).
 -spec suspend(gleam@erlang@process:pid_()) -> nil.
 suspend(Pid) ->
     sys:suspend(Pid),
     nil.
 
+-file("/Users/louis/src/gleam/otp/src/gleam/otp/system.gleam", 92).
 -spec resume(gleam@erlang@process:pid_()) -> nil.
 resume(Pid) ->
     sys:resume(Pid),

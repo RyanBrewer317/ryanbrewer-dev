@@ -120,8 +120,7 @@ export class LustreServerComponent extends HTMLElement {
       subtree: false,
     });
 
-    const prev =
-      nth_child(this.shadowRoot, this.#adoptedStyleElements.length) ??
+    const prev = this.shadowRoot.childNodes[this.#adoptedStyleElements.lemgth] ??
       this.shadowRoot.appendChild(document.createTextNode(""));
     const dispatch = (handler) => (event) => {
       const data = JSON.parse(this.getAttribute("data-lustre-data") || "{}");
@@ -140,8 +139,7 @@ export class LustreServerComponent extends HTMLElement {
   }
 
   #diff([diff]) {
-    const prev =
-      nth_child(this.shadowRoot, this.#adoptedStyleElements.length) ??
+    const prev = this.shadowRoot.childNodes[this.#adoptedStyleElements.length - 1] ??
       this.shadowRoot.appendChild(document.createTextNode(""));
     const dispatch = (handler) => (event) => {
       const msg = handler(event);
@@ -157,10 +155,9 @@ export class LustreServerComponent extends HTMLElement {
 
   async #adoptStyleSheets() {
     const pendingParentStylesheets = [];
-    const documentStyleSheets = Array.from(document.styleSheets);
 
     for (const link of document.querySelectorAll("link[rel=stylesheet]")) {
-      if (documentStyleSheets.includes(link.sheet)) continue;
+      if (link.sheet) continue
 
       pendingParentStylesheets.push(
         new Promise((resolve, reject) => {
@@ -174,6 +171,7 @@ export class LustreServerComponent extends HTMLElement {
 
     while (this.#adoptedStyleElements.length) {
       this.#adoptedStyleElements.shift().remove();
+      this.shadowRoot.firstChild.remove();
     }
 
     this.shadowRoot.adoptedStyleSheets = this.getRootNode().adoptedStyleSheets;
@@ -183,27 +181,28 @@ export class LustreServerComponent extends HTMLElement {
     for (const sheet of document.styleSheets) {
       try {
         this.shadowRoot.adoptedStyleSheets.push(sheet);
-      } catch {}
-
-      try {
-        const adoptedSheet = new CSSStyleSheet();
-        for (const rule of sheet.cssRules) {
-          adoptedSheet.insertRule(rule.cssText, adoptedSheet.cssRules.length);
-        }
-
-        this.shadowRoot.adoptedStyleSheets.push(adoptedSheet);
       } catch {
-        const node = sheet.ownerNode.cloneNode();
 
-        this.shadowRoot.prepend(node);
-        this.#adoptedStyleElements.push(node);
+        try {
+          const adoptedSheet = new CSSStyleSheet();
+          for (const rule of sheet.cssRules) {
+            adoptedSheet.insertRule(rule.cssText, adoptedSheet.cssRules.length);
+          }
 
-        pending.push(
-          new Promise((resolve, reject) => {
-            node.onload = resolve;
-            node.onerror = reject;
-          }),
-        );
+          this.shadowRoot.adoptedStyleSheets.push(adoptedSheet);
+        } catch {
+          const node = sheet.ownerNode.cloneNode();
+
+          this.shadowRoot.prepend(node);
+          this.#adoptedStyleElements.push(node);
+
+          pending.push(
+            new Promise((resolve, reject) => {
+              node.onload = resolve;
+              node.onerror = reject;
+            }),
+          );
+        }
       }
     }
 
@@ -213,15 +212,6 @@ export class LustreServerComponent extends HTMLElement {
 
 window.customElements.define("lustre-server-component", LustreServerComponent);
 
-const nth_child = (root, n) => {
-  let child = root.firstChild;
-
-  while (child && n > 0) {
-    child = child.nextSibling;
-  }
-
-  return child;
-};
 
 const deep_merge = (target, source) => {
   for (const key in source) {

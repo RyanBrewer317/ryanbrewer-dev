@@ -6,22 +6,27 @@
 
 -type os_family() :: windows_nt | linux | darwin | free_bsd | {other, binary()}.
 
+-file("/Users/louis/src/gleam/erlang/src/gleam/erlang/os.gleam", 20).
 -spec get_all_env() -> gleam@dict:dict(binary(), binary()).
 get_all_env() ->
     gleam_erlang_ffi:get_all_env().
 
+-file("/Users/louis/src/gleam/erlang/src/gleam/erlang/os.gleam", 36).
 -spec get_env(binary()) -> {ok, binary()} | {error, nil}.
 get_env(Name) ->
     gleam_erlang_ffi:get_env(Name).
 
+-file("/Users/louis/src/gleam/erlang/src/gleam/erlang/os.gleam", 57).
 -spec set_env(binary(), binary()) -> nil.
 set_env(Name, Value) ->
     gleam_erlang_ffi:set_env(Name, Value).
 
+-file("/Users/louis/src/gleam/erlang/src/gleam/erlang/os.gleam", 81).
 -spec unset_env(binary()) -> nil.
 unset_env(Name) ->
     gleam_erlang_ffi:unset_env(Name).
 
+-file("/Users/louis/src/gleam/erlang/src/gleam/erlang/os.gleam", 118).
 -spec family() -> os_family().
 family() ->
     gleam_erlang_ffi:os_family().

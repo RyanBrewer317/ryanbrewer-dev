@@ -15,6 +15,7 @@
 -type message(HKT) :: {from_monitor, gleam@erlang@process:process_down()} |
     {from_subject, HKT}.
 
+-file("/Users/louis/src/gleam/otp/src/gleam/otp/task.gleam", 51).
 -spec async(fun(() -> HKU)) -> task(HKU).
 async(Work) ->
     Owner = erlang:self(),
@@ -39,6 +40,7 @@ async(Work) ->
     end,
     {task, Owner, Pid, Monitor, Selector}.
 
+-file("/Users/louis/src/gleam/otp/src/gleam/otp/task.gleam", 71).
 -spec assert_owner(task(any())) -> nil.
 assert_owner(Task) ->
     Self = erlang:self(),
@@ -53,6 +55,7 @@ assert_owner(Task) ->
             )
     end.
 
+-file("/Users/louis/src/gleam/otp/src/gleam/otp/task.gleam", 94).
 -spec try_await(task(HKY), integer()) -> {ok, HKY} | {error, await_error()}.
 try_await(Task, Timeout) ->
     assert_owner(Task),
@@ -68,6 +71,7 @@ try_await(Task, Timeout) ->
             {error, timeout}
     end.
 
+-file("/Users/louis/src/gleam/otp/src/gleam/otp/task.gleam", 118).
 -spec await(task(HLC), integer()) -> HLC.
 await(Task, Timeout) ->
     _assert_subject = try_await(Task, Timeout),
@@ -75,7 +79,7 @@ await(Task, Timeout) ->
         {ok, _} -> _assert_subject;
         _assert_fail ->
             erlang:error(#{gleam_error => let_assert,
-                        message => <<"Assertion pattern match failed"/utf8>>,
+                        message => <<"Pattern match failed, no pattern matched the value."/utf8>>,
                         value => _assert_fail,
                         module => <<"gleam/otp/task"/utf8>>,
                         function => <<"await"/utf8>>,
@@ -83,6 +87,7 @@ await(Task, Timeout) ->
     end,
     Value.
 
+-file("/Users/louis/src/gleam/otp/src/gleam/otp/task.gleam", 129).
 -spec try_await_forever(task(HLE)) -> {ok, HLE} | {error, await_error()}.
 try_await_forever(Task) ->
     assert_owner(Task),
@@ -95,6 +100,7 @@ try_await_forever(Task) ->
             {error, {exit, Reason}}
     end.
 
+-file("/Users/louis/src/gleam/otp/src/gleam/otp/task.gleam", 150).
 -spec await_forever(task(HLI)) -> HLI.
 await_forever(Task) ->
     _assert_subject = try_await_forever(Task),
@@ -102,7 +108,7 @@ await_forever(Task) ->
         {ok, _} -> _assert_subject;
         _assert_fail ->
             erlang:error(#{gleam_error => let_assert,
-                        message => <<"Assertion pattern match failed"/utf8>>,
+                        message => <<"Pattern match failed, no pattern matched the value."/utf8>>,
                         value => _assert_fail,
                         module => <<"gleam/otp/task"/utf8>>,
                         function => <<"await_forever"/utf8>>,

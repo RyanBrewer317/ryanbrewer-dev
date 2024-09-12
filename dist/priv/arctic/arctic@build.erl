@@ -20,7 +20,7 @@ get_id(P) ->
                                 value => _assert_fail,
                                 module => <<"arctic/build"/utf8>>,
                                 function => <<"get_id"/utf8>>,
-                                line => 34})
+                                line => 33})
             end,
             Id;
 
@@ -210,18 +210,12 @@ read_collection(Collection, Cache) ->
                                 sha256,
                                 gleam_stdlib:identity(Content)
                             ),
-                            gleam@io:debug(Path),
-                            gleam@io:debug(New_hash),
                             case gleam@dict:get(Cache, Path) of
                                 {ok, {Current_hash, Metadata}} when Current_hash =:= New_hash ->
                                     {ok,
                                         [{cached_page, Path, Metadata} | So_far]};
 
                                 _ ->
-                                    gleam@io:debug(<<"new page!"/utf8>>),
-                                    _ = gleam@io:debug(
-                                        gleam@dict:get(Cache, Path)
-                                    ),
                                     gleam@result:'try'(
                                         (erlang:element(3, Collection))(
                                             Path,
@@ -489,7 +483,7 @@ make_ssg_config(Processed_collections, Config, K) ->
                                                         value => _assert_fail,
                                                         module => <<"arctic/build"/utf8>>,
                                                         function => <<"make_ssg_config"/utf8>>,
-                                                        line => 288}
+                                                        line => 285}
                                                 )
                                     end,
                                     Cached_path = <<<<"arctic_build/"/utf8,
@@ -505,7 +499,7 @@ make_ssg_config(Processed_collections, Config, K) ->
                                                     message => Cached_path,
                                                     module => <<"arctic/build"/utf8>>,
                                                     function => <<"make_ssg_config"/utf8>>,
-                                                    line => 293})
+                                                    line => 290})
                                     end,
                                     lustre@ssg:add_static_asset(
                                         S@1,
@@ -786,7 +780,7 @@ build(Config) ->
                         snag:context(_pipe@1, <<"couldn't parse cache"/utf8>>)
                 end, fun(Csv) ->
                     gleam@result:'try'(
-                        to_cache(Csv),
+                        to_cache(lists:reverse(Csv)),
                         fun(Cache) ->
                             gleam@result:'try'(
                                 process(erlang:element(4, Config), Cache),

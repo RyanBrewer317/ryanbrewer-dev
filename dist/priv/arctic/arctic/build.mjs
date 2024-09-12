@@ -3,7 +3,6 @@ import * as $crypto from "../../gleam_crypto/gleam/crypto.mjs";
 import * as $bit_array from "../../gleam_stdlib/gleam/bit_array.mjs";
 import * as $dict from "../../gleam_stdlib/gleam/dict.mjs";
 import * as $int from "../../gleam_stdlib/gleam/int.mjs";
-import * as $io from "../../gleam_stdlib/gleam/io.mjs";
 import * as $list from "../../gleam_stdlib/gleam/list.mjs";
 import * as $option from "../../gleam_stdlib/gleam/option.mjs";
 import { None, Some } from "../../gleam_stdlib/gleam/option.mjs";
@@ -33,7 +32,7 @@ function get_id(p) {
       throw makeError(
         "assignment_no_match",
         "arctic/build",
-        34,
+        33,
         "get_id",
         "Assignment pattern did not match",
         { value: $ }
@@ -201,8 +200,6 @@ function read_collection(collection, cache) {
                 new $crypto.Sha256(),
                 $bit_array.from_string(content),
               );
-              $io.debug(path);
-              $io.debug(new_hash);
               let $ = $dict.get(cache, path);
               if ($.isOk() && (isEqual($[0][0], new_hash))) {
                 let current_hash = $[0][0];
@@ -211,9 +208,6 @@ function read_collection(collection, cache) {
                   listPrepend(new CachedPage(path, metadata), so_far),
                 );
               } else {
-                $io.debug("new page!");
-                let $1 = $io.debug($dict.get(cache, path));
-                
                 return $result.try$(
                   collection.parse(path, content),
                   (p) => {
@@ -377,7 +371,7 @@ function make_ssg_config(processed_collections, config, k) {
                   throw makeError(
                     "assignment_no_match",
                     "arctic/build",
-                    288,
+                    285,
                     "",
                     "Assignment pattern did not match",
                     { value: $ }
@@ -394,7 +388,7 @@ function make_ssg_config(processed_collections, config, k) {
                     throw makeError(
                       "panic",
                       "arctic/build",
-                      293,
+                      290,
                       "",
                       cached_path,
                       {}
@@ -638,7 +632,7 @@ export function build(config) {
         })(),
         (csv) => {
           return $result.try$(
-            to_cache(csv),
+            to_cache($list.reverse(csv)),
             (cache) => {
               return $result.try$(
                 process(config.collections, cache),
