@@ -71,9 +71,10 @@ console.write(iter.go{start: 7, step: n->n-1}.next.next.val)
         ]),
         html.p([], [
           text("To read more about Cricket, look "),
-          html.a([attribute.href("https://github.com/RyanBrewer317/cricket")], [
-            text("here"),
-          ]),
+          html.a(
+            [attribute.href("https://github.com/RyanBrewer317/cricket_rs")],
+            [text("here")],
+          ),
           text("."),
         ]),
       ]),

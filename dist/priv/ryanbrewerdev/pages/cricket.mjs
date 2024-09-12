@@ -78,7 +78,7 @@ export function cricket() {
                   $html.a(
                     toList([
                       $attribute.href(
-                        "https://github.com/RyanBrewer317/cricket",
+                        "https://github.com/RyanBrewer317/cricket_rs",
                       ),
                     ]),
                     toList([text("here")]),
