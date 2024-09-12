@@ -26,7 +26,7 @@ pub fn parse(path: String, content: String) -> Result(Page) {
       list.first(args)
       |> map_error(fn(_) { snag.new("bad parameters for link") }),
     )
-    Ok(#(html.a([attribute.src(url)], [el]), parse.get_state(data)))
+    Ok(#(html.a([attribute.href(url)], [el]), parse.get_state(data)))
   })
   |> parse.add_prefix_rule("###", parse.wrap_prefix(html.h3))
   |> parse.add_static_component("diagram", fn(_args, body, data) {
@@ -118,8 +118,22 @@ pub fn parse(path: String, content: String) -> Result(Page) {
     )
     Ok(out)
   })
-  |> parse.add_static_component("code", fn(_args, body, data) {
-    Ok(#(html.pre([], [html.code([], [text(body)])]), parse.get_state(data)))
+  |> parse.add_static_component("code", fn(args, body, data) {
+    let body2 = string.replace(body, "\\n", "\n")
+    case args {
+      [lang] ->
+        Ok(#(
+          html.pre([], [
+            html.code([attribute.class("language-" <> lang)], [text(body2)]),
+          ]),
+          parse.get_state(data),
+        ))
+      _ ->
+        Ok(#(
+          html.pre([], [html.code([], [text(body2)])]),
+          parse.get_state(data),
+        ))
+    }
   })
   |> parse.add_static_component("math", fn(_args, body, data) {
     use <- fn(k) { Ok(#(html.div([], k()), parse.get_state(data))) }

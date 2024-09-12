@@ -19,14 +19,12 @@ else
   else
     IFS='' read -r -d '' String <<EOF
 id: $id
-name: $name
+title: $name
 date: $(date +'%Y-%m-%d')
 tags: 
-description: 
+blerb: 
 
-@paragraph@
 Hello world!
-@end@
 EOF
     touch $draft_filename &&
     echo "${String}" >> $draft_filename

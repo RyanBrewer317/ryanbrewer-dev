@@ -47,7 +47,7 @@ export function parse(path, content) {
         (url) => {
           return new Ok(
             [
-              $html.a(toList([$attribute.src(url)]), toList([el])),
+              $html.a(toList([$attribute.href(url)]), toList([el])),
               $parse.get_state(data),
             ],
           );
@@ -189,16 +189,35 @@ export function parse(path, content) {
   let _pipe$6 = $parse.add_static_component(
     _pipe$5,
     "code",
-    (_, body, data) => {
-      return new Ok(
-        [
-          $html.pre(
-            toList([]),
-            toList([$html.code(toList([]), toList([text(body)]))]),
-          ),
-          $parse.get_state(data),
-        ],
-      );
+    (args, body, data) => {
+      let body2 = $string.replace(body, "\\n", "\n");
+      if (args.hasLength(1)) {
+        let lang = args.head;
+        return new Ok(
+          [
+            $html.pre(
+              toList([]),
+              toList([
+                $html.code(
+                  toList([$attribute.class$("language-" + lang)]),
+                  toList([text(body2)]),
+                ),
+              ]),
+            ),
+            $parse.get_state(data),
+          ],
+        );
+      } else {
+        return new Ok(
+          [
+            $html.pre(
+              toList([]),
+              toList([$html.code(toList([]), toList([text(body2)]))]),
+            ),
+            $parse.get_state(data),
+          ],
+        );
+      }
     },
   );
   let _pipe$7 = $parse.add_static_component(

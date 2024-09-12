@@ -77,7 +77,15 @@ p {
 
 code {
   font-size: 12pt;
+  overflow-x: scroll;
+  scrollbar-width: none; /* firefox */
+  -ms-overflow-style: none; /* IE 10+ */
 }
+
+code::-webkit-scrollbar { /* Chrome, Safari */
+  display: none;
+}
+
 
 #body {
   padding: 12pt;

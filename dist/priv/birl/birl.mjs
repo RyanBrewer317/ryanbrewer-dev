@@ -1,6 +1,7 @@
 import * as $bool from "../gleam_stdlib/gleam/bool.mjs";
 import * as $function from "../gleam_stdlib/gleam/function.mjs";
 import * as $int from "../gleam_stdlib/gleam/int.mjs";
+import * as $io from "../gleam_stdlib/gleam/io.mjs";
 import * as $iterator from "../gleam_stdlib/gleam/iterator.mjs";
 import * as $list from "../gleam_stdlib/gleam/list.mjs";
 import * as $option from "../gleam_stdlib/gleam/option.mjs";
@@ -294,7 +295,7 @@ export function range(a, b, s) {
     throw makeError(
       "assignment_no_match",
       "birl",
-      1145,
+      1147,
       "range",
       "Assignment pattern did not match",
       { value: $ }
@@ -339,7 +340,7 @@ function parse_offset(offset) {
         throw makeError(
           "assignment_no_match",
           "birl",
-          1326,
+          1328,
           "",
           "Assignment pattern did not match",
           { value: $ }
@@ -410,7 +411,7 @@ function parse_offset(offset) {
                 throw makeError(
                   "assignment_no_match",
                   "birl",
-                  1356,
+                  1358,
                   "",
                   "Assignment pattern did not match",
                   { value: $3 }
@@ -574,7 +575,7 @@ export function get_offset(value) {
     throw makeError(
       "assignment_no_match",
       "birl",
-      1202,
+      1204,
       "get_offset",
       "Assignment pattern did not match",
       { value: $ }
@@ -624,7 +625,7 @@ function parse_section(section, pattern_string, default$) {
     throw makeError(
       "assignment_no_match",
       "birl",
-      1521,
+      1522,
       "parse_section",
       "Assignment pattern did not match",
       { value: $ }
@@ -676,7 +677,7 @@ function parse_date_section(date) {
             throw makeError(
               "assignment_no_match",
               "birl",
-              1441,
+              1443,
               "",
               "Assignment pattern did not match",
               { value: $1 }
@@ -749,7 +750,7 @@ export function parse_time_of_day(value) {
     throw makeError(
       "assignment_no_match",
       "birl",
-      398,
+      399,
       "parse_time_of_day",
       "Assignment pattern did not match",
       { value: $ }
@@ -844,7 +845,7 @@ export function parse_time_of_day(value) {
                   throw makeError(
                     "assignment_no_match",
                     "birl",
-                    447,
+                    448,
                     "",
                     "Assignment pattern did not match",
                     { value: time_of_day }
@@ -943,7 +944,7 @@ export function parse_naive_time_of_day(value) {
               throw makeError(
                 "assignment_no_match",
                 "birl",
-                496,
+                497,
                 "",
                 "Assignment pattern did not match",
                 { value: time_of_day }
@@ -1076,7 +1077,7 @@ function to_parts(value) {
       throw makeError(
         "assignment_no_match",
         "birl",
-        1318,
+        1320,
         "to_parts",
         "Assignment pattern did not match",
         { value: $1 }
@@ -1252,7 +1253,7 @@ export function month(value) {
     throw makeError(
       "assignment_no_match",
       "birl",
-      1099,
+      1101,
       "month",
       "Assignment pattern did not match",
       { value: $1 }
@@ -1359,7 +1360,7 @@ export function parse(value) {
     throw makeError(
       "assignment_no_match",
       "birl",
-      295,
+      296,
       "parse",
       "Assignment pattern did not match",
       { value: $ }
@@ -1367,6 +1368,7 @@ export function parse(value) {
   }
   let offset_pattern = $[0];
   let value$1 = $string.trim(value);
+  $io.debug([298, value$1]);
   return $result.then$(
     (() => {
       let $1 = $string.split(value$1, "T");
@@ -1393,8 +1395,10 @@ export function parse(value) {
     (_use0) => {
       let day_string = _use0[0];
       let offsetted_time_string = _use0[1];
+      $io.debug([311, day_string]);
       let day_string$1 = $string.trim(day_string);
       let offsetted_time_string$1 = $string.trim(offsetted_time_string);
+      $io.debug([314, day_string$1]);
       return $result.then$(
         (() => {
           let $1 = $string.ends_with(offsetted_time_string$1, "Z") || $string.ends_with(
@@ -1426,9 +1430,8 @@ export function parse(value) {
               $3.head.submatches.hasLength(2) &&
               $3.head.submatches.head instanceof $option.Some &&
               $3.head.submatches.tail.head instanceof $option.Some) {
-                let day_string$2 = $3.head.submatches.head[0];
                 let offset_string = $3.head.submatches.tail.head[0];
-                return new Ok([day_string$2, "00", offset_string]);
+                return new Ok([day_string$1, "00", offset_string]);
               } else {
                 return new Error(undefined);
               }
@@ -1439,6 +1442,7 @@ export function parse(value) {
           let day_string$2 = _use0[0];
           let time_string = _use0[1];
           let offset_string = _use0[2];
+          $io.debug([337, day_string$2]);
           let time_string$1 = $string.replace(time_string, ":", "");
           return $result.then$(
             (() => {
@@ -1490,7 +1494,7 @@ export function parse(value) {
                       throw makeError(
                         "assignment_no_match",
                         "birl",
-                        363,
+                        364,
                         "",
                         "Assignment pattern did not match",
                         { value: day }
@@ -1506,7 +1510,7 @@ export function parse(value) {
                           throw makeError(
                             "assignment_no_match",
                             "birl",
-                            366,
+                            367,
                             "",
                             "Assignment pattern did not match",
                             { value: time_of_day }
@@ -1537,6 +1541,7 @@ export function parse(value) {
 
 export function from_naive(value) {
   let value$1 = $string.trim(value);
+  $io.debug([572, value$1]);
   return $result.then$(
     (() => {
       let $ = $string.split(value$1, "T");
@@ -1563,7 +1568,9 @@ export function from_naive(value) {
     (_use0) => {
       let day_string = _use0[0];
       let time_string = _use0[1];
+      $io.debug([585, day_string]);
       let day_string$1 = $string.trim(day_string);
+      $io.debug([587, day_string$1]);
       let time_string$1 = $string.trim(time_string);
       let time_string$2 = $string.replace(time_string$1, ":", "");
       return $result.then$(
@@ -1616,7 +1623,7 @@ export function from_naive(value) {
                   throw makeError(
                     "assignment_no_match",
                     "birl",
-                    612,
+                    614,
                     "",
                     "Assignment pattern did not match",
                     { value: day }
@@ -1632,7 +1639,7 @@ export function from_naive(value) {
                       throw makeError(
                         "assignment_no_match",
                         "birl",
-                        615,
+                        617,
                         "",
                         "Assignment pattern did not match",
                         { value: time_of_day }
@@ -1671,7 +1678,7 @@ export function set_day(value, day) {
     throw makeError(
       "assignment_no_match",
       "birl",
-      1209,
+      1211,
       "set_day",
       "Assignment pattern did not match",
       { value: $1 }
@@ -1699,7 +1706,7 @@ export function set_time_of_day(value, time) {
     throw makeError(
       "assignment_no_match",
       "birl",
-      1227,
+      1229,
       "set_time_of_day",
       "Assignment pattern did not match",
       { value: $1 }
@@ -1723,7 +1730,7 @@ export function weekday(value) {
       throw makeError(
         "assignment_no_match",
         "birl",
-        1033,
+        1035,
         "weekday",
         "Assignment pattern did not match",
         { value: $ }
@@ -1750,7 +1757,7 @@ export function to_http(value) {
     throw makeError(
       "assignment_no_match",
       "birl",
-      630,
+      632,
       "to_http",
       "Assignment pattern did not match",
       { value: $ }
@@ -2149,7 +2156,7 @@ export function legible_difference(a, b) {
       throw makeError(
         "assignment_no_match",
         "birl",
-        963,
+        965,
         "legible_difference",
         "Assignment pattern did not match",
         { value: $1 }
@@ -2241,7 +2248,7 @@ export function from_http(value) {
             throw makeError(
               "assignment_no_match",
               "birl",
-              737,
+              739,
               "",
               "Assignment pattern did not match",
               { value: $ }

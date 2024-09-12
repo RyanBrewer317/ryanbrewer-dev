@@ -1,0 +1,176 @@
+id: cricket
+title: The Cricket Language
+date: 2024-09-12
+tags: programming,language,tech,announce,announcement,cricket,untyped,gradual,gradually,gradually-typed,dynamically,dynamically-typed,dynamic,type,typed,types,object,objects,object-oriented,oriented,immutable
+blerb: Cricket is a lazy gradually-typed functional language with objects. It's very tiny but very expressive; anyone can implement it themselves!
+
+ [Cricket](https://github.com/RyanBrewer317/cricket_rs) is a new programming language I've developed recently. Cricket is tiny: about 1700 lines of Rust code. This means it has a small footprint when embedded in other systems, and it's easy for anyone to understand and modify. This minimalism still allows for laziness, a decently fast implementation, a linear-time type-based linter with some side-effect tracking, a module system, abstract data types with bare-bones pattern matching, helpful error messages, and more. I designed Cricket carefully to make this happen.
+
+Here's a hello-world program in Cricket:
+
+@code(plaintext)
+def main:
+  console.write("Hello, world!")
+
+Cricket is ["lazy,"](https://en.wikipedia.org/wiki/Lazy_evaluation) which means that it doesn't execute code that doesn't impact the final result. This comes with some awesome optimization, but it also complicates side effects (which often don't affect the final returned value). So Cricket also has a simple way to declare that some code does affect the final result:
+
+@code(plaintext)
+def main:
+  let force _ = console.write("Hello,")
+  in console.write("world!")
+
+The `force` keyword is a special function that forces the execution of the code inside it. If we leave it out, the first console write won't happen:
+
+@code(plaintext)
+def main:
+  // only prints "world!"
+  let _ = console.write("Hello,")
+  in console.write("world!")
+
+Laziness in Cricket is implemented with a [Krivine machine](https://en.wikipedia.org/wiki/Krivine_machine), so it's a fairly efficient stack-based execution model with highly-shared immutable closures. It's not *fast* but it's good enough.
+
+Cricket is ["gradually typed,"](https://en.wikipedia.org/wiki/Gradual_typing) which means that it does its best to infer types and give warnings, but it gives things the type `Dynamic` if it can't figure it out. Therefore typechecking is more like a linter than a static analyzer, and indeed Cricket code can still be run even if it has type errors. The mantra of gradually typed systems is that (hopefully) all correct programs are valid, but some incorrect programs are caught. This is opposed to statically typed systems, where (the hope is) all incorrect programs are caught, but some correct programs are not allowed either.
+
+Here's a program that Cricket doesn't catch:
+
+@code(plaintext)
+def main:
+  let f = x-> x.y
+  in console.write(f(3))
+
+@code(plaintext)
+Runtime error. `3` is not an object, cannot access method `y` at `main.ct:2:18`.
+
+Here's a program that Cricket *does* catch:
+
+@code(plaintext)
+def main:
+  (x-> x.y)(let z = 3 in z)
+
+@code(plaintext)
+Warning: Expected object, got `Int` at `main.ct:2:11`.
+Hit `Enter` or `Return` to run anyway, or `Ctrl-C` to exit...
+
+I choose this example to show off the fact that Cricket uses "application mode bidirectional type checking," (which in our case is almost completely unidirectional), based on the ["Let Arguments Go First" paper](http://dx.doi.org/10.1007/978-3-319-89884-1_10) by Xie and Oliviera. Cricket desugars `let x = v in e` to `(x->e)(v)`, so the application mode is very helpful.
+
+Cricket also has a simple notion of ["effect type"](https://en.wikipedia.org/wiki/Effect_system): if computing a value would cause some I/O side effects, then the linter will keep track of that, and suggest `force`-ing it into a pure value before giving it as the argument to any function. This is helpful for if you ever forget about Cricket's laziness; `force`-ing the side effects away ensures predictable program behavior. And remember, `let` bindings (without the `force` keyword) are, after desugaring, just giving arguments to functions, so they count for this too.
+
+Cricket is object-oriented, which means that it uses objects for most of the computation. It uses an immutable variant of typical (so to speak) [prototypal](https://en.wikipedia.org/wiki/Prototype-based_programming) OOP. In other words, instead of classes, there's a way to extend objects:
+
+@code(plaintext)
+def main:
+  let dog = {bark: "woof!"} // the prototype
+  in let cooper = dog <- name: "Cooper"
+  in console.write(cooper.name + " says: " + cooper.bark)
+
+The `<- :` operator is not-updating in-place, but returning a modified copy. Therefore we pronounce `x <- y: z` as "x with y as z," and call it a with-operator.
+
+Also note that, because Cricket is lazy, objects don't really have fields, only methods. Anything that looks like a field is really a getter/[accessor](https://en.wikipedia.org/wiki/Mutator_method).
+
+For supporting some nice object-oriented idioms, Cricket objects have something like a `this` implicit parameter! They're introduced per-method, like so:
+
+@code(plaintext)
+{x: 3, this.y: this.x}
+
+The `this.y:` part brings a new variable into scope, which we've named `this`, and it refers to the whole object, so `this.x` is `3`! The linter tries its best with this recursive typing, and honestly does a pretty good job. Here's a program that shows off the linter's understanding:
+
+@code(plaintext)
+{x: {y: z->1}, this.w: console.write(this.x)}
+
+@code(plaintext)
+Warning: Expected `Int | Float | String`, but found `{y: (Dynamic) -> Int}` at `input:1:42`.
+Hit `Enter` or `Return` to run anyway, or `Ctrl-C` to exit...
+
+Cricket is functional, meaning everything is immutable and functions are first-class. It isn't pure, so arbitrary code can have side effects, which is very useful. On the other hand, side-effectful code often has to be annotated with `force`, which is helpful for clarity. Here's a program showing off functional idioms:
+
+@code(plaintext)
+def fold(acc)(f)(l): 
+  l.case{
+    Empty: acc,
+    Has(first)(rest): 
+      let force x = f(acc)(first) in
+      fold(x)(f)(rest)
+  }\n
+import stdlib/List\n
+def main:
+  let add = x-> y-> x + y
+  in let l = List[1, 2, 3]
+  in let l2 = l.map(add(1))
+  in fold(0)(acc-> x-> let force _ = console.write(x) in acc)(l2)
+
+Why are parameters individually enclosed in parentheses? Cricket functions only take one argument, so this is a nice syntax sugar for currying.
+
+Want to know a secret? The `List` [ADT](https://en.wikipedia.org/wiki/Abstract_data_type) above, with its `Empty` and `Has` constructors, is actually just objects and functions! In cricket, `x{...}` is syntax sugar for `x({...})`, so `.case{...}` is actually an object method call, and the case analysis is just a regular object being passed as the argument! `List` is defined in `stdlib/List.ct` like so:
+
+@code(plaintext)
+def Empty: {
+  case(c): c.Empty,
+  map(f): Empty,
+  concat(l): l,
+  flat: Empty
+}\n
+def Has(first)(rest): {
+  case(c): c.Has(first)(rest),
+  map(f): Has(f(first))(rest.map(f)),
+  concat(l): Has(first)(rest.concat(rest)),
+  flat: first.concat(rest.flat)
+}
+
+See how the `case` method just calls the corresponding method of its argument? That's the whole magic that brings the ADT to Cricket. This means that ADTs in Cricket are actually ["Church-encodings,"](https://en.wikipedia.org/wiki/Church_encoding) but with objects instead of lambdas. For reference, here's the corresponding Church-encoded list:
+
+@code(plaintext)
+def Empty: empty-> has-> empty
+def Has(first)(rest): empty-> has-> has(first)(rest)\n
+def main:
+  let l = Has(1)(Has(2)(Empty))
+  // print 1
+  in console.write(
+    l("empty")(first-> rest-> first)
+  )
+
+Hopefully you can see that even though this is just lambda-calculus, it completely mirrors the object-oriented version. Instead of an object with two methods, it's a Church-encoded pair of functions. Hence I continue to call Cricket's ADTs Church encodings. Using objects affords us some niceties though, like a better case analysis syntax and things like `l.map(f)` which wouldn't be possible if `l` were a function instead of an object.
+
+In the context of Cricket's recursive objects, it also means that our case analysis can be recursive without defining an external function! Here's an example:
+
+@code(plaintext)
+import stdlib/List\n
+def main:
+  let l = List[1, 2, 3]
+  // print 1 2 3
+  in l.case{
+    Empty: 0,
+    this.Has(first)(rest):
+      let force _ = console.write(first) in
+      rest.case(this) // where the magic happens!
+  }
+
+What's with that `List\[1, 2, 3]` syntax? We saw the definition of `List`, which had no square brackets, so is this thing just syntax sugar too? Yes! Cricket rewrites `x\[a, b, ...]` to `x.Has(a)(x.Has(b)(...(x.Empty)))`, so `List\[1, 2, 3]` is actually `List.Has(1)(List.Has(2)(List.Has(3)(List.Empty)))`, which should look familiar if you're used to the linked list ADTs common in functional languages.
+
+I call this a "fold function" and they're useful in other situations too. Here's an example of a [variadic](https://en.wikipedia.org/wiki/Variadic_function) sum function:
+
+@code(plaintext)
+def sum: {
+  Has(first)(rest): first + rest,
+  Empty: 0
+}\n
+def main:
+  // prints 10
+  console.write(sum[1, 2, 3, 4])
+
+This philosophy of not supporting macros but carefully choosing specific syntax sugar is inspired by [Gleam](https://gleam.run/), which is itself possibly inspired by Haskell, at least in the sense that [`use`](https://erikarow.land/notes/using-use-gleam) is very similar to [`do`](https://en.wikibooks.org/wiki/Haskell/do_notation). In fact, Cricket also has a version of this:
+
+@code(plaintext)
+def main:
+  // prints 1
+  let x <- f-> f(1)
+  in console.write(x)
+
+This might look very strange and magical if you're not familiar with Gleam's `use`, Roc's [backpassing](https://gist.github.com/sebfisch/2ec0e7a357c367f63cdc85473648d067#callbacks), or the implementation of Haskell's `do` notation. It's the exact same concept: `let x <- v in e` simply desugars to `v(x-> e)`.
+
+### Closing
+
+That was a quick whirlwind tour of Cricket! There's more I'd like to add, but I do think it's a pretty cool project already. Especially given how small it is. I had a version written in Haskell, and it only took three days over the weekend to port it to Rust!
+
+I'm curious about forking it a few times to explore various features, like more advanced type systems or various compiler backends, or having a bunch of optimization passes, or a substructural type system. These would be big enough changes that they lose the Cricket's philosophy of tinyness, but forking Cricket and adding new things *is a part of* the philosophy of tinyness, so long as the small core remains somewhere for future use and forking.
+
+If you're interested in Cricket, or you like the work I do, please consider [sponsoring me](https://github.com/sponsors/RyanBrewer317) or [buying me a coffee](https://ko-fi.com/ryanbrewer).
