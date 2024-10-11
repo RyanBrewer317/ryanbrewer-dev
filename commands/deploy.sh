@@ -13,7 +13,7 @@ mkdir dist &&
 mkdir dist/priv &&
 cp -r arctic_build/* dist &&
 rm -r dist/public &&
-cp -r public/* dist &&
+cp -r arctic_build/public/* dist &&
 cp -r build/dev/javascript/* dist/priv &&
 rm dist/priv/lustre/priv &&
 cp style.css dist/ &&
