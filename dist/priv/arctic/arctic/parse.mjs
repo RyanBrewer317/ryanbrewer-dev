@@ -621,10 +621,13 @@ function parse_inline_rule(inline_rules, data) {
                                   return $party.do$(
                                     $party.sep(
                                       $party.many_concat(
-                                        $party.satisfy(
-                                          (c) => {
-                                            return (c !== ",") && (c !== ")");
-                                          },
+                                        $party.either(
+                                          escaped_char(),
+                                          $party.satisfy(
+                                            (c) => {
+                                              return (c !== ",") && (c !== ")");
+                                            },
+                                          ),
                                         ),
                                       ),
                                       $party.char(","),
