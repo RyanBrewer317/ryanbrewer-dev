@@ -22,9 +22,7 @@ id: $id
 title: $name
 tags: 
 
-@paragraph@
 Hello world!
-@end@
 EOF
     touch $prod_filename &&
     echo "${String}" >> $prod_filename
