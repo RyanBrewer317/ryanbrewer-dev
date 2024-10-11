@@ -59,15 +59,6 @@ export function wiki(cw) {
           ),
         ]),
       ),
-      (() => {
-        let $ = w.body;
-        if ($.hasLength(0)) {
-          return $html.p(toList([]), toList([]));
-        } else {
-          let el = $.head;
-          return el;
-        }
-      })(),
     ]),
   );
 }

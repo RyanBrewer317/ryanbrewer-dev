@@ -23,9 +23,5 @@ pub fn wiki(cw: CacheablePage) -> Element(Nil) {
   let w = arctic.to_dummy_page(cw)
   html.li([attribute.class("wiki-thumbnail"), attribute.id(w.id)], [
     html.h3([], [html.a([attribute.href("../wiki/" <> w.id)], [text(w.title)])]),
-    case w.body {
-      [] -> html.p([], [])
-      [el, ..] -> el
-    },
   ])
 }
