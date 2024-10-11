@@ -1,5 +1,5 @@
 id: aesthetics
-name: Aesthetics
+title: Aesthetics
 tags: philosophy,art,aesthetic,beauty,pattern,thrownness
 
 This entry encompasses my philosophy of aesthetics. It does not attempt to be a survey of the field, though I will make references to relevant philosophers when appropriate.

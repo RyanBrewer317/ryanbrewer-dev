@@ -19,7 +19,7 @@ else
   else
     IFS='' read -r -d '' String <<EOF
 id: $id
-name: $name
+title: $name
 tags: 
 
 @paragraph@
