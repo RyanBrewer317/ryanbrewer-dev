@@ -1,7 +1,7 @@
 -module(tom).
 -compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch]).
 
--export([get/2, get_int/2, get_float/2, get_bool/2, get_string/2, get_date/2, get_time/2, get_date_time/2, get_array/2, get_table/2, get_number/2, parse/1]).
+-export([get/2, get_int/2, get_float/2, get_bool/2, get_string/2, get_date/2, get_time/2, get_date_time/2, get_array/2, get_table/2, get_number/2, as_int/1, as_float/1, as_bool/1, as_string/1, as_date/1, as_time/1, as_date_time/1, as_array/1, as_table/1, as_number/1, parse/1]).
 -export_type([toml/0, date_time/0, date/0, time/0, offset/0, sign/0, parse_error/0, number_/0, get_error/0]).
 
 -type toml() :: {int, integer()} |
@@ -39,6 +39,7 @@
 -type get_error() :: {not_found, list(binary())} |
     {wrong_type, list(binary()), binary(), binary()}.
 
+-file("/Users/louis/src/gleam/tom/src/tom.gleam", 363).
 -spec classify(toml()) -> binary().
 classify(Toml) ->
     case Toml of
@@ -88,7 +89,8 @@ classify(Toml) ->
             <<"Table"/utf8>>
     end.
 
--spec push_key({ok, FMH} | {error, get_error()}, binary()) -> {ok, FMH} |
+-file("/Users/louis/src/gleam/tom/src/tom.gleam", 383).
+-spec push_key({ok, FMG} | {error, get_error()}, binary()) -> {ok, FMG} |
     {error, get_error()}.
 push_key(Result, Key) ->
     case Result of
@@ -102,6 +104,7 @@ push_key(Result, Key) ->
             {error, {wrong_type, [Key | Path@1], Expected, Got}}
     end.
 
+-file("/Users/louis/src/gleam/tom/src/tom.gleam", 119).
 -spec get(gleam@dict:dict(binary(), toml()), list(binary())) -> {ok, toml()} |
     {error, get_error()}.
 get(Toml, Key) ->
@@ -132,6 +135,7 @@ get(Toml, Key) ->
             end
     end.
 
+-file("/Users/louis/src/gleam/tom/src/tom.gleam", 148).
 -spec get_int(gleam@dict:dict(binary(), toml()), list(binary())) -> {ok,
         integer()} |
     {error, get_error()}.
@@ -147,6 +151,7 @@ get_int(Toml, Key) ->
             {error, E}
     end.
 
+-file("/Users/louis/src/gleam/tom/src/tom.gleam", 170).
 -spec get_float(gleam@dict:dict(binary(), toml()), list(binary())) -> {ok,
         float()} |
     {error, get_error()}.
@@ -162,6 +167,7 @@ get_float(Toml, Key) ->
             {error, E}
     end.
 
+-file("/Users/louis/src/gleam/tom/src/tom.gleam", 192).
 -spec get_bool(gleam@dict:dict(binary(), toml()), list(binary())) -> {ok,
         boolean()} |
     {error, get_error()}.
@@ -177,6 +183,7 @@ get_bool(Toml, Key) ->
             {error, E}
     end.
 
+-file("/Users/louis/src/gleam/tom/src/tom.gleam", 214).
 -spec get_string(gleam@dict:dict(binary(), toml()), list(binary())) -> {ok,
         binary()} |
     {error, get_error()}.
@@ -192,6 +199,7 @@ get_string(Toml, Key) ->
             {error, E}
     end.
 
+-file("/Users/louis/src/gleam/tom/src/tom.gleam", 236).
 -spec get_date(gleam@dict:dict(binary(), toml()), list(binary())) -> {ok,
         date()} |
     {error, get_error()}.
@@ -207,6 +215,7 @@ get_date(Toml, Key) ->
             {error, E}
     end.
 
+-file("/Users/louis/src/gleam/tom/src/tom.gleam", 258).
 -spec get_time(gleam@dict:dict(binary(), toml()), list(binary())) -> {ok,
         time()} |
     {error, get_error()}.
@@ -222,6 +231,7 @@ get_time(Toml, Key) ->
             {error, E}
     end.
 
+-file("/Users/louis/src/gleam/tom/src/tom.gleam", 280).
 -spec get_date_time(gleam@dict:dict(binary(), toml()), list(binary())) -> {ok,
         date_time()} |
     {error, get_error()}.
@@ -237,6 +247,7 @@ get_date_time(Toml, Key) ->
             {error, E}
     end.
 
+-file("/Users/louis/src/gleam/tom/src/tom.gleam", 302).
 -spec get_array(gleam@dict:dict(binary(), toml()), list(binary())) -> {ok,
         list(toml())} |
     {error, get_error()}.
@@ -255,6 +266,7 @@ get_array(Toml, Key) ->
             {error, E}
     end.
 
+-file("/Users/louis/src/gleam/tom/src/tom.gleam", 325).
 -spec get_table(gleam@dict:dict(binary(), toml()), list(binary())) -> {ok,
         gleam@dict:dict(binary(), toml())} |
     {error, get_error()}.
@@ -273,6 +285,7 @@ get_table(Toml, Key) ->
             {error, E}
     end.
 
+-file("/Users/louis/src/gleam/tom/src/tom.gleam", 349).
 -spec get_number(gleam@dict:dict(binary(), toml()), list(binary())) -> {ok,
         number_()} |
     {error, get_error()}.
@@ -297,6 +310,7 @@ get_number(Toml, Key) ->
             {error, E}
     end.
 
+-file("/Users/louis/src/gleam/tom/src/tom.gleam", 549).
 -spec merge(gleam@dict:dict(binary(), toml()), binary(), toml(), toml()) -> {ok,
         gleam@dict:dict(binary(), toml())} |
     {error, list(binary())}.
@@ -314,6 +328,7 @@ merge(Table, Key, Old, New) ->
             {error, [Key]}
     end.
 
+-file("/Users/louis/src/gleam/tom/src/tom.gleam", 509).
 -spec insert_loop(gleam@dict:dict(binary(), toml()), list(binary()), toml()) -> {ok,
         gleam@dict:dict(binary(), toml())} |
     {error, list(binary())}.
@@ -375,6 +390,7 @@ insert_loop(Table, Key, Value) ->
             end
     end.
 
+-file("/Users/louis/src/gleam/tom/src/tom.gleam", 498).
 -spec insert(gleam@dict:dict(binary(), toml()), list(binary()), toml()) -> {ok,
         gleam@dict:dict(binary(), toml())} |
     {error, parse_error()}.
@@ -387,10 +403,11 @@ insert(Table, Key, Value) ->
             {error, {key_already_in_use, Path}}
     end.
 
+-file("/Users/louis/src/gleam/tom/src/tom.gleam", 564).
 -spec expect_end_of_line(
     list(binary()),
-    fun((list(binary())) -> {ok, {FOM, list(binary())}} | {error, parse_error()})
-) -> {ok, {FOM, list(binary())}} | {error, parse_error()}.
+    fun((list(binary())) -> {ok, {FOL, list(binary())}} | {error, parse_error()})
+) -> {ok, {FOL, list(binary())}} | {error, parse_error()}.
 expect_end_of_line(Input, Next) ->
     case Input of
         [<<"\n"/utf8>> | Input@1] ->
@@ -406,6 +423,7 @@ expect_end_of_line(Input, Next) ->
             {error, {unexpected, <<"EOF"/utf8>>, <<"\n"/utf8>>}}
     end.
 
+-file("/Users/louis/src/gleam/tom/src/tom.gleam", 649).
 -spec parse_key_quoted(list(binary()), binary(), binary()) -> {ok,
         {binary(), list(binary())}} |
     {error, parse_error()}.
@@ -421,6 +439,7 @@ parse_key_quoted(Input, Close, Name) ->
             {error, {unexpected, <<"EOF"/utf8>>, Close}}
     end.
 
+-file("/Users/louis/src/gleam/tom/src/tom.gleam", 661).
 -spec parse_key_bare(list(binary()), binary()) -> {ok,
         {binary(), list(binary())}} |
     {error, parse_error()}.
@@ -466,6 +485,7 @@ parse_key_bare(Input, Name) ->
             {error, {unexpected, <<"EOF"/utf8>>, <<"key"/utf8>>}}
     end.
 
+-file("/Users/louis/src/gleam/tom/src/tom.gleam", 679).
 -spec skip_line_whitespace(list(binary())) -> list(binary()).
 skip_line_whitespace(Input) ->
     gleam@list:drop_while(
@@ -473,6 +493,7 @@ skip_line_whitespace(Input) ->
         fun(G) -> (G =:= <<" "/utf8>>) orelse (G =:= <<"\t"/utf8>>) end
     ).
 
+-file("/Users/louis/src/gleam/tom/src/tom.gleam", 636).
 -spec parse_key_segment(list(binary())) -> {ok, {binary(), list(binary())}} |
     {error, parse_error()}.
 parse_key_segment(Input) ->
@@ -500,6 +521,7 @@ parse_key_segment(Input) ->
             parse_key_bare(Input@1, <<""/utf8>>)
     end.
 
+-file("/Users/louis/src/gleam/tom/src/tom.gleam", 683).
 -spec skip_whitespace(list(binary())) -> list(binary()).
 skip_whitespace(Input) ->
     case Input of
@@ -519,6 +541,7 @@ skip_whitespace(Input) ->
             Input@5
     end.
 
+-file("/Users/louis/src/gleam/tom/src/tom.gleam", 693).
 -spec drop_comments(list(binary()), list(binary()), boolean()) -> list(binary()).
 drop_comments(Input, Acc, In_string) ->
     case Input of
@@ -550,10 +573,11 @@ drop_comments(Input, Acc, In_string) ->
             gleam@list:reverse(Acc)
     end.
 
+-file("/Users/louis/src/gleam/tom/src/tom.gleam", 708).
 -spec do(
-    {ok, {FOX, list(binary())}} | {error, parse_error()},
-    fun((FOX, list(binary())) -> {ok, FPA} | {error, parse_error()})
-) -> {ok, FPA} | {error, parse_error()}.
+    {ok, {FOW, list(binary())}} | {error, parse_error()},
+    fun((FOW, list(binary())) -> {ok, FOZ} | {error, parse_error()})
+) -> {ok, FOZ} | {error, parse_error()}.
 do(Result, Next) ->
     case Result of
         {ok, {A, Input}} ->
@@ -563,6 +587,7 @@ do(Result, Next) ->
             {error, E}
     end.
 
+-file("/Users/louis/src/gleam/tom/src/tom.gleam", 625).
 -spec parse_key(list(binary()), list(binary())) -> {ok,
         {list(binary()), list(binary())}} |
     {error, parse_error()}.
@@ -582,11 +607,12 @@ parse_key(Input, Segments) ->
         end
     ).
 
+-file("/Users/louis/src/gleam/tom/src/tom.gleam", 718).
 -spec expect(
     list(binary()),
     binary(),
-    fun((list(binary())) -> {ok, {FPF, list(binary())}} | {error, parse_error()})
-) -> {ok, {FPF, list(binary())}} | {error, parse_error()}.
+    fun((list(binary())) -> {ok, {FPE, list(binary())}} | {error, parse_error()})
+) -> {ok, {FPE, list(binary())}} | {error, parse_error()}.
 expect(Input, Expected, Next) ->
     case Input of
         [G | Input@1] when G =:= Expected ->
@@ -599,6 +625,7 @@ expect(Input, Expected, Next) ->
             {error, {unexpected, <<"EOF"/utf8>>, Expected}}
     end.
 
+-file("/Users/louis/src/gleam/tom/src/tom.gleam", 446).
 -spec parse_table_header(list(binary())) -> {ok,
         {list(binary()), list(binary())}} |
     {error, parse_error()}.
@@ -621,6 +648,7 @@ parse_table_header(Input) ->
         end
     ).
 
+-file("/Users/louis/src/gleam/tom/src/tom.gleam", 793).
 -spec parse_hex(list(binary()), integer(), sign()) -> {ok,
         {toml(), list(binary())}} |
     {error, parse_error()}.
@@ -706,6 +734,7 @@ parse_hex(Input, Number, Sign) ->
             {ok, {{int, Number@1}, Input@24}}
     end.
 
+-file("/Users/louis/src/gleam/tom/src/tom.gleam", 830).
 -spec parse_octal(list(binary()), integer(), sign()) -> {ok,
         {toml(), list(binary())}} |
     {error, parse_error()}.
@@ -749,6 +778,7 @@ parse_octal(Input, Number, Sign) ->
             {ok, {{int, Number@1}, Input@10}}
     end.
 
+-file("/Users/louis/src/gleam/tom/src/tom.gleam", 853).
 -spec parse_binary(list(binary()), integer(), sign()) -> {ok,
         {toml(), list(binary())}} |
     {error, parse_error()}.
@@ -774,6 +804,7 @@ parse_binary(Input, Number, Sign) ->
             {ok, {{int, Number@1}, Input@4}}
     end.
 
+-file("/Users/louis/src/gleam/tom/src/tom.gleam", 913).
 -spec parse_exponent(list(binary()), float(), sign(), integer(), sign()) -> {ok,
         {toml(), list(binary())}} |
     {error, parse_error()}.
@@ -837,6 +868,7 @@ parse_exponent(Input, N, N_sign, Ex, Ex_sign) ->
             {ok, {{float, Number * Multiplier@1}, Input@12}}
     end.
 
+-file("/Users/louis/src/gleam/tom/src/tom.gleam", 953).
 -spec parse_float(list(binary()), float(), sign(), float()) -> {ok,
         {toml(), list(binary())}} |
     {error, parse_error()}.
@@ -904,6 +936,7 @@ parse_float(Input, Number, Sign, Unit) ->
             {ok, {{float, Number@1}, Input@18}}
     end.
 
+-file("/Users/louis/src/gleam/tom/src/tom.gleam", 999).
 -spec parse_string(list(binary()), binary()) -> {ok, {toml(), list(binary())}} |
     {error, parse_error()}.
 parse_string(Input, String) ->
@@ -948,6 +981,7 @@ parse_string(Input, String) ->
             parse_string(Input@10, <<String/binary, G/binary>>)
     end.
 
+-file("/Users/louis/src/gleam/tom/src/tom.gleam", 1017).
 -spec parse_multi_line_string(list(binary()), binary()) -> {ok,
         {toml(), list(binary())}} |
     {error, parse_error()}.
@@ -993,6 +1027,7 @@ parse_multi_line_string(Input, String) ->
             parse_multi_line_string(Input@12, <<String/binary, G/binary>>)
     end.
 
+-file("/Users/louis/src/gleam/tom/src/tom.gleam", 1037).
 -spec parse_multi_line_literal_string(list(binary()), binary()) -> {ok,
         {toml(), list(binary())}} |
     {error, parse_error()}.
@@ -1020,6 +1055,7 @@ parse_multi_line_literal_string(Input, String) ->
             )
     end.
 
+-file("/Users/louis/src/gleam/tom/src/tom.gleam", 1053).
 -spec parse_literal_string(list(binary()), binary()) -> {ok,
         {toml(), list(binary())}} |
     {error, parse_error()}.
@@ -1041,6 +1077,7 @@ parse_literal_string(Input, String) ->
             parse_literal_string(Input@2, <<String/binary, G/binary>>)
     end.
 
+-file("/Users/louis/src/gleam/tom/src/tom.gleam", 1155).
 -spec parse_time_ms(list(binary()), integer(), integer()) -> {ok,
         {{integer(), integer()}, list(binary())}} |
     {error, parse_error()}.
@@ -1080,6 +1117,7 @@ parse_time_ms(Input, Seconds, Ms) ->
             {ok, {{Seconds, Ms}, Input}}
     end.
 
+-file("/Users/louis/src/gleam/tom/src/tom.gleam", 1173).
 -spec parse_number_under_60(list(binary()), binary()) -> {ok,
         {integer(), list(binary())}} |
     {error, parse_error()}.
@@ -1272,6 +1310,7 @@ parse_number_under_60(Input, Expected) ->
             {error, {unexpected, <<"EOF"/utf8>>, Expected}}
     end.
 
+-file("/Users/louis/src/gleam/tom/src/tom.gleam", 1100).
 -spec parse_hour_minute(list(binary())) -> {ok,
         {{integer(), integer()}, list(binary())}} |
     {error, parse_error()}.
@@ -1361,6 +1400,7 @@ parse_hour_minute(Input) ->
             )
         end).
 
+-file("/Users/louis/src/gleam/tom/src/tom.gleam", 1141).
 -spec parse_time_s_ms(list(binary())) -> {ok,
         {{integer(), integer()}, list(binary())}} |
     {error, parse_error()}.
@@ -1382,6 +1422,7 @@ parse_time_s_ms(Input) ->
             {ok, {{0, 0}, Input}}
     end.
 
+-file("/Users/louis/src/gleam/tom/src/tom.gleam", 1093).
 -spec parse_time_minute(list(binary()), integer()) -> {ok,
         {toml(), list(binary())}} |
     {error, parse_error()}.
@@ -1400,6 +1441,7 @@ parse_time_minute(Input, Hours) ->
         end
     ).
 
+-file("/Users/louis/src/gleam/tom/src/tom.gleam", 1134).
 -spec parse_time_value(list(binary())) -> {ok, {time(), list(binary())}} |
     {error, parse_error()}.
 parse_time_value(Input) ->
@@ -1418,6 +1460,7 @@ parse_time_value(Input) ->
         end
     ).
 
+-file("/Users/louis/src/gleam/tom/src/tom.gleam", 1327).
 -spec parse_offset_hours(list(binary()), sign()) -> {ok,
         {offset(), list(binary())}} |
     {error, parse_error()}.
@@ -1430,6 +1473,7 @@ parse_offset_hours(Input, Sign) ->
         end
     ).
 
+-file("/Users/louis/src/gleam/tom/src/tom.gleam", 1318).
 -spec parse_offset(list(binary())) -> {ok, {offset(), list(binary())}} |
     {error, parse_error()}.
 parse_offset(Input) ->
@@ -1447,6 +1491,7 @@ parse_offset(Input) ->
             {ok, {local, Input}}
     end.
 
+-file("/Users/louis/src/gleam/tom/src/tom.gleam", 1300).
 -spec parse_date_end(list(binary()), integer(), integer(), integer()) -> {ok,
         {toml(), list(binary())}} |
     {error, parse_error()}.
@@ -1489,6 +1534,7 @@ parse_date_end(Input, Year, Month, Day) ->
             {ok, {{date, Date}, Input}}
     end.
 
+-file("/Users/louis/src/gleam/tom/src/tom.gleam", 1261).
 -spec parse_date_day(list(binary()), integer(), integer()) -> {ok,
         {toml(), list(binary())}} |
     {error, parse_error()}.
@@ -1594,6 +1640,7 @@ parse_date_day(Input, Year, Month) ->
             {error, {unexpected, <<"EOF"/utf8>>, <<"date day"/utf8>>}}
     end.
 
+-file("/Users/louis/src/gleam/tom/src/tom.gleam", 1241).
 -spec parse_date(list(binary()), integer()) -> {ok, {toml(), list(binary())}} |
     {error, parse_error()}.
 parse_date(Input, Year) ->
@@ -1641,6 +1688,7 @@ parse_date(Input, Year) ->
             {error, {unexpected, <<"EOF"/utf8>>, <<"date month"/utf8>>}}
     end.
 
+-file("/Users/louis/src/gleam/tom/src/tom.gleam", 870).
 -spec parse_number(list(binary()), integer(), sign()) -> {ok,
         {toml(), list(binary())}} |
     {error, parse_error()}.
@@ -1753,6 +1801,127 @@ parse_number(Input, Number, Sign) ->
             {ok, {{int, Number@1}, Input@21}}
     end.
 
+-file("/Users/louis/src/gleam/tom/src/tom.gleam", 1345).
+-spec as_int(toml()) -> {ok, integer()} | {error, get_error()}.
+as_int(Toml) ->
+    case Toml of
+        {int, F} ->
+            {ok, F};
+
+        Other ->
+            {error, {wrong_type, [], <<"Int"/utf8>>, classify(Other)}}
+    end.
+
+-file("/Users/louis/src/gleam/tom/src/tom.gleam", 1365).
+-spec as_float(toml()) -> {ok, float()} | {error, get_error()}.
+as_float(Toml) ->
+    case Toml of
+        {float, F} ->
+            {ok, F};
+
+        Other ->
+            {error, {wrong_type, [], <<"Float"/utf8>>, classify(Other)}}
+    end.
+
+-file("/Users/louis/src/gleam/tom/src/tom.gleam", 1385).
+-spec as_bool(toml()) -> {ok, boolean()} | {error, get_error()}.
+as_bool(Toml) ->
+    case Toml of
+        {bool, B} ->
+            {ok, B};
+
+        Other ->
+            {error, {wrong_type, [], <<"Bool"/utf8>>, classify(Other)}}
+    end.
+
+-file("/Users/louis/src/gleam/tom/src/tom.gleam", 1405).
+-spec as_string(toml()) -> {ok, binary()} | {error, get_error()}.
+as_string(Toml) ->
+    case Toml of
+        {string, S} ->
+            {ok, S};
+
+        Other ->
+            {error, {wrong_type, [], <<"String"/utf8>>, classify(Other)}}
+    end.
+
+-file("/Users/louis/src/gleam/tom/src/tom.gleam", 1425).
+-spec as_date(toml()) -> {ok, date()} | {error, get_error()}.
+as_date(Toml) ->
+    case Toml of
+        {date, D} ->
+            {ok, D};
+
+        Other ->
+            {error, {wrong_type, [], <<"Date"/utf8>>, classify(Other)}}
+    end.
+
+-file("/Users/louis/src/gleam/tom/src/tom.gleam", 1445).
+-spec as_time(toml()) -> {ok, time()} | {error, get_error()}.
+as_time(Toml) ->
+    case Toml of
+        {time, T} ->
+            {ok, T};
+
+        Other ->
+            {error, {wrong_type, [], <<"Time"/utf8>>, classify(Other)}}
+    end.
+
+-file("/Users/louis/src/gleam/tom/src/tom.gleam", 1465).
+-spec as_date_time(toml()) -> {ok, date_time()} | {error, get_error()}.
+as_date_time(Toml) ->
+    case Toml of
+        {date_time, Dt} ->
+            {ok, Dt};
+
+        Other ->
+            {error, {wrong_type, [], <<"DateTime"/utf8>>, classify(Other)}}
+    end.
+
+-file("/Users/louis/src/gleam/tom/src/tom.gleam", 1485).
+-spec as_array(toml()) -> {ok, list(toml())} | {error, get_error()}.
+as_array(Toml) ->
+    case Toml of
+        {array, Arr} ->
+            {ok, Arr};
+
+        Other ->
+            {error, {wrong_type, [], <<"Array"/utf8>>, classify(Other)}}
+    end.
+
+-file("/Users/louis/src/gleam/tom/src/tom.gleam", 1505).
+-spec as_table(toml()) -> {ok, gleam@dict:dict(binary(), toml())} |
+    {error, get_error()}.
+as_table(Toml) ->
+    case Toml of
+        {table, Tbl} ->
+            {ok, Tbl};
+
+        Other ->
+            {error, {wrong_type, [], <<"Table"/utf8>>, classify(Other)}}
+    end.
+
+-file("/Users/louis/src/gleam/tom/src/tom.gleam", 1530).
+-spec as_number(toml()) -> {ok, number_()} | {error, get_error()}.
+as_number(Toml) ->
+    case Toml of
+        {int, X} ->
+            {ok, {number_int, X}};
+
+        {float, X@1} ->
+            {ok, {number_float, X@1}};
+
+        {nan, X@2} ->
+            {ok, {number_nan, X@2}};
+
+        {infinity, X@3} ->
+            {ok, {number_infinity, X@3}};
+
+        Other ->
+            {error, {wrong_type, [], <<"Number"/utf8>>, classify(Other)}}
+    end.
+
+-file("/Users/louis/src/gleam/tom/src/tom.gleam", 1063).
 -spec reverse_arrays_of_tables(toml()) -> toml().
 reverse_arrays_of_tables(Toml) ->
     case Toml of
@@ -1766,10 +1935,12 @@ reverse_arrays_of_tables(Toml) ->
             Toml
     end.
 
+-file("/Users/louis/src/gleam/tom/src/tom.gleam", 1074).
 -spec reverse_arrays_of_tables_table(gleam@dict:dict(binary(), toml())) -> gleam@dict:dict(binary(), toml()).
 reverse_arrays_of_tables_table(Table) ->
     gleam@dict:map_values(Table, fun(_, V) -> reverse_arrays_of_tables(V) end).
 
+-file("/Users/louis/src/gleam/tom/src/tom.gleam", 1080).
 -spec reverse_arrays_of_tables_array(
     list(gleam@dict:dict(binary(), toml())),
     list(gleam@dict:dict(binary(), toml()))
@@ -1784,6 +1955,7 @@ reverse_arrays_of_tables_array(Array, Acc) ->
             reverse_arrays_of_tables_array(Rest, [First@1 | Acc])
     end.
 
+-file("/Users/louis/src/gleam/tom/src/tom.gleam", 756).
 -spec parse_inline_table_property(
     list(binary()),
     gleam@dict:dict(binary(), toml())
@@ -1817,6 +1989,7 @@ parse_inline_table_property(Input, Properties) ->
         end
     ).
 
+-file("/Users/louis/src/gleam/tom/src/tom.gleam", 573).
 -spec parse_value(list(binary())) -> {ok, {toml(), list(binary())}} |
     {error, parse_error()}.
 parse_value(Input) ->
@@ -1938,6 +2111,7 @@ parse_value(Input) ->
             {error, {unexpected, <<"EOF"/utf8>>, <<"value"/utf8>>}}
     end.
 
+-file("/Users/louis/src/gleam/tom/src/tom.gleam", 730).
 -spec parse_inline_table(list(binary()), gleam@dict:dict(binary(), toml())) -> {ok,
         {toml(), list(binary())}} |
     {error, parse_error()}.
@@ -1971,6 +2145,7 @@ parse_inline_table(Input, Properties) ->
             end
     end.
 
+-file("/Users/louis/src/gleam/tom/src/tom.gleam", 483).
 -spec parse_key_value(list(binary()), gleam@dict:dict(binary(), toml())) -> {ok,
         {gleam@dict:dict(binary(), toml()), list(binary())}} |
     {error, parse_error()}.
@@ -1999,6 +2174,7 @@ parse_key_value(Input, Toml) ->
         end
     ).
 
+-file("/Users/louis/src/gleam/tom/src/tom.gleam", 463).
 -spec parse_table(list(binary()), gleam@dict:dict(binary(), toml())) -> {ok,
         {gleam@dict:dict(binary(), toml()), list(binary())}} |
     {error, parse_error()}.
@@ -2033,6 +2209,7 @@ parse_table(Input, Toml) ->
             end
     end.
 
+-file("/Users/louis/src/gleam/tom/src/tom.gleam", 435).
 -spec parse_array_of_tables(list(binary())) -> {ok,
         {{list(binary()), gleam@dict:dict(binary(), toml())}, list(binary())}} |
     {error, parse_error()}.
@@ -2062,6 +2239,7 @@ parse_array_of_tables(Input) ->
         end
     ).
 
+-file("/Users/louis/src/gleam/tom/src/tom.gleam", 455).
 -spec parse_table_and_header(list(binary())) -> {ok,
         {{list(binary()), gleam@dict:dict(binary(), toml())}, list(binary())}} |
     {error, parse_error()}.
@@ -2076,6 +2254,7 @@ parse_table_and_header(Input) ->
         end
     ).
 
+-file("/Users/louis/src/gleam/tom/src/tom.gleam", 403).
 -spec parse_tables(list(binary()), gleam@dict:dict(binary(), toml())) -> {ok,
         gleam@dict:dict(binary(), toml())} |
     {error, parse_error()}.
@@ -2118,6 +2297,7 @@ parse_tables(Input, Toml) ->
             {ok, Toml}
     end.
 
+-file("/Users/louis/src/gleam/tom/src/tom.gleam", 392).
 -spec parse(binary()) -> {ok, gleam@dict:dict(binary(), toml())} |
     {error, parse_error()}.
 parse(Input) ->
@@ -2135,6 +2315,7 @@ parse(Input) ->
             end end
     ).
 
+-file("/Users/louis/src/gleam/tom/src/tom.gleam", 772).
 -spec parse_array(list(binary()), list(toml())) -> {ok,
         {toml(), list(binary())}} |
     {error, parse_error()}.

@@ -30,6 +30,7 @@ import {
   createDirAll as do_create_dir_all,
   copyFile as do_copy_file,
   renameFile as rename_file,
+  renameFile as rename,
   setPermissionsOctal as set_permissions_octal,
   currentDirectory as current_directory,
 } from "./simplifile_js.mjs";
@@ -47,6 +48,7 @@ export {
   link_info,
   read_bits,
   read_directory,
+  rename,
   rename_file,
   set_permissions_octal,
   write_bits,
@@ -414,32 +416,38 @@ function do_copy_directory(src, dest) {
         (segment) => {
           let src_path = $filepath.join(src, segment);
           let dest_path = $filepath.join(dest, segment);
-          let $ = is_file(src_path);
-          let $1 = is_directory(src_path);
-          if ($.isOk() && $[0] && $1.isOk() && !$1[0]) {
-            return $result.try$(
-              read_bits(src_path),
-              (content) => {
-                let _pipe$1 = content;
-                return write_bits(dest_path, _pipe$1);
-              },
-            );
-          } else if ($.isOk() && !$[0] && $1.isOk() && $1[0]) {
-            return $result.try$(
-              create_directory(dest_path),
-              (_) => { return do_copy_directory(src_path, dest_path); },
-            );
-          } else if (!$.isOk()) {
-            let e = $[0];
-            return new Error(e);
-          } else if (!$1.isOk()) {
-            let e = $1[0];
-            return new Error(e);
-          } else if ($.isOk() && !$[0] && $1.isOk() && !$1[0]) {
-            return new Error(new Unknown("Unknown error copying directory"));
-          } else {
-            return new Error(new Unknown("Unknown error copying directory"));
-          }
+          return $result.try$(
+            file_info(src_path),
+            (src_info) => {
+              let $ = file_info_type(src_info);
+              if ($ instanceof File) {
+                return $result.try$(
+                  read_bits(src_path),
+                  (content) => {
+                    let _pipe$1 = content;
+                    return write_bits(dest_path, _pipe$1);
+                  },
+                );
+              } else if ($ instanceof Directory) {
+                return $result.try$(
+                  create_directory(dest_path),
+                  (_) => { return do_copy_directory(src_path, dest_path); },
+                );
+              } else if ($ instanceof Symlink) {
+                return new Error(
+                  new Unknown(
+                    "This is an internal bug where the `file_info` is somehow returning info about a simlink. Please file an issue on the simplifile repo.",
+                  ),
+                );
+              } else {
+                return new Error(
+                  new Unknown(
+                    "Unknown file type (not file, directory, or simlink)",
+                  ),
+                );
+              }
+            },
+          );
         },
       )
       return new Ok(undefined);
@@ -451,6 +459,30 @@ export function copy_directory(src, dest) {
   return $result.try$(
     create_directory_all(dest),
     (_) => { return do_copy_directory(src, dest); },
+  );
+}
+
+export function copy(src, dest) {
+  return $result.try$(
+    file_info(src),
+    (src_info) => {
+      let $ = file_info_type(src_info);
+      if ($ instanceof File) {
+        return copy_file(src, dest);
+      } else if ($ instanceof Directory) {
+        return copy_directory(src, dest);
+      } else if ($ instanceof Symlink) {
+        return new Error(
+          new Unknown(
+            "This is an internal bug where the `file_info` is somehow returning info about a simlink. Please file an issue on the simplifile repo.",
+          ),
+        );
+      } else {
+        return new Error(
+          new Unknown("Unknown file type (not file, directory, or simlink)"),
+        );
+      }
+    },
   );
 }
 
@@ -540,7 +572,7 @@ function integer_to_permissions(integer) {
     throw makeError(
       "panic",
       "simplifile",
-      616,
+      650,
       "integer_to_permissions",
       "panic expression evaluated",
       {}

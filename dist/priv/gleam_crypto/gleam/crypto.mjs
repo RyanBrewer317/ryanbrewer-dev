@@ -11,9 +11,15 @@ import {
   toBitArray,
   stringBits,
 } from "../gleam.mjs";
-import { strongRandomBytes as strong_random_bytes, hash, hmac } from "../gleam_crypto_ffi.mjs";
+import {
+  strongRandomBytes as strong_random_bytes,
+  hashInit as new_hasher,
+  hashUpdate as hash_chunk,
+  digest,
+  hmac,
+} from "../gleam_crypto_ffi.mjs";
 
-export { hash, hmac, strong_random_bytes };
+export { digest, hash_chunk, hmac, new_hasher, strong_random_bytes };
 
 export class Sha224 extends $CustomType {}
 
@@ -26,6 +32,12 @@ export class Sha512 extends $CustomType {}
 export class Md5 extends $CustomType {}
 
 export class Sha1 extends $CustomType {}
+
+export function hash(algorithm, data) {
+  let _pipe = new_hasher(algorithm);
+  let _pipe$1 = hash_chunk(_pipe, data);
+  return digest(_pipe$1);
+}
 
 function do_secure_compare(loop$left, loop$right, loop$accumulator) {
   while (true) {

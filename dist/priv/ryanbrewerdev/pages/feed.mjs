@@ -107,23 +107,17 @@ export function feed(posts) {
       let _pipe$17 = append(_pipe$16, post.id);
       let _pipe$18 = append(
         _pipe$17,
-        ".html</link>\n      <guid>https://ryanbrewer.dev/posts/",
+        "/</link>\n      <guid>https://ryanbrewer.dev/posts/",
       );
       let _pipe$19 = append(_pipe$18, post.id);
-      let _pipe$20 = append(
-        _pipe$19,
-        ".html</guid>\n      <description><![CDATA[",
-      );
+      let _pipe$20 = append(_pipe$19, "/</guid>\n      <description><![CDATA[");
       let _pipe$21 = append(_pipe$20, post.blerb);
       let _pipe$22 = append(
         _pipe$21,
         "  Read more <a href=\"https://ryanbrewer.dev/posts/",
       );
       let _pipe$23 = append(_pipe$22, post.id);
-      return append(
-        _pipe$23,
-        ".html\">here</a>!]]></description>\n    </item>\n",
-      );
+      return append(_pipe$23, "/\">here</a>!]]></description>\n    </item>\n");
     },
   );
   let _pipe = from_string(

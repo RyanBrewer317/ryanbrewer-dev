@@ -6,12 +6,12 @@
 
 -type pid_() :: any().
 
--opaque subject(FNP) :: {subject, pid_(), gleam@erlang:reference_()} |
-    {gleam_phantom, FNP}.
+-opaque subject(FNS) :: {subject, pid_(), gleam@erlang:reference_()} |
+    {gleam_phantom, FNS}.
 
 -type do_not_leak() :: any().
 
--type selector(FNQ) :: any() | {gleam_phantom, FNQ}.
+-type selector(FNT) :: any() | {gleam_phantom, FNT}.
 
 -type exit_message() :: {exit_message, pid_(), exit_reason()}.
 
@@ -25,9 +25,9 @@
 
 -type process_down() :: {process_down, pid_(), gleam@dynamic:dynamic_()}.
 
--type call_error(FNR) :: {callee_down, gleam@dynamic:dynamic_()} |
+-type call_error(FNU) :: {callee_down, gleam@dynamic:dynamic_()} |
     call_timeout |
-    {gleam_phantom, FNR}.
+    {gleam_phantom, FNU}.
 
 -type timer() :: any().
 
@@ -62,7 +62,7 @@ subject_owner(Subject) ->
     erlang:element(2, Subject).
 
 -file("/Users/louis/src/gleam/erlang/src/gleam/erlang/process.gleam", 110).
--spec send(subject(FOA), FOA) -> nil.
+-spec send(subject(FOD), FOD) -> nil.
 send(Subject, Message) ->
     erlang:send(
         erlang:element(2, Subject),
@@ -76,22 +76,22 @@ new_selector() ->
     gleam_erlang_ffi:new_selector().
 
 -file("/Users/louis/src/gleam/erlang/src/gleam/erlang/process.gleam", 186).
--spec select(selector(FOI), integer()) -> {ok, FOI} | {error, nil}.
+-spec select(selector(FOL), integer()) -> {ok, FOL} | {error, nil}.
 select(From, Within) ->
     gleam_erlang_ffi:select(From, Within).
 
 -file("/Users/louis/src/gleam/erlang/src/gleam/erlang/process.gleam", 195).
--spec select_forever(selector(FOM)) -> FOM.
+-spec select_forever(selector(FOP)) -> FOP.
 select_forever(From) ->
     gleam_erlang_ffi:select(From).
 
 -file("/Users/louis/src/gleam/erlang/src/gleam/erlang/process.gleam", 204).
--spec map_selector(selector(FOO), fun((FOO) -> FOQ)) -> selector(FOQ).
+-spec map_selector(selector(FOR), fun((FOR) -> FOT)) -> selector(FOT).
 map_selector(A, B) ->
     gleam_erlang_ffi:map_selector(A, B).
 
 -file("/Users/louis/src/gleam/erlang/src/gleam/erlang/process.gleam", 213).
--spec merge_selector(selector(FOS), selector(FOS)) -> selector(FOS).
+-spec merge_selector(selector(FOV), selector(FOV)) -> selector(FOV).
 merge_selector(A, B) ->
     gleam_erlang_ffi:merge_selector(A, B).
 
@@ -101,7 +101,7 @@ flush_messages() ->
     gleam_erlang_ffi:flush_messages().
 
 -file("/Users/louis/src/gleam/erlang/src/gleam/erlang/process.gleam", 229).
--spec selecting_trapped_exits(selector(FOW), fun((exit_message()) -> FOW)) -> selector(FOW).
+-spec selecting_trapped_exits(selector(FOZ), fun((exit_message()) -> FOZ)) -> selector(FOZ).
 selecting_trapped_exits(Selector, Handler) ->
     Tag = erlang:binary_to_atom(<<"EXIT"/utf8>>),
     Handler@1 = fun(Message) ->
@@ -126,7 +126,7 @@ selecting_trapped_exits(Selector, Handler) ->
     gleam_erlang_ffi:insert_selector_handler(Selector, {Tag, 3}, Handler@1).
 
 -file("/Users/louis/src/gleam/erlang/src/gleam/erlang/process.gleam", 267).
--spec selecting(selector(FOZ), subject(FPB), fun((FPB) -> FOZ)) -> selector(FOZ).
+-spec selecting(selector(FPC), subject(FPE), fun((FPE) -> FPC)) -> selector(FPC).
 selecting(Selector, Subject, Transform) ->
     Handler = fun(Message) -> Transform(erlang:element(2, Message)) end,
     gleam_erlang_ffi:insert_selector_handler(
@@ -136,7 +136,7 @@ selecting(Selector, Subject, Transform) ->
     ).
 
 -file("/Users/louis/src/gleam/erlang/src/gleam/erlang/process.gleam", 130).
--spec 'receive'(subject(FOC), integer()) -> {ok, FOC} | {error, nil}.
+-spec 'receive'(subject(FOF), integer()) -> {ok, FOF} | {error, nil}.
 'receive'(Subject, Timeout) ->
     _pipe = gleam_erlang_ffi:new_selector(),
     _pipe@1 = selecting(_pipe, Subject, fun(X) -> X end),
@@ -144,20 +144,20 @@ selecting(Selector, Subject, Transform) ->
 
 -file("/Users/louis/src/gleam/erlang/src/gleam/erlang/process.gleam", 283).
 -spec selecting_record2(
-    selector(FPE),
+    selector(FPH),
     any(),
-    fun((gleam@dynamic:dynamic_()) -> FPE)
-) -> selector(FPE).
+    fun((gleam@dynamic:dynamic_()) -> FPH)
+) -> selector(FPH).
 selecting_record2(Selector, Tag, Transform) ->
     Handler = fun(Message) -> Transform(erlang:element(2, Message)) end,
     gleam_erlang_ffi:insert_selector_handler(Selector, {Tag, 2}, Handler).
 
 -file("/Users/louis/src/gleam/erlang/src/gleam/erlang/process.gleam", 299).
 -spec selecting_record3(
-    selector(FPI),
+    selector(FPL),
     any(),
-    fun((gleam@dynamic:dynamic_(), gleam@dynamic:dynamic_()) -> FPI)
-) -> selector(FPI).
+    fun((gleam@dynamic:dynamic_(), gleam@dynamic:dynamic_()) -> FPL)
+) -> selector(FPL).
 selecting_record3(Selector, Tag, Transform) ->
     Handler = fun(Message) ->
         Transform(erlang:element(2, Message), erlang:element(3, Message))
@@ -166,10 +166,10 @@ selecting_record3(Selector, Tag, Transform) ->
 
 -file("/Users/louis/src/gleam/erlang/src/gleam/erlang/process.gleam", 317).
 -spec selecting_record4(
-    selector(FPM),
+    selector(FPP),
     any(),
-    fun((gleam@dynamic:dynamic_(), gleam@dynamic:dynamic_(), gleam@dynamic:dynamic_()) -> FPM)
-) -> selector(FPM).
+    fun((gleam@dynamic:dynamic_(), gleam@dynamic:dynamic_(), gleam@dynamic:dynamic_()) -> FPP)
+) -> selector(FPP).
 selecting_record4(Selector, Tag, Transform) ->
     Handler = fun(Message) ->
         Transform(
@@ -182,10 +182,10 @@ selecting_record4(Selector, Tag, Transform) ->
 
 -file("/Users/louis/src/gleam/erlang/src/gleam/erlang/process.gleam", 335).
 -spec selecting_record5(
-    selector(FPQ),
+    selector(FPT),
     any(),
-    fun((gleam@dynamic:dynamic_(), gleam@dynamic:dynamic_(), gleam@dynamic:dynamic_(), gleam@dynamic:dynamic_()) -> FPQ)
-) -> selector(FPQ).
+    fun((gleam@dynamic:dynamic_(), gleam@dynamic:dynamic_(), gleam@dynamic:dynamic_(), gleam@dynamic:dynamic_()) -> FPT)
+) -> selector(FPT).
 selecting_record5(Selector, Tag, Transform) ->
     Handler = fun(Message) ->
         Transform(
@@ -199,10 +199,10 @@ selecting_record5(Selector, Tag, Transform) ->
 
 -file("/Users/louis/src/gleam/erlang/src/gleam/erlang/process.gleam", 353).
 -spec selecting_record6(
-    selector(FPU),
+    selector(FPX),
     any(),
-    fun((gleam@dynamic:dynamic_(), gleam@dynamic:dynamic_(), gleam@dynamic:dynamic_(), gleam@dynamic:dynamic_(), gleam@dynamic:dynamic_()) -> FPU)
-) -> selector(FPU).
+    fun((gleam@dynamic:dynamic_(), gleam@dynamic:dynamic_(), gleam@dynamic:dynamic_(), gleam@dynamic:dynamic_(), gleam@dynamic:dynamic_()) -> FPX)
+) -> selector(FPX).
 selecting_record6(Selector, Tag, Transform) ->
     Handler = fun(Message) ->
         Transform(
@@ -217,10 +217,10 @@ selecting_record6(Selector, Tag, Transform) ->
 
 -file("/Users/louis/src/gleam/erlang/src/gleam/erlang/process.gleam", 371).
 -spec selecting_record7(
-    selector(FPY),
+    selector(FQB),
     any(),
-    fun((gleam@dynamic:dynamic_(), gleam@dynamic:dynamic_(), gleam@dynamic:dynamic_(), gleam@dynamic:dynamic_(), gleam@dynamic:dynamic_(), gleam@dynamic:dynamic_()) -> FPY)
-) -> selector(FPY).
+    fun((gleam@dynamic:dynamic_(), gleam@dynamic:dynamic_(), gleam@dynamic:dynamic_(), gleam@dynamic:dynamic_(), gleam@dynamic:dynamic_(), gleam@dynamic:dynamic_()) -> FQB)
+) -> selector(FQB).
 selecting_record7(Selector, Tag, Transform) ->
     Handler = fun(Message) ->
         Transform(
@@ -236,10 +236,10 @@ selecting_record7(Selector, Tag, Transform) ->
 
 -file("/Users/louis/src/gleam/erlang/src/gleam/erlang/process.gleam", 392).
 -spec selecting_record8(
-    selector(FQC),
+    selector(FQF),
     any(),
-    fun((gleam@dynamic:dynamic_(), gleam@dynamic:dynamic_(), gleam@dynamic:dynamic_(), gleam@dynamic:dynamic_(), gleam@dynamic:dynamic_(), gleam@dynamic:dynamic_(), gleam@dynamic:dynamic_()) -> FQC)
-) -> selector(FQC).
+    fun((gleam@dynamic:dynamic_(), gleam@dynamic:dynamic_(), gleam@dynamic:dynamic_(), gleam@dynamic:dynamic_(), gleam@dynamic:dynamic_(), gleam@dynamic:dynamic_(), gleam@dynamic:dynamic_()) -> FQF)
+) -> selector(FQF).
 selecting_record8(Selector, Tag, Transform) ->
     Handler = fun(Message) ->
         Transform(
@@ -255,7 +255,7 @@ selecting_record8(Selector, Tag, Transform) ->
     gleam_erlang_ffi:insert_selector_handler(Selector, {Tag, 8}, Handler).
 
 -file("/Users/louis/src/gleam/erlang/src/gleam/erlang/process.gleam", 442).
--spec selecting_anything(selector(FQG), fun((gleam@dynamic:dynamic_()) -> FQG)) -> selector(FQG).
+-spec selecting_anything(selector(FQJ), fun((gleam@dynamic:dynamic_()) -> FQJ)) -> selector(FQJ).
 selecting_anything(Selector, Handler) ->
     gleam_erlang_ffi:insert_selector_handler(Selector, anything, Handler).
 
@@ -283,10 +283,10 @@ monitor_process(Pid) ->
 
 -file("/Users/louis/src/gleam/erlang/src/gleam/erlang/process.gleam", 516).
 -spec selecting_process_down(
-    selector(FQO),
+    selector(FQR),
     process_monitor(),
-    fun((process_down()) -> FQO)
-) -> selector(FQO).
+    fun((process_down()) -> FQR)
+) -> selector(FQR).
 selecting_process_down(Selector, Monitor, Mapping) ->
     gleam_erlang_ffi:insert_selector_handler(
         Selector,
@@ -300,8 +300,8 @@ demonitor_process(Monitor) ->
     gleam_erlang_ffi:demonitor(Monitor).
 
 -file("/Users/louis/src/gleam/erlang/src/gleam/erlang/process.gleam", 554).
--spec try_call(subject(FQR), fun((subject(FQT)) -> FQR), integer()) -> {ok, FQT} |
-    {error, call_error(FQT)}.
+-spec try_call(subject(FQU), fun((subject(FQW)) -> FQU), integer()) -> {ok, FQW} |
+    {error, call_error(FQW)}.
 try_call(Subject, Make_request, Timeout) ->
     Reply_subject = new_subject(),
     Monitor = monitor_process(subject_owner(Subject)),
@@ -330,7 +330,7 @@ try_call(Subject, Make_request, Timeout) ->
     end.
 
 -file("/Users/louis/src/gleam/erlang/src/gleam/erlang/process.gleam", 595).
--spec call(subject(FQY), fun((subject(FRA)) -> FQY), integer()) -> FRA.
+-spec call(subject(FRB), fun((subject(FRD)) -> FRB), integer()) -> FRD.
 call(Subject, Make_request, Timeout) ->
     _assert_subject = try_call(Subject, Make_request, Timeout),
     {ok, Resp} = case _assert_subject of
@@ -357,7 +357,7 @@ unlink(Pid) ->
     nil.
 
 -file("/Users/louis/src/gleam/erlang/src/gleam/erlang/process.gleam", 633).
--spec send_after(subject(FRD), integer(), FRD) -> timer().
+-spec send_after(subject(FRG), integer(), FRG) -> timer().
 send_after(Subject, Delay, Message) ->
     erlang:send_after(
         Delay,

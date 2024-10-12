@@ -76,6 +76,10 @@ export function satisfy(pred) {
   );
 }
 
+export function any_char() {
+  return satisfy((_) => { return true; });
+}
+
 export function char(c) {
   return satisfy((c2) => { return c === c2; });
 }
@@ -95,7 +99,7 @@ export function choice(ps) {
         throw makeError(
           "panic",
           "party",
-          118,
+          149,
           "",
           "choice doesn't accept an empty list of parsers",
           {}
@@ -307,7 +311,7 @@ export function all(ps) {
     throw makeError(
       "panic",
       "party",
-      269,
+      300,
       "all",
       "all(parsers) doesn't accept an empty list of parsers",
       {}
@@ -317,6 +321,18 @@ export function all(ps) {
 
 export function return$(x) {
   return new Parser((source, pos) => { return new Ok([x, source, pos]); });
+}
+
+export function between(open, p, close) {
+  return do$(
+    open,
+    (_) => {
+      return do$(
+        p,
+        (x) => { return do$(close, (_) => { return return$(x); }); },
+      );
+    },
+  );
 }
 
 export function sep1(parser, s) {
@@ -442,6 +458,15 @@ export function until(p, terminator) {
       },
     ),
   );
+}
+
+export function line() {
+  return until(any_char(), char("\n"));
+}
+
+export function line_concat() {
+  let _pipe = line();
+  return map(_pipe, $string.concat);
 }
 
 export function stateful_many(state, p) {

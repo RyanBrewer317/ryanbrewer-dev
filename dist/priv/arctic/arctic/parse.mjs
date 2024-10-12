@@ -1023,7 +1023,7 @@ export function parse(p, src_name, src) {
                   let s = $1[0];
                   return $result.try$(
                     (() => {
-                      let _pipe = $birl.parse($io.debug(s));
+                      let _pipe = $birl.parse(s);
                       return $result.map_error(
                         _pipe,
                         (_) => {

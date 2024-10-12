@@ -705,15 +705,20 @@ parse_inline_rule(Inline_rules, Data) ->
                                                                     party:do(
                                                                         party:sep(
                                                                             party:many_concat(
-                                                                                party:satisfy(
-                                                                                    fun(
-                                                                                        C
-                                                                                    ) ->
-                                                                                        (C
-                                                                                        /= <<","/utf8>>)
-                                                                                        andalso (C
-                                                                                        /= <<")"/utf8>>)
-                                                                                    end
+                                                                                party:either(
+                                                                                    escaped_char(
+                                                                                        
+                                                                                    ),
+                                                                                    party:satisfy(
+                                                                                        fun(
+                                                                                            C
+                                                                                        ) ->
+                                                                                            (C
+                                                                                            /= <<","/utf8>>)
+                                                                                            andalso (C
+                                                                                            /= <<")"/utf8>>)
+                                                                                        end
+                                                                                    )
                                                                                 )
                                                                             ),
                                                                             party:char(

@@ -2442,6 +2442,115 @@ function parse_number(loop$input, loop$number, loop$sign) {
   }
 }
 
+export function as_int(toml) {
+  if (toml instanceof Int) {
+    let f = toml[0];
+    return new Ok(f);
+  } else {
+    let other = toml;
+    return new Error(new WrongType(toList([]), "Int", classify(other)));
+  }
+}
+
+export function as_float(toml) {
+  if (toml instanceof Float) {
+    let f = toml[0];
+    return new Ok(f);
+  } else {
+    let other = toml;
+    return new Error(new WrongType(toList([]), "Float", classify(other)));
+  }
+}
+
+export function as_bool(toml) {
+  if (toml instanceof Bool) {
+    let b = toml[0];
+    return new Ok(b);
+  } else {
+    let other = toml;
+    return new Error(new WrongType(toList([]), "Bool", classify(other)));
+  }
+}
+
+export function as_string(toml) {
+  if (toml instanceof String) {
+    let s = toml[0];
+    return new Ok(s);
+  } else {
+    let other = toml;
+    return new Error(new WrongType(toList([]), "String", classify(other)));
+  }
+}
+
+export function as_date(toml) {
+  if (toml instanceof Date) {
+    let d = toml[0];
+    return new Ok(d);
+  } else {
+    let other = toml;
+    return new Error(new WrongType(toList([]), "Date", classify(other)));
+  }
+}
+
+export function as_time(toml) {
+  if (toml instanceof Time) {
+    let t = toml[0];
+    return new Ok(t);
+  } else {
+    let other = toml;
+    return new Error(new WrongType(toList([]), "Time", classify(other)));
+  }
+}
+
+export function as_date_time(toml) {
+  if (toml instanceof DateTime) {
+    let dt = toml[0];
+    return new Ok(dt);
+  } else {
+    let other = toml;
+    return new Error(new WrongType(toList([]), "DateTime", classify(other)));
+  }
+}
+
+export function as_array(toml) {
+  if (toml instanceof Array) {
+    let arr = toml[0];
+    return new Ok(arr);
+  } else {
+    let other = toml;
+    return new Error(new WrongType(toList([]), "Array", classify(other)));
+  }
+}
+
+export function as_table(toml) {
+  if (toml instanceof Table) {
+    let tbl = toml[0];
+    return new Ok(tbl);
+  } else {
+    let other = toml;
+    return new Error(new WrongType(toList([]), "Table", classify(other)));
+  }
+}
+
+export function as_number(toml) {
+  if (toml instanceof Int) {
+    let x = toml[0];
+    return new Ok(new NumberInt(x));
+  } else if (toml instanceof Float) {
+    let x = toml[0];
+    return new Ok(new NumberFloat(x));
+  } else if (toml instanceof Nan) {
+    let x = toml[0];
+    return new Ok(new NumberNan(x));
+  } else if (toml instanceof Infinity) {
+    let x = toml[0];
+    return new Ok(new NumberInfinity(x));
+  } else {
+    let other = toml;
+    return new Error(new WrongType(toList([]), "Number", classify(other)));
+  }
+}
+
 function reverse_arrays_of_tables(toml) {
   if (toml instanceof ArrayOfTables) {
     let tables = toml[0];

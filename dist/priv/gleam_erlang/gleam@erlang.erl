@@ -1,7 +1,7 @@
 -module(gleam@erlang).
 -compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch]).
 
--export([format/1, term_to_binary/1, get_line/1, system_time/1, erlang_timestamp/0, rescue/1, binary_to_term/1, unsafe_binary_to_term/1, start_arguments/0, ensure_all_started/1, make_reference/0, priv_directory/1]).
+-export([format/1, term_to_binary/1, get_line/1, system_time/1, erlang_timestamp/0, rescue/1, binary_to_term/1, unsafe_binary_to_term/1, start_arguments/0, ensure_all_started/1, make_reference/0, reference_from_dynamic/1, priv_directory/1]).
 -export_type([safe/0, get_line_error/0, time_unit/0, crash/0, ensure_all_started_error/0, reference_/0]).
 
 -type safe() :: safe.
@@ -96,7 +96,13 @@ ensure_all_started(Application) ->
 make_reference() ->
     erlang:make_ref().
 
--file("/Users/louis/src/gleam/erlang/src/gleam/erlang.gleam", 178).
+-file("/Users/louis/src/gleam/erlang/src/gleam/erlang.gleam", 184).
+-spec reference_from_dynamic(gleam@dynamic:dynamic_()) -> {ok, reference_()} |
+    {error, list(gleam@dynamic:decode_error())}.
+reference_from_dynamic(From) ->
+    gleam_erlang_ffi:reference_from_dynamic(From).
+
+-file("/Users/louis/src/gleam/erlang/src/gleam/erlang.gleam", 201).
 -spec priv_directory(binary()) -> {ok, binary()} | {error, nil}.
 priv_directory(Name) ->
     gleam_erlang_ffi:priv_directory(Name).

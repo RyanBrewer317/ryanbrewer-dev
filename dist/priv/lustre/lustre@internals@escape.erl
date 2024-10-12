@@ -3,6 +3,7 @@
 
 -export([escape/1]).
 
+-file("/home/runner/work/lustre/lustre/src/lustre/internals/escape.gleam", 83).
 -spec do_escape_normal(
     bitstring(),
     integer(),
@@ -18,7 +19,7 @@ do_escape_normal(Bin, Skip, Original, Acc, Len) ->
                 {ok, _} -> _assert_subject;
                 _assert_fail ->
                     erlang:error(#{gleam_error => let_assert,
-                                message => <<"Assertion pattern match failed"/utf8>>,
+                                message => <<"Pattern match failed, no pattern matched the value."/utf8>>,
                                 value => _assert_fail,
                                 module => <<"lustre/internals/escape"/utf8>>,
                                 function => <<"do_escape_normal"/utf8>>,
@@ -37,7 +38,7 @@ do_escape_normal(Bin, Skip, Original, Acc, Len) ->
                 {ok, _} -> _assert_subject@1;
                 _assert_fail@1 ->
                     erlang:error(#{gleam_error => let_assert,
-                                message => <<"Assertion pattern match failed"/utf8>>,
+                                message => <<"Pattern match failed, no pattern matched the value."/utf8>>,
                                 value => _assert_fail@1,
                                 module => <<"lustre/internals/escape"/utf8>>,
                                 function => <<"do_escape_normal"/utf8>>,
@@ -56,7 +57,7 @@ do_escape_normal(Bin, Skip, Original, Acc, Len) ->
                 {ok, _} -> _assert_subject@2;
                 _assert_fail@2 ->
                     erlang:error(#{gleam_error => let_assert,
-                                message => <<"Assertion pattern match failed"/utf8>>,
+                                message => <<"Pattern match failed, no pattern matched the value."/utf8>>,
                                 value => _assert_fail@2,
                                 module => <<"lustre/internals/escape"/utf8>>,
                                 function => <<"do_escape_normal"/utf8>>,
@@ -75,7 +76,7 @@ do_escape_normal(Bin, Skip, Original, Acc, Len) ->
                 {ok, _} -> _assert_subject@3;
                 _assert_fail@3 ->
                     erlang:error(#{gleam_error => let_assert,
-                                message => <<"Assertion pattern match failed"/utf8>>,
+                                message => <<"Pattern match failed, no pattern matched the value."/utf8>>,
                                 value => _assert_fail@3,
                                 module => <<"lustre/internals/escape"/utf8>>,
                                 function => <<"do_escape_normal"/utf8>>,
@@ -94,7 +95,7 @@ do_escape_normal(Bin, Skip, Original, Acc, Len) ->
                 {ok, _} -> _assert_subject@4;
                 _assert_fail@4 ->
                     erlang:error(#{gleam_error => let_assert,
-                                message => <<"Assertion pattern match failed"/utf8>>,
+                                message => <<"Pattern match failed, no pattern matched the value."/utf8>>,
                                 value => _assert_fail@4,
                                 module => <<"lustre/internals/escape"/utf8>>,
                                 function => <<"do_escape_normal"/utf8>>,
@@ -121,7 +122,7 @@ do_escape_normal(Bin, Skip, Original, Acc, Len) ->
                         {ok, _} -> _assert_subject@5;
                         _assert_fail@5 ->
                             erlang:error(#{gleam_error => let_assert,
-                                        message => <<"Assertion pattern match failed"/utf8>>,
+                                        message => <<"Pattern match failed, no pattern matched the value."/utf8>>,
                                         value => _assert_fail@5,
                                         module => <<"lustre/internals/escape"/utf8>>,
                                         function => <<"do_escape_normal"/utf8>>,
@@ -138,6 +139,7 @@ do_escape_normal(Bin, Skip, Original, Acc, Len) ->
                     line => 156})
     end.
 
+-file("/home/runner/work/lustre/lustre/src/lustre/internals/escape.gleam", 37).
 -spec do_escape(bitstring(), integer(), bitstring(), list(bitstring())) -> list(bitstring()).
 do_escape(Bin, Skip, Original, Acc) ->
     case Bin of
@@ -175,6 +177,7 @@ do_escape(Bin, Skip, Original, Acc) ->
                     line => 78})
     end.
 
+-file("/home/runner/work/lustre/lustre/src/lustre/internals/escape.gleam", 9).
 -spec escape(binary()) -> binary().
 escape(Text) ->
     Bits = <<Text/binary>>,

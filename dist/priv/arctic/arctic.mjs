@@ -1,6 +1,5 @@
 import * as $birl from "../birl/birl.mjs";
 import * as $dict from "../gleam_stdlib/gleam/dict.mjs";
-import * as $io from "../gleam_stdlib/gleam/io.mjs";
 import * as $option from "../gleam_stdlib/gleam/option.mjs";
 import * as $order from "../gleam_stdlib/gleam/order.mjs";
 import * as $result from "../gleam_stdlib/gleam/result.mjs";
@@ -83,7 +82,7 @@ export function get_id(p) {
       throw makeError(
         "assignment_no_match",
         "arctic",
-        83,
+        80,
         "get_id",
         "Assignment pattern did not match",
         { value: $ }
@@ -122,10 +121,8 @@ export function to_dummy_page(c) {
     let date = (() => {
       let _pipe = metadata;
       let _pipe$1 = $dict.get(_pipe, "date");
-      let _pipe$2 = $io.debug(_pipe$1);
-      let _pipe$3 = $result.try$(_pipe$2, $birl.parse);
-      let _pipe$4 = $io.debug(_pipe$3);
-      return $option.from_result(_pipe$4);
+      let _pipe$2 = $result.try$(_pipe$1, $birl.parse);
+      return $option.from_result(_pipe$2);
     })();
     return new Page(get_id(c), toList([]), metadata, title, blerb, tags, date);
   } else {
@@ -140,7 +137,7 @@ export function output_path(input_path) {
     throw makeError(
       "assignment_no_match",
       "arctic",
-      91,
+      88,
       "output_path",
       "Assignment pattern did not match",
       { value: $ }

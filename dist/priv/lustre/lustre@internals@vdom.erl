@@ -4,30 +4,31 @@
 -export([attribute_to_event_handler/1, attribute_to_json/2, element_to_string/1, element_to_string_builder/1, element_to_json/2, handlers/1]).
 -export_type([element/1, attribute/1]).
 
--type element(NUL) :: {text, binary()} |
+-type element(NUQ) :: {text, binary()} |
     {element,
         binary(),
         binary(),
         binary(),
-        list(attribute(NUL)),
-        list(element(NUL)),
+        list(attribute(NUQ)),
+        list(element(NUQ)),
         boolean(),
         boolean()} |
-    {map, fun(() -> element(NUL))} |
-    {fragment, list(element(NUL)), binary()}.
+    {map, fun(() -> element(NUQ))} |
+    {fragment, list(element(NUQ)), binary()}.
 
--type attribute(NUM) :: {attribute,
+-type attribute(NUR) :: {attribute,
         binary(),
         gleam@dynamic:dynamic_(),
         boolean()} |
     {event,
         binary(),
-        fun((gleam@dynamic:dynamic_()) -> {ok, NUM} |
+        fun((gleam@dynamic:dynamic_()) -> {ok, NUR} |
             {error, list(gleam@dynamic:decode_error())})}.
 
--spec attribute_to_event_handler(attribute(NWH)) -> {ok,
+-file("/home/runner/work/lustre/lustre/src/lustre/internals/vdom.gleam", 389).
+-spec attribute_to_event_handler(attribute(NWM)) -> {ok,
         {binary(),
-            fun((gleam@dynamic:dynamic_()) -> {ok, NWH} |
+            fun((gleam@dynamic:dynamic_()) -> {ok, NWM} |
                 {error, list(gleam@dynamic:decode_error())})}} |
     {error, nil}.
 attribute_to_event_handler(Attribute) ->
@@ -40,6 +41,7 @@ attribute_to_event_handler(Attribute) ->
             {ok, {Name@1, Handler}}
     end.
 
+-file("/home/runner/work/lustre/lustre/src/lustre/internals/vdom.gleam", 112).
 -spec attribute_to_json(attribute(any()), binary()) -> {ok, gleam@json:json()} |
     {error, nil}.
 attribute_to_json(Attribute, Key) ->
@@ -131,6 +133,7 @@ attribute_to_json(Attribute, Key) ->
                 )}
     end.
 
+-file("/home/runner/work/lustre/lustre/src/lustre/internals/vdom.gleam", 352).
 -spec attribute_to_string_parts(attribute(any())) -> {ok, {binary(), binary()}} |
     {error, nil}.
 attribute_to_string_parts(Attr) ->
@@ -185,6 +188,7 @@ attribute_to_string_parts(Attr) ->
             {error, nil}
     end.
 
+-file("/home/runner/work/lustre/lustre/src/lustre/internals/vdom.gleam", 281).
 -spec attributes_to_string_builder(list(attribute(any()))) -> {gleam@string_builder:string_builder(),
     binary()}.
 attributes_to_string_builder(Attrs) ->
@@ -281,6 +285,7 @@ attributes_to_string_builder(Attrs) ->
                 )
         end, Inner_html@1}.
 
+-file("/home/runner/work/lustre/lustre/src/lustre/internals/vdom.gleam", 269).
 -spec children_to_string_builder(
     gleam@string_builder:string_builder(),
     list(element(any())),
@@ -291,6 +296,7 @@ children_to_string_builder(Html, Children, Raw_text) ->
             _pipe@1 = do_element_to_string_builder(_pipe, Raw_text),
             gleam@string_builder:append_builder(Html@1, _pipe@1) end).
 
+-file("/home/runner/work/lustre/lustre/src/lustre/internals/vdom.gleam", 192).
 -spec do_element_to_string_builder(element(any()), boolean()) -> gleam@string_builder:string_builder().
 do_element_to_string_builder(Element, Raw_text) ->
     case Element of
@@ -447,16 +453,19 @@ do_element_to_string_builder(Element, Raw_text) ->
             )
     end.
 
+-file("/home/runner/work/lustre/lustre/src/lustre/internals/vdom.gleam", 182).
 -spec element_to_string(element(any())) -> binary().
 element_to_string(Element) ->
     _pipe = Element,
     _pipe@1 = do_element_to_string_builder(_pipe, false),
     gleam@string_builder:to_string(_pipe@1).
 
+-file("/home/runner/work/lustre/lustre/src/lustre/internals/vdom.gleam", 188).
 -spec element_to_string_builder(element(any())) -> gleam@string_builder:string_builder().
 element_to_string_builder(Element) ->
     do_element_to_string_builder(Element, false).
 
+-file("/home/runner/work/lustre/lustre/src/lustre/internals/vdom.gleam", 104).
 -spec do_element_list_to_json(list(element(any())), binary()) -> gleam@json:json().
 do_element_list_to_json(Elements, Key) ->
     gleam@json:preprocessed_array(
@@ -470,6 +479,7 @@ do_element_list_to_json(Elements, Key) ->
         ))
     ).
 
+-file("/home/runner/work/lustre/lustre/src/lustre/internals/vdom.gleam", 79).
 -spec element_to_json(element(any()), binary()) -> gleam@json:json().
 element_to_json(Element, Key) ->
     case Element of
@@ -504,12 +514,13 @@ element_to_json(Element, Key) ->
             )
     end.
 
+-file("/home/runner/work/lustre/lustre/src/lustre/internals/vdom.gleam", 67).
 -spec do_element_list_handlers(
-    list(element(NVA)),
-    gleam@dict:dict(binary(), fun((gleam@dynamic:dynamic_()) -> {ok, NVA} |
+    list(element(NVF)),
+    gleam@dict:dict(binary(), fun((gleam@dynamic:dynamic_()) -> {ok, NVF} |
         {error, list(gleam@dynamic:decode_error())})),
     binary()
-) -> gleam@dict:dict(binary(), fun((gleam@dynamic:dynamic_()) -> {ok, NVA} |
+) -> gleam@dict:dict(binary(), fun((gleam@dynamic:dynamic_()) -> {ok, NVF} |
     {error, list(gleam@dynamic:decode_error())})).
 do_element_list_handlers(Elements, Handlers, Key) ->
     gleam@list:index_fold(
@@ -522,12 +533,13 @@ do_element_list_handlers(Elements, Handlers, Key) ->
         end
     ).
 
+-file("/home/runner/work/lustre/lustre/src/lustre/internals/vdom.gleam", 43).
 -spec do_handlers(
-    element(NUS),
-    gleam@dict:dict(binary(), fun((gleam@dynamic:dynamic_()) -> {ok, NUS} |
+    element(NUX),
+    gleam@dict:dict(binary(), fun((gleam@dynamic:dynamic_()) -> {ok, NUX} |
         {error, list(gleam@dynamic:decode_error())})),
     binary()
-) -> gleam@dict:dict(binary(), fun((gleam@dynamic:dynamic_()) -> {ok, NUS} |
+) -> gleam@dict:dict(binary(), fun((gleam@dynamic:dynamic_()) -> {ok, NUX} |
     {error, list(gleam@dynamic:decode_error())})).
 do_handlers(Element, Handlers, Key) ->
     case Element of
@@ -561,8 +573,9 @@ do_handlers(Element, Handlers, Key) ->
             do_element_list_handlers(Elements, Handlers, Key)
     end.
 
--spec handlers(element(NUN)) -> gleam@dict:dict(binary(), fun((gleam@dynamic:dynamic_()) -> {ok,
-        NUN} |
+-file("/home/runner/work/lustre/lustre/src/lustre/internals/vdom.gleam", 39).
+-spec handlers(element(NUS)) -> gleam@dict:dict(binary(), fun((gleam@dynamic:dynamic_()) -> {ok,
+        NUS} |
     {error, list(gleam@dynamic:decode_error())})).
 handlers(Element) ->
     do_handlers(Element, gleam@dict:new(), <<"0"/utf8>>).

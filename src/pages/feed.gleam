@@ -34,13 +34,13 @@ pub fn feed(posts: List(CacheablePage)) -> String {
     |> append(pad(time.second))
     |> append(" PST</pubDate>\n      <link>https://ryanbrewer.dev/posts/")
     |> append(post.id)
-    |> append(".html</link>\n      <guid>https://ryanbrewer.dev/posts/")
+    |> append("/</link>\n      <guid>https://ryanbrewer.dev/posts/")
     |> append(post.id)
-    |> append(".html</guid>\n      <description><![CDATA[")
+    |> append("/</guid>\n      <description><![CDATA[")
     |> append(post.blerb)
     |> append("  Read more <a href=\"https://ryanbrewer.dev/posts/")
     |> append(post.id)
-    |> append(".html\">here</a>!]]></description>\n    </item>\n")
+    |> append("/\">here</a>!]]></description>\n    </item>\n")
   }
   from_string(
     "<?xml version=\"1.0\" encoding=\"UTF-8\"?>

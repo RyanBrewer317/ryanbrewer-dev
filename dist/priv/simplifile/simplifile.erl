@@ -1,7 +1,7 @@
 -module(simplifile).
 -compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch]).
 
--export([describe_error/1, file_info_permissions_octal/1, file_info_type/1, file_info/1, link_info/1, delete/1, delete_all/1, read_bits/1, read/1, write_bits/2, write/2, append_bits/2, append/2, is_directory/1, create_directory/1, create_symlink/2, read_directory/1, is_file/1, is_symlink/1, create_file/1, create_directory_all/1, copy_file/2, rename_file/2, copy_directory/2, rename_directory/2, clear_directory/1, get_files/1, file_permissions_to_octal/1, file_info_permissions/1, set_permissions_octal/2, set_permissions/2, current_directory/0]).
+-export([describe_error/1, file_info_permissions_octal/1, file_info_type/1, file_info/1, link_info/1, delete/1, delete_all/1, read_bits/1, read/1, write_bits/2, write/2, append_bits/2, append/2, is_directory/1, create_directory/1, create_symlink/2, read_directory/1, is_file/1, is_symlink/1, create_file/1, create_directory_all/1, copy_file/2, rename_file/2, rename/2, copy_directory/2, copy/2, rename_directory/2, clear_directory/1, get_files/1, file_permissions_to_octal/1, file_info_permissions/1, set_permissions_octal/2, set_permissions/2, current_directory/0]).
 -export_type([file_error/0, file_info/0, file_type/0, permission/0, file_permissions/0]).
 
 -type file_error() :: eacces |
@@ -75,6 +75,7 @@
         gleam@set:set(permission()),
         gleam@set:set(permission())}.
 
+-file("/home/benjaminpeinhardt/Desktop/simplifile/src/simplifile.gleam", 124).
 -spec describe_error(file_error()) -> binary().
 describe_error(Error) ->
     case Error of
@@ -226,10 +227,12 @@ describe_error(Error) ->
             <<"Unknown error: "/utf8, Inner/binary>>
     end.
 
+-file("/home/benjaminpeinhardt/Desktop/simplifile/src/simplifile.gleam", 221).
 -spec file_info_permissions_octal(file_info()) -> integer().
 file_info_permissions_octal(File_info) ->
     erlang:'band'(erlang:element(3, File_info), 8#777).
 
+-file("/home/benjaminpeinhardt/Desktop/simplifile/src/simplifile.gleam", 250).
 -spec file_info_type(file_info()) -> file_type().
 file_info_type(File_info) ->
     case erlang:'band'(erlang:element(3, File_info), 8#170000) of
@@ -246,18 +249,22 @@ file_info_type(File_info) ->
             other
     end.
 
+-file("/home/benjaminpeinhardt/Desktop/simplifile/src/simplifile.gleam", 270).
 -spec file_info(binary()) -> {ok, file_info()} | {error, file_error()}.
 file_info(Filepath) ->
     simplifile_erl:file_info(Filepath).
 
+-file("/home/benjaminpeinhardt/Desktop/simplifile/src/simplifile.gleam", 280).
 -spec link_info(binary()) -> {ok, file_info()} | {error, file_error()}.
 link_info(Filepath) ->
     simplifile_erl:link_info(Filepath).
 
+-file("/home/benjaminpeinhardt/Desktop/simplifile/src/simplifile.gleam", 324).
 -spec delete(binary()) -> {ok, nil} | {error, file_error()}.
 delete(Path) ->
     simplifile_erl:delete(Path).
 
+-file("/home/benjaminpeinhardt/Desktop/simplifile/src/simplifile.gleam", 331).
 -spec delete_all(list(binary())) -> {ok, nil} | {error, file_error()}.
 delete_all(Paths) ->
     case Paths of
@@ -277,10 +284,12 @@ delete_all(Paths) ->
             end
     end.
 
+-file("/home/benjaminpeinhardt/Desktop/simplifile/src/simplifile.gleam", 365).
 -spec read_bits(binary()) -> {ok, bitstring()} | {error, file_error()}.
 read_bits(Filepath) ->
     simplifile_erl:read_bits(Filepath).
 
+-file("/home/benjaminpeinhardt/Desktop/simplifile/src/simplifile.gleam", 288).
 -spec read(binary()) -> {ok, binary()} | {error, file_error()}.
 read(Filepath) ->
     case simplifile_erl:read_bits(Filepath) of
@@ -297,50 +306,61 @@ read(Filepath) ->
             {error, E}
     end.
 
+-file("/home/benjaminpeinhardt/Desktop/simplifile/src/simplifile.gleam", 375).
 -spec write_bits(binary(), bitstring()) -> {ok, nil} | {error, file_error()}.
 write_bits(Filepath, Bits) ->
     simplifile_erl:write_bits(Filepath, Bits).
 
+-file("/home/benjaminpeinhardt/Desktop/simplifile/src/simplifile.gleam", 306).
 -spec write(binary(), binary()) -> {ok, nil} | {error, file_error()}.
 write(Filepath, Contents) ->
     _pipe = Contents,
     _pipe@1 = gleam_stdlib:identity(_pipe),
     simplifile_erl:write_bits(Filepath, _pipe@1).
 
+-file("/home/benjaminpeinhardt/Desktop/simplifile/src/simplifile.gleam", 388).
 -spec append_bits(binary(), bitstring()) -> {ok, nil} | {error, file_error()}.
 append_bits(Filepath, Bits) ->
     simplifile_erl:append_bits(Filepath, Bits).
 
+-file("/home/benjaminpeinhardt/Desktop/simplifile/src/simplifile.gleam", 349).
 -spec append(binary(), binary()) -> {ok, nil} | {error, file_error()}.
 append(Filepath, Contents) ->
     _pipe = Contents,
     _pipe@1 = gleam_stdlib:identity(_pipe),
     simplifile_erl:append_bits(Filepath, _pipe@1).
 
+-file("/home/benjaminpeinhardt/Desktop/simplifile/src/simplifile.gleam", 402).
 -spec is_directory(binary()) -> {ok, boolean()} | {error, file_error()}.
 is_directory(Filepath) ->
     simplifile_erl:is_directory(Filepath).
 
+-file("/home/benjaminpeinhardt/Desktop/simplifile/src/simplifile.gleam", 413).
 -spec create_directory(binary()) -> {ok, nil} | {error, file_error()}.
 create_directory(Filepath) ->
     simplifile_erl:create_directory(Filepath).
 
+-file("/home/benjaminpeinhardt/Desktop/simplifile/src/simplifile.gleam", 428).
 -spec create_symlink(binary(), binary()) -> {ok, nil} | {error, file_error()}.
 create_symlink(Target, Symlink) ->
     simplifile_erl:create_symlink(Target, Symlink).
 
+-file("/home/benjaminpeinhardt/Desktop/simplifile/src/simplifile.gleam", 443).
 -spec read_directory(binary()) -> {ok, list(binary())} | {error, file_error()}.
 read_directory(Path) ->
     simplifile_erl:read_directory(Path).
 
+-file("/home/benjaminpeinhardt/Desktop/simplifile/src/simplifile.gleam", 455).
 -spec is_file(binary()) -> {ok, boolean()} | {error, file_error()}.
 is_file(Filepath) ->
     simplifile_erl:is_file(Filepath).
 
+-file("/home/benjaminpeinhardt/Desktop/simplifile/src/simplifile.gleam", 467).
 -spec is_symlink(binary()) -> {ok, boolean()} | {error, file_error()}.
 is_symlink(Filepath) ->
     simplifile_erl:is_symlink(Filepath).
 
+-file("/home/benjaminpeinhardt/Desktop/simplifile/src/simplifile.gleam", 472).
 -spec create_file(binary()) -> {ok, nil} | {error, file_error()}.
 create_file(Filepath) ->
     case {begin
@@ -361,6 +381,7 @@ create_file(Filepath) ->
             simplifile_erl:write_bits(Filepath, <<>>)
     end.
 
+-file("/home/benjaminpeinhardt/Desktop/simplifile/src/simplifile.gleam", 483).
 -spec create_directory_all(binary()) -> {ok, nil} | {error, file_error()}.
 create_directory_all(Dirpath) ->
     Is_abs = filepath:is_absolute(Dirpath),
@@ -378,15 +399,23 @@ create_directory_all(Dirpath) ->
     end,
     simplifile_erl:create_dir_all(<<Path@1/binary, "/"/utf8>>).
 
+-file("/home/benjaminpeinhardt/Desktop/simplifile/src/simplifile.gleam", 522).
 -spec copy_file(binary(), binary()) -> {ok, nil} | {error, file_error()}.
 copy_file(Src, Dest) ->
     _pipe = file:copy(Src, Dest),
     gleam@result:replace(_pipe, nil).
 
+-file("/home/benjaminpeinhardt/Desktop/simplifile/src/simplifile.gleam", 536).
 -spec rename_file(binary(), binary()) -> {ok, nil} | {error, file_error()}.
 rename_file(Src, Dest) ->
     simplifile_erl:rename_file(Src, Dest).
 
+-file("/home/benjaminpeinhardt/Desktop/simplifile/src/simplifile.gleam", 541).
+-spec rename(binary(), binary()) -> {ok, nil} | {error, file_error()}.
+rename(Src, Dest) ->
+    simplifile_erl:rename_file(Src, Dest).
+
+-file("/home/benjaminpeinhardt/Desktop/simplifile/src/simplifile.gleam", 552).
 -spec do_copy_directory(binary(), binary()) -> {ok, nil} | {error, file_error()}.
 do_copy_directory(Src, Dest) ->
     gleam@result:'try'(
@@ -398,48 +427,50 @@ do_copy_directory(Src, Dest) ->
                 fun(Segment) ->
                     Src_path = filepath:join(Src, Segment),
                     Dest_path = filepath:join(Dest, Segment),
-                    case {simplifile_erl:is_file(Src_path),
-                        simplifile_erl:is_directory(Src_path)} of
-                        {{ok, true}, {ok, false}} ->
-                            gleam@result:'try'(
-                                simplifile_erl:read_bits(Src_path),
-                                fun(Content) -> _pipe@1 = Content,
-                                    simplifile_erl:write_bits(
-                                        Dest_path,
-                                        _pipe@1
-                                    ) end
-                            );
+                    gleam@result:'try'(
+                        simplifile_erl:file_info(Src_path),
+                        fun(Src_info) -> case file_info_type(Src_info) of
+                                file ->
+                                    gleam@result:'try'(
+                                        simplifile_erl:read_bits(Src_path),
+                                        fun(Content) -> _pipe@1 = Content,
+                                            simplifile_erl:write_bits(
+                                                Dest_path,
+                                                _pipe@1
+                                            ) end
+                                    );
 
-                        {{ok, false}, {ok, true}} ->
-                            gleam@result:'try'(
-                                simplifile_erl:create_directory(Dest_path),
-                                fun(_) ->
-                                    do_copy_directory(Src_path, Dest_path)
-                                end
-                            );
+                                directory ->
+                                    gleam@result:'try'(
+                                        simplifile_erl:create_directory(
+                                            Dest_path
+                                        ),
+                                        fun(_) ->
+                                            do_copy_directory(
+                                                Src_path,
+                                                Dest_path
+                                            )
+                                        end
+                                    );
 
-                        {{error, E}, _} ->
-                            {error, E};
+                                symlink ->
+                                    {error,
+                                        {unknown,
+                                            <<"This is an internal bug where the `file_info` is somehow returning info about a simlink. Please file an issue on the simplifile repo."/utf8>>}};
 
-                        {_, {error, E}} ->
-                            {error, E};
-
-                        {{ok, false}, {ok, false}} ->
-                            {error,
-                                {unknown,
-                                    <<"Unknown error copying directory"/utf8>>}};
-
-                        {{ok, true}, {ok, true}} ->
-                            {error,
-                                {unknown,
-                                    <<"Unknown error copying directory"/utf8>>}}
-                    end
+                                other ->
+                                    {error,
+                                        {unknown,
+                                            <<"Unknown file type (not file, directory, or simlink)"/utf8>>}}
+                            end end
+                    )
                 end
             ),
             {ok, nil}
         end
     ).
 
+-file("/home/benjaminpeinhardt/Desktop/simplifile/src/simplifile.gleam", 544).
 -spec copy_directory(binary(), binary()) -> {ok, nil} | {error, file_error()}.
 copy_directory(Src, Dest) ->
     gleam@result:'try'(
@@ -447,6 +478,31 @@ copy_directory(Src, Dest) ->
         fun(_) -> do_copy_directory(Src, Dest) end
     ).
 
+-file("/home/benjaminpeinhardt/Desktop/simplifile/src/simplifile.gleam", 506).
+-spec copy(binary(), binary()) -> {ok, nil} | {error, file_error()}.
+copy(Src, Dest) ->
+    gleam@result:'try'(
+        simplifile_erl:file_info(Src),
+        fun(Src_info) -> case file_info_type(Src_info) of
+                file ->
+                    copy_file(Src, Dest);
+
+                directory ->
+                    copy_directory(Src, Dest);
+
+                symlink ->
+                    {error,
+                        {unknown,
+                            <<"This is an internal bug where the `file_info` is somehow returning info about a simlink. Please file an issue on the simplifile repo."/utf8>>}};
+
+                other ->
+                    {error,
+                        {unknown,
+                            <<"Unknown file type (not file, directory, or simlink)"/utf8>>}}
+            end end
+    ).
+
+-file("/home/benjaminpeinhardt/Desktop/simplifile/src/simplifile.gleam", 588).
 -spec rename_directory(binary(), binary()) -> {ok, nil} | {error, file_error()}.
 rename_directory(Src, Dest) ->
     gleam@result:'try'(
@@ -454,6 +510,7 @@ rename_directory(Src, Dest) ->
         fun(_) -> simplifile_erl:delete(Src) end
     ).
 
+-file("/home/benjaminpeinhardt/Desktop/simplifile/src/simplifile.gleam", 598).
 -spec clear_directory(binary()) -> {ok, nil} | {error, file_error()}.
 clear_directory(Path) ->
     gleam@result:'try'(
@@ -466,6 +523,7 @@ clear_directory(Path) ->
             delete_all(_pipe@1) end
     ).
 
+-file("/home/benjaminpeinhardt/Desktop/simplifile/src/simplifile.gleam", 608).
 -spec get_files(binary()) -> {ok, list(binary())} | {error, file_error()}.
 get_files(Directory) ->
     gleam@result:'try'(
@@ -503,6 +561,7 @@ get_files(Directory) ->
         end
     ).
 
+-file("/home/benjaminpeinhardt/Desktop/simplifile/src/simplifile.gleam", 631).
 -spec permission_to_integer(permission()) -> integer().
 permission_to_integer(Permission) ->
     case Permission of
@@ -516,6 +575,7 @@ permission_to_integer(Permission) ->
             8#1
     end.
 
+-file("/home/benjaminpeinhardt/Desktop/simplifile/src/simplifile.gleam", 639).
 -spec integer_to_permissions(integer()) -> gleam@set:set(permission()).
 integer_to_permissions(Integer) ->
     case erlang:'band'(Integer, 7) of
@@ -545,12 +605,13 @@ integer_to_permissions(Integer) ->
 
         _ ->
             erlang:error(#{gleam_error => panic,
-                    message => <<"panic expression evaluated"/utf8>>,
+                    message => <<"`panic` expression evaluated."/utf8>>,
                     module => <<"simplifile"/utf8>>,
                     function => <<"integer_to_permissions"/utf8>>,
-                    line => 616})
+                    line => 650})
     end.
 
+-file("/home/benjaminpeinhardt/Desktop/simplifile/src/simplifile.gleam", 663).
 -spec file_permissions_to_octal(file_permissions()) -> integer().
 file_permissions_to_octal(Permissions) ->
     Make_permission_digit = fun(Permissions@1) -> _pipe = Permissions@1,
@@ -563,6 +624,7 @@ file_permissions_to_octal(Permissions) ->
     * 8))
     + Make_permission_digit(erlang:element(4, Permissions)).
 
+-file("/home/benjaminpeinhardt/Desktop/simplifile/src/simplifile.gleam", 678).
 -spec octal_to_file_permissions(integer()) -> file_permissions().
 octal_to_file_permissions(Octal) ->
     {file_permissions,
@@ -581,15 +643,18 @@ octal_to_file_permissions(Octal) ->
             integer_to_permissions(_pipe@4)
         end}.
 
+-file("/home/benjaminpeinhardt/Desktop/simplifile/src/simplifile.gleam", 226).
 -spec file_info_permissions(file_info()) -> file_permissions().
 file_info_permissions(File_info) ->
     octal_to_file_permissions(file_info_permissions_octal(File_info)).
 
+-file("/home/benjaminpeinhardt/Desktop/simplifile/src/simplifile.gleam", 714).
 -spec set_permissions_octal(binary(), integer()) -> {ok, nil} |
     {error, file_error()}.
 set_permissions_octal(Filepath, Permissions) ->
     simplifile_erl:set_permissions_octal(Filepath, Permissions).
 
+-file("/home/benjaminpeinhardt/Desktop/simplifile/src/simplifile.gleam", 699).
 -spec set_permissions(binary(), file_permissions()) -> {ok, nil} |
     {error, file_error()}.
 set_permissions(Filepath, Permissions) ->
@@ -598,6 +663,7 @@ set_permissions(Filepath, Permissions) ->
         file_permissions_to_octal(Permissions)
     ).
 
+-file("/home/benjaminpeinhardt/Desktop/simplifile/src/simplifile.gleam", 722).
 -spec current_directory() -> {ok, binary()} | {error, file_error()}.
 current_directory() ->
     _pipe = file:get_cwd(),

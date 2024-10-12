@@ -1,23 +1,46 @@
 -module(gleam@crypto).
 -compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch]).
 
--export([strong_random_bytes/1, hash/2, hmac/3, secure_compare/2, sign_message/3, verify_signed_message/2]).
--export_type([hash_algorithm/0]).
+-export([strong_random_bytes/1, new_hasher/1, hash_chunk/2, digest/1, hash/2, hmac/3, secure_compare/2, sign_message/3, verify_signed_message/2]).
+-export_type([hash_algorithm/0, hasher/0]).
 
 -type hash_algorithm() :: sha224 | sha256 | sha384 | sha512 | md5 | sha1.
 
+-type hasher() :: any().
+
+-file("/Users/louis/src/gleam/crypto/src/gleam/crypto.gleam", 20).
 -spec strong_random_bytes(integer()) -> bitstring().
 strong_random_bytes(A) ->
     crypto:strong_rand_bytes(A).
 
--spec hash(hash_algorithm(), bitstring()) -> bitstring().
-hash(A, B) ->
-    gleam_crypto_ffi:hash(A, B).
+-file("/Users/louis/src/gleam/crypto/src/gleam/crypto.gleam", 73).
+-spec new_hasher(hash_algorithm()) -> hasher().
+new_hasher(Algorithm) ->
+    gleam_crypto_ffi:hash_init(Algorithm).
 
+-file("/Users/louis/src/gleam/crypto/src/gleam/crypto.gleam", 81).
+-spec hash_chunk(hasher(), bitstring()) -> hasher().
+hash_chunk(Hasher, Chunk) ->
+    crypto:hash_update(Hasher, Chunk).
+
+-file("/Users/louis/src/gleam/crypto/src/gleam/crypto.gleam", 89).
+-spec digest(hasher()) -> bitstring().
+digest(Hasher) ->
+    crypto:hash_final(Hasher).
+
+-file("/Users/louis/src/gleam/crypto/src/gleam/crypto.gleam", 49).
+-spec hash(hash_algorithm(), bitstring()) -> bitstring().
+hash(Algorithm, Data) ->
+    _pipe = gleam_crypto_ffi:hash_init(Algorithm),
+    _pipe@1 = crypto:hash_update(_pipe, Data),
+    crypto:hash_final(_pipe@1).
+
+-file("/Users/louis/src/gleam/crypto/src/gleam/crypto.gleam", 100).
 -spec hmac(bitstring(), hash_algorithm(), bitstring()) -> bitstring().
 hmac(Data, Algorithm, Key) ->
     gleam_crypto_ffi:hmac(Data, Algorithm, Key).
 
+-file("/Users/louis/src/gleam/crypto/src/gleam/crypto.gleam", 113).
 -spec do_secure_compare(bitstring(), bitstring(), integer()) -> boolean().
 do_secure_compare(Left, Right, Accumulator) ->
     case {Left, Right} of
@@ -29,6 +52,7 @@ do_secure_compare(Left, Right, Accumulator) ->
             (Left =:= Right) andalso (Accumulator =:= 0)
     end.
 
+-file("/Users/louis/src/gleam/crypto/src/gleam/crypto.gleam", 106).
 -spec secure_compare(bitstring(), bitstring()) -> boolean().
 secure_compare(Left, Right) ->
     case erlang:byte_size(Left) =:= erlang:byte_size(Right) of
@@ -39,6 +63,7 @@ secure_compare(Left, Right) ->
             false
     end.
 
+-file("/Users/louis/src/gleam/crypto/src/gleam/crypto.gleam", 143).
 -spec signing_input(hash_algorithm(), bitstring()) -> binary().
 signing_input(Digest_type, Message) ->
     Protected = case Digest_type of
@@ -66,6 +91,7 @@ signing_input(Digest_type, Message) ->
             gleam@bit_array:base64_url_encode(Message, false)]
     ).
 
+-file("/Users/louis/src/gleam/crypto/src/gleam/crypto.gleam", 132).
 -spec sign_message(bitstring(), bitstring(), hash_algorithm()) -> binary().
 sign_message(Message, Secret, Digest_type) ->
     Input = signing_input(Digest_type, Message),
@@ -76,6 +102,7 @@ sign_message(Message, Secret, Digest_type) ->
             gleam@bit_array:base64_url_encode(Signature, false)]
     ).
 
+-file("/Users/louis/src/gleam/crypto/src/gleam/crypto.gleam", 163).
 -spec verify_signed_message(binary(), bitstring()) -> {ok, bitstring()} |
     {error, nil}.
 verify_signed_message(Message, Secret) ->

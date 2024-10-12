@@ -76,6 +76,10 @@
         "destination": "/posts/typechecking-sabervm/index.html"
       },
       {
+        "source": "/posts/cricket.html",
+        "destination": "/posts/cricket/index.html"
+      },
+      {
         "source": "**",
         "destination": "/404/index.html"
       }

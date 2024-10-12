@@ -4,46 +4,48 @@
 -export([start/4]).
 -export_type([state/3, action/2, debug_action/0]).
 
--type state(PMQ, PMR, PMS) :: {state,
-        gleam@erlang@process:subject(action(PMR, PMS)),
-        gleam@erlang@process:selector(action(PMR, PMS)),
-        PMQ,
-        fun((PMQ, PMR) -> {PMQ, lustre@effect:effect(PMR)}),
-        fun((PMQ) -> lustre@internals@vdom:element(PMR)),
-        lustre@internals@vdom:element(PMR),
-        gleam@dict:dict(binary(), fun((lustre@internals@patch:patch(PMR)) -> nil)),
-        gleam@dict:dict(binary(), fun((gleam@dynamic:dynamic_()) -> {ok, PMR} |
+-type state(PMT, PMU, PMV) :: {state,
+        gleam@erlang@process:subject(action(PMU, PMV)),
+        gleam@erlang@process:selector(action(PMU, PMV)),
+        PMT,
+        fun((PMT, PMU) -> {PMT, lustre@effect:effect(PMU)}),
+        fun((PMT) -> lustre@internals@vdom:element(PMU)),
+        lustre@internals@vdom:element(PMU),
+        gleam@dict:dict(binary(), fun((lustre@internals@patch:patch(PMU)) -> nil)),
+        gleam@dict:dict(binary(), fun((gleam@dynamic:dynamic_()) -> {ok, PMU} |
             {error, list(gleam@dynamic:decode_error())})),
-        gleam@dict:dict(binary(), fun((gleam@dynamic:dynamic_()) -> {ok, PMR} |
+        gleam@dict:dict(binary(), fun((gleam@dynamic:dynamic_()) -> {ok, PMU} |
             {error, list(gleam@dynamic:decode_error())}))}.
 
--type action(PMT, PMU) :: {attrs, list({binary(), gleam@dynamic:dynamic_()})} |
-    {batch, list(PMT), lustre@effect:effect(PMT)} |
+-type action(PMW, PMX) :: {attrs, list({binary(), gleam@dynamic:dynamic_()})} |
+    {batch, list(PMW), lustre@effect:effect(PMW)} |
     {debug, debug_action()} |
-    {dispatch, PMT} |
+    {dispatch, PMW} |
     {emit, binary(), gleam@json:json()} |
     {event, binary(), gleam@dynamic:dynamic_()} |
-    {set_selector, gleam@erlang@process:selector(PMT)} |
+    {set_selector, gleam@erlang@process:selector(PMW)} |
     shutdown |
-    {subscribe, binary(), fun((lustre@internals@patch:patch(PMT)) -> nil)} |
+    {subscribe, binary(), fun((lustre@internals@patch:patch(PMW)) -> nil)} |
     {unsubscribe, binary()} |
-    {gleam_phantom, PMU}.
+    {gleam_phantom, PMX}.
 
 -type debug_action() :: {force_model, gleam@dynamic:dynamic_()} |
     {model, fun((gleam@dynamic:dynamic_()) -> nil)} |
     {view,
         fun((lustre@internals@vdom:element(gleam@dynamic:dynamic_())) -> nil)}.
 
+-file("/home/runner/work/lustre/lustre/src/lustre/internals/runtime.gleam", 234).
 -spec run_renderers(
-    gleam@dict:dict(any(), fun((lustre@internals@patch:patch(PNZ)) -> nil)),
-    lustre@internals@patch:patch(PNZ)
+    gleam@dict:dict(any(), fun((lustre@internals@patch:patch(POC)) -> nil)),
+    lustre@internals@patch:patch(POC)
 ) -> nil.
 run_renderers(Renderers, Patch) ->
     gleam@dict:fold(Renderers, nil, fun(_, _, Renderer) -> Renderer(Patch) end).
 
+-file("/home/runner/work/lustre/lustre/src/lustre/internals/runtime.gleam", 243).
 -spec run_effects(
-    lustre@effect:effect(POE),
-    gleam@erlang@process:subject(action(POE, any()))
+    lustre@effect:effect(POH),
+    gleam@erlang@process:subject(action(POH, any()))
 ) -> nil.
 run_effects(Effects, Self) ->
     Dispatch = fun(Msg) -> gleam@otp@actor:send(Self, {dispatch, Msg}) end,
@@ -55,7 +57,8 @@ run_effects(Effects, Self) ->
     end,
     lustre@effect:perform(Effects, Dispatch, Emit, Select).
 
--spec loop(action(PNJ, PNK), state(PNN, PNJ, PNK)) -> gleam@otp@actor:next(action(PNJ, PNK), state(PNN, PNJ, PNK)).
+-file("/home/runner/work/lustre/lustre/src/lustre/internals/runtime.gleam", 94).
+-spec loop(action(PNM, PNN), state(PNQ, PNM, PNN)) -> gleam@otp@actor:next(action(PNM, PNN), state(PNQ, PNM, PNN)).
 loop(Message, State) ->
     case Message of
         {attrs, Attrs} ->
@@ -249,31 +252,29 @@ loop(Message, State) ->
             gleam@otp@actor:continue(Next@5);
 
         {set_selector, Selector} ->
+            New_selector = gleam_erlang_ffi:merge_selector(
+                erlang:element(3, State),
+                gleam_erlang_ffi:map_selector(
+                    Selector,
+                    fun(Field@0) -> {dispatch, Field@0} end
+                )
+            ),
             {continue,
-                State,
-                {some,
-                    begin
-                        _pipe@6 = erlang:element(3, State),
-                        gleam_erlang_ffi:merge_selector(
-                            _pipe@6,
-                            gleam_erlang_ffi:map_selector(
-                                Selector,
-                                fun(Field@0) -> {dispatch, Field@0} end
-                            )
-                        )
-                    end}};
+                erlang:setelement(3, State, New_selector),
+                {some, New_selector}};
 
         shutdown ->
             {stop, killed}
     end.
 
+-file("/home/runner/work/lustre/lustre/src/lustre/internals/runtime.gleam", 60).
 -spec start(
-    {PMV, lustre@effect:effect(PMW)},
-    fun((PMV, PMW) -> {PMV, lustre@effect:effect(PMW)}),
-    fun((PMV) -> lustre@internals@vdom:element(PMW)),
-    gleam@dict:dict(binary(), fun((gleam@dynamic:dynamic_()) -> {ok, PMW} |
+    {PMY, lustre@effect:effect(PMZ)},
+    fun((PMY, PMZ) -> {PMY, lustre@effect:effect(PMZ)}),
+    fun((PMY) -> lustre@internals@vdom:element(PMZ)),
+    gleam@dict:dict(binary(), fun((gleam@dynamic:dynamic_()) -> {ok, PMZ} |
         {error, list(gleam@dynamic:decode_error())}))
-) -> {ok, gleam@erlang@process:subject(action(PMW, any()))} |
+) -> {ok, gleam@erlang@process:subject(action(PMZ, any()))} |
     {error, gleam@otp@actor:start_error()}.
 start(Init, Update, View, On_attribute_change) ->
     Timeout = 1000,
