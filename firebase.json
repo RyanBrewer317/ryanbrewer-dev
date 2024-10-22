@@ -13,19 +13,19 @@
       },
       {
         "source": "/search.html",
-        "destination": "/posts/index.html"
+        "destination": "/404/index.html"
       },
       {
         "source": "/search",
-        "destination": "/posts/index.html"
+        "destination": "/404/index.html"
       },
       {
         "source": "/contact.html",
-        "destination": "/contact/index.html"
+        "destination": "/404/index.html"
       },
       {
         "source": "/demos.html",
-        "destination": "/demos/index.html"
+        "destination": "/404/index.html"
       },
       {
         "source": "/404.html",
@@ -33,51 +33,67 @@
       },
       {
         "source": "/posts/announcing-svm.html",
-        "destination": "/posts/announcing-sabervm/index.html"
+        "destination": "/404/index.html"
       },
       {
         "source": "/posts/beginners-guide-pl-academia.html",
-        "destination": "/posts/beginners-guide-pl-academia/index.html"
+        "destination": "/404/index.html"
       },
       {
         "source": "/posts/first-post.html",
-        "destination": "/posts/first-post/index.html"
+        "destination": "/404/index.html"
       },
       {
         "source": "/posts/getting-started-category-theory.html",
-        "destination": "/posts/getting-started-category-theory/index.html"
+        "destination": "/404/index.html"
       },
       {
         "source": "/posts/implicit-products-better-forall.html",
-        "destination": "/posts/implicit-products-better-forall/index.html"
+        "destination": "/404/index.html"
       },
       {
         "source": "/posts/logic-in-types.html",
-        "destination": "/posts/logic-in-types/index.html"
+        "destination": "/404/index.html"
       },
       {
         "source": "/posts/safe-mmm-with-coeffects.html",
-        "destination": "/posts/safe-mmm-with-coeffects/index.html"
+        "destination": "/404/index.html"
       },
       {
         "source": "/posts/security-crashing-modal-logic.html",
-        "destination": "/posts/security-crashing-modal-logic/index.html"
+        "destination": "/404/index.html"
       },
       {
         "source": "/posts/simple-programming-languages.html",
-        "destination": "/posts/simple-programming-languages/index.html"
+        "destination": "/404/index.html"
       },
       {
         "source": "/posts/type-of-sprintf.html",
-        "destination": "/posts/type-of-sprintf/index.html"
+        "destination": "/404/index.html"
       },
       {
         "source": "/posts/typechecking-sabervm.html",
-        "destination": "/posts/typechecking-sabervm/index.html"
+        "destination": "/404/index.html"
       },
       {
         "source": "/posts/cricket.html",
-        "destination": "/posts/cricket/index.html"
+        "destination": "/404/index.html"
+      },
+      {
+        "source": "/posts/**",
+        "destination": "/index.html"
+      },
+      {
+        "source": "/wiki/**",
+        "destination": "/index.html"
+      },
+      {
+        "source": "/contact",
+        "destination": "/index.html"
+      },
+      {
+        "source": "/demos",
+        "destination": "/index.html"
       },
       {
         "source": "**",
