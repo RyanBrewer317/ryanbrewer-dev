@@ -66,11 +66,12 @@ export class RawPage extends $CustomType {
 }
 
 export class Config extends $CustomType {
-  constructor(render_home, main_pages, collections) {
+  constructor(render_home, main_pages, collections, render_spa) {
     super();
     this.render_home = render_home;
     this.main_pages = main_pages;
     this.collections = collections;
+    this.render_spa = render_spa;
   }
 }
 

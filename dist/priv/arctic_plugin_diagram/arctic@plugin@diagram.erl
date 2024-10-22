@@ -3,8 +3,8 @@
 
 -export([parse/3]).
 
--spec parse(binary(), fun((WID) -> integer()), fun((integer()) -> WID)) -> fun((list(binary()), binary(), arctic@parse:parse_data(WID)) -> {ok,
-        {lustre@internals@vdom:element(any()), WID}} |
+-spec parse(binary(), fun((WJT) -> integer()), fun((integer()) -> WJT)) -> fun((list(binary()), binary(), arctic@parse:parse_data(WJT)) -> {ok,
+        {lustre@internals@vdom:element(any()), WJT}} |
     {error, snag:snag()}).
 parse(Dir, Get_id, To_state) ->
     fun(_, Body, Data) ->

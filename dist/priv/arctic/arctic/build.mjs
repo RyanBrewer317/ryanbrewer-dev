@@ -10,6 +10,9 @@ import * as $order from "../../gleam_stdlib/gleam/order.mjs";
 import * as $result from "../../gleam_stdlib/gleam/result.mjs";
 import { map_error } from "../../gleam_stdlib/gleam/result.mjs";
 import * as $string from "../../gleam_stdlib/gleam/string.mjs";
+import * as $attribute from "../../lustre/lustre/attribute.mjs";
+import * as $element from "../../lustre/lustre/element.mjs";
+import * as $html from "../../lustre/lustre/element/html.mjs";
 import * as $ssg from "../../lustre_ssg/lustre/ssg.mjs";
 import * as $party from "../../party/party.mjs";
 import * as $simplifile from "../../simplifile/simplifile.mjs";
@@ -32,7 +35,7 @@ function get_id(p) {
       throw makeError(
         "assignment_no_match",
         "arctic/build",
-        33,
+        36,
         "get_id",
         "Assignment pattern did not match",
         { value: $ }
@@ -308,26 +311,55 @@ function process(collections, cache) {
   );
 }
 
+function spa(frame, home) {
+  return frame(
+    $html.div(
+      toList([]),
+      toList([
+        $html.div(toList([$attribute.id("arctic-app")]), toList([home])),
+        $html.script(
+          toList([]),
+          "\nif (window.location.pathname !== '/') {\n  go_to(new URL(window.location.href), true, true);\n}\n// SPA algorithm stolen from Hayleigh Thompson's wonderful Modem library\nasync function go_to(url, loader, back) {\n  if (url.pathname === window.location.pathname) {\n    if (url.hash) document.getElementById(url.hash.slice(1))?.scrollIntoView();\n    else document.body.scrollIntoView();\n    return;\n  }\n  const $app = document.getElementById('arctic-app');\n  if (loader) $app.innerHTML = '<div id=\"arctic-loader\"></div>';\n  if (!back) window.history.pushState({}, '', url.href);\n  window.requestAnimationFrame(() => {\n    // scroll in #-link elements, as the browser would if we didn't preventDefault\n    if (url.hash) {\n      document.getElementById(url.hash.slice(1))?.scrollIntoView();\n    }\n  });\n  // handle new path\n  console.log(url.pathname);\n  const response = await fetch('/__pages/' + url.pathname + '/index.html');\n  if (!response.ok) response = await fetch('/__pages/404.html');\n  if (!response.ok) return;\n  const html = await response.text();\n  $app.innerHTML = html;\n  document.body.scrollIntoView();\n}\ndocument.addEventListener('click', async function(e) {\n  const a = find_a(e.target);\n  if (!a) return;\n  try {\n    const url = new URL(a.href);\n    const is_external = url.host !== window.location.host;\n    if (is_external) return;\n    event.preventDefault();\n    go_to(url, false, false);\n  } catch {\n    return;\n  }\n});\nwindow.addEventListener('popstate', (e) => {\n  e.preventDefault();\n  const url = new URL(window.location.href);\n  go_to(url, false, true);\n});\nfunction find_a(target) {\n  if (!target || target.tagName === 'BODY') return null;\n  if (target.tagName === 'A') return target;\n  return find_a(target.parentElement);\n}\n  ",
+        ),
+      ]),
+    ),
+  );
+}
+
 function make_ssg_config(processed_collections, config, k) {
+  let home = config.render_home(processed_collections);
+  let dir = (() => {
+    let $ = config.render_spa;
+    if ($ instanceof Some) {
+      return "/__pages/";
+    } else {
+      return "/";
+    }
+  })();
   return $result.try$(
     (() => {
       let _pipe = $ssg.new$("arctic_build");
       let _pipe$1 = $ssg.use_index_routes(_pipe);
-      let _pipe$2 = $ssg.add_static_route(
-        _pipe$1,
-        "/",
-        config.render_home(processed_collections),
-      );
-      let _pipe$3 = $list.fold(
+      let _pipe$2 = $ssg.add_static_route(_pipe$1, dir, home);
+      let _pipe$3 = ((ssg_config) => {
+        let $ = config.render_spa;
+        if ($ instanceof Some) {
+          let frame = $[0];
+          return $ssg.add_static_route(ssg_config, "/", spa(frame, home));
+        } else {
+          return ssg_config;
+        }
+      })(_pipe$2);
+      let _pipe$4 = $list.fold(
         config.main_pages,
-        _pipe$2,
+        _pipe$3,
         (ssg_config, page) => {
-          return $ssg.add_static_route(ssg_config, "/" + page.id, page.html);
+          return $ssg.add_static_route(ssg_config, dir + page.id, page.html);
         },
       );
       return $list.try_fold(
         processed_collections,
-        _pipe$3,
+        _pipe$4,
         (ssg_config, processed) => {
           let ssg_config2 = (() => {
             let $ = processed.collection.index;
@@ -335,7 +367,7 @@ function make_ssg_config(processed_collections, config, k) {
               let render = $[0];
               return $ssg.add_static_route(
                 ssg_config,
-                "/" + processed.collection.directory,
+                dir + processed.collection.directory,
                 render(processed.pages),
               );
             } else {
@@ -348,12 +380,12 @@ function make_ssg_config(processed_collections, config, k) {
             (s, rp) => {
               return $ssg.add_static_route(
                 s,
-                (("/" + processed.collection.directory) + "/") + rp.id,
+                ((dir + processed.collection.directory) + "/") + rp.id,
                 rp.html,
               );
             },
           );
-          let _pipe$4 = $list.fold(
+          let _pipe$5 = $list.fold(
             processed.pages,
             ssg_config3,
             (s, p) => {
@@ -361,7 +393,7 @@ function make_ssg_config(processed_collections, config, k) {
                 let new_page = p[0];
                 return $ssg.add_static_route(
                   s,
-                  (("/" + processed.collection.directory) + "/") + new_page.id,
+                  ((dir + processed.collection.directory) + "/") + new_page.id,
                   processed.collection.render(new_page),
                 );
               } else {
@@ -371,14 +403,14 @@ function make_ssg_config(processed_collections, config, k) {
                   throw makeError(
                     "assignment_no_match",
                     "arctic/build",
-                    285,
+                    366,
                     "",
                     "Assignment pattern did not match",
                     { value: $ }
                   )
                 }
                 let start = $.head;
-                let cached_path = ("arctic_build/" + start) + "/index.html";
+                let cached_path = (("arctic_build" + dir) + start) + "/index.html";
                 let res = $simplifile.read(cached_path);
                 let content = (() => {
                   if (res.isOk()) {
@@ -388,7 +420,7 @@ function make_ssg_config(processed_collections, config, k) {
                     throw makeError(
                       "panic",
                       "arctic/build",
-                      290,
+                      371,
                       "",
                       cached_path,
                       {}
@@ -397,13 +429,13 @@ function make_ssg_config(processed_collections, config, k) {
                 })();
                 return $ssg.add_static_asset(
                   s,
-                  ("/" + start) + "/index.html",
+                  (dir + start) + "/index.html",
                   content,
                 );
               }
             },
           );
-          return new Ok(_pipe$4);
+          return new Ok(_pipe$5);
         },
       );
     })(),
@@ -560,11 +592,19 @@ function add_feed(processed_collections, k) {
 
 function add_vite_config(config, processed_collections, k) {
   let home_page = "\"main\": \"arctic_build/index.html\"";
+  let dir = (() => {
+    let $ = config.render_spa;
+    if ($ instanceof Some) {
+      return "/__pages/";
+    } else {
+      return "/";
+    }
+  })();
   let main_pages = $list.fold(
     config.main_pages,
     "",
     (js, page) => {
-      return ((((js + "\"") + page.id) + "\": \"arctic_build/") + page.id) + "/index.html\", ";
+      return (((((js + "\"") + page.id) + "\": \"arctic_build") + dir) + page.id) + "/index.html\", ";
     },
   );
   let collected_pages = $list.fold(
@@ -575,9 +615,9 @@ function add_vite_config(config, processed_collections, k) {
         processed.pages,
         js,
         (js, page) => {
-          return ((((((((js + "\"") + processed.collection.directory) + "/") + get_id(
+          return (((((((((js + "\"") + processed.collection.directory) + "/") + get_id(
             page,
-          )) + "\": \"arctic_build/") + processed.collection.directory) + "/") + get_id(
+          )) + "\": \"arctic_build") + dir) + processed.collection.directory) + "/") + get_id(
             page,
           )) + "/index.html\", ";
         },
