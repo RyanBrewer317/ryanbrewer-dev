@@ -55,14 +55,17 @@ if (window.location.pathname === '/posts/cricket.html')
       </script><div><div style="height:100pt;"></div><p id="copyright-notice" class="subtle-text">© 2024 Ryan Brewer.</p><script src="/__/firebase/8.10.1/firebase-app.js"></script><script src="/__/firebase/8.10.1/firebase-analytics.js"></script><script src="/__/firebase/init.js"></script><script>firebase.analytics();</script></div></body></html></div><script>
 // SPA algorithm stolen from Hayleigh Thompson's wonderful Modem library
 async function go_to(url, loader, back) {
+  console.log('going to', url.pathname);
   if (url.pathname === window.location.pathname) {
     if (url.hash) document.getElementById(url.hash.slice(1))?.scrollIntoView();
     else document.body.scrollIntoView();
     return;
   }
+  console.log('not already there');
   const $app = document.getElementById('arctic-app');
   if (loader) $app.innerHTML = '<div id="arctic-loader"></div>';
   if (!back) window.history.pushState({}, '', url.href);
+  console.log('pushed state');
   window.requestAnimationFrame(() => {
     // scroll in #-link elements, as the browser would if we didn't preventDefault
     if (url.hash) {
@@ -73,10 +76,15 @@ async function go_to(url, loader, back) {
   console.log(url.pathname);
   const response = await fetch('/__pages/' + url.pathname + '/index.html');
   if (!response.ok) response = await fetch('/__pages/404.html');
-  if (!response.ok) return;
+  if (!response.ok) {
+    console.log('error:', response);
+    return;
+  }
+  console.log('got response');
   const html = await response.text();
   $app.innerHTML = html;
   document.body.scrollIntoView();
+  console.log('done');
 }
 document.addEventListener('click', async function(e) {
   const a = find_a(e.target);
