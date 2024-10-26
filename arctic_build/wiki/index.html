@@ -41,17 +41,14 @@ function getHits(q, w) {
   </script><nav id="nav"><div id="nav-dropdown" onclick="document.getElementById(&#39;nav&#39;).classList.toggle(&#39;dropdown&#39;);document.body.classList.toggle(&#39;noscroll&#39;);">☰</div><a href="/" id="nav-home">Ryan Brewer</a><a href="/posts" id="nav-posts">Posts</a><a href="/wiki" id="nav-wiki">Wiki</a><a href="/contact" id="nav-contact">Contact</a><a href="/demos" id="nav-demos">Demos</a><a href="/feed.rss" id="nav-subscribe" onclick="window.location.href = &#39;/feed.rss&#39;"><img src="/rss-icon.png" id="rss-subscribe-icon">Subscribe</a></nav><div id="body"><input type="text" id="search-wiki" placeholder="Search..." onkeyup="searchWikisKeyUp()" title="Enter search terms"><ul id="search-wiki-menu"><li id="natural-transformation" class="wiki-thumbnail"><h3><a href="../wiki/natural-transformation">Natural Transformation</a></h3></li><li id="natural-isomorphism" class="wiki-thumbnail"><h3><a href="../wiki/natural-isomorphism">Natural Isomorphism</a></h3></li><li id="monoidal-category" class="wiki-thumbnail"><h3><a href="../wiki/monoidal-category">Monoidal Category</a></h3></li><li id="linear-logic" class="wiki-thumbnail"><h3><a href="../wiki/linear-logic">Linear Logic</a></h3></li><li id="genealogy-of-morals" class="wiki-thumbnail"><h3><a href="../wiki/genealogy-of-morals">Genealogy of Morals</a></h3></li><li id="functor" class="wiki-thumbnail"><h3><a href="../wiki/functor">Functor</a></h3></li><li id="functor-category" class="wiki-thumbnail"><h3><a href="../wiki/functor-category">Functor Category</a></h3></li><li id="first-wiki" class="wiki-thumbnail"><h3><a href="../wiki/first-wiki">My First Wiki Page</a></h3></li><li id="fame" class="wiki-thumbnail"><h3><a href="../wiki/fame">Fame</a></h3></li><li id="exponential-object" class="wiki-thumbnail"><h3><a href="../wiki/exponential-object">Exponential Object</a></h3></li><li id="category" class="wiki-thumbnail"><h3><a href="../wiki/category">Category</a></h3></li><li id="cat" class="wiki-thumbnail"><h3><a href="../wiki/cat">Cat</a></h3></li><li id="aesthetics" class="wiki-thumbnail"><h3><a href="../wiki/aesthetics">Aesthetics</a></h3></li></ul></div><div><div style="height:100pt;"></div><p id="copyright-notice" class="subtle-text">© 2024 Ryan Brewer.</p><script src="/__/firebase/8.10.1/firebase-app.js"></script><script src="/__/firebase/8.10.1/firebase-analytics.js"></script><script src="/__/firebase/init.js"></script><script>firebase.analytics();</script></div></div></div><script>
 // SPA algorithm stolen from Hayleigh Thompson's wonderful Modem library
 async function go_to(url, loader, back) {
-  console.log('going to', url.pathname);
   if (!back && url.pathname === window.location.pathname) {
     if (url.hash) document.getElementById(url.hash.slice(1))?.scrollIntoView();
     else document.body.scrollIntoView();
     return;
   }
-  console.log('not already there');
   const $app = document.getElementById('arctic-app');
   if (loader) $app.innerHTML = '<div id="arctic-loader"></div>';
   if (!back) window.history.pushState({}, '', url.href);
-  console.log('pushed state');
   window.requestAnimationFrame(() => {
     // scroll in #-link elements, as the browser would if we didn't preventDefault
     if (url.hash) {
@@ -59,18 +56,12 @@ async function go_to(url, loader, back) {
     }
   });
   // handle new path
-  console.log(url.pathname);
   const response = await fetch('/__pages/' + url.pathname + '/index.html');
   if (!response.ok) response = await fetch('/__pages/404.html');
-  if (!response.ok) {
-    console.log('error:', response);
-    return;
-  }
-  console.log('got response');
+  if (!response.ok) return;
   const html = await response.text();
   $app.innerHTML = html;
   document.body.scrollIntoView();
-  console.log('done');
 }
 document.addEventListener('click', async function(e) {
   const a = find_a(e.target);
@@ -86,8 +77,6 @@ document.addEventListener('click', async function(e) {
   }
 });
 window.addEventListener('popstate', (e) => {
-  console.log('wass poppinnnnnn 1');
-  setTimeout(() => console.log('wass poppinnnnnn 2'), 0);
   e.preventDefault();
   const url = new URL(window.location.href);
   go_to(url, false, true);
