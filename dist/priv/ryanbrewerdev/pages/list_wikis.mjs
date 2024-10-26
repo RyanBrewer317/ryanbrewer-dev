@@ -4,8 +4,6 @@ import * as $attribute from "../../lustre/lustre/attribute.mjs";
 import { attribute } from "../../lustre/lustre/attribute.mjs";
 import * as $element from "../../lustre/lustre/element.mjs";
 import * as $html from "../../lustre/lustre/element/html.mjs";
-import * as $head from "../components/head.mjs";
-import { head } from "../components/head.mjs";
 import * as $navbar from "../components/navbar.mjs";
 import { navbar } from "../components/navbar.mjs";
 import * as $script_wikis from "../components/script_wikis.mjs";
@@ -35,37 +33,30 @@ function searchbox() {
 }
 
 export function list_wikis(wikis) {
-  return $html.html(
-    toList([$attribute.attribute("lang", "en")]),
+  return $html.div(
+    toList([]),
     toList([
-      head(
-        "Search Wiki - Ryan Brewer",
-        "Look through Ryan's personal wiki",
+      $html.title(toList([]), "Search Wiki - Ryan Brewer"),
+      $html.meta(
         toList([
-          $html.link(
-            toList([$attribute.rel("stylesheet"), $attribute.href("/style.css")]),
-          ),
-          script_wikis(wikis),
-          script(),
+          $attribute.name("description"),
+          $attribute.attribute("content", "Look through Ryan's personal wiki"),
         ]),
       ),
-      $html.body(
-        toList([]),
+      script_wikis(wikis),
+      script(),
+      navbar(),
+      $html.div(
+        toList([$attribute.id("body")]),
         toList([
-          navbar(),
-          $html.div(
-            toList([$attribute.id("body")]),
-            toList([
-              searchbox(),
-              $html.ul(
-                toList([$attribute.id("search-wiki-menu")]),
-                $list.map(wikis, $thumbnail.wiki),
-              ),
-            ]),
+          searchbox(),
+          $html.ul(
+            toList([$attribute.id("search-wiki-menu")]),
+            $list.map(wikis, $thumbnail.wiki),
           ),
-          tail(),
         ]),
       ),
+      tail(),
     ]),
   );
 }

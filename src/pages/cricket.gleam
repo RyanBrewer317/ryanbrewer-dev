@@ -2,7 +2,6 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-import components/head.{head}
 import components/navbar.{navbar}
 import components/tail.{tail}
 import lustre/attribute
@@ -10,17 +9,18 @@ import lustre/element.{type Element, text}
 import lustre/element/html
 
 pub fn cricket() -> Element(Nil) {
-  html.html([attribute.attribute("lang", "en")], [
-    head("Cricket - Ryan Brewer", "The Cricket Programming Language", [
-      html.link([attribute.rel("stylesheet"), attribute.href("/style.css")]),
+  html.div([], [
+    html.title([], "Cricket - Ryan Brewer"),
+    html.meta([
+      attribute.name("description"),
+      attribute.attribute("content", "The Cricket Programming Language"),
     ]),
-    html.body([], [
-      navbar(),
-      html.div([attribute.id("body")], [
-        html.h3([], [text("Cricket")]),
-        html.p([], [
-          text(
-            "
+    navbar(),
+    html.div([attribute.id("body")], [
+      html.h3([], [text("Cricket")]),
+      html.p([], [
+        text(
+          "
 Cricket is a tiny little functional language.
 It can be implemented very quickly on various platforms.
 Cricket is lazy, specifically call-by-name.
@@ -29,35 +29,35 @@ Cricket is dynamically typed, and uses objects or lambdas for data.
 Cricket objects can refer to themselves in their methods, enabling much of OOP.
 Cricket is immutable, with object updates returning new objects.
         ",
-          ),
-        ]),
-        html.p([], [
-          text(
-            "
+        ),
+      ]),
+      html.p([], [
+        text(
+          "
 Cricket is designed such that ordinary programmers who aren't much into
 the academic theory behind functional programming can still find it easy and intuitive.
 No monads, for one.
 However, if you like the confidence in your code that comes with such solid theoretical foundations,
 rest assured that Cricket is inspired by fascinating categorical ",
-          ),
-          html.a(
-            [
-              attribute.href(
-                "https://ncatlab.org/nlab/show/polarity+in+type+theory",
-              ),
-            ],
-            [text("connections")],
-          ),
-          text(
-            ".
+        ),
+        html.a(
+          [
+            attribute.href(
+              "https://ncatlab.org/nlab/show/polarity+in+type+theory",
+            ),
+          ],
+          [text("connections")],
+        ),
+        text(
+          ".
 The keywords are call-by-name, negative types, and side effects.
         ",
-          ),
-        ]),
-        html.pre([], [
-          html.code([], [
-            text(
-              "
+        ),
+      ]),
+      html.pre([], [
+        html.code([], [
+          text(
+            "
 let iter = {
   this.go: args->{
     val: args.start, 
@@ -66,19 +66,17 @@ let iter = {
 } in 
 console.write(iter.go{start: 7, step: n->n-1}.next.next.val)
         ",
-            ),
-          ]),
-        ]),
-        html.p([], [
-          text("To read more about Cricket, look "),
-          html.a(
-            [attribute.href("https://github.com/RyanBrewer317/cricket_rs")],
-            [text("here")],
           ),
-          text("."),
         ]),
       ]),
-      tail(),
+      html.p([], [
+        text("To read more about Cricket, look "),
+        html.a([attribute.href("https://github.com/RyanBrewer317/cricket_rs")], [
+          text("here"),
+        ]),
+        text("."),
+      ]),
     ]),
+    tail(),
   ])
 }

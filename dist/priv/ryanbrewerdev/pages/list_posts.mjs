@@ -4,8 +4,6 @@ import * as $attribute from "../../lustre/lustre/attribute.mjs";
 import { attribute } from "../../lustre/lustre/attribute.mjs";
 import * as $element from "../../lustre/lustre/element.mjs";
 import * as $html from "../../lustre/lustre/element/html.mjs";
-import * as $head from "../components/head.mjs";
-import { head } from "../components/head.mjs";
 import * as $navbar from "../components/navbar.mjs";
 import { navbar } from "../components/navbar.mjs";
 import * as $script_posts from "../components/script_posts.mjs";
@@ -35,37 +33,30 @@ function searchbox() {
 }
 
 export function list_posts(posts) {
-  return $html.html(
-    toList([$attribute.attribute("lang", "en")]),
+  return $html.div(
+    toList([]),
     toList([
-      head(
-        "Search Posts - Ryan Brewer",
-        "Look through Ryan's past posts",
+      $html.title(toList([]), "Search Posts - Ryan Brewer"),
+      $html.meta(
         toList([
-          $html.link(
-            toList([$attribute.rel("stylesheet"), $attribute.href("/style.css")]),
-          ),
-          script_posts(posts),
-          script(),
+          $attribute.name("description"),
+          $attribute.attribute("content", "Search Ryan's past posts"),
         ]),
       ),
-      $html.body(
-        toList([]),
+      script_posts(posts),
+      script(),
+      navbar(),
+      $html.div(
+        toList([$attribute.id("body")]),
         toList([
-          navbar(),
-          $html.div(
-            toList([$attribute.id("body")]),
-            toList([
-              searchbox(),
-              $html.ul(
-                toList([$attribute.id("search-posts-menu")]),
-                $list.map(posts, $thumbnail.post),
-              ),
-            ]),
+          searchbox(),
+          $html.ul(
+            toList([$attribute.id("search-posts-menu")]),
+            $list.map(posts, $thumbnail.post),
           ),
-          tail(),
         ]),
       ),
+      tail(),
     ]),
   );
 }

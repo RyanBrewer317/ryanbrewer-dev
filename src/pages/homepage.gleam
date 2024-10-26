@@ -3,7 +3,6 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 import arctic.{type CacheablePage}
-import components/head.{head}
 import components/navbar.{navbar}
 import components/tail.{tail}
 import components/thumbnail
@@ -13,31 +12,22 @@ import lustre/element.{type Element}
 import lustre/element/html
 
 pub fn homepage(posts: List(CacheablePage)) -> Element(Nil) {
-  html.html([attribute.attribute("lang", "en")], [
-    head(
-      "Ryan Brewer's Blog",
-      "The place Ryan writes his thoughts and shows off SaberVM and other cool projects.",
-      [
-        html.link([attribute.rel("stylesheet"), attribute.href("/style.css")]),
-        html.script(
-          [attribute.attribute("type", "module")],
-          "import { main } from \"/priv/ryanbrewerdev/client/homepage.mjs\";
+  html.div([], [
+    html.script(
+      [attribute.attribute("type", "module")],
+      "import { main } from \"/priv/ryanbrewerdev/client/homepage.mjs\";
  document.addEventListener(\"DOMContentLoaded\", () => {
    const dispatch = main({});
  });",
-        ),
-      ],
     ),
-    html.body([], [
-      navbar(),
-      html.div([attribute.id("body")], [
-        html.div([attribute.attribute("data-lustre-app", "true")], []),
-        html.h3([attribute.style([#("padding-top", "50pt")])], [
-          element.text("Blog Posts"),
-        ]),
-        html.ul([attribute.id("posts-list")], list.map(posts, thumbnail.post)),
+    navbar(),
+    html.div([attribute.id("body")], [
+      html.div([attribute.attribute("data-lustre-app", "true")], []),
+      html.h3([attribute.style([#("padding-top", "50pt")])], [
+        element.text("Blog Posts"),
       ]),
-      tail(),
+      html.ul([attribute.id("posts-list")], list.map(posts, thumbnail.post)),
     ]),
+    tail(),
   ])
 }

@@ -40,7 +40,11 @@ export function navbar() {
         toList([text("Demos")]),
       ),
       $html.a(
-        toList([$attribute.href("/feed.rss"), $attribute.id("nav-subscribe")]),
+        toList([
+          $attribute.href("/feed.rss"),
+          $attribute.id("nav-subscribe"),
+          $attribute.attribute("onclick", "window.location.href = '/feed.rss'"),
+        ]),
         toList([
           $html.img(
             toList([

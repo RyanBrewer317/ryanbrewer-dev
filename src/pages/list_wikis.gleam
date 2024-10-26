@@ -3,7 +3,6 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 import arctic.{type CacheablePage}
-import components/head.{head}
 import components/navbar.{navbar}
 import components/script_wikis.{script_wikis}
 import components/tail.{tail}
@@ -50,22 +49,22 @@ fn searchbox() -> Element(Nil) {
 }
 
 pub fn list_wikis(wikis: List(CacheablePage)) -> Element(Nil) {
-  html.html([attribute.attribute("lang", "en")], [
-    head("Search Wiki - Ryan Brewer", "Look through Ryan's personal wiki", [
-      html.link([attribute.rel("stylesheet"), attribute.href("/style.css")]),
-      script_wikis(wikis),
-      script(),
+  html.div([], [
+    html.title([], "Search Wiki - Ryan Brewer"),
+    html.meta([
+      attribute.name("description"),
+      attribute.attribute("content", "Look through Ryan's personal wiki"),
     ]),
-    html.body([], [
-      navbar(),
-      html.div([attribute.id("body")], [
-        searchbox(),
-        html.ul(
-          [attribute.id("search-wiki-menu")],
-          list.map(wikis, thumbnail.wiki),
-        ),
-      ]),
-      tail(),
+    script_wikis(wikis),
+    script(),
+    navbar(),
+    html.div([attribute.id("body")], [
+      searchbox(),
+      html.ul(
+        [attribute.id("search-wiki-menu")],
+        list.map(wikis, thumbnail.wiki),
+      ),
     ]),
+    tail(),
   ])
 }

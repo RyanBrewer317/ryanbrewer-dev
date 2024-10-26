@@ -2,7 +2,6 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-import components/head.{head}
 import components/navbar.{navbar}
 import components/tail.{tail}
 import lustre/attribute
@@ -10,16 +9,16 @@ import lustre/element.{type Element, text}
 import lustre/element/html
 
 pub fn contact() -> Element(Nil) {
-  html.html([attribute.attribute("lang", "en")], [
-    head("Contact - Ryan Brewer", "Contact information", [
-      html.link([attribute.rel("stylesheet"), attribute.href("/style.css")]),
+  html.div([], [
+    html.title([], "Contact - Ryan Brewer"),
+    html.meta([
+      attribute.name("description"),
+      attribute.attribute("content", "Contact information"),
     ]),
-    html.body([], [
-      navbar(),
-      html.div([attribute.id("body")], [
-        html.p([], [text("ryanbrew317 at gmail")]),
-      ]),
-      tail(),
+    navbar(),
+    html.div([attribute.id("body")], [
+      html.p([], [text("ryanbrew317 at gmail")]),
     ]),
+    tail(),
   ])
 }

@@ -3,8 +3,11 @@ import * as $collection from "../arctic/arctic/collection.mjs";
 import * as $config from "../arctic/arctic/config.mjs";
 import * as $io from "../gleam_stdlib/gleam/io.mjs";
 import * as $list from "../gleam_stdlib/gleam/list.mjs";
+import * as $attribute from "../lustre/lustre/attribute.mjs";
+import * as $html from "../lustre/lustre/element/html.mjs";
 import * as $snag from "../snag/snag.mjs";
-import { makeError } from "./gleam.mjs";
+import * as $head from "./components/head.mjs";
+import { toList, makeError } from "./gleam.mjs";
 import * as $helpers from "./helpers.mjs";
 import * as $contact from "./pages/contact.mjs";
 import * as $cricket from "./pages/cricket.mjs";
@@ -44,8 +47,31 @@ export function main() {
       $unknown_page.unknown_page(),
     );
     let _pipe$6 = $config.add_main_page(_pipe$5, "cricket", $cricket.cricket());
-    return $config.home_renderer(
+    let _pipe$7 = $config.add_spa_frame(
       _pipe$6,
+      (body) => {
+        return $html.html(
+          toList([$attribute.attribute("lang", "en")]),
+          toList([
+            $head.head(
+              "Ryan Brewer's Blog",
+              "The place Ryan writes his thoughts and shows off SaberVM and other cool projects.",
+              toList([
+                $html.link(
+                  toList([
+                    $attribute.rel("stylesheet"),
+                    $attribute.href("/style.css"),
+                  ]),
+                ),
+              ]),
+            ),
+            $html.body(toList([]), toList([body])),
+          ]),
+        );
+      },
+    );
+    return $config.home_renderer(
+      _pipe$7,
       (collections) => {
         let $ = $list.find(
           collections,
@@ -55,7 +81,7 @@ export function main() {
           throw makeError(
             "assignment_no_match",
             "ryanbrewerdev",
-            45,
+            63,
             "",
             "Assignment pattern did not match",
             { value: $ }
@@ -74,7 +100,7 @@ export function main() {
     throw makeError(
       "panic",
       "ryanbrewerdev",
-      52,
+      70,
       "main",
       $snag.pretty_print(err),
       {}

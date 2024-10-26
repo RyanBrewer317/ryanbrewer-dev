@@ -31,12 +31,19 @@ pub fn navbar() -> Element(a) {
     html.a([attribute.href("/demos"), attribute.id("nav-demos")], [
       text("Demos"),
     ]),
-    html.a([attribute.href("/feed.rss"), attribute.id("nav-subscribe")], [
-      html.img([
-        attribute.src("/rss-icon.png"),
-        attribute.id("rss-subscribe-icon"),
-      ]),
-      text("Subscribe"),
-    ]),
+    html.a(
+      [
+        attribute.href("/feed.rss"),
+        attribute.id("nav-subscribe"),
+        attribute.attribute("onclick", "window.location.href = '/feed.rss'"),
+      ],
+      [
+        html.img([
+          attribute.src("/rss-icon.png"),
+          attribute.id("rss-subscribe-icon"),
+        ]),
+        text("Subscribe"),
+      ],
+    ),
   ])
 }
