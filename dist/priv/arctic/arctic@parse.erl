@@ -8,46 +8,46 @@
         gleam@dict:dict(binary(), binary()),
         list(gleam@option:option(lustre@internals@vdom:element(nil)))}.
 
--type parse_result(UNZ) :: {parse_result, UNZ, list(parse_error())}.
+-type parse_result(UOD) :: {parse_result, UOD, list(parse_error())}.
 
 -type parse_error() :: {parse_error, position(), binary()}.
 
--type arctic_parser(UOA) :: {arctic_parser,
-        fun((binary(), parse_data(UOA)) -> parse_result(gleam@option:option({lustre@internals@vdom:element(nil),
-            UOA})))}.
+-type arctic_parser(UOE) :: {arctic_parser,
+        fun((binary(), parse_data(UOE)) -> parse_result(gleam@option:option({lustre@internals@vdom:element(nil),
+            UOE})))}.
 
--opaque parse_data(UOB) :: {parse_data,
+-opaque parse_data(UOF) :: {parse_data,
         position(),
         gleam@dict:dict(binary(), binary()),
-        UOB}.
+        UOF}.
 
 -type position() :: {position, integer(), integer()}.
 
--type inline_rule(UOC) :: {inline_rule,
+-type inline_rule(UOG) :: {inline_rule,
         binary(),
         binary(),
-        fun((lustre@internals@vdom:element(nil), list(binary()), parse_data(UOC)) -> {ok,
-                {lustre@internals@vdom:element(nil), UOC}} |
+        fun((lustre@internals@vdom:element(nil), list(binary()), parse_data(UOG)) -> {ok,
+                {lustre@internals@vdom:element(nil), UOG}} |
             {error, snag:snag()})}.
 
--type prefix_rule(UOD) :: {prefix_rule,
+-type prefix_rule(UOH) :: {prefix_rule,
         binary(),
-        fun((lustre@internals@vdom:element(nil), parse_data(UOD)) -> {ok,
-                {lustre@internals@vdom:element(nil), UOD}} |
+        fun((lustre@internals@vdom:element(nil), parse_data(UOH)) -> {ok,
+                {lustre@internals@vdom:element(nil), UOH}} |
             {error, snag:snag()})}.
 
--type component(UOE) :: {static_component,
+-type component(UOI) :: {static_component,
         binary(),
-        fun((list(binary()), binary(), parse_data(UOE)) -> {ok,
-                {lustre@internals@vdom:element(nil), UOE}} |
+        fun((list(binary()), binary(), parse_data(UOI)) -> {ok,
+                {lustre@internals@vdom:element(nil), UOI}} |
             {error, snag:snag()})} |
     {dynamic_component, binary()}.
 
--opaque parser_builder(UOF) :: {parser_builder,
-        list(inline_rule(UOF)),
-        list(prefix_rule(UOF)),
-        list(component(UOF)),
-        UOF}.
+-opaque parser_builder(UOJ) :: {parser_builder,
+        list(inline_rule(UOJ)),
+        list(prefix_rule(UOJ)),
+        list(component(UOJ)),
+        UOJ}.
 
 -spec get_pos(parse_data(any())) -> position().
 get_pos(Data) ->
@@ -57,30 +57,30 @@ get_pos(Data) ->
 get_metadata(Data) ->
     erlang:element(3, Data).
 
--spec get_state(parse_data(UOM)) -> UOM.
+-spec get_state(parse_data(UOQ)) -> UOQ.
 get_state(Data) ->
     erlang:element(4, Data).
 
--spec with_pos(parse_data(UOO), position()) -> parse_data(UOO).
+-spec with_pos(parse_data(UOS), position()) -> parse_data(UOS).
 with_pos(Data, Pos) ->
     {parse_data, Pos, erlang:element(3, Data), erlang:element(4, Data)}.
 
--spec with_state(parse_data(UOR), UOR) -> parse_data(UOR).
+-spec with_state(parse_data(UOV), UOV) -> parse_data(UOV).
 with_state(Data, State) ->
     {parse_data, erlang:element(2, Data), erlang:element(3, Data), State}.
 
--spec new(UOU) -> parser_builder(UOU).
+-spec new(UOY) -> parser_builder(UOY).
 new(Start_state) ->
     {parser_builder, [], [], [], Start_state}.
 
 -spec add_inline_rule(
-    parser_builder(UOW),
+    parser_builder(UPA),
     binary(),
     binary(),
-    fun((lustre@internals@vdom:element(nil), list(binary()), parse_data(UOW)) -> {ok,
-            {lustre@internals@vdom:element(nil), UOW}} |
+    fun((lustre@internals@vdom:element(nil), list(binary()), parse_data(UPA)) -> {ok,
+            {lustre@internals@vdom:element(nil), UPA}} |
         {error, snag:snag()})
-) -> parser_builder(UOW).
+) -> parser_builder(UPA).
 add_inline_rule(P, Left, Right, Action) ->
     {parser_builder,
         [{inline_rule, Left, Right, Action} | erlang:element(2, P)],
@@ -89,12 +89,12 @@ add_inline_rule(P, Left, Right, Action) ->
         erlang:element(5, P)}.
 
 -spec add_prefix_rule(
-    parser_builder(UPE),
+    parser_builder(UPI),
     binary(),
-    fun((lustre@internals@vdom:element(nil), parse_data(UPE)) -> {ok,
-            {lustre@internals@vdom:element(nil), UPE}} |
+    fun((lustre@internals@vdom:element(nil), parse_data(UPI)) -> {ok,
+            {lustre@internals@vdom:element(nil), UPI}} |
         {error, snag:snag()})
-) -> parser_builder(UPE).
+) -> parser_builder(UPI).
 add_prefix_rule(P, Prefix, Action) ->
     {parser_builder,
         erlang:element(2, P),
@@ -103,12 +103,12 @@ add_prefix_rule(P, Prefix, Action) ->
         erlang:element(5, P)}.
 
 -spec add_static_component(
-    parser_builder(UPL),
+    parser_builder(UPP),
     binary(),
-    fun((list(binary()), binary(), parse_data(UPL)) -> {ok,
-            {lustre@internals@vdom:element(nil), UPL}} |
+    fun((list(binary()), binary(), parse_data(UPP)) -> {ok,
+            {lustre@internals@vdom:element(nil), UPP}} |
         {error, snag:snag()})
-) -> parser_builder(UPL).
+) -> parser_builder(UPP).
 add_static_component(P, Name, Action) ->
     {parser_builder,
         erlang:element(2, P),
@@ -116,7 +116,7 @@ add_static_component(P, Name, Action) ->
         [{static_component, Name, Action} | erlang:element(4, P)],
         erlang:element(5, P)}.
 
--spec add_dynamic_component(parser_builder(UPS), binary()) -> parser_builder(UPS).
+-spec add_dynamic_component(parser_builder(UPW), binary()) -> parser_builder(UPW).
 add_dynamic_component(P, Name) ->
     {parser_builder,
         erlang:element(2, P),
@@ -126,34 +126,34 @@ add_dynamic_component(P, Name) ->
 
 -spec wrap_inline(
     fun((list(lustre@internals@vdom:attribute(any())), list(lustre@internals@vdom:element(nil))) -> lustre@internals@vdom:element(nil))
-) -> fun((lustre@internals@vdom:element(nil), any(), parse_data(UXC)) -> {ok,
-        {lustre@internals@vdom:element(nil), UXC}} |
+) -> fun((lustre@internals@vdom:element(nil), any(), parse_data(UXG)) -> {ok,
+        {lustre@internals@vdom:element(nil), UXG}} |
     {error, any()}).
 wrap_inline(W) ->
     fun(El, _, Data) -> {ok, {W([], [El]), get_state(Data)}} end.
 
 -spec wrap_inline_with_attributes(
-    fun((list(lustre@internals@vdom:attribute(UQF)), list(lustre@internals@vdom:element(nil))) -> lustre@internals@vdom:element(nil)),
-    list(lustre@internals@vdom:attribute(UQF))
-) -> fun((lustre@internals@vdom:element(nil), any(), parse_data(UXJ)) -> {ok,
-        {lustre@internals@vdom:element(nil), UXJ}} |
+    fun((list(lustre@internals@vdom:attribute(UQJ)), list(lustre@internals@vdom:element(nil))) -> lustre@internals@vdom:element(nil)),
+    list(lustre@internals@vdom:attribute(UQJ))
+) -> fun((lustre@internals@vdom:element(nil), any(), parse_data(UXN)) -> {ok,
+        {lustre@internals@vdom:element(nil), UXN}} |
     {error, any()}).
 wrap_inline_with_attributes(W, Attrs) ->
     fun(El, _, Data) -> {ok, {W(Attrs, [El]), get_state(Data)}} end.
 
 -spec wrap_prefix(
     fun((list(lustre@internals@vdom:attribute(any())), list(lustre@internals@vdom:element(nil))) -> lustre@internals@vdom:element(nil))
-) -> fun((lustre@internals@vdom:element(nil), parse_data(UXQ)) -> {ok,
-        {lustre@internals@vdom:element(nil), UXQ}} |
+) -> fun((lustre@internals@vdom:element(nil), parse_data(UXU)) -> {ok,
+        {lustre@internals@vdom:element(nil), UXU}} |
     {error, any()}).
 wrap_prefix(W) ->
     fun(El, Data) -> {ok, {W([], [El]), get_state(Data)}} end.
 
 -spec wrap_prefix_with_attributes(
-    fun((list(lustre@internals@vdom:attribute(UQV)), list(lustre@internals@vdom:element(nil))) -> lustre@internals@vdom:element(nil)),
-    list(lustre@internals@vdom:attribute(UQV))
-) -> fun((lustre@internals@vdom:element(nil), parse_data(UXW)) -> {ok,
-        {lustre@internals@vdom:element(nil), UXW}} |
+    fun((list(lustre@internals@vdom:attribute(UQZ)), list(lustre@internals@vdom:element(nil))) -> lustre@internals@vdom:element(nil)),
+    list(lustre@internals@vdom:attribute(UQZ))
+) -> fun((lustre@internals@vdom:element(nil), parse_data(UYA)) -> {ok,
+        {lustre@internals@vdom:element(nil), UYA}} |
     {error, any()}).
 wrap_prefix_with_attributes(W, Attrs) ->
     fun(El, Data) -> {ok, {W(Attrs, [El]), get_state(Data)}} end.
@@ -330,9 +330,9 @@ escaped_char() ->
         end
     ).
 
--spec invert_res({ok, {VCW, VCP}} | {error, VCT}, parse_data(VCP)) -> {{ok, VCW} |
-        {error, VCT},
-    parse_data(VCP)}.
+-spec invert_res({ok, {VDA, VCT}} | {error, VCX}, parse_data(VCT)) -> {{ok, VDA} |
+        {error, VCX},
+    parse_data(VCT)}.
 invert_res(Res, D) ->
     case Res of
         {ok, {El, State}} ->
@@ -346,7 +346,7 @@ invert_res(Res, D) ->
             {{error, S}, D}
     end.
 
--spec parse_component(list(component(USS))) -> arctic_parser(USS).
+-spec parse_component(list(component(USW))) -> arctic_parser(USW).
 parse_component(Components) ->
     {arctic_parser,
         fun(Src, Data) ->
@@ -636,10 +636,10 @@ parse_component(Components) ->
             end
         end}.
 
--spec parse_inline_rule(list(inline_rule(URO)), parse_data(URO)) -> party:parser(fun((parse_data(URO)) -> {{ok,
+-spec parse_inline_rule(list(inline_rule(URS)), parse_data(URS)) -> party:parser(fun((parse_data(URS)) -> {{ok,
             lustre@internals@vdom:element(nil)} |
         {error, snag:snag()},
-    parse_data(URO)}), snag:snag()).
+    parse_data(URS)}), snag:snag()).
 parse_inline_rule(Inline_rules, Data) ->
     party:choice(
         gleam@list:map(
@@ -785,10 +785,10 @@ parse_inline_rule(Inline_rules, Data) ->
     ).
 
 -spec parse_markup(
-    list(inline_rule(USB)),
+    list(inline_rule(USF)),
     party:parser(nil, snag:snag()),
-    parse_data(USB)
-) -> party:parser({ok, {lustre@internals@vdom:element(nil), parse_data(USB)}} |
+    parse_data(USF)
+) -> party:parser({ok, {lustre@internals@vdom:element(nil), parse_data(USF)}} |
     {error, snag:snag()}, snag:snag()).
 parse_markup(Inline_rules, Terminator, Data) ->
     _pipe = party:choice(
@@ -827,7 +827,7 @@ parse_markup(Inline_rules, Terminator, Data) ->
         end
     ).
 
--spec parse_text(list(inline_rule(USM)), list(prefix_rule(USM))) -> arctic_parser(USM).
+-spec parse_text(list(inline_rule(USQ)), list(prefix_rule(USQ))) -> arctic_parser(USQ).
 parse_text(Inline_rules, Prefix_rules) ->
     {arctic_parser,
         fun(Src, Data) ->

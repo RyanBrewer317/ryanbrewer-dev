@@ -311,19 +311,32 @@ function process(collections, cache) {
   );
 }
 
-function spa(frame, home) {
+function spa(frame, html) {
   return frame(
     $html.div(
       toList([]),
       toList([
-        $html.div(toList([$attribute.id("arctic-app")]), toList([home])),
+        $html.div(toList([$attribute.id("arctic-app")]), toList([html])),
         $html.script(
           toList([]),
-          "\nif (window.location.pathname !== '/') {\n  go_to(new URL(window.location.href), true, true);\n}\n// SPA algorithm stolen from Hayleigh Thompson's wonderful Modem library\nasync function go_to(url, loader, back) {\n  if (url.pathname === window.location.pathname) {\n    if (url.hash) document.getElementById(url.hash.slice(1))?.scrollIntoView();\n    else document.body.scrollIntoView();\n    return;\n  }\n  const $app = document.getElementById('arctic-app');\n  if (loader) $app.innerHTML = '<div id=\"arctic-loader\"></div>';\n  if (!back) window.history.pushState({}, '', url.href);\n  window.requestAnimationFrame(() => {\n    // scroll in #-link elements, as the browser would if we didn't preventDefault\n    if (url.hash) {\n      document.getElementById(url.hash.slice(1))?.scrollIntoView();\n    }\n  });\n  // handle new path\n  console.log(url.pathname);\n  const response = await fetch('/__pages/' + url.pathname + '/index.html');\n  if (!response.ok) response = await fetch('/__pages/404.html');\n  if (!response.ok) return;\n  const html = await response.text();\n  $app.innerHTML = html;\n  document.body.scrollIntoView();\n}\ndocument.addEventListener('click', async function(e) {\n  const a = find_a(e.target);\n  if (!a) return;\n  try {\n    const url = new URL(a.href);\n    const is_external = url.host !== window.location.host;\n    if (is_external) return;\n    event.preventDefault();\n    go_to(url, false, false);\n  } catch {\n    return;\n  }\n});\nwindow.addEventListener('popstate', (e) => {\n  e.preventDefault();\n  const url = new URL(window.location.href);\n  go_to(url, false, true);\n});\nfunction find_a(target) {\n  if (!target || target.tagName === 'BODY') return null;\n  if (target.tagName === 'A') return target;\n  return find_a(target.parentElement);\n}\n  ",
+          "\n// SPA algorithm stolen from Hayleigh Thompson's wonderful Modem library\nasync function go_to(url, loader, back) {\n  if (url.pathname === window.location.pathname) {\n    if (url.hash) document.getElementById(url.hash.slice(1))?.scrollIntoView();\n    else document.body.scrollIntoView();\n    return;\n  }\n  const $app = document.getElementById('arctic-app');\n  if (loader) $app.innerHTML = '<div id=\"arctic-loader\"></div>';\n  if (!back) window.history.pushState({}, '', url.href);\n  window.requestAnimationFrame(() => {\n    // scroll in #-link elements, as the browser would if we didn't preventDefault\n    if (url.hash) {\n      document.getElementById(url.hash.slice(1))?.scrollIntoView();\n    }\n  });\n  // handle new path\n  console.log(url.pathname);\n  const response = await fetch('/__pages/' + url.pathname + '/index.html');\n  if (!response.ok) response = await fetch('/__pages/404.html');\n  if (!response.ok) return;\n  const html = await response.text();\n  $app.innerHTML = html;\n  document.body.scrollIntoView();\n}\ndocument.addEventListener('click', async function(e) {\n  const a = find_a(e.target);\n  if (!a) return;\n  try {\n    const url = new URL(a.href);\n    const is_external = url.host !== window.location.host;\n    if (is_external) return;\n    event.preventDefault();\n    go_to(url, false, false);\n  } catch {\n    return;\n  }\n});\nwindow.addEventListener('popstate', (e) => {\n  e.preventDefault();\n  const url = new URL(window.location.href);\n  go_to(url, false, true);\n});\nfunction find_a(target) {\n  if (!target || target.tagName === 'BODY') return null;\n  if (target.tagName === 'A') return target;\n  return find_a(target.parentElement);\n}\n  ",
         ),
       ]),
     ),
   );
+}
+
+function add_route(ssg_config, config, path, content) {
+  let $ = config.render_spa;
+  if ($ instanceof Some) {
+    let frame = $[0];
+    let _pipe = ssg_config;
+    let _pipe$1 = $ssg.add_static_route(_pipe, "/__pages/" + path, content);
+    return $ssg.add_static_route(_pipe$1, "/" + path, spa(frame, content));
+  } else {
+    let _pipe = ssg_config;
+    return $ssg.add_static_route(_pipe, "/" + path, content);
+  }
 }
 
 function make_ssg_config(processed_collections, config, k) {
@@ -340,34 +353,27 @@ function make_ssg_config(processed_collections, config, k) {
     (() => {
       let _pipe = $ssg.new$("arctic_build");
       let _pipe$1 = $ssg.use_index_routes(_pipe);
-      let _pipe$2 = $ssg.add_static_route(_pipe$1, dir, home);
-      let _pipe$3 = ((ssg_config) => {
-        let $ = config.render_spa;
-        if ($ instanceof Some) {
-          let frame = $[0];
-          return $ssg.add_static_route(ssg_config, "/", spa(frame, home));
-        } else {
-          return ssg_config;
-        }
-      })(_pipe$2);
-      let _pipe$4 = $list.fold(
+      let _pipe$2 = add_route(_pipe$1, config, "", home);
+      let _pipe$3 = $list.fold(
         config.main_pages,
-        _pipe$3,
+        _pipe$2,
         (ssg_config, page) => {
-          return $ssg.add_static_route(ssg_config, dir + page.id, page.html);
+          let _pipe$3 = ssg_config;
+          return add_route(_pipe$3, config, page.id, page.html);
         },
       );
       return $list.try_fold(
         processed_collections,
-        _pipe$4,
+        _pipe$3,
         (ssg_config, processed) => {
           let ssg_config2 = (() => {
             let $ = processed.collection.index;
             if ($ instanceof Some) {
               let render = $[0];
-              return $ssg.add_static_route(
+              return add_route(
                 ssg_config,
-                dir + processed.collection.directory,
+                config,
+                processed.collection.directory,
                 render(processed.pages),
               );
             } else {
@@ -378,22 +384,24 @@ function make_ssg_config(processed_collections, config, k) {
             processed.collection.raw_pages,
             ssg_config2,
             (s, rp) => {
-              return $ssg.add_static_route(
+              return add_route(
                 s,
-                ((dir + processed.collection.directory) + "/") + rp.id,
+                config,
+                (processed.collection.directory + "/") + rp.id,
                 rp.html,
               );
             },
           );
-          let _pipe$5 = $list.fold(
+          let _pipe$4 = $list.fold(
             processed.pages,
             ssg_config3,
             (s, p) => {
               if (p instanceof NewPage) {
                 let new_page = p[0];
-                return $ssg.add_static_route(
+                return add_route(
                   s,
-                  ((dir + processed.collection.directory) + "/") + new_page.id,
+                  config,
+                  (processed.collection.directory + "/") + new_page.id,
                   processed.collection.render(new_page),
                 );
               } else {
@@ -403,7 +411,7 @@ function make_ssg_config(processed_collections, config, k) {
                   throw makeError(
                     "assignment_no_match",
                     "arctic/build",
-                    366,
+                    361,
                     "",
                     "Assignment pattern did not match",
                     { value: $ }
@@ -420,7 +428,7 @@ function make_ssg_config(processed_collections, config, k) {
                     throw makeError(
                       "panic",
                       "arctic/build",
-                      371,
+                      366,
                       "",
                       cached_path,
                       {}
@@ -435,7 +443,7 @@ function make_ssg_config(processed_collections, config, k) {
               }
             },
           );
-          return new Ok(_pipe$5);
+          return new Ok(_pipe$4);
         },
       );
     })(),

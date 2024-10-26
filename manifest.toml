@@ -2,14 +2,14 @@
 # You typically do not need to edit this file
 
 packages = [
-  { name = "arctic", version = "11.0.5", build_tools = ["gleam"], requirements = ["birl", "gleam_crypto", "gleam_stdlib", "gsv", "lustre", "lustre_ssg", "party", "simplifile", "snag"], otp_app = "arctic", source = "hex", outer_checksum = "9ED63DFA53779AF1A32B37DC6DF746EB0E86C3789DA34D2095A46B18E581BA58" },
+  { name = "arctic", version = "11.0.6-alpha", build_tools = ["gleam"], requirements = ["birl", "gleam_crypto", "gleam_stdlib", "gsv", "lustre", "lustre_ssg", "party", "simplifile", "snag"], otp_app = "arctic", source = "hex", outer_checksum = "534928EE4B0CA45AA49B2F478839CACB6C58735796C3C8CB6749C41E3412E749" },
   { name = "arctic_plugin_diagram", version = "1.0.1", build_tools = ["gleam"], requirements = ["arctic", "gleam_stdlib", "lustre", "shellout", "simplifile", "snag"], otp_app = "arctic_plugin_diagram", source = "hex", outer_checksum = "80D594598E0F6ADCA22BE40572588B4926A9657E12D9E4D0D0039A2EA92DF693" },
   { name = "birl", version = "1.7.1", build_tools = ["gleam"], requirements = ["gleam_stdlib", "ranger"], otp_app = "birl", source = "hex", outer_checksum = "5C66647D62BCB11FE327E7A6024907C4A17954EF22865FE0940B54A852446D01" },
-  { name = "envoy", version = "1.0.1", build_tools = ["gleam"], requirements = ["gleam_stdlib"], otp_app = "envoy", source = "hex", outer_checksum = "CFAACCCFC47654F7E8B75E614746ED924C65BD08B1DE21101548AC314A8B6A41" },
+  { name = "envoy", version = "1.0.2", build_tools = ["gleam"], requirements = ["gleam_stdlib"], otp_app = "envoy", source = "hex", outer_checksum = "95FD059345AA982E89A0B6E2A3BF1CF43E17A7048DCD85B5B65D3B9E4E39D359" },
   { name = "exception", version = "2.0.0", build_tools = ["gleam"], requirements = ["gleam_stdlib"], otp_app = "exception", source = "hex", outer_checksum = "F5580D584F16A20B7FCDCABF9E9BE9A2C1F6AC4F9176FA6DD0B63E3B20D450AA" },
   { name = "filepath", version = "1.0.0", build_tools = ["gleam"], requirements = ["gleam_stdlib"], otp_app = "filepath", source = "hex", outer_checksum = "EFB6FF65C98B2A16378ABC3EE2B14124168C0CE5201553DE652E2644DCFDB594" },
   { name = "gleam_crypto", version = "1.4.0", build_tools = ["gleam"], requirements = ["gleam_stdlib"], otp_app = "gleam_crypto", source = "hex", outer_checksum = "8AE56026B3E05EBB1F076778478A762E9EB62B31AEEB4285755452F397029D22" },
-  { name = "gleam_erlang", version = "0.27.0", build_tools = ["gleam"], requirements = ["gleam_stdlib"], otp_app = "gleam_erlang", source = "hex", outer_checksum = "DE468F676D71B313C6C8C5334425CFCF827837333F8AB47B64D8A6D7AA40185D" },
+  { name = "gleam_erlang", version = "0.28.0", build_tools = ["gleam"], requirements = ["gleam_stdlib"], otp_app = "gleam_erlang", source = "hex", outer_checksum = "BE551521F708DCE5CB954AFBBDF08519C1C44986521FD40753608825F48FFA9E" },
   { name = "gleam_json", version = "1.0.1", build_tools = ["gleam"], requirements = ["gleam_stdlib", "thoas"], otp_app = "gleam_json", source = "hex", outer_checksum = "9063D14D25406326C0255BDA0021541E797D8A7A12573D849462CAFED459F6EB" },
   { name = "gleam_otp", version = "0.12.1", build_tools = ["gleam"], requirements = ["gleam_erlang", "gleam_stdlib"], otp_app = "gleam_otp", source = "hex", outer_checksum = "BFACC1513410DF5A1617169A9CD7EA334973AC71D860A17574BA7B2EADD89A6F" },
   { name = "gleam_stdlib", version = "0.40.0", build_tools = ["gleam"], requirements = [], otp_app = "gleam_stdlib", source = "hex", outer_checksum = "86606B75A600BBD05E539EB59FABC6E307EEEA7B1E5865AFB6D980A93BCB2181" },
@@ -29,7 +29,7 @@ packages = [
 ]
 
 [requirements]
-arctic = { version = ">= 11.0.5 and < 12.0.0" }
+arctic = { version = ">= 11.0.6-alpha and < 12.0.0" }
 arctic_plugin_diagram = { version = ">= 1.0.1 and < 2.0.0" }
 birl = { version = ">= 1.7.1 and < 2.0.0" }
 gleam_crypto = { version = ">= 1.3.0 and < 2.0.0" }

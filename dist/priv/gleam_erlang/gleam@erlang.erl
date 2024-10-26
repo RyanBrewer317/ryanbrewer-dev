@@ -22,37 +22,37 @@
 
 -type reference_() :: any().
 
--file("/Users/louis/src/gleam/erlang/src/gleam/erlang.gleam", 10).
+-file("/Users/louis/src/gleam/erlang/src/gleam/erlang.gleam", 17).
 -spec format(any()) -> binary().
 format(Term) ->
     unicode:characters_to_binary(io_lib:format(<<"~p"/utf8>>, [Term])).
 
--file("/Users/louis/src/gleam/erlang/src/gleam/erlang.gleam", 20).
+-file("/Users/louis/src/gleam/erlang/src/gleam/erlang.gleam", 27).
 -spec term_to_binary(any()) -> bitstring().
 term_to_binary(A) ->
     erlang:term_to_binary(A).
 
--file("/Users/louis/src/gleam/erlang/src/gleam/erlang.gleam", 73).
+-file("/Users/louis/src/gleam/erlang/src/gleam/erlang.gleam", 80).
 -spec get_line(binary()) -> {ok, binary()} | {error, get_line_error()}.
 get_line(Prompt) ->
     gleam_erlang_ffi:get_line(Prompt).
 
--file("/Users/louis/src/gleam/erlang/src/gleam/erlang.gleam", 86).
+-file("/Users/louis/src/gleam/erlang/src/gleam/erlang.gleam", 93).
 -spec system_time(time_unit()) -> integer().
 system_time(A) ->
     os:system_time(A).
 
--file("/Users/louis/src/gleam/erlang/src/gleam/erlang.gleam", 92).
+-file("/Users/louis/src/gleam/erlang/src/gleam/erlang.gleam", 99).
 -spec erlang_timestamp() -> {integer(), integer(), integer()}.
 erlang_timestamp() ->
     os:timestamp().
 
--file("/Users/louis/src/gleam/erlang/src/gleam/erlang.gleam", 102).
--spec rescue(fun(() -> FKT)) -> {ok, FKT} | {error, crash()}.
+-file("/Users/louis/src/gleam/erlang/src/gleam/erlang.gleam", 109).
+-spec rescue(fun(() -> FLH)) -> {ok, FLH} | {error, crash()}.
 rescue(A) ->
     gleam_erlang_ffi:rescue(A).
 
--file("/Users/louis/src/gleam/erlang/src/gleam/erlang.gleam", 34).
+-file("/Users/louis/src/gleam/erlang/src/gleam/erlang.gleam", 41).
 -spec binary_to_term(bitstring()) -> {ok, gleam@dynamic:dynamic_()} |
     {error, nil}.
 binary_to_term(Binary) ->
@@ -66,7 +66,7 @@ binary_to_term(Binary) ->
             {error, nil}
     end.
 
--file("/Users/louis/src/gleam/erlang/src/gleam/erlang.gleam", 49).
+-file("/Users/louis/src/gleam/erlang/src/gleam/erlang.gleam", 56).
 -spec unsafe_binary_to_term(bitstring()) -> {ok, gleam@dynamic:dynamic_()} |
     {error, nil}.
 unsafe_binary_to_term(Binary) ->
@@ -78,31 +78,31 @@ unsafe_binary_to_term(Binary) ->
             {error, nil}
     end.
 
--file("/Users/louis/src/gleam/erlang/src/gleam/erlang.gleam", 117).
+-file("/Users/louis/src/gleam/erlang/src/gleam/erlang.gleam", 124).
 -spec start_arguments() -> list(binary()).
 start_arguments() ->
     _pipe = init:get_plain_arguments(),
     gleam@list:map(_pipe, fun unicode:characters_to_binary/1).
 
--file("/Users/louis/src/gleam/erlang/src/gleam/erlang.gleam", 140).
+-file("/Users/louis/src/gleam/erlang/src/gleam/erlang.gleam", 147).
 -spec ensure_all_started(gleam@erlang@atom:atom_()) -> {ok,
         list(gleam@erlang@atom:atom_())} |
     {error, ensure_all_started_error()}.
 ensure_all_started(Application) ->
     gleam_erlang_ffi:ensure_all_started(Application).
 
--file("/Users/louis/src/gleam/erlang/src/gleam/erlang.gleam", 163).
+-file("/Users/louis/src/gleam/erlang/src/gleam/erlang.gleam", 170).
 -spec make_reference() -> reference_().
 make_reference() ->
     erlang:make_ref().
 
--file("/Users/louis/src/gleam/erlang/src/gleam/erlang.gleam", 184).
+-file("/Users/louis/src/gleam/erlang/src/gleam/erlang.gleam", 191).
 -spec reference_from_dynamic(gleam@dynamic:dynamic_()) -> {ok, reference_()} |
     {error, list(gleam@dynamic:decode_error())}.
 reference_from_dynamic(From) ->
     gleam_erlang_ffi:reference_from_dynamic(From).
 
--file("/Users/louis/src/gleam/erlang/src/gleam/erlang.gleam", 201).
+-file("/Users/louis/src/gleam/erlang/src/gleam/erlang.gleam", 208).
 -spec priv_directory(binary()) -> {ok, binary()} | {error, nil}.
 priv_directory(Name) ->
     gleam_erlang_ffi:priv_directory(Name).

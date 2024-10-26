@@ -383,20 +383,17 @@ process(Collections, Cache) ->
     fun((lustre@internals@vdom:element(nil)) -> lustre@internals@vdom:element(nil)),
     lustre@internals@vdom:element(nil)
 ) -> lustre@internals@vdom:element(nil).
-spa(Frame, Home) ->
+spa(Frame, Html) ->
     Frame(
         lustre@element@html:'div'(
             [],
             [lustre@element@html:'div'(
                     [lustre@attribute:id(<<"arctic-app"/utf8>>)],
-                    [Home]
+                    [Html]
                 ),
                 lustre@element@html:script(
                     [],
                     <<"
-if (window.location.pathname !== '/') {
-  go_to(new URL(window.location.href), true, true);
-}
 // SPA algorithm stolen from Hayleigh Thompson's wonderful Modem library
 async function go_to(url, loader, back) {
   if (url.pathname === window.location.pathname) {
@@ -450,6 +447,36 @@ function find_a(target) {
         )
     ).
 
+-spec add_route(
+    lustre@ssg:config(any(), UGT, UGU),
+    arctic:config(),
+    binary(),
+    lustre@internals@vdom:element(nil)
+) -> lustre@ssg:config(lustre@ssg:has_static_routes(), UGT, UGU).
+add_route(Ssg_config, Config, Path, Content) ->
+    case erlang:element(5, Config) of
+        {some, Frame} ->
+            _pipe = Ssg_config,
+            _pipe@1 = lustre@ssg:add_static_route(
+                _pipe,
+                <<"/__pages/"/utf8, Path/binary>>,
+                Content
+            ),
+            lustre@ssg:add_static_route(
+                _pipe@1,
+                <<"/"/utf8, Path/binary>>,
+                spa(Frame, Content)
+            );
+
+        none ->
+            _pipe@2 = Ssg_config,
+            lustre@ssg:add_static_route(
+                _pipe@2,
+                <<"/"/utf8, Path/binary>>,
+                Content
+            )
+    end.
+
 -spec make_ssg_config(
     list(arctic:processed_collection()),
     arctic:config(),
@@ -470,62 +497,48 @@ make_ssg_config(Processed_collections, Config, K) ->
         begin
             _pipe = lustre@ssg:new(<<"arctic_build"/utf8>>),
             _pipe@1 = lustre@ssg:use_index_routes(_pipe),
-            _pipe@2 = lustre@ssg:add_static_route(_pipe@1, Dir, Home),
-            _pipe@3 = (fun(Ssg_config) -> case erlang:element(5, Config) of
-                    {some, Frame} ->
-                        lustre@ssg:add_static_route(
-                            Ssg_config,
-                            <<"/"/utf8>>,
-                            spa(Frame, Home)
-                        );
-
-                    none ->
-                        Ssg_config
-                end end)(_pipe@2),
+            _pipe@2 = add_route(_pipe@1, Config, <<""/utf8>>, Home),
             _pipe@4 = gleam@list:fold(
                 erlang:element(3, Config),
-                _pipe@3,
-                fun(Ssg_config@1, Page) ->
-                    lustre@ssg:add_static_route(
-                        Ssg_config@1,
-                        <<Dir/binary, (erlang:element(2, Page))/binary>>,
+                _pipe@2,
+                fun(Ssg_config, Page) -> _pipe@3 = Ssg_config,
+                    add_route(
+                        _pipe@3,
+                        Config,
+                        erlang:element(2, Page),
                         erlang:element(3, Page)
-                    )
-                end
+                    ) end
             ),
             gleam@list:try_fold(
                 Processed_collections,
                 _pipe@4,
-                fun(Ssg_config@2, Processed) ->
+                fun(Ssg_config@1, Processed) ->
                     Ssg_config2 = case erlang:element(
                         4,
                         erlang:element(2, Processed)
                     ) of
                         {some, Render} ->
-                            lustre@ssg:add_static_route(
-                                Ssg_config@2,
-                                <<Dir/binary,
-                                    (erlang:element(
-                                        2,
-                                        erlang:element(2, Processed)
-                                    ))/binary>>,
+                            add_route(
+                                Ssg_config@1,
+                                Config,
+                                erlang:element(2, erlang:element(2, Processed)),
                                 Render(erlang:element(3, Processed))
                             );
 
                         none ->
-                            Ssg_config@2
+                            Ssg_config@1
                     end,
                     Ssg_config3 = gleam@list:fold(
                         erlang:element(8, erlang:element(2, Processed)),
                         Ssg_config2,
                         fun(S, Rp) ->
-                            lustre@ssg:add_static_route(
+                            add_route(
                                 S,
-                                <<<<<<Dir/binary,
-                                            (erlang:element(
-                                                2,
-                                                erlang:element(2, Processed)
-                                            ))/binary>>/binary,
+                                Config,
+                                <<<<(erlang:element(
+                                            2,
+                                            erlang:element(2, Processed)
+                                        ))/binary,
                                         "/"/utf8>>/binary,
                                     (erlang:element(2, Rp))/binary>>,
                                 erlang:element(3, Rp)
@@ -537,16 +550,13 @@ make_ssg_config(Processed_collections, Config, K) ->
                         Ssg_config3,
                         fun(S@1, P) -> case P of
                                 {new_page, New_page} ->
-                                    lustre@ssg:add_static_route(
+                                    add_route(
                                         S@1,
-                                        <<<<<<Dir/binary,
-                                                    (erlang:element(
-                                                        2,
-                                                        erlang:element(
-                                                            2,
-                                                            Processed
-                                                        )
-                                                    ))/binary>>/binary,
+                                        Config,
+                                        <<<<(erlang:element(
+                                                    2,
+                                                    erlang:element(2, Processed)
+                                                ))/binary,
                                                 "/"/utf8>>/binary,
                                             (erlang:element(2, New_page))/binary>>,
                                         (erlang:element(
@@ -569,7 +579,7 @@ make_ssg_config(Processed_collections, Config, K) ->
                                                         value => _assert_fail,
                                                         module => <<"arctic/build"/utf8>>,
                                                         function => <<"make_ssg_config"/utf8>>,
-                                                        line => 366}
+                                                        line => 361}
                                                 )
                                     end,
                                     Cached_path = <<<<<<"arctic_build"/utf8,
@@ -586,7 +596,7 @@ make_ssg_config(Processed_collections, Config, K) ->
                                                     message => Cached_path,
                                                     module => <<"arctic/build"/utf8>>,
                                                     function => <<"make_ssg_config"/utf8>>,
-                                                    line => 371})
+                                                    line => 366})
                                     end,
                                     lustre@ssg:add_static_asset(
                                         S@1,
@@ -600,7 +610,7 @@ make_ssg_config(Processed_collections, Config, K) ->
                 end
             )
         end,
-        fun(Ssg_config@3) -> K(Ssg_config@3) end
+        fun(Ssg_config@2) -> K(Ssg_config@2) end
     ).
 
 -spec ssg_build(
@@ -698,8 +708,8 @@ add_public(K) ->
     ).
 
 -spec option_to_result_nil(
-    gleam@option:option(TYX),
-    fun((TYX) -> {ok, nil} | {error, snag:snag()})
+    gleam@option:option(TZA),
+    fun((TZA) -> {ok, nil} | {error, snag:snag()})
 ) -> {ok, nil} | {error, snag:snag()}.
 option_to_result_nil(Opt, F) ->
     case Opt of
