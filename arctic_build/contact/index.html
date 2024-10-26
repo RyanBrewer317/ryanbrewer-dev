@@ -12,7 +12,7 @@ window.MathJax = {
 // SPA algorithm stolen from Hayleigh Thompson's wonderful Modem library
 async function go_to(url, loader, back) {
   console.log('going to', url.pathname);
-  if (url.pathname === window.location.pathname) {
+  if (!back && url.pathname === window.location.pathname) {
     if (url.hash) document.getElementById(url.hash.slice(1))?.scrollIntoView();
     else document.body.scrollIntoView();
     return;
