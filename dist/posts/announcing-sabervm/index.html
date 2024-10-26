@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en"><head><script async="true" src="https://www.googletagmanager.com/gtag/js?id=G-BDZJ8SX3Y1"></script><script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+        </script><title>Ryan Brewer&#39;s Blog - Ryan Brewer</title><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="description" content="The place Ryan writes his thoughts and shows off SaberVM and other cool projects."><link rel="icon" type="image/x-icon" href="/favicon.ico"><link rel="alternate" type="application/rss+xml" title="Ryan Brewer&#39;s Blog" href="https://ryanbrewer.dev/feed.rss"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="true"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto&amp;display=swap"><script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script><script type="text/javascript" async="true" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script><script>
+window.MathJax = {
+  loader: {load: ['[tex]/unicode']},
+  tex: {packages: {'[+]': ['unicode']}},
+};
+        </script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css"><script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script><script>hljs.highlightAll();</script><link rel="stylesheet" href="/style.css"></head><body><div><div id="arctic-app"><html lang="en"><head><script async="true" src="https://www.googletagmanager.com/gtag/js?id=G-BDZJ8SX3Y1"></script><script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+        </script><title>Announcing the Saber Virtual Machine - Ryan Brewer</title><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="description" content="This post announces SaberVM, an abstract machine for functional programs that guarantees safety, reliability, and portability."><link rel="icon" type="image/x-icon" href="/favicon.ico"><link rel="alternate" type="application/rss+xml" title="Ryan Brewer&#39;s Blog" href="https://ryanbrewer.dev/feed.rss"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="true"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto&amp;display=swap"><script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script><script type="text/javascript" async="true" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script><script>
+window.MathJax = {
+  loader: {load: ['[tex]/unicode']},
+  tex: {packages: {'[+]': ['unicode']}},
+};
+        </script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css"><script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script><script>hljs.highlightAll();</script><link rel="stylesheet" href="/style.css"></head><body><nav id="nav"><div id="nav-dropdown" onclick="document.getElementById(&#39;nav&#39;).classList.toggle(&#39;dropdown&#39;);document.body.classList.toggle(&#39;noscroll&#39;);">☰</div><a href="/" id="nav-home">Ryan Brewer</a><a href="/posts" id="nav-posts">Posts</a><a href="/wiki" id="nav-wiki">Wiki</a><a href="/contact" id="nav-contact">Contact</a><a href="/demos" id="nav-demos">Demos</a><a href="/feed.rss" id="nav-subscribe" onclick="window.location.href = &#39;/feed.rss&#39;"><img src="/rss-icon.png" id="rss-subscribe-icon">Subscribe</a></nav><div id="body"><h1>Announcing the Saber Virtual Machine</h1><div class="date">January 18, 2024</div><p><span>In this post I&#39;m excited to announce the <a href="https://github.com/RyanBrewer317/SaberVM"><span>Saber Virtual Machine</span></a>, or SaberVM. It&#39;s a project I&#39;ve been working hard on for the past month, with fascinating properties and an in-progress MVP implementation that&#39;s coming along well. If you like writing functional languages and want a portable backend to target that&#39;s fast and/or safe, you may be very interested in SaberVM, especially in its upcoming AOT-compile-to-optimized-native form.
+</span></p><h3><span>What is it?
+</span></h3><p><span>SaberVM is a compiler backend for functional languages. Specifically, it is an abstract stack machine, with many possible implementations. It takes in CPS code that&#39;s been closure-converted and hoisted, and executes it or AOT compiles it to a native binary. My current implementation is a naive bytecode VM in Rust, without JITing, mostly for rapid prototyping as the design settles.
+</span></p><p><span>The goals of the project are safety, expressivity, portability, and reliability. To give a very quick overview, safety is achieved through a carefully designed type system, and primarily includes memory safety. Expressivity is preserved by using runtime checks and tagging for some of the safety guarantees, so you can use any convoluted memory scheme you want so long as you don&#39;t dereference a dangling pointer. SaberVM offers portability by being designed to be simple to implement on a variety of platforms. Lastly, SaberVM is reliable because of a built-in crash recovery system you can use to microreboot without the whole program terminating, like Erlang&#39;s BEAM.
+</span></p><p><span>The two main systems of SaberVM are <i><span>regions</span></i> and <i><span>exceptions.</span></i>
+</span></p><h3><span>Regions
+</span></h3><p><span>A region can be thought of as an arena with a malloc/free-style internal memory management system. To read or write from the heap, you need a region. It can be the heap itself. Regions have statically-checked lifetimes, and a <a href="https://dl.acm.org/doi/10.1145/292540.292564"><span>capability</span></a>-based system for checking that values within that region are only read or written to during the lifetime of the region. When a region&#39;s lifetime ends, it is freed like an arena.
+</span></p><p><span>This structure of memory is important because in a safe compilation the values in the heap are tagged with information about which inhabitant is at that place in memory, so pointers can check that they&#39;re pointing at the thing they think they are when they&#39;re dereferenced. This introduces a memory fragmentation issue: &quot;slots&quot; in memory can then later be used only by values that are the same size or smaller; they have an unchangeable &quot;max size.&quot; To prove this, consider two values adjacent in memory, <code><span>A</span></code> and <code><span>B</span></code>, and their pointers, <code><span>&amp;A</span></code> and <code><span>&amp;B</span></code>. Now say we free both, and allocate <code><span>C</span></code> at the same address where <code><span>A</span></code> was (that is, <code><span>&amp;C == &amp;A</span></code>). If <code><span>C</span></code> is bigger than <code><span>A</span></code> was, then it has arbitrary control of the bytes used to tag <code><span>B</span></code>! That means a nefarious program could potentially cause <code><span>&amp;B</span></code> to think that <code><span>B</span></code> is still there, leading dereferences to not crash but instead to read memory controlled by <code><span>C</span></code> but think that it&#39;s <code><span>B</span></code>.
+</span></p><p><span>If allocating something in memory fixes a certain max-size for that chunk of memory for the rest of the program&#39;s lifetime, that can cause issues from a poor use of memory. Therefore, SaberVM puts its values in regions so there are certain points where it&#39;s statically known that nothing will dereference some set of pointers ever again, so their referent memory can be really freed, with no restriction on its future use. As a language writer, if you find your output programs have significant fragmentation issues, you can do some light region inference to fix it. In addition, since regions are freed like arenas, regions offer a way to deallocate a bunch of memory instantly, and improve cache locality.
+</span></p><h3><span>Exceptions
+</span></h3><p><span>SaberVM&#39;s other interesting system is exceptions. Exceptions in SaberVM are not like normal exceptions, though there&#39;s nothing stopping a compiler writer from building a normal exception system on top of SaberVM. Instead, SaberVM exceptions don&#39;t take arguments. Every function must have a catch-all exception case, and only that. Why? Having this built-in to SaberVM means that instructions that fail at runtime don&#39;t crash your program, they just jump to the exception handler. The language targeting SaberVM is then expected to produce exception handlers that do at least one of four things: crash the program (with an explicit halt instruction), rethrow the exception (that is, jump to the caller&#39;s catch-all exception handler), restart the crashed function (in a microreboot or Erlang style, without information about what caused the exception), or release held resources (currently SaberVM doesn&#39;t have locks, only CAS, but this is likely to change).
+</span></p><p><span>Note that SaberVM exceptions are <i><span>not</span></i> expected to be how your own language handles its exceptions! For example, if you prefer a <code><span>Result</span></code>-style exception handling, you can write functions that attempt single fallible instructions with an exception handler that produces the corresponding <code><span>Err</span></code> value.
+</span></p><h3><span>Conclusion
+</span></h3><p><span>SaberVM is carefully designed but still a very young project. I have an in-progress <a href="https://github.com/RyanBrewer317/SaberVM"><span>implementation</span></a> in Rust that I call the MVP, a subset of the final SaberVM that isn&#39;t even necessarily forwards-compatible, just to play with the ideas and their interactions and see how they really work in practice. I&#39;m sure as I learn more the design will change somewhat but the core ideas and goals are very strong.
+</span></p><p><span>I&#39;ve gotten most of the typechecker done in just a few days, which is really promising, and the algorithms are very simple. (I&#39;ll post more about them soon!) I think the VM runtime will be easier to write than the typechecker, since it&#39;ll be a naive prototype (without, say, JIT compiling), so I&#39;d say the implementation is about halfway done, which is very exciting.
+</span></p><p><span>If you&#39;ve read this far and think that the project sounds interesting, consider starring it on <a href="https://github.com/RyanBrewer317/SaberVM"><span>github</span></a>, or even sponsoring my work on <a href="https://github.com/sponsors/RyanBrewer317"><span>github</span></a> or <a href="https://ko-fi.com/ryanbrewer"><span>ko-fi</span></a>!
+</span></p></div><div><div style="height:100pt;"></div><p id="copyright-notice" class="subtle-text">© 2024 Ryan Brewer.</p><script src="/__/firebase/8.10.1/firebase-app.js"></script><script src="/__/firebase/8.10.1/firebase-analytics.js"></script><script src="/__/firebase/init.js"></script><script>firebase.analytics();</script></div></body></html></div><script>
+// SPA algorithm stolen from Hayleigh Thompson's wonderful Modem library
+async function go_to(url, loader, back) {
+  if (url.pathname === window.location.pathname) {
+    if (url.hash) document.getElementById(url.hash.slice(1))?.scrollIntoView();
+    else document.body.scrollIntoView();
+    return;
+  }
+  const $app = document.getElementById('arctic-app');
+  if (loader) $app.innerHTML = '<div id="arctic-loader"></div>';
+  if (!back) window.history.pushState({}, '', url.href);
+  window.requestAnimationFrame(() => {
+    // scroll in #-link elements, as the browser would if we didn't preventDefault
+    if (url.hash) {
+      document.getElementById(url.hash.slice(1))?.scrollIntoView();
+    }
+  });
+  // handle new path
+  console.log(url.pathname);
+  const response = await fetch('/__pages/' + url.pathname + '/index.html');
+  if (!response.ok) response = await fetch('/__pages/404.html');
+  if (!response.ok) return;
+  const html = await response.text();
+  $app.innerHTML = html;
+  document.body.scrollIntoView();
+}
+document.addEventListener('click', async function(e) {
+  const a = find_a(e.target);
+  if (!a) return;
+  try {
+    const url = new URL(a.href);
+    const is_external = url.host !== window.location.host;
+    if (is_external) return;
+    event.preventDefault();
+    go_to(url, false, false);
+  } catch {
+    return;
+  }
+});
+window.addEventListener('popstate', (e) => {
+  e.preventDefault();
+  const url = new URL(window.location.href);
+  go_to(url, false, true);
+});
+function find_a(target) {
+  if (!target || target.tagName === 'BODY') return null;
+  if (target.tagName === 'A') return target;
+  return find_a(target.parentElement);
+}
+  </script></div></body></html>

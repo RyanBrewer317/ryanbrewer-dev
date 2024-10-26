@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en"><head><script async="true" src="https://www.googletagmanager.com/gtag/js?id=G-BDZJ8SX3Y1"></script><script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+        </script><title>Ryan Brewer&#39;s Blog - Ryan Brewer</title><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="description" content="The place Ryan writes his thoughts and shows off SaberVM and other cool projects."><link rel="icon" type="image/x-icon" href="/favicon.ico"><link rel="alternate" type="application/rss+xml" title="Ryan Brewer&#39;s Blog" href="https://ryanbrewer.dev/feed.rss"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="true"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto&amp;display=swap"><script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script><script type="text/javascript" async="true" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script><script>
+window.MathJax = {
+  loader: {load: ['[tex]/unicode']},
+  tex: {packages: {'[+]': ['unicode']}},
+};
+        </script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css"><script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script><script>hljs.highlightAll();</script><link rel="stylesheet" href="/style.css"></head><body><div><div id="arctic-app"><html lang="en"><head><script async="true" src="https://www.googletagmanager.com/gtag/js?id=G-BDZJ8SX3Y1"></script><script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+        </script><title>An Introduction to Proofs with Dependent Types - Ryan Brewer</title><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="description" content="This post introduces the basic ideas behind dependent-type-based proof assistants, and expressing logic with types and values."><link rel="icon" type="image/x-icon" href="/favicon.ico"><link rel="alternate" type="application/rss+xml" title="Ryan Brewer&#39;s Blog" href="https://ryanbrewer.dev/feed.rss"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="true"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto&amp;display=swap"><script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script><script type="text/javascript" async="true" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script><script>
+window.MathJax = {
+  loader: {load: ['[tex]/unicode']},
+  tex: {packages: {'[+]': ['unicode']}},
+};
+        </script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css"><script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script><script>hljs.highlightAll();</script><link rel="stylesheet" href="/style.css"></head><body><nav id="nav"><div id="nav-dropdown" onclick="document.getElementById(&#39;nav&#39;).classList.toggle(&#39;dropdown&#39;);document.body.classList.toggle(&#39;noscroll&#39;);">☰</div><a href="/" id="nav-home">Ryan Brewer</a><a href="/posts" id="nav-posts">Posts</a><a href="/wiki" id="nav-wiki">Wiki</a><a href="/contact" id="nav-contact">Contact</a><a href="/demos" id="nav-demos">Demos</a><a href="/feed.rss" id="nav-subscribe" onclick="window.location.href = &#39;/feed.rss&#39;"><img src="/rss-icon.png" id="rss-subscribe-icon">Subscribe</a></nav><div id="body"><h1>An Introduction to Proofs with Dependent Types</h1><div class="date">December 3, 2023</div><p><span>When I was first introduced to proof assistants like Coq, I thought it would be graduate-level material that was way beyond what I could ever hope to understand. However, the essence of how they work is surprisingly simple, and very beautiful. In this post I will explain the intuition behind dependent types and their relationship with proofs, using a C-like syntax.
+</span></p><p><span>A little familiarity with dependent types and proof assistants like Agda or Coq will help you understand this post, but isn&#39;t necessary. A familiarity with basic logic is assumed, including &quot;for all.&quot; A familiarity with programming in statically-typed languages like C, Go, OCaml, or TypeScript is assumed.
+</span></p><h3><span>Logic in Types
+</span></h3><p><span>In academia, there is a well-known correspondence between logic and type systems, called the Curry-Howard Isomorphism. It&#39;s a big name but the idea is simple: if a type has a value in it, then it&#39;s &quot;true,&quot; and if it&#39;s empty, it&#39;s &quot;false.&quot; So <code><span>void</span></code> is false and <code><span>int</span></code> is true, for example.
+</span></p><p><span>Structs (pairs, tuples, records, etc.) only have values if all the component types have values: you could never make a struct of type <code><span>struct{void a, int b}</span></code> because you would need a value of type <code><span>void</span></code> to construct it. This gets us a way to express logical &quot;and:&quot; <code><span>struct{void a, int b}</span></code> is &quot;false,&quot; <code><span>struct{int a, int b}</span></code> is &quot;true.&quot;
+</span></p><p><span>Enums (tagged unions, etc.) have values if any of the component types have values. For example, <code><span>enum{void a, int b}</span></code> has values, namely integers tagged with <code><span>b</span></code>. <code><span>enum{void a, void b}</span></code>, on the other hand, is a type with no values, and is therefore &quot;false.&quot; This gets us a way to express logical &quot;or.&quot;
+</span></p><p><span>Functions (pure, side-effect-free ones, that is) operate like implication. if the input type has values, then any value in the function type can be used to construct a value of the output type. This needs examples. <code><span>void-&gt;void</span></code> is a type with a value, namely <code><span>(x: void)=&gt;x</span></code> in a TypeScript anonymous-function notation, so it&#39;s &quot;true&quot; but not very useful. <code><span>void-&gt;int</span></code> is a type with values, such as <code><span>(x: void)=&gt;7</span></code>, but also isn&#39;t useful. You&#39;d need values of type <code><span>void</span></code> to be able to call these functions! <code><span>int-&gt;int</span></code> is a familiar type which of course has many values, such as <code><span>const square = (x: int) =&gt; x * x</span></code>.
+</span></p><p>`<span>int-&gt;void` <i><span>doesn&#39;t</span></i> have values. Why? Say we had a function <code><span>f</span></code> of type <code><span>int-&gt;void</span></code>. Then we could call <code><span>f(5)</span></code> and get a value of type <code><span>void</span></code> back, which is impossible. So <code><span>int -&gt; void</span></code> is a type with no values, because any such values would be able to construct elements of <code><span>void</span></code>. Hopefully these examples make it clear why functions work like implication.
+</span></p><p><span>Logical negation is simply represented by a function returning <code><span>void</span></code>, because &quot;not p&quot; and &quot;p implies false&quot; are equivalent. That&#39;s another explanation of why <code><span>int-&gt;void</span></code> is empty: it&#39;s kind of like &quot;not <code><span>int</span></code>,&quot; and we know <code><span>int</span></code> is &quot;true.&quot; Note that this logic also doesn&#39;t have &quot;p or not p&quot; as an axiom. It is &quot;intuitionistic.&quot;
+</span></p><h3><span>The Point
+</span></h3><p><span>Is all of this useful? Yes, it&#39;s proven its worth. Because the details of this correspondence is about types having values, you can make sure functions are only called under the right conditions. Simply add a parameter to the function in question; a parameter whose type corresponds to the desired precondition. Then the function can&#39;t be called unless a value (called a &quot;proof&quot; in this context) of that type is given. In other words, it can only be called if the type is &quot;true.&quot; The classic example is something like, for a list of integers, <code><span>int get(int[] l, int i, 0&lt;=i&lt;length(l) p)</span></code>. This function is called with three arguments: an <code><span>int[]</span></code>, an <code><span>int</span></code>, and a <code><span>0&lt;=i&lt;length(l)</span></code>.
+</span></p><p><span>The correspondence I described above doesn&#39;t tell you how to construct the type <code><span>0&lt;=i&lt;length(l).</span></code> It&#39;s a very strange-looking type. At the very least, it&#39;s a struct: the conjunction of two propositions \(0 le i\) and \(i &lt; length(l)\). This is where dependent types come in.
+</span></p><h3><span>Dependent Types
+</span></h3><p><span>Dependent function types (&quot;Pi&quot; types) are function types where the type of the output can refer to values of the input types. What does this mean? We can have a function <code><span>f</span></code> which takes an argument <code><span>a: A</span></code> and the type of <code><span>f(a)</span></code> <i><span>changes</span></i> based on the specific value of <code><span>a</span></code>. If <code><span>f</span></code> is defined as <code><span>(t: type)=&gt;(x: t)=&gt;x</span></code> then <code><span>f(int)(7)</span></code> returns <code><span>7</span></code>, and <code><span>f(float)(1.4)</span></code> returns <code><span>1.4</span></code>. That is, <code><span>f(T)</span></code> returns the identity function for type <code><span>T</span></code>.
+</span></p><p><span>The notation for a Pi type is \(Pi x: A. B\) which I will write in a TypeScript-y notation as <code><span>(x: A)-&gt;B</span></code>. Note the <code><span>-&gt;</span></code> instead of <code><span>=&gt;</span></code> to show that this is a type, not a function. However, <code><span>x</span></code> is in scope in <code><span>B</span></code> like a function.
+</span></p><p><span>Extending this to the setting of multiple-argument functions, it also means that input types can refer to the given values of earlier parameters. The <code><span>get</span></code> function above has a dependent function type, because the type <code><span>0&lt;=i&lt;length(l)</span></code> refers to the earlier parameters <code><span>i</span></code> and <code><span>l</span></code>. This type is really <code><span>struct{0&lt;=i a, i&lt;length(l) b}</span></code>, since it&#39;s a logical &quot;and.&quot; The <code><span>&lt;=</span></code> and <code><span>&lt;</span></code> operators here are definable functions, which take integers as arguments and produce types. I won&#39;t get into their definitions here but I may in a future post, and the interested reader can find them online. So anyway, <code><span>get</span></code> can be called only if a struct can be constructed with two fields that respectively satisfy these two inequalities. That&#39;s great!
+</span></p><p><span>Dependent function types have another use here, which is that they&#39;re the main way people represent logic&#39;s &quot;forall&quot; quantifier, \(orall\). That is, if your proposition is \(orall n: int. n &lt; 5 implies n &lt; 6\) or something like that, you generally use a dependent function type. The type would be something like <code><span>(n: int)-&gt;(n &lt; 5)-&gt;(n &lt; 6)</span></code>. The intuition I have for why this is the case goes as follows: If you tell me about a machine that takes quarters and produces gumballs, I&#39;ll assume you&#39;re talking about real life. <i><span>However,</span></i> if you then say that there&#39;s a 1% random chance that the machine produces instead teleports the user into the Harry Potter world, then it will suddenly become clear to me that you were talking about an imaginary machine all along. Even though the impossible thing happens only sometimes, and possibly never.
+</span></p><p><span>A more rigorous reason for why Pi types work like &quot;for all&quot; is because functions of Pi types can only be constructed if <i><span>every possible result type</span></i> has a value. In the case of <code><span>(n: int)-&gt;(n &lt; 5)-&gt;(n &lt; 6)</span></code>, a value of this type <i><span>can</span></i> be created, because proving that n is less than 5 is sufficient to prove that it is less than 6. If the type were instead <code><span>(n: int)-&gt;(n &gt; 5)-&gt;(n &gt; 6)</span></code>, and we have a function <code><span>f</span></code> of this type, then it could be called like <code><span>f(6)(proof_5_le_6)</span></code> which are all valid terms, and then as a result you&#39;d have a value of type <code><span>6 &gt; 6</span></code>, which is &quot;false&quot; and has no values. Therefore this function <code><span>f</span></code> can&#39;t exist. Calling it with other arguments, like <code><span>f(4)(proof_4_le_6)</span></code>, <i><span>would</span></i> hypothetically be valid, except that the function as a whole can&#39;t possibly exist because it would be possible to use it to get values of an empty type. This is why dependent function types let you express &quot;for all&quot; in your types.
+</span></p><h3><span>Tip of the Iceberg
+</span></h3><p><span>This concludes my first real blog post. Needless to say these ideas are the tip of a very large iceberg. For example, types like <code><span>int</span></code> seem pretty different from useful proposition types like <code><span>0&lt;=i</span></code>. To find out more about that difference, look up <code><span>Prop</span></code> and <code><span>Set</span></code> in Coq&#39;s type system. I also didn&#39;t explain &quot;there exists;&quot; The search term here is &quot;Sigma&quot; (\(Sigma\)) types, which I may write about more in the future. And there&#39;s still a ways to go before you get a full proof assistant. I think that this article gives a good foundation for exploring this iceberg on your own, but it was intended to set up future posts I want to write about the corners of the iceberg that really fascinate me.
+</span></p></div><div><div style="height:100pt;"></div><p id="copyright-notice" class="subtle-text">© 2024 Ryan Brewer.</p><script src="/__/firebase/8.10.1/firebase-app.js"></script><script src="/__/firebase/8.10.1/firebase-analytics.js"></script><script src="/__/firebase/init.js"></script><script>firebase.analytics();</script></div></body></html></div><script>
+// SPA algorithm stolen from Hayleigh Thompson's wonderful Modem library
+async function go_to(url, loader, back) {
+  if (url.pathname === window.location.pathname) {
+    if (url.hash) document.getElementById(url.hash.slice(1))?.scrollIntoView();
+    else document.body.scrollIntoView();
+    return;
+  }
+  const $app = document.getElementById('arctic-app');
+  if (loader) $app.innerHTML = '<div id="arctic-loader"></div>';
+  if (!back) window.history.pushState({}, '', url.href);
+  window.requestAnimationFrame(() => {
+    // scroll in #-link elements, as the browser would if we didn't preventDefault
+    if (url.hash) {
+      document.getElementById(url.hash.slice(1))?.scrollIntoView();
+    }
+  });
+  // handle new path
+  console.log(url.pathname);
+  const response = await fetch('/__pages/' + url.pathname + '/index.html');
+  if (!response.ok) response = await fetch('/__pages/404.html');
+  if (!response.ok) return;
+  const html = await response.text();
+  $app.innerHTML = html;
+  document.body.scrollIntoView();
+}
+document.addEventListener('click', async function(e) {
+  const a = find_a(e.target);
+  if (!a) return;
+  try {
+    const url = new URL(a.href);
+    const is_external = url.host !== window.location.host;
+    if (is_external) return;
+    event.preventDefault();
+    go_to(url, false, false);
+  } catch {
+    return;
+  }
+});
+window.addEventListener('popstate', (e) => {
+  e.preventDefault();
+  const url = new URL(window.location.href);
+  go_to(url, false, true);
+});
+function find_a(target) {
+  if (!target || target.tagName === 'BODY') return null;
+  if (target.tagName === 'A') return target;
+  return find_a(target.parentElement);
+}
+  </script></div></body></html>
