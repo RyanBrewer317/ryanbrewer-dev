@@ -3,7 +3,6 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 import arctic.{type Page}
-import components/head.{head}
 import components/navbar.{navbar}
 import components/tail.{tail}
 import gleam/option.{Some}
@@ -35,27 +34,27 @@ fn render_wiki_as_list(wiki: Page) -> List(Element(Nil)) {
 }
 
 pub fn post(post: Page) -> Element(Nil) {
-  html.html([attribute("lang", "en")], [
-    head(post.title, post.blerb, [
-      html.link([attribute.rel("stylesheet"), attribute.href("/style.css")]),
+  html.div([], [
+    html.title([], post.title <> " - Ryan Brewer"),
+    html.meta([
+      attribute.name("description"),
+      attribute.attribute("content", post.blerb),
     ]),
-    html.body([], [
-      navbar(),
-      html.div([attribute.id("body")], render_post_as_list(post)),
-      tail(),
-    ]),
+    navbar(),
+    html.div([attribute.id("body")], render_post_as_list(post)),
+    tail(),
   ])
 }
 
 pub fn wiki(wiki: Page) -> Element(Nil) {
-  html.html([attribute("lang", "en")], [
-    head(wiki.title, "", [
-      html.link([attribute.rel("stylesheet"), attribute.href("/style.css")]),
+  html.div([], [
+    html.title([], wiki.title <> " - Ryan Brewer"),
+    html.meta([
+      attribute.name("description"),
+      attribute.attribute("content", wiki.blerb),
     ]),
-    html.body([], [
-      navbar(),
-      html.div([attribute.id("body")], render_wiki_as_list(wiki)),
-      tail(),
-    ]),
+    navbar(),
+    html.div([attribute.id("body")], render_wiki_as_list(wiki)),
+    tail(),
   ])
 }

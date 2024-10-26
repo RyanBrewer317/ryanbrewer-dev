@@ -48,6 +48,8 @@ document.addEventListener('click', async function(e) {
   }
 });
 window.addEventListener('popstate', (e) => {
+  console.log('wass poppinnnnnn 1');
+  setTimeout(() => console.log('wass poppinnnnnn 2'), 0);
   e.preventDefault();
   const url = new URL(window.location.href);
   go_to(url, false, true);

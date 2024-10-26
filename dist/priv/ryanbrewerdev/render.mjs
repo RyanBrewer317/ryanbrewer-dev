@@ -6,8 +6,6 @@ import { attribute } from "../lustre/lustre/attribute.mjs";
 import * as $element from "../lustre/lustre/element.mjs";
 import { text } from "../lustre/lustre/element.mjs";
 import * as $html from "../lustre/lustre/element/html.mjs";
-import * as $head from "./components/head.mjs";
-import { head } from "./components/head.mjs";
 import * as $navbar from "./components/navbar.mjs";
 import { navbar } from "./components/navbar.mjs";
 import * as $tail from "./components/tail.mjs";
@@ -32,7 +30,7 @@ function render_post_as_list(post) {
         throw makeError(
           "assignment_no_match",
           "render",
-          25,
+          24,
           "",
           "Assignment pattern did not match",
           { value: $ }
@@ -58,51 +56,37 @@ function render_wiki_as_list(wiki) {
 }
 
 export function post(post) {
-  return $html.html(
-    toList([attribute("lang", "en")]),
+  return $html.div(
+    toList([]),
     toList([
-      head(
-        post.title,
-        post.blerb,
+      $html.title(toList([]), post.title + " - Ryan Brewer"),
+      $html.meta(
         toList([
-          $html.link(
-            toList([$attribute.rel("stylesheet"), $attribute.href("/style.css")]),
-          ),
+          $attribute.name("description"),
+          $attribute.attribute("content", post.blerb),
         ]),
       ),
-      $html.body(
-        toList([]),
-        toList([
-          navbar(),
-          $html.div(toList([$attribute.id("body")]), render_post_as_list(post)),
-          tail(),
-        ]),
-      ),
+      navbar(),
+      $html.div(toList([$attribute.id("body")]), render_post_as_list(post)),
+      tail(),
     ]),
   );
 }
 
 export function wiki(wiki) {
-  return $html.html(
-    toList([attribute("lang", "en")]),
+  return $html.div(
+    toList([]),
     toList([
-      head(
-        wiki.title,
-        "",
+      $html.title(toList([]), wiki.title + " - Ryan Brewer"),
+      $html.meta(
         toList([
-          $html.link(
-            toList([$attribute.rel("stylesheet"), $attribute.href("/style.css")]),
-          ),
+          $attribute.name("description"),
+          $attribute.attribute("content", wiki.blerb),
         ]),
       ),
-      $html.body(
-        toList([]),
-        toList([
-          navbar(),
-          $html.div(toList([$attribute.id("body")]), render_wiki_as_list(wiki)),
-          tail(),
-        ]),
-      ),
+      navbar(),
+      $html.div(toList([$attribute.id("body")]), render_wiki_as_list(wiki)),
+      tail(),
     ]),
   );
 }
