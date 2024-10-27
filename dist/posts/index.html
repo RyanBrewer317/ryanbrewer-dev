@@ -81,7 +81,7 @@ async function go_to(url, loader, back) {
       if (attr.name === 'type' && attr.value === 'module') continue;
       n.setAttribute(attr.name, attr.value);
     }
-    const t = document.createTextNode(script.innerHTML);
+    const t = document.createTextNode(script.innerHTML + '\n;console.log(\'script executed\');');
     n.appendChild(t);
     script.parentNode.replaceChild(n, script);
   }
