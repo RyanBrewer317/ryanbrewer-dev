@@ -8,16 +8,7 @@ window.MathJax = {
   loader: {load: ['[tex]/unicode']},
   tex: {packages: {'[+]': ['unicode']}},
 };
-        </script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css"><script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script><script>hljs.highlightAll();</script><link rel="stylesheet" href="/style.css"></head><body><div><div id="arctic-app"><html lang="en"><head><script async="true" src="https://www.googletagmanager.com/gtag/js?id=G-BDZJ8SX3Y1"></script><script>
-window.dataLayer = window.dataLayer || [];
-function gtag(){dataLayer.push(arguments);}
-gtag('js', new Date());
-        </script><title>Monoidal Category - Ryan Brewer</title><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="description" content><link rel="icon" type="image/x-icon" href="/favicon.ico"><link rel="alternate" type="application/rss+xml" title="Ryan Brewer&#39;s Blog" href="https://ryanbrewer.dev/feed.rss"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="true"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto&amp;display=swap"><script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script><script type="text/javascript" async="true" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script><script>
-window.MathJax = {
-  loader: {load: ['[tex]/unicode']},
-  tex: {packages: {'[+]': ['unicode']}},
-};
-        </script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css"><script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script><script>hljs.highlightAll();</script><link rel="stylesheet" href="/style.css"></head><body><nav id="nav"><div id="nav-dropdown" onclick="document.getElementById(&#39;nav&#39;).classList.toggle(&#39;dropdown&#39;);document.body.classList.toggle(&#39;noscroll&#39;);">☰</div><a href="/" id="nav-home">Ryan Brewer</a><a href="/posts" id="nav-posts">Posts</a><a href="/wiki" id="nav-wiki">Wiki</a><a href="/contact" id="nav-contact">Contact</a><a href="/demos" id="nav-demos">Demos</a><a href="/feed.rss" id="nav-subscribe" onclick="window.location.href = &#39;/feed.rss&#39;"><img src="/rss-icon.png" id="rss-subscribe-icon">Subscribe</a></nav><div id="body"><h1>Monoidal Category</h1><p><span>A monoidal category is a <a href="/wiki/category"><span>category</span></a> \(C\) with a bifunctor \(\otimes:C\times C\to C\) and an object \(I\) such that \(\otimes\) is associative and \(I\otimes X=X=X\otimes I\) for any object \(X\) in \(C\). \(\otimes\) is called the &quot;tensor product.&quot; Well, that&#39;s just a <i><span>strict</span></i> monoidal category; monoidal categories, on the other hand, only need these equations to be isomorphisms. This means they additionally have three <a href="/wiki/natural-isomorphism"><span>natural isomorphisms</span></a>: an &quot;associator&quot; \(\alpha_{X,Y,Z}:X\otimes(Y\otimes Z)\cong(X\otimes Y)\otimes Z\), a &quot;left unitor&quot; \(\lambda_X:I\otimes X\cong X\), and a &quot;right unitor&quot; \(\rho_X:X\otimes I\cong X\). These have to satisfy two coherence conditions.
+        </script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css"><script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script><script>hljs.highlightAll();</script><link rel="stylesheet" href="/style.css"></head><body><div><div id="arctic-app"><div><title>Monoidal Category - Ryan Brewer</title><meta name="description" content><nav id="nav"><div id="nav-dropdown" onclick="document.getElementById(&#39;nav&#39;).classList.toggle(&#39;dropdown&#39;);document.body.classList.toggle(&#39;noscroll&#39;);">☰</div><a href="/" id="nav-home">Ryan Brewer</a><a href="/posts" id="nav-posts">Posts</a><a href="/wiki" id="nav-wiki">Wiki</a><a href="/contact" id="nav-contact">Contact</a><a href="/demos" id="nav-demos">Demos</a><a href="/feed.rss" id="nav-subscribe" onclick="window.location.href = &#39;/feed.rss&#39;"><img src="/rss-icon.png" id="rss-subscribe-icon">Subscribe</a></nav><div id="body"><h1>Monoidal Category</h1><p><span>A monoidal category is a <a href="/wiki/category"><span>category</span></a> \(C\) with a bifunctor \(\otimes:C\times C\to C\) and an object \(I\) such that \(\otimes\) is associative and \(I\otimes X=X=X\otimes I\) for any object \(X\) in \(C\). \(\otimes\) is called the &quot;tensor product.&quot; Well, that&#39;s just a <i><span>strict</span></i> monoidal category; monoidal categories, on the other hand, only need these equations to be isomorphisms. This means they additionally have three <a href="/wiki/natural-isomorphism"><span>natural isomorphisms</span></a>: an &quot;associator&quot; \(\alpha_{X,Y,Z}:X\otimes(Y\otimes Z)\cong(X\otimes Y)\otimes Z\), a &quot;left unitor&quot; \(\lambda_X:I\otimes X\cong X\), and a &quot;right unitor&quot; \(\rho_X:X\otimes I\cong X\). These have to satisfy two coherence conditions.
 </span></p><p><span>Monoidal categories are famous enough that you may hear their coherence conditions referenced by name without any extra explanation. That is, you may be expected to know them by name. The first is called the &quot;triangle identity,&quot; though there are many things called that. It is depicted by the following commuting diagram:
 </span></p><div class="diagram"><img src="/image-0-monoidal-category.svg" onload="this.width *= 2.25;"></div><p><span>The notation \(id_X\otimes\lambda_Y\) is taking advantage of the bifunctoriality of \(\otimes\), mapping a pair of morphisms \(id_X:X\to X\) and \(\lambda_Y:(I\otimes Y)\to Y\) into the morphism \(id_X\otimes\lambda_Y:X\otimes(I\otimes Y)\to X\otimes Y\). You have to do some mental grammar-checking to realize that \(id_X\otimes\lambda_Y\) is nonsense because \(id_X\) and \(\lambda_Y\) are morphisms in this category, not objects, to realize that we&#39;re using this second usage of the \(\otimes\) notation.
 </span></p><p><span>The second coherence condition is far more famous, in the sense that I&#39;ve heard people reference it by name instead of saying what it is, quite a number of times. This is called the &quot;pentagon identity,&quot; depicted with the following commuting diagram:
@@ -32,31 +23,46 @@ window.MathJax = {
 </span></p><div class="diagram"><img src="/image-6-monoidal-category.svg" onload="this.width *= 2.25;"></div><p><span>This string diagram is representing <i><span>another</span></i> rigorous wiggly-ness, which is that in some situations you can have lines overlap and then come back without meaning anything by it. Namely, it&#39;s okay if there&#39;s an applicable isomorphism between \(X\otimes Y\) and \(Y\otimes X\). If the tensor product is symmetric then this happens all the time! Notice that the string diagram is representing a morphism that equals the identity morphism on \(X\otimes Y\).
 </span></p><p><span>String diagrams naturally give an idea of a factory assembly line, since objects are contained in the lines going from morphism to morphism, which are stops along the way. In this way they give an idea of parallel computation: two parallel objects \(X\otimes Z\) are carried in parallel along lines that don&#39;t interact with each other \(f\otimes g\) into two parallel outputs \(Y\otimes W\).
 </span></p><p><span>Monoidal categories are also used to model linear logic. The category must be more than just monoidal (it must be &quot;star-autonomous&quot;) but the essence is still here. Think about that factory assembly line. If you want an object \(X\) to get used by multiple computations, you need a transformation \(w:X\to X\otimes X\); it&#39;s literally the only way. In this sense the morphisms along a string diagram are <i><span>consuming</span></i> their inputs. If you don&#39;t have \(w\) then values can only be used at most once. Similarly, if an object ends up unused by any morphism, then it must find itself among the objects at the end (the top) of the diagram; the only way to get rid of lines is to consume them with morphisms. An interesting example that comes up surprisingly often would be something like <code><span>c:X\to I</span></code>, which visually makes a line end early, at the \(c\) morphism. If there&#39;s nothing like \(c\), then objects must be used at least once (possibly by being used as part of the final tensor product). If there&#39;s no \(c\) or \(w\), objects must get used exactly once. If you&#39;re familiar with substructural logic, this should be very familiar: \(w\) is weakening and \(c\) is contraction. Having neither gets you something linear, having \(w\) gives you something relevant, having \(c\) gives you something affine, and having both gets you to something more standard. Note again that to actually model linear, relevant, or affine <i><span>logic</span></i> one needs the full construction of the star-autonomous category, to model things like negation.
-</span></p></div><div><div style="height:100pt;"></div><p id="copyright-notice" class="subtle-text">© 2024 Ryan Brewer.</p><script src="/__/firebase/8.10.1/firebase-app.js"></script><script src="/__/firebase/8.10.1/firebase-analytics.js"></script><script src="/__/firebase/init.js"></script><script>firebase.analytics();</script></div></body></html></div><script>
+</span></p></div><div><div style="height:100pt;"></div><p id="copyright-notice" class="subtle-text">© 2024 Ryan Brewer.</p><script src="/__/firebase/8.10.1/firebase-app.js"></script><script src="/__/firebase/8.10.1/firebase-analytics.js"></script><script src="/__/firebase/init.js"></script><script>firebase.analytics();</script></div></div></div><script>
 // SPA algorithm stolen from Hayleigh Thompson's wonderful Modem library
 async function go_to(url, loader, back) {
-  if (url.pathname === window.location.pathname) {
+  if (!back && url.pathname === window.location.pathname) {
     if (url.hash) document.getElementById(url.hash.slice(1))?.scrollIntoView();
-    else document.body.scrollIntoView();
+    else window.scrollTo(0, 0);
     return;
   }
+  document.dispatchEvent(new Event('beforeunload'));
+  document.dispatchEvent(new Event('unload'));
   const $app = document.getElementById('arctic-app');
   if (loader) $app.innerHTML = '<div id="arctic-loader"></div>';
   if (!back) window.history.pushState({}, '', url.href);
-  window.requestAnimationFrame(() => {
-    // scroll in #-link elements, as the browser would if we didn't preventDefault
-    if (url.hash) {
-      document.getElementById(url.hash.slice(1))?.scrollIntoView();
-    }
-  });
   // handle new path
-  console.log(url.pathname);
   const response = await fetch('/__pages/' + url.pathname + '/index.html');
   if (!response.ok) response = await fetch('/__pages/404.html');
   if (!response.ok) return;
   const html = await response.text();
   $app.innerHTML = html;
-  document.body.scrollIntoView();
+  // re-create script elements, so their javascript runs
+  const scripts = $app.querySelectorAll('script');
+  for (let i = 0; i < scripts.length; i++) {
+    const script = scripts[i];
+    const n = document.createElement('script');
+    for (let j = 0; j < script.attributes.length; j++) {
+      const attr = script.attributes[j];
+      n.setAttribute(attr.name, attr.value);
+    }
+    const t = document.createTextNode(script.innerHTML);
+    n.appendChild(t);
+    script.parentNode.replaceChild(n, script);
+  }
+  if (url.hash)
+    window.requestAnimationFrame(() =>
+      document.getElementById(url.hash.slice(1))?.scrollIntoView()
+    );
+  else window.scrollTo(0, 0);
+  window.requestAnimationFrame(() => 
+    document.dispatchEvent(new Event('DOMContentLoaded'))
+  );
 }
 document.addEventListener('click', async function(e) {
   const a = find_a(e.target);
@@ -80,5 +86,4 @@ function find_a(target) {
   if (!target || target.tagName === 'BODY') return null;
   if (target.tagName === 'A') return target;
   return find_a(target.parentElement);
-}
-  </script></div></body></html>
+}</script></div></body></html>

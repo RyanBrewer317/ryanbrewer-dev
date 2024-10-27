@@ -8,16 +8,7 @@ window.MathJax = {
   loader: {load: ['[tex]/unicode']},
   tex: {packages: {'[+]': ['unicode']}},
 };
-        </script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css"><script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script><script>hljs.highlightAll();</script><link rel="stylesheet" href="/style.css"></head><body><div><div id="arctic-app"><html lang="en"><head><script async="true" src="https://www.googletagmanager.com/gtag/js?id=G-BDZJ8SX3Y1"></script><script>
-window.dataLayer = window.dataLayer || [];
-function gtag(){dataLayer.push(arguments);}
-gtag('js', new Date());
-        </script><title>Category - Ryan Brewer</title><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="description" content><link rel="icon" type="image/x-icon" href="/favicon.ico"><link rel="alternate" type="application/rss+xml" title="Ryan Brewer&#39;s Blog" href="https://ryanbrewer.dev/feed.rss"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="true"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto&amp;display=swap"><script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script><script type="text/javascript" async="true" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script><script>
-window.MathJax = {
-  loader: {load: ['[tex]/unicode']},
-  tex: {packages: {'[+]': ['unicode']}},
-};
-        </script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css"><script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script><script>hljs.highlightAll();</script><link rel="stylesheet" href="/style.css"></head><body><nav id="nav"><div id="nav-dropdown" onclick="document.getElementById(&#39;nav&#39;).classList.toggle(&#39;dropdown&#39;);document.body.classList.toggle(&#39;noscroll&#39;);">☰</div><a href="/" id="nav-home">Ryan Brewer</a><a href="/posts" id="nav-posts">Posts</a><a href="/wiki" id="nav-wiki">Wiki</a><a href="/contact" id="nav-contact">Contact</a><a href="/demos" id="nav-demos">Demos</a><a href="/feed.rss" id="nav-subscribe" onclick="window.location.href = &#39;/feed.rss&#39;"><img src="/rss-icon.png" id="rss-subscribe-icon">Subscribe</a></nav><div id="body"><h1>Category</h1><p><span>Informally, a category is just a collection of things, along with a particular relationship between these things. For example, imagine the collection of all possible states our world could be in (Einstein being the American president, dogs not existing, and any other wacky thing you can come up with). In any particular world \(W_1\), there are other worlds \(W_2\) that we can &quot;get to&quot; if some sequence of events were to occur, transforming \(W_1\) into \(W_2\). At the very least, every state can &quot;get to&quot; <i><span>itself</span></i> by &quot;doing nothing.&quot; For example, I can get from a world where I have an apple to a world where I don&#39;t by eating the apple, or giving it away, or throwing it in a lake, etc.
+        </script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css"><script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script><script>hljs.highlightAll();</script><link rel="stylesheet" href="/style.css"></head><body><div><div id="arctic-app"><div><title>Category - Ryan Brewer</title><meta name="description" content><nav id="nav"><div id="nav-dropdown" onclick="document.getElementById(&#39;nav&#39;).classList.toggle(&#39;dropdown&#39;);document.body.classList.toggle(&#39;noscroll&#39;);">☰</div><a href="/" id="nav-home">Ryan Brewer</a><a href="/posts" id="nav-posts">Posts</a><a href="/wiki" id="nav-wiki">Wiki</a><a href="/contact" id="nav-contact">Contact</a><a href="/demos" id="nav-demos">Demos</a><a href="/feed.rss" id="nav-subscribe" onclick="window.location.href = &#39;/feed.rss&#39;"><img src="/rss-icon.png" id="rss-subscribe-icon">Subscribe</a></nav><div id="body"><h1>Category</h1><p><span>Informally, a category is just a collection of things, along with a particular relationship between these things. For example, imagine the collection of all possible states our world could be in (Einstein being the American president, dogs not existing, and any other wacky thing you can come up with). In any particular world \(W_1\), there are other worlds \(W_2\) that we can &quot;get to&quot; if some sequence of events were to occur, transforming \(W_1\) into \(W_2\). At the very least, every state can &quot;get to&quot; <i><span>itself</span></i> by &quot;doing nothing.&quot; For example, I can get from a world where I have an apple to a world where I don&#39;t by eating the apple, or giving it away, or throwing it in a lake, etc.
 </span></p><p><span>Formally, a category \(C\) is a collection of objects (often written \(\texttt{ob}(C)\)) and a collection of arrows (often called &quot;morphisms,&quot; each starting at an object and ending at an object). To be a valid category, there are some requirements these collections need to satisfy. <i><span>It&#39;s very helpful to draw these on paper.</span></i> For any object \(X\) in \(C\), there must be a morphism from \(X\) to \(X\) (drawn as a little loop at \(X\)) that &quot;does nothing&quot; (typically written \(id_X\) or \(1_X\) but sometimes unfortunately written as just \(X\) when what is meant is &quot;clear from context&quot;). This is called an &quot;identity arrow,&quot; &quot;identity on \(X\),&quot; or &quot;identity of \(X\).&quot; Also, for any objects \(X\), \(Y\), and \(Z\) in \(C\), for any two morphisms \(f:X\to Y\) and \(g:Y\to Z\), there must be a morphism \(g\circ f:X\to Z\) (pronounced &quot;\(g\) after \(f\)&quot;) that is exactly the same as following \(f\) from \(X\) to \(Y\) and from there following \(g\) to finally get to \(Z\). This is called the <i><span>composition</span></i> of \(f\) and \(g\), and the composition operator \(\circ\) must be associative. These requirements are drawn formally with the following diagrams. These diagrams are called &quot;commutative diagrams&quot; or &quot;commuting diagrams,&quot; meaning that any two paths from one object to another must be equal (one says the diagram &quot;commutes&quot;). Therefore, each diagram is visually representing a bunch of equations, such as \(f\circ id_X=f\).
 </span></p><div class="diagram"><img src="/image-0-category.svg" onload="this.width *= 2.25;"></div><div class="diagram"><img src="/image-1-category.svg" onload="this.width *= 2.25;"></div><div class="diagram"><img src="/image-2-category.svg" onload="this.width *= 2.25;"></div><p><span>These requirements aren&#39;t too difficult to satisfy; categories show up all over the place. Any transitive, reflexive relation (these are called &quot;preorders&quot;) gives rise to a category, including \(\leq\) on the integers. So for any integer, say \(7\), it&#39;s less than or equal to itself (\(7\leq 7\)). And for any three integers \(a\), \(b\), and \(c\), if \(a\leq b\) and \(b\leq c\), then \(a\leq c\). And of course, \(\leq\) is associative.
 </span></p><p><span>You&#39;ll also find a category in any &quot;monoid,&quot; that is, an associative binary operation (like \(+\)) on a set (like the integers) which has a unit for the operation (like \(0\)). You can form a category with a single object \(M\) where the arrows all loop from \(M\) back to \(M\), representing the elements of the set (such as the integers). So for example, \(1:M\to M\), \(2:M\to M\), etc. \(M\) is called a &quot;monoid object.&quot; This is a proper category because any two of these arrows can be composed using the binary operation, which we&#39;ve required to be associative. For example, \(3+4:M\to M\). And there&#39;s an arrow for the unit (such as \(0\), for \(+\)) that behaves as the identity arrow of \(M\).
@@ -25,31 +16,46 @@ window.MathJax = {
 </span></p><div class="diagram"><img src="/image-3-category.svg" onload="this.width *= 2.25;"></div><p><span>It&#39;s been said in some category theory learning material that I can&#39;t find now that a category is something like a bridge between the definition of a preorder and the definition of a monoid, capturing each in a way that extends the other. This is an informal idea but I found it helpful. A preorder is a category with multiple objects but only one arrow (at most) between each object, and a monoid is a category with multiple arrows but only one object. Bartosz Milewski (a popular category theory educator) suggested that a category can also be seen as a &quot;proof-relevant&quot; preorder, meaning objects can be related to each other and themselves in multiple ways that are seen as distinct, as opposed to typical relations which either relate two given objects or don&#39;t.
 </span></p><p><span>In programming, we typically use a slightly different-looking category. Namely, we typically use categories where the objects are types (or some similar collection, like sets) and the arrows are functions (or function-like in some way). That&#39;s why I&#39;ve been naming objects uppercase and naming morphisms starting from &quot;f.&quot; This particular kind of category has certain properties right out the gate. The &quot;relationships&quot; between objects aren&#39;t propositions (like \(4\leq 5\)) but <i><span>transformations</span></i> (like \(f(x)=x+1\)). We often have values <i><span>within</span></i> objects (since the objects are collections), which wouldn&#39;t make sense with an object like \(7\). That means there are multiple distinct values, like \(7\) or \(8\), that are different from each other but represented by the same object in the category (say, <code><span>int</span></code>). Category theory can&#39;t talk about these values directly (it can hardly say things about even the <i><span>objects,</span></i> as it generally uses morphisms for all reasoning) though if you have something like a singleton set \(S\) then the set of all functions from \(S\) to any set \(X\) is equivalent to the set \(X\) itself, and gives a way of talking about the elements of \(X\) in category theory. Categories where the objects are collections are <i><span>EXTREMELY</span></i> powerful, and it&#39;s the main reason we say a category has a &quot;collection&quot; of objects instead of a &quot;set;&quot; we&#39;d like to be able to construct categories where the objects are all the sets, and there&#39;s no set-of-all-sets so this category&#39;s objects don&#39;t form a set. &quot;Small&quot; categories are ones where the objects form a set, and &quot;large&quot; categories are the rest, and include many interesting and powerful categories.
 </span></p><p><span>I think these categories-of-collections are also very useful and underappreciated for analytic philosophers, which is why the first example category I gave was an analysis of possible worlds. That category is an example where objects have an enormous amount of information (the entire state of the world), and arrows are transformations (sequences of events).
-</span></p><p><span>Small categories form a famous and powerful category called <a href="/wiki/cat"><span>Cat</span></a>.</span></p></div><div><div style="height:100pt;"></div><p id="copyright-notice" class="subtle-text">© 2024 Ryan Brewer.</p><script src="/__/firebase/8.10.1/firebase-app.js"></script><script src="/__/firebase/8.10.1/firebase-analytics.js"></script><script src="/__/firebase/init.js"></script><script>firebase.analytics();</script></div></body></html></div><script>
+</span></p><p><span>Small categories form a famous and powerful category called <a href="/wiki/cat"><span>Cat</span></a>.</span></p></div><div><div style="height:100pt;"></div><p id="copyright-notice" class="subtle-text">© 2024 Ryan Brewer.</p><script src="/__/firebase/8.10.1/firebase-app.js"></script><script src="/__/firebase/8.10.1/firebase-analytics.js"></script><script src="/__/firebase/init.js"></script><script>firebase.analytics();</script></div></div></div><script>
 // SPA algorithm stolen from Hayleigh Thompson's wonderful Modem library
 async function go_to(url, loader, back) {
-  if (url.pathname === window.location.pathname) {
+  if (!back && url.pathname === window.location.pathname) {
     if (url.hash) document.getElementById(url.hash.slice(1))?.scrollIntoView();
-    else document.body.scrollIntoView();
+    else window.scrollTo(0, 0);
     return;
   }
+  document.dispatchEvent(new Event('beforeunload'));
+  document.dispatchEvent(new Event('unload'));
   const $app = document.getElementById('arctic-app');
   if (loader) $app.innerHTML = '<div id="arctic-loader"></div>';
   if (!back) window.history.pushState({}, '', url.href);
-  window.requestAnimationFrame(() => {
-    // scroll in #-link elements, as the browser would if we didn't preventDefault
-    if (url.hash) {
-      document.getElementById(url.hash.slice(1))?.scrollIntoView();
-    }
-  });
   // handle new path
-  console.log(url.pathname);
   const response = await fetch('/__pages/' + url.pathname + '/index.html');
   if (!response.ok) response = await fetch('/__pages/404.html');
   if (!response.ok) return;
   const html = await response.text();
   $app.innerHTML = html;
-  document.body.scrollIntoView();
+  // re-create script elements, so their javascript runs
+  const scripts = $app.querySelectorAll('script');
+  for (let i = 0; i < scripts.length; i++) {
+    const script = scripts[i];
+    const n = document.createElement('script');
+    for (let j = 0; j < script.attributes.length; j++) {
+      const attr = script.attributes[j];
+      n.setAttribute(attr.name, attr.value);
+    }
+    const t = document.createTextNode(script.innerHTML);
+    n.appendChild(t);
+    script.parentNode.replaceChild(n, script);
+  }
+  if (url.hash)
+    window.requestAnimationFrame(() =>
+      document.getElementById(url.hash.slice(1))?.scrollIntoView()
+    );
+  else window.scrollTo(0, 0);
+  window.requestAnimationFrame(() => 
+    document.dispatchEvent(new Event('DOMContentLoaded'))
+  );
 }
 document.addEventListener('click', async function(e) {
   const a = find_a(e.target);
@@ -73,5 +79,4 @@ function find_a(target) {
   if (!target || target.tagName === 'BODY') return null;
   if (target.tagName === 'A') return target;
   return find_a(target.parentElement);
-}
-  </script></div></body></html>
+}</script></div></body></html>

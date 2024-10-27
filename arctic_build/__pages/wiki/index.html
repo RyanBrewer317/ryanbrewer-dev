@@ -1,0 +1,32 @@
+<!doctype html>
+<div><title>Search Wiki - Ryan Brewer</title><meta name="description" content="Look through Ryan&#39;s personal wiki"><script>const WIKIS = {"natural-transformation": {"id": "natural-transformation", "url": "/posts/natural-transformation", "title": "Natural Transformation", "tags": ["natural", "transformation", "naturality", "transformations", "functor", "cat", "functors", "theory", "categories", "category", "2-category", "2-cell", "2-morphism"]},
+"natural-isomorphism": {"id": "natural-isomorphism", "url": "/posts/natural-isomorphism", "title": "Natural Isomorphism", "tags": ["natural", "transformation", "transformations", "functor", "category", "isomorphism"]},
+"monoidal-category": {"id": "monoidal-category", "url": "/posts/monoidal-category", "title": "Monoidal Category", "tags": ["monoid", "monoidal", "category", "categories", "string", "diagram", "diagrams", "bicategory", "bicategories", "2-category", "2-categories", "bifunctor"]},
+"linear-logic": {"id": "linear-logic", "url": "/posts/linear-logic", "title": "Linear Logic", "tags": ["girard", "resource", "substructural", "affine", "relevant", "resources", "category", "theory", "monoid", "monoidal", "string", "star", "autonomous", "star-autonomous", "*-autonomous", "categories", "once"]},
+"genealogy-of-morals": {"id": "genealogy-of-morals", "url": "/posts/genealogy-of-morals", "title": "Genealogy of Morals", "tags": ["nietzsche", "morality", "slave", "master", "aristocrat", "good", "evil", "bad", "philosophy"]},
+"functor": {"id": "functor", "url": "/posts/functor", "title": "Functor", "tags": ["category", "cat", "categories", "bifunctor", "functoriality", "bifunctoriality", "functors", "bifunctors", "homomorphism", "homomorphisms", "structure", "preserving", "theory"]},
+"functor-category": {"id": "functor-category", "url": "/posts/functor-category", "title": "Functor Category", "tags": ["functor", "functors", "category", "categories", "theory", "natural", "transformation", "transformations", "exponential", "object", "cat"]},
+"first-wiki": {"id": "first-wiki", "url": "/posts/first-wiki", "title": "My First Wiki Page", "tags": ["first wiki"]},
+"fame": {"id": "fame", "url": "/posts/fame", "title": "Fame", "tags": ["plans", "ryan", "brewer"]},
+"exponential-object": {"id": "exponential-object", "url": "/posts/exponential-object", "title": "Exponential Object", "tags": ["exponential", "object", "objects", "category", "categories", "arrow", "arrows", "morphism", "morphisms", "function", "functions", "type", "types"]},
+"category": {"id": "category", "url": "/posts/category", "title": "Category", "tags": ["category", "categories", "theory", "object", "objects", "arrow", "arrows", "morphism", "morphisms"]},
+"cat": {"id": "cat", "url": "/posts/cat", "title": "Cat", "tags": ["cat", "category", "categories", "functor", "functors", "natural", "transformation", "transformations"]},
+"aesthetics": {"id": "aesthetics", "url": "/posts/aesthetics", "title": "Aesthetics", "tags": ["philosophy", "art", "aesthetic", "beauty", "pattern", "thrownness"]},
+};</script><script>
+function searchWikisKeyUp() {
+  // Declare variables
+  const $input = document.getElementById("search-wiki");
+  const q = $input.value.toLowerCase();
+  const $menu = document.getElementById("search-wiki-menu");
+  $menu.replaceChildren(...Array.from($menu.children).sort((a, b) => {
+    const aHits = getHits(q, WIKIS[a.id]);
+    const bHits = getHits(q, WIKIS[b.id]);
+    return bHits - aHits;
+  }));
+}
+function getHits(q, w) {
+  let hits = 0;
+  for (const i in w.tags) if (q.includes(w.tags[i])) hits += 2;
+  return hits;
+}
+  </script><nav id="nav"><div id="nav-dropdown" onclick="document.getElementById(&#39;nav&#39;).classList.toggle(&#39;dropdown&#39;);document.body.classList.toggle(&#39;noscroll&#39;);">☰</div><a href="/" id="nav-home">Ryan Brewer</a><a href="/posts" id="nav-posts">Posts</a><a href="/wiki" id="nav-wiki">Wiki</a><a href="/contact" id="nav-contact">Contact</a><a href="/demos" id="nav-demos">Demos</a><a href="/feed.rss" id="nav-subscribe" onclick="window.location.href = &#39;/feed.rss&#39;"><img src="/rss-icon.png" id="rss-subscribe-icon">Subscribe</a></nav><div id="body"><input type="text" id="search-wiki" placeholder="Search..." onkeyup="searchWikisKeyUp()" title="Enter search terms"><ul id="search-wiki-menu"><li id="natural-transformation" class="wiki-thumbnail"><h3><a href="../wiki/natural-transformation">Natural Transformation</a></h3></li><li id="natural-isomorphism" class="wiki-thumbnail"><h3><a href="../wiki/natural-isomorphism">Natural Isomorphism</a></h3></li><li id="monoidal-category" class="wiki-thumbnail"><h3><a href="../wiki/monoidal-category">Monoidal Category</a></h3></li><li id="linear-logic" class="wiki-thumbnail"><h3><a href="../wiki/linear-logic">Linear Logic</a></h3></li><li id="genealogy-of-morals" class="wiki-thumbnail"><h3><a href="../wiki/genealogy-of-morals">Genealogy of Morals</a></h3></li><li id="functor" class="wiki-thumbnail"><h3><a href="../wiki/functor">Functor</a></h3></li><li id="functor-category" class="wiki-thumbnail"><h3><a href="../wiki/functor-category">Functor Category</a></h3></li><li id="first-wiki" class="wiki-thumbnail"><h3><a href="../wiki/first-wiki">My First Wiki Page</a></h3></li><li id="fame" class="wiki-thumbnail"><h3><a href="../wiki/fame">Fame</a></h3></li><li id="exponential-object" class="wiki-thumbnail"><h3><a href="../wiki/exponential-object">Exponential Object</a></h3></li><li id="category" class="wiki-thumbnail"><h3><a href="../wiki/category">Category</a></h3></li><li id="cat" class="wiki-thumbnail"><h3><a href="../wiki/cat">Cat</a></h3></li><li id="aesthetics" class="wiki-thumbnail"><h3><a href="../wiki/aesthetics">Aesthetics</a></h3></li></ul></div><div><div style="height:100pt;"></div><p id="copyright-notice" class="subtle-text">© 2024 Ryan Brewer.</p><script src="/__/firebase/8.10.1/firebase-app.js"></script><script src="/__/firebase/8.10.1/firebase-analytics.js"></script><script src="/__/firebase/init.js"></script><script>firebase.analytics();</script></div></div>

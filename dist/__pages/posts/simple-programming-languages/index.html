@@ -1,0 +1,93 @@
+<!doctype html>
+<div><title>Simple Programming Languages - Ryan Brewer</title><meta name="description" content="Simple programming languages are wonderful to work in. But what is it about them that actually makes them simple? And why do we like that so much?"><nav id="nav"><div id="nav-dropdown" onclick="document.getElementById(&#39;nav&#39;).classList.toggle(&#39;dropdown&#39;);document.body.classList.toggle(&#39;noscroll&#39;);">☰</div><a href="/" id="nav-home">Ryan Brewer</a><a href="/posts" id="nav-posts">Posts</a><a href="/wiki" id="nav-wiki">Wiki</a><a href="/contact" id="nav-contact">Contact</a><a href="/demos" id="nav-demos">Demos</a><a href="/feed.rss" id="nav-subscribe" onclick="window.location.href = &#39;/feed.rss&#39;"><img src="/rss-icon.png" id="rss-subscribe-icon">Subscribe</a></nav><div id="body"><h1>Simple Programming Languages</h1><div class="date">March 20, 2024</div><p><span>I love simple programming languages, like Gleam, Go, and C. I know I&#39;m not alone; there&#39;s something wonderful about using a simple language: reading it, using it in a team, coming back to it after a long time, the list goes on.
+</span></p><p><span>In this post I want to make this kind of simplicity more precise and talk about some reasons it&#39;s important. I propose five key ideas for simple programming languages: ready-at-hand features, fast iteration cycles, a single way of doing things, first-order reasoning principles, and simple static type systems. I discuss each of these at length below.
+</span></p><h3><span>Ready-At-Hand
+</span></h3><p><span>In the philosophy of technology there&#39;s a very useful concept: &quot;presence-at-hand&quot; vs. &quot;readiness-at-hand.&quot; When something is present-at-hand, it&#39;s currently taking up our thoughts and in our immediate consciousness. If it&#39;s instead ready-at-hand, it&#39;s like we can&#39;t even tell that it&#39;s there until we want to use it. For example, when we walk into our kitchen for the millionth time, we&#39;re not really aware of all the cupboards, food, appliances, table, chairs, decorations, or whatever else you have in your kitchen. At least for me, it&#39;s almost like I only see the fridge if I&#39;m coming for a quick bite. As I sit down, I become aware of the table and chairs, which were ready-at-hand and now become present-at-hand, and I don&#39;t think a single thought about the fridge, which becomes ready-at-hand.
+</span></p><p><span>Just because you&#39;re using something doesn&#39;t make it become present-at-hand. Glasses, for example, remain ready-at-hand even as you see through them, because your mind acts as if they aren&#39;t even there. However, when you use ready-at-hand things and they <i><span>disfunction</span></i> then they become present-at-hand: dirt on your glasses makes the presence of the glasses suddenly very loud to your mind.
+</span></p><p><span>This is like the idea of a small working memory that limits the number of concepts you can juggle in your mind at once, but generalized to include how we filter out noise from all the sense data we&#39;re constantly bombarded with.
+</span></p><p><span>I bring up this idea of readiness-at-hand because simple programming languages often <i><span>do</span></i> have many features, but they&#39;re designed to stay invisible to our mind whenever we&#39;re not using them. For example, Gleam, Go, and C are all very cross-platform, and making them support more platforms is a big chunk of the work that goes into them. Being able to run your code in a browser, or on a Raspberry Pi, or on a phone, or on a server, are real features that are added to the language, but they don&#39;t hurt its simplicity at all. Another example is LSP support, which is a major focus for the developers of Gleam and Go, and for C is doing pretty well now in spite of its age.
+</span></p><p><span>I won&#39;t say too much more about this because hopefully you&#39;ll be able to see it as a little bit of a theme in the following sections. The paper I&#39;d recommend for finding more about these ideas in the philosophy of technology is <a href="https://www.jstor.org/stable/24232017"><span>here</span></a>.
+</span></p><h3><span>Iteration Cycles
+</span></h3><p><span>A very fast iteration cycle (meaning compile times, mostly) is a very nice feature that simple languages aim for. Prototyping and experimentation is very cheap and the developer can stay in a flow-state that a 2+ second compile time would make impossible.
+</span></p><p><span>Obviously, C needs a little bit of slack here, because it&#39;s designed as a single-pass compiler originally, but its design is quite good considering that constraint. Say what you will about header files being annoying, I think they&#39;re quite ergonomic under those circumstances. They offer an out-of-orderness that we take for granted now but that definitely counts as a ready-at-hand feature.
+</span></p><p><span>But for Gleam and Go, compiler performance is some of the best in class. Go is famous for this, so I won&#39;t say too much about it. The Gleam compiler is written in Rust and the designers have been very explicit that it will never be self-hosted, as that would hurt compiler performance and make distribution harder. Files are parsed and processed in parallel where possible, and I&#39;ve personally found my Gleam projects to compile instantly.
+</span></p><p><span>It&#39;s also worth mentioning gleam&#39;s dependency system is extremely nice. It works with the Hex package manager of Erlang and Elixir, and therefore generates beautiful HexDocs documentation pages for you to make libraries easy to find and make good documentation the norm. To see how convenient gleam makes everything, see the options that come up when I type <code><span>gleam</span></code> into my terminal and hit enter:
+</span></p><pre><code> $ gleam
+\
+gleam 1.0.0
+\
+USAGE:
+    gleam &lt;SUBCOMMAND&gt;
+\
+OPTIONS:
+    -h, --help       Print help information
+    -V, --version    Print version information
+\
+SUBCOMMANDS:
+    add        Add new project dependencies
+    build      Build the project
+    check      Type check the project
+    clean      Clean build artifacts
+    deps       Work with dependency packages
+    docs       Render HTML documentation
+    export     Export something useful from the Gleam project
+    fix        Rewrite deprecated Gleam code
+    format     Format source code
+    help       Print this message or the help of the given subcommand(s)
+    hex        Work with the Hex package manager
+    lsp        Run the language server, to be used by editors
+    new        Create a new project
+    publish    Publish the project to the Hex package manager
+    remove     Remove project dependencies
+    run        Run the project
+    shell      Start an Erlang shell
+    test       Run the project tests
+    update     Update dependency packages to their latest versions
+</code></pre><p><span>That&#39;s a lot of very straightforward and convenient subcommands! I&#39;ve been using Gleam for a few months now and published a couple packages and added many to my projects and I&#39;m very happy with this process.
+</span></p><h3><span>One Way of Doing Things
+</span></h3><p><span>Designing a language for fast compile times often means a lot of fancy features aren&#39;t possible. For example, Go isn&#39;t planning on adding metaprogramming, and for a long time wasn&#39;t even planning on adding generics. 
+</span></p><p><span>But in many cases these languages argue that the sacrifices made for performance are actually better language design choices anyway. Go wants all of its looping code to be with a for loop, all of its &quot;this-or-that&quot; code to be with if statements, and all of its &quot;choose-one-of-these&quot; code to be with switch statements. To that end, for loops and switch statements are a little unusual in Go, and there&#39;s no while loop. Go&#39;s concurrency story is very committed to one approach, unlike Rust which is the opposite. Functional code is possible to some degree but Go&#39;s lambdas are a pain in the ass to write. Go&#39;s type system solves every type challenge with interfaces.
+</span></p><p><span>Gleam takes this idea even further. Following its functional lineage, there are <i><span>no</span></i> loop constructs, just recursion and things like <code><span>map</span></code> and <code><span>fold</span></code>. Tail call optimization is used so these compile a lot like how a while loop would. Furthermore, Gleam doesn&#39;t even have <code><span>if</span></code>! Instead, there is only (powerful) pattern matching with (powerful) guards. Fibonacci might be written like so:
+</span></p><pre><code>pub fn fib(n: Int) -&gt; Int {
+  case n &lt; 2 {
+    True -&gt; n
+    False -&gt; fib(n - 1) + fib(n - 2)
+  }
+}
+</code></pre><p><span>Pattern matching on <code><span>True</span></code> and <code><span>False</span></code> is just like an <code><span>if</span></code> statement, so this &quot;limitation&quot; is never that annoying in practice.
+</span></p><p><span>Gleam also enforces snake_case for variable and function names, and PascalCase for type names. Gleam also has a great opinionated code formatter (just like Go) and starting a gleam project includes, by default, a github action for checking your formatting. Really! All the restrictions quickly corral you into a specific style that everyone else is also using.
+</span></p><p><span>Gleam explicitly makes a small, synergystic feature set the goal, optimizing for fast <i><span>learning times</span></i> and ease of <i><span>reading code.</span></i> A tagline of the language is that you can <a href="https://tour.gleam.run/"><span>learn it in an afternoon</span></a>. This focus is a big deal, and definitely resonates with what I like about Go as well. You won&#39;t understand how useful this is until you experience it for a while yourself.
+</span></p><p><span>As AI code completion becomes more popular, this one-way approach becomes even more valuable. I see generative AI as aesthetics-engines, in a philosophical sense, because of their word-at-a-time nature (instead of trains of thought) and their basis in statistics. That means simple languages like C, Go, and Gleam, whose programs are always written in the same way, will be producing more accurate code suggestions. They have a very consistent aesthetic for humans and computers to understand. My fibonacci function above was almost completely generated by Claude, with no edits in post, just by writing it in the codebase for this blog (a small- to mid-size Gleam application). I&#39;m quite sure that Claude has zero or almost zero experience with Gleam code in its training set, and there&#39;s a danger of confusing it with Rust because of the (intentional) syntax similarities, but still it did very well.
+</span></p><h3><span>First Order Reasoning
+</span></h3><p><span>In academia there&#39;s a language called <a href="https://en.wikipedia.org/wiki/OBJ_(programming_language"><span>OBJ</span></a>) designed to be like a functional language with no lambdas (technically it&#39;s a &quot;term rewriting&quot; language). The scholars behind it argue that higher-order functions are difficult for humans to reason about, and they offer interesting ways to recover much of the expressivity of closures in other (vaguely object-oriented) ways.
+</span></p><p><span>C and Go are fairly first-order. They both <i><span>support</span></i> higher order functions (though C closures are very do-it-all-yourself of course), but that style of code is not idiomatic at all. Like I said before, loops should be with the provided loop constructs and dynamic behavior should generally be achieved in other ways. This feels almost explicit as you write Go and C code, and Go is clearly doing this more out of ideology than technical issues. Python lambdas are like this too, to a lesser extent.
+</span></p><p><span>You&#39;d think Gleam would be hurting in this category, as a functional language, but it actually has design choices for this too. Local variable bindings in Gleam aren&#39;t recursive, explicitly to encourage functions to be lifted to the top-level. Gleam uses the <code><span>|&gt;</span></code> operator to make higher-order code much easier to read and think about. Gleam&#39;s (awesome!) <code><span>use</span></code> syntax subsumes most uses of lambdas in functions, in a way that feels a lot like writing comfy, simple imperative code. For example, you can get something like for-loops:
+</span></p><pre><code>import gleam/int
+import gleam/list
+import gleam/io
+\
+/// for each i in a list, print i+1
+pub fn print_all_plus_one(l: List(Int)) {
+  // this is contrived; normally you&#39;d use only one loop
+  // a loop:
+  let res = {
+    use i &lt;- list.map(l)
+    int.to_string(i + 1)
+  }
+  // another loop:
+  use s &lt;- list.each(res)
+  io.print(s)
+}
+</code></pre><p><span>Note that this style of code is a little gross and you generally wouldn&#39;t use <code><span>use</span></code> here, you&#39;d just call <code><span>list.each</span></code> as normal. I just want to show how <code><span>use</span></code> turns higher-order code into something that feels imperative, and indeed I have seen code like this is gleam codebases occasionally.
+</span></p><p><span>If this is an area of programming language design that&#39;s interesting for you, I&#39;ll also link <a href="https://www.haskellforall.com/2024/02/unification-free-keyword-type-checking.html"><span>this cool blog post</span></a>.
+</span></p><h3><span>Type Systems
+</span></h3><p><span>One might wonder why Python doesn&#39;t make my list. The reason is that python code feels very different to write, because of <i><span>refactoring.</span></i> The type systems of Gleam, Go, and C are very helpful when I make big changes to my code, allowing me to not keep everything in my head at once. Python makes me feel lost and alone, feeling around in the dark, wondering what runtime type error I&#39;ll discover next. Python makes next to no effort to manage the complexity of the project for me, which makes the project terrifying to touch in any significant way. Optimizing for readability generally goes alongside optimizing for refactoring.
+</span></p><p><span>On the other side of the spectrum, one might wonder why Haskell doesn&#39;t make my list. After all, it&#39;s like, nothing but lambdas, right? Oh so simple. Of course, I don&#39;t really believe anyone thinks haskell would make this list. Because of type system features (and an unfortunate culture of &quot;pick random strings of symbols to express complex ideas, just to make absolutely everything a one-liner&quot;) haskell is not simple, there are a million ways to write it, and it&#39;s incredibly hard to read (though pretty fun to write once you get it).
+</span></p><p><span>Simple languages straddle an interesting balance between expressiveness and restrictiveness. C, Go, and Gleam all offer some form of dynamic typing that&#39;s explicitly for a small number of usecases. Then, they all offer a little bit of fanciness to express what you want without dynamic typing: Go interfaces, Gleam&#39;s powerful polymorphism, and C preprocessor macros and casts. After that, the type systems are very bare-bones and restrictive. This balance struck by simple programming languages feels very nice to work in. It&#39;s like how perfect parents find a balance between their child&#39;s freedom and their own control, keeping their child both safe and happy.
+</span></p><p><span>Finally, I definitely have to link these famous gleam blog posts about doing wonderful things simply with Gleam&#39;s type system: <a href="https://mckayla.blog/posts/all-you-need-is-data-and-functions.html"><span>All you need is data and functions</span></a> and <a href="https://blog.hayleigh.dev/phantom-types-in-gleam"><span>Phantom Types in Gleam</span></a>.
+</span></p><h3><span>Conclusion
+</span></h3><p><span>Hopefully this article was interesting. I know many people like simple languages for their simplicity, but I haven&#39;t seen many attempts to systematize it as I do here. 
+</span></p><p><span>I&#39;m quite burnt out from working so long on <a href="https://github.com/RyanBrewer317/SaberVM"><span>SaberVM</span></a>, with so many tiny bugfixes, so my mind has been wandering to programming language ideas and philosophy.
+</span></p><p><span>I&#39;m quite interested in simple programming languages, obviously, and I plan to write a little language that pushes these ideas even further than Gleam does, with no lambdas like OBJ. I also have some ideas for doing this with no garbage collector, borrowing ideas from Mojo&#39;s Python-friendly borrow checker.
+</span></p><p><span>To summarize, the five key ideas are: readiness-at-hand, iteration speed, one-way-of-doing-things, first-order reasoning, and simple static type systems. I truly think this is the right direction for language design to go in the long run, not complex languages like Haskell and Rust.
+</span></p></div><div><div style="height:100pt;"></div><p id="copyright-notice" class="subtle-text">© 2024 Ryan Brewer.</p><script src="/__/firebase/8.10.1/firebase-app.js"></script><script src="/__/firebase/8.10.1/firebase-analytics.js"></script><script src="/__/firebase/init.js"></script><script>firebase.analytics();</script></div></div>

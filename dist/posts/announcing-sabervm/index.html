@@ -8,16 +8,7 @@ window.MathJax = {
   loader: {load: ['[tex]/unicode']},
   tex: {packages: {'[+]': ['unicode']}},
 };
-        </script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css"><script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script><script>hljs.highlightAll();</script><link rel="stylesheet" href="/style.css"></head><body><div><div id="arctic-app"><html lang="en"><head><script async="true" src="https://www.googletagmanager.com/gtag/js?id=G-BDZJ8SX3Y1"></script><script>
-window.dataLayer = window.dataLayer || [];
-function gtag(){dataLayer.push(arguments);}
-gtag('js', new Date());
-        </script><title>Announcing the Saber Virtual Machine - Ryan Brewer</title><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="description" content="This post announces SaberVM, an abstract machine for functional programs that guarantees safety, reliability, and portability."><link rel="icon" type="image/x-icon" href="/favicon.ico"><link rel="alternate" type="application/rss+xml" title="Ryan Brewer&#39;s Blog" href="https://ryanbrewer.dev/feed.rss"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="true"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto&amp;display=swap"><script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script><script type="text/javascript" async="true" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script><script>
-window.MathJax = {
-  loader: {load: ['[tex]/unicode']},
-  tex: {packages: {'[+]': ['unicode']}},
-};
-        </script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css"><script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script><script>hljs.highlightAll();</script><link rel="stylesheet" href="/style.css"></head><body><nav id="nav"><div id="nav-dropdown" onclick="document.getElementById(&#39;nav&#39;).classList.toggle(&#39;dropdown&#39;);document.body.classList.toggle(&#39;noscroll&#39;);">☰</div><a href="/" id="nav-home">Ryan Brewer</a><a href="/posts" id="nav-posts">Posts</a><a href="/wiki" id="nav-wiki">Wiki</a><a href="/contact" id="nav-contact">Contact</a><a href="/demos" id="nav-demos">Demos</a><a href="/feed.rss" id="nav-subscribe" onclick="window.location.href = &#39;/feed.rss&#39;"><img src="/rss-icon.png" id="rss-subscribe-icon">Subscribe</a></nav><div id="body"><h1>Announcing the Saber Virtual Machine</h1><div class="date">January 18, 2024</div><p><span>In this post I&#39;m excited to announce the <a href="https://github.com/RyanBrewer317/SaberVM"><span>Saber Virtual Machine</span></a>, or SaberVM. It&#39;s a project I&#39;ve been working hard on for the past month, with fascinating properties and an in-progress MVP implementation that&#39;s coming along well. If you like writing functional languages and want a portable backend to target that&#39;s fast and/or safe, you may be very interested in SaberVM, especially in its upcoming AOT-compile-to-optimized-native form.
+        </script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css"><script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script><script>hljs.highlightAll();</script><link rel="stylesheet" href="/style.css"></head><body><div><div id="arctic-app"><div><title>Announcing the Saber Virtual Machine - Ryan Brewer</title><meta name="description" content="This post announces SaberVM, an abstract machine for functional programs that guarantees safety, reliability, and portability."><nav id="nav"><div id="nav-dropdown" onclick="document.getElementById(&#39;nav&#39;).classList.toggle(&#39;dropdown&#39;);document.body.classList.toggle(&#39;noscroll&#39;);">☰</div><a href="/" id="nav-home">Ryan Brewer</a><a href="/posts" id="nav-posts">Posts</a><a href="/wiki" id="nav-wiki">Wiki</a><a href="/contact" id="nav-contact">Contact</a><a href="/demos" id="nav-demos">Demos</a><a href="/feed.rss" id="nav-subscribe" onclick="window.location.href = &#39;/feed.rss&#39;"><img src="/rss-icon.png" id="rss-subscribe-icon">Subscribe</a></nav><div id="body"><h1>Announcing the Saber Virtual Machine</h1><div class="date">January 18, 2024</div><p><span>In this post I&#39;m excited to announce the <a href="https://github.com/RyanBrewer317/SaberVM"><span>Saber Virtual Machine</span></a>, or SaberVM. It&#39;s a project I&#39;ve been working hard on for the past month, with fascinating properties and an in-progress MVP implementation that&#39;s coming along well. If you like writing functional languages and want a portable backend to target that&#39;s fast and/or safe, you may be very interested in SaberVM, especially in its upcoming AOT-compile-to-optimized-native form.
 </span></p><h3><span>What is it?
 </span></h3><p><span>SaberVM is a compiler backend for functional languages. Specifically, it is an abstract stack machine, with many possible implementations. It takes in CPS code that&#39;s been closure-converted and hoisted, and executes it or AOT compiles it to a native binary. My current implementation is a naive bytecode VM in Rust, without JITing, mostly for rapid prototyping as the design settles.
 </span></p><p><span>The goals of the project are safety, expressivity, portability, and reliability. To give a very quick overview, safety is achieved through a carefully designed type system, and primarily includes memory safety. Expressivity is preserved by using runtime checks and tagging for some of the safety guarantees, so you can use any convoluted memory scheme you want so long as you don&#39;t dereference a dangling pointer. SaberVM offers portability by being designed to be simple to implement on a variety of platforms. Lastly, SaberVM is reliable because of a built-in crash recovery system you can use to microreboot without the whole program terminating, like Erlang&#39;s BEAM.
@@ -33,31 +24,46 @@ window.MathJax = {
 </span></h3><p><span>SaberVM is carefully designed but still a very young project. I have an in-progress <a href="https://github.com/RyanBrewer317/SaberVM"><span>implementation</span></a> in Rust that I call the MVP, a subset of the final SaberVM that isn&#39;t even necessarily forwards-compatible, just to play with the ideas and their interactions and see how they really work in practice. I&#39;m sure as I learn more the design will change somewhat but the core ideas and goals are very strong.
 </span></p><p><span>I&#39;ve gotten most of the typechecker done in just a few days, which is really promising, and the algorithms are very simple. (I&#39;ll post more about them soon!) I think the VM runtime will be easier to write than the typechecker, since it&#39;ll be a naive prototype (without, say, JIT compiling), so I&#39;d say the implementation is about halfway done, which is very exciting.
 </span></p><p><span>If you&#39;ve read this far and think that the project sounds interesting, consider starring it on <a href="https://github.com/RyanBrewer317/SaberVM"><span>github</span></a>, or even sponsoring my work on <a href="https://github.com/sponsors/RyanBrewer317"><span>github</span></a> or <a href="https://ko-fi.com/ryanbrewer"><span>ko-fi</span></a>!
-</span></p></div><div><div style="height:100pt;"></div><p id="copyright-notice" class="subtle-text">© 2024 Ryan Brewer.</p><script src="/__/firebase/8.10.1/firebase-app.js"></script><script src="/__/firebase/8.10.1/firebase-analytics.js"></script><script src="/__/firebase/init.js"></script><script>firebase.analytics();</script></div></body></html></div><script>
+</span></p></div><div><div style="height:100pt;"></div><p id="copyright-notice" class="subtle-text">© 2024 Ryan Brewer.</p><script src="/__/firebase/8.10.1/firebase-app.js"></script><script src="/__/firebase/8.10.1/firebase-analytics.js"></script><script src="/__/firebase/init.js"></script><script>firebase.analytics();</script></div></div></div><script>
 // SPA algorithm stolen from Hayleigh Thompson's wonderful Modem library
 async function go_to(url, loader, back) {
-  if (url.pathname === window.location.pathname) {
+  if (!back && url.pathname === window.location.pathname) {
     if (url.hash) document.getElementById(url.hash.slice(1))?.scrollIntoView();
-    else document.body.scrollIntoView();
+    else window.scrollTo(0, 0);
     return;
   }
+  document.dispatchEvent(new Event('beforeunload'));
+  document.dispatchEvent(new Event('unload'));
   const $app = document.getElementById('arctic-app');
   if (loader) $app.innerHTML = '<div id="arctic-loader"></div>';
   if (!back) window.history.pushState({}, '', url.href);
-  window.requestAnimationFrame(() => {
-    // scroll in #-link elements, as the browser would if we didn't preventDefault
-    if (url.hash) {
-      document.getElementById(url.hash.slice(1))?.scrollIntoView();
-    }
-  });
   // handle new path
-  console.log(url.pathname);
   const response = await fetch('/__pages/' + url.pathname + '/index.html');
   if (!response.ok) response = await fetch('/__pages/404.html');
   if (!response.ok) return;
   const html = await response.text();
   $app.innerHTML = html;
-  document.body.scrollIntoView();
+  // re-create script elements, so their javascript runs
+  const scripts = $app.querySelectorAll('script');
+  for (let i = 0; i < scripts.length; i++) {
+    const script = scripts[i];
+    const n = document.createElement('script');
+    for (let j = 0; j < script.attributes.length; j++) {
+      const attr = script.attributes[j];
+      n.setAttribute(attr.name, attr.value);
+    }
+    const t = document.createTextNode(script.innerHTML);
+    n.appendChild(t);
+    script.parentNode.replaceChild(n, script);
+  }
+  if (url.hash)
+    window.requestAnimationFrame(() =>
+      document.getElementById(url.hash.slice(1))?.scrollIntoView()
+    );
+  else window.scrollTo(0, 0);
+  window.requestAnimationFrame(() => 
+    document.dispatchEvent(new Event('DOMContentLoaded'))
+  );
 }
 document.addEventListener('click', async function(e) {
   const a = find_a(e.target);
@@ -81,5 +87,4 @@ function find_a(target) {
   if (!target || target.tagName === 'BODY') return null;
   if (target.tagName === 'A') return target;
   return find_a(target.parentElement);
-}
-  </script></div></body></html>
+}</script></div></body></html>

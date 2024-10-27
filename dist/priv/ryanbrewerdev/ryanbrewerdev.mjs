@@ -7,7 +7,7 @@ import * as $attribute from "../lustre/lustre/attribute.mjs";
 import * as $html from "../lustre/lustre/element/html.mjs";
 import * as $snag from "../snag/snag.mjs";
 import * as $head from "./components/head.mjs";
-import { makeError } from "./gleam.mjs";
+import { toList, makeError } from "./gleam.mjs";
 import * as $helpers from "./helpers.mjs";
 import * as $contact from "./pages/contact.mjs";
 import * as $cricket from "./pages/cricket.mjs";
@@ -37,17 +37,39 @@ export function main() {
   })();
   let config = (() => {
     let _pipe = $config.new$();
-    let _pipe$1 = $config.turn_off_spa(_pipe);
-    let _pipe$2 = $config.add_collection(_pipe$1, posts);
-    let _pipe$3 = $config.add_collection(_pipe$2, wiki);
-    let _pipe$4 = $config.add_main_page(_pipe$3, "contact", $contact.contact());
-    let _pipe$5 = $config.add_main_page(_pipe$4, "demos", $demos.demos());
-    let _pipe$6 = $config.add_main_page(
-      _pipe$5,
+    let _pipe$1 = $config.add_collection(_pipe, posts);
+    let _pipe$2 = $config.add_collection(_pipe$1, wiki);
+    let _pipe$3 = $config.add_main_page(_pipe$2, "contact", $contact.contact());
+    let _pipe$4 = $config.add_main_page(_pipe$3, "demos", $demos.demos());
+    let _pipe$5 = $config.add_main_page(
+      _pipe$4,
       "404",
       $unknown_page.unknown_page(),
     );
-    let _pipe$7 = $config.add_main_page(_pipe$6, "cricket", $cricket.cricket());
+    let _pipe$6 = $config.add_main_page(_pipe$5, "cricket", $cricket.cricket());
+    let _pipe$7 = $config.add_spa_frame(
+      _pipe$6,
+      (body) => {
+        return $html.html(
+          toList([$attribute.attribute("lang", "en")]),
+          toList([
+            $head.head(
+              "Ryan Brewer's Blog",
+              "The place Ryan writes his thoughts and shows off SaberVM and other cool projects.",
+              toList([
+                $html.link(
+                  toList([
+                    $attribute.rel("stylesheet"),
+                    $attribute.href("/style.css"),
+                  ]),
+                ),
+              ]),
+            ),
+            $html.body(toList([]), toList([body])),
+          ]),
+        );
+      },
+    );
     return $config.home_renderer(
       _pipe$7,
       (collections) => {
@@ -59,7 +81,7 @@ export function main() {
           throw makeError(
             "assignment_no_match",
             "ryanbrewerdev",
-            64,
+            63,
             "",
             "Assignment pattern did not match",
             { value: $ }
@@ -78,7 +100,7 @@ export function main() {
     throw makeError(
       "panic",
       "ryanbrewerdev",
-      71,
+      70,
       "main",
       $snag.pretty_print(err),
       {}

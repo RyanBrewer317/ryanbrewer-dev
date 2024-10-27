@@ -8,16 +8,7 @@ window.MathJax = {
   loader: {load: ['[tex]/unicode']},
   tex: {packages: {'[+]': ['unicode']}},
 };
-        </script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css"><script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script><script>hljs.highlightAll();</script><link rel="stylesheet" href="/style.css"></head><body><div><div id="arctic-app"><html lang="en"><head><script async="true" src="https://www.googletagmanager.com/gtag/js?id=G-BDZJ8SX3Y1"></script><script>
-window.dataLayer = window.dataLayer || [];
-function gtag(){dataLayer.push(arguments);}
-gtag('js', new Date());
-        </script><title>The Cricket Language - Ryan Brewer</title><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="description" content="Cricket is a lazy gradually-typed functional language with objects. It&#39;s very tiny but very expressive; anyone can implement it themselves!"><link rel="icon" type="image/x-icon" href="/favicon.ico"><link rel="alternate" type="application/rss+xml" title="Ryan Brewer&#39;s Blog" href="https://ryanbrewer.dev/feed.rss"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="true"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto&amp;display=swap"><script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script><script type="text/javascript" async="true" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script><script>
-window.MathJax = {
-  loader: {load: ['[tex]/unicode']},
-  tex: {packages: {'[+]': ['unicode']}},
-};
-        </script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css"><script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script><script>hljs.highlightAll();</script><link rel="stylesheet" href="/style.css"></head><body><nav id="nav"><div id="nav-dropdown" onclick="document.getElementById(&#39;nav&#39;).classList.toggle(&#39;dropdown&#39;);document.body.classList.toggle(&#39;noscroll&#39;);">☰</div><a href="/" id="nav-home">Ryan Brewer</a><a href="/posts" id="nav-posts">Posts</a><a href="/wiki" id="nav-wiki">Wiki</a><a href="/contact" id="nav-contact">Contact</a><a href="/demos" id="nav-demos">Demos</a><a href="/feed.rss" id="nav-subscribe" onclick="window.location.href = &#39;/feed.rss&#39;"><img src="/rss-icon.png" id="rss-subscribe-icon">Subscribe</a></nav><div id="body"><h1>The Cricket Language</h1><div class="date">September 12, 2024</div><p><span><a href="https://github.com/RyanBrewer317/cricket_rs"><span>Cricket</span></a> is a new programming language I&#39;ve developed recently. Cricket is tiny: about 1700 lines of Rust code. This means it has a small footprint when embedded in other systems, and it&#39;s easy for anyone to understand and modify. This minimalism still allows for laziness, a decently fast implementation, a linear-time type-based linter with some side-effect tracking, a module system, abstract data types with bare-bones pattern matching, helpful error messages, and more. I designed Cricket carefully to make this happen.
+        </script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css"><script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script><script>hljs.highlightAll();</script><link rel="stylesheet" href="/style.css"></head><body><div><div id="arctic-app"><div><title>The Cricket Language - Ryan Brewer</title><meta name="description" content="Cricket is a lazy gradually-typed functional language with objects. It&#39;s very tiny but very expressive; anyone can implement it themselves!"><nav id="nav"><div id="nav-dropdown" onclick="document.getElementById(&#39;nav&#39;).classList.toggle(&#39;dropdown&#39;);document.body.classList.toggle(&#39;noscroll&#39;);">☰</div><a href="/" id="nav-home">Ryan Brewer</a><a href="/posts" id="nav-posts">Posts</a><a href="/wiki" id="nav-wiki">Wiki</a><a href="/contact" id="nav-contact">Contact</a><a href="/demos" id="nav-demos">Demos</a><a href="/feed.rss" id="nav-subscribe" onclick="window.location.href = &#39;/feed.rss&#39;"><img src="/rss-icon.png" id="rss-subscribe-icon">Subscribe</a></nav><div id="body"><h1>The Cricket Language</h1><div class="date">September 12, 2024</div><p><span><a href="https://github.com/RyanBrewer317/cricket_rs"><span>Cricket</span></a> is a new programming language I&#39;ve developed recently. Cricket is tiny: about 1700 lines of Rust code. This means it has a small footprint when embedded in other systems, and it&#39;s easy for anyone to understand and modify. This minimalism still allows for laziness, a decently fast implementation, a linear-time type-based linter with some side-effect tracking, a module system, abstract data types with bare-bones pattern matching, helpful error messages, and more. I designed Cricket carefully to make this happen.
 </span></p><p><span>Here&#39;s a hello-world program in Cricket:
 </span></p><pre><code class="language-plaintext">def main:
   console.write(&quot;Hello, world!&quot;)
@@ -130,31 +121,46 @@ def main:
 </span></p><h3><span>Closing
 </span></h3><p><span>That was a quick whirlwind tour of Cricket! There&#39;s more I&#39;d like to add, but I do think it&#39;s a pretty cool project already. Especially given how small it is. I had a version written in Haskell, and it only took three days over the weekend to port it to Rust!
 </span></p><p><span>I&#39;m curious about forking it a few times to explore various features, like more advanced type systems or various compiler backends, or having a bunch of optimization passes, or a substructural type system. These would be big enough changes that they lose the Cricket&#39;s philosophy of tinyness, but forking Cricket and adding new things <i><span>is a part of</span></i> the philosophy of tinyness, so long as the small core remains somewhere for future use and forking.
-</span></p><p><span>If you&#39;re interested in Cricket, or you like the work I do, please consider <a href="https://github.com/sponsors/RyanBrewer317"><span>sponsoring me</span></a> or <a href="https://ko-fi.com/ryanbrewer"><span>buying me a coffee</span></a>.</span></p></div><div><div style="height:100pt;"></div><p id="copyright-notice" class="subtle-text">© 2024 Ryan Brewer.</p><script src="/__/firebase/8.10.1/firebase-app.js"></script><script src="/__/firebase/8.10.1/firebase-analytics.js"></script><script src="/__/firebase/init.js"></script><script>firebase.analytics();</script></div></body></html></div><script>
+</span></p><p><span>If you&#39;re interested in Cricket, or you like the work I do, please consider <a href="https://github.com/sponsors/RyanBrewer317"><span>sponsoring me</span></a> or <a href="https://ko-fi.com/ryanbrewer"><span>buying me a coffee</span></a>.</span></p></div><div><div style="height:100pt;"></div><p id="copyright-notice" class="subtle-text">© 2024 Ryan Brewer.</p><script src="/__/firebase/8.10.1/firebase-app.js"></script><script src="/__/firebase/8.10.1/firebase-analytics.js"></script><script src="/__/firebase/init.js"></script><script>firebase.analytics();</script></div></div></div><script>
 // SPA algorithm stolen from Hayleigh Thompson's wonderful Modem library
 async function go_to(url, loader, back) {
-  if (url.pathname === window.location.pathname) {
+  if (!back && url.pathname === window.location.pathname) {
     if (url.hash) document.getElementById(url.hash.slice(1))?.scrollIntoView();
-    else document.body.scrollIntoView();
+    else window.scrollTo(0, 0);
     return;
   }
+  document.dispatchEvent(new Event('beforeunload'));
+  document.dispatchEvent(new Event('unload'));
   const $app = document.getElementById('arctic-app');
   if (loader) $app.innerHTML = '<div id="arctic-loader"></div>';
   if (!back) window.history.pushState({}, '', url.href);
-  window.requestAnimationFrame(() => {
-    // scroll in #-link elements, as the browser would if we didn't preventDefault
-    if (url.hash) {
-      document.getElementById(url.hash.slice(1))?.scrollIntoView();
-    }
-  });
   // handle new path
-  console.log(url.pathname);
   const response = await fetch('/__pages/' + url.pathname + '/index.html');
   if (!response.ok) response = await fetch('/__pages/404.html');
   if (!response.ok) return;
   const html = await response.text();
   $app.innerHTML = html;
-  document.body.scrollIntoView();
+  // re-create script elements, so their javascript runs
+  const scripts = $app.querySelectorAll('script');
+  for (let i = 0; i < scripts.length; i++) {
+    const script = scripts[i];
+    const n = document.createElement('script');
+    for (let j = 0; j < script.attributes.length; j++) {
+      const attr = script.attributes[j];
+      n.setAttribute(attr.name, attr.value);
+    }
+    const t = document.createTextNode(script.innerHTML);
+    n.appendChild(t);
+    script.parentNode.replaceChild(n, script);
+  }
+  if (url.hash)
+    window.requestAnimationFrame(() =>
+      document.getElementById(url.hash.slice(1))?.scrollIntoView()
+    );
+  else window.scrollTo(0, 0);
+  window.requestAnimationFrame(() => 
+    document.dispatchEvent(new Event('DOMContentLoaded'))
+  );
 }
 document.addEventListener('click', async function(e) {
   const a = find_a(e.target);
@@ -178,5 +184,4 @@ function find_a(target) {
   if (!target || target.tagName === 'BODY') return null;
   if (target.tagName === 'A') return target;
   return find_a(target.parentElement);
-}
-  </script></div></body></html>
+}</script></div></body></html>

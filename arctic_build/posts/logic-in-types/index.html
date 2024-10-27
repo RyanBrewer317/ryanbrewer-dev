@@ -8,16 +8,7 @@ window.MathJax = {
   loader: {load: ['[tex]/unicode']},
   tex: {packages: {'[+]': ['unicode']}},
 };
-        </script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css"><script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script><script>hljs.highlightAll();</script><link rel="stylesheet" href="/style.css"></head><body><div><div id="arctic-app"><html lang="en"><head><script async="true" src="https://www.googletagmanager.com/gtag/js?id=G-BDZJ8SX3Y1"></script><script>
-window.dataLayer = window.dataLayer || [];
-function gtag(){dataLayer.push(arguments);}
-gtag('js', new Date());
-        </script><title>An Introduction to Proofs with Dependent Types - Ryan Brewer</title><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="description" content="This post introduces the basic ideas behind dependent-type-based proof assistants, and expressing logic with types and values."><link rel="icon" type="image/x-icon" href="/favicon.ico"><link rel="alternate" type="application/rss+xml" title="Ryan Brewer&#39;s Blog" href="https://ryanbrewer.dev/feed.rss"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="true"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto&amp;display=swap"><script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script><script type="text/javascript" async="true" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script><script>
-window.MathJax = {
-  loader: {load: ['[tex]/unicode']},
-  tex: {packages: {'[+]': ['unicode']}},
-};
-        </script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css"><script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script><script>hljs.highlightAll();</script><link rel="stylesheet" href="/style.css"></head><body><nav id="nav"><div id="nav-dropdown" onclick="document.getElementById(&#39;nav&#39;).classList.toggle(&#39;dropdown&#39;);document.body.classList.toggle(&#39;noscroll&#39;);">☰</div><a href="/" id="nav-home">Ryan Brewer</a><a href="/posts" id="nav-posts">Posts</a><a href="/wiki" id="nav-wiki">Wiki</a><a href="/contact" id="nav-contact">Contact</a><a href="/demos" id="nav-demos">Demos</a><a href="/feed.rss" id="nav-subscribe" onclick="window.location.href = &#39;/feed.rss&#39;"><img src="/rss-icon.png" id="rss-subscribe-icon">Subscribe</a></nav><div id="body"><h1>An Introduction to Proofs with Dependent Types</h1><div class="date">December 3, 2023</div><p><span>When I was first introduced to proof assistants like Coq, I thought it would be graduate-level material that was way beyond what I could ever hope to understand. However, the essence of how they work is surprisingly simple, and very beautiful. In this post I will explain the intuition behind dependent types and their relationship with proofs, using a C-like syntax.
+        </script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css"><script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script><script>hljs.highlightAll();</script><link rel="stylesheet" href="/style.css"></head><body><div><div id="arctic-app"><div><title>An Introduction to Proofs with Dependent Types - Ryan Brewer</title><meta name="description" content="This post introduces the basic ideas behind dependent-type-based proof assistants, and expressing logic with types and values."><nav id="nav"><div id="nav-dropdown" onclick="document.getElementById(&#39;nav&#39;).classList.toggle(&#39;dropdown&#39;);document.body.classList.toggle(&#39;noscroll&#39;);">☰</div><a href="/" id="nav-home">Ryan Brewer</a><a href="/posts" id="nav-posts">Posts</a><a href="/wiki" id="nav-wiki">Wiki</a><a href="/contact" id="nav-contact">Contact</a><a href="/demos" id="nav-demos">Demos</a><a href="/feed.rss" id="nav-subscribe" onclick="window.location.href = &#39;/feed.rss&#39;"><img src="/rss-icon.png" id="rss-subscribe-icon">Subscribe</a></nav><div id="body"><h1>An Introduction to Proofs with Dependent Types</h1><div class="date">December 3, 2023</div><p><span>When I was first introduced to proof assistants like Coq, I thought it would be graduate-level material that was way beyond what I could ever hope to understand. However, the essence of how they work is surprisingly simple, and very beautiful. In this post I will explain the intuition behind dependent types and their relationship with proofs, using a C-like syntax.
 </span></p><p><span>A little familiarity with dependent types and proof assistants like Agda or Coq will help you understand this post, but isn&#39;t necessary. A familiarity with basic logic is assumed, including &quot;for all.&quot; A familiarity with programming in statically-typed languages like C, Go, OCaml, or TypeScript is assumed.
 </span></p><h3><span>Logic in Types
 </span></h3><p><span>In academia, there is a well-known correspondence between logic and type systems, called the Curry-Howard Isomorphism. It&#39;s a big name but the idea is simple: if a type has a value in it, then it&#39;s &quot;true,&quot; and if it&#39;s empty, it&#39;s &quot;false.&quot; So <code><span>void</span></code> is false and <code><span>int</span></code> is true, for example.
@@ -37,31 +28,46 @@ window.MathJax = {
 </span></p><p><span>A more rigorous reason for why Pi types work like &quot;for all&quot; is because functions of Pi types can only be constructed if <i><span>every possible result type</span></i> has a value. In the case of <code><span>(n: int)-&gt;(n &lt; 5)-&gt;(n &lt; 6)</span></code>, a value of this type <i><span>can</span></i> be created, because proving that n is less than 5 is sufficient to prove that it is less than 6. If the type were instead <code><span>(n: int)-&gt;(n &gt; 5)-&gt;(n &gt; 6)</span></code>, and we have a function <code><span>f</span></code> of this type, then it could be called like <code><span>f(6)(proof_5_le_6)</span></code> which are all valid terms, and then as a result you&#39;d have a value of type <code><span>6 &gt; 6</span></code>, which is &quot;false&quot; and has no values. Therefore this function <code><span>f</span></code> can&#39;t exist. Calling it with other arguments, like <code><span>f(4)(proof_4_le_6)</span></code>, <i><span>would</span></i> hypothetically be valid, except that the function as a whole can&#39;t possibly exist because it would be possible to use it to get values of an empty type. This is why dependent function types let you express &quot;for all&quot; in your types.
 </span></p><h3><span>Tip of the Iceberg
 </span></h3><p><span>This concludes my first real blog post. Needless to say these ideas are the tip of a very large iceberg. For example, types like <code><span>int</span></code> seem pretty different from useful proposition types like <code><span>0&lt;=i</span></code>. To find out more about that difference, look up <code><span>Prop</span></code> and <code><span>Set</span></code> in Coq&#39;s type system. I also didn&#39;t explain &quot;there exists;&quot; The search term here is &quot;Sigma&quot; (\(Sigma\)) types, which I may write about more in the future. And there&#39;s still a ways to go before you get a full proof assistant. I think that this article gives a good foundation for exploring this iceberg on your own, but it was intended to set up future posts I want to write about the corners of the iceberg that really fascinate me.
-</span></p></div><div><div style="height:100pt;"></div><p id="copyright-notice" class="subtle-text">© 2024 Ryan Brewer.</p><script src="/__/firebase/8.10.1/firebase-app.js"></script><script src="/__/firebase/8.10.1/firebase-analytics.js"></script><script src="/__/firebase/init.js"></script><script>firebase.analytics();</script></div></body></html></div><script>
+</span></p></div><div><div style="height:100pt;"></div><p id="copyright-notice" class="subtle-text">© 2024 Ryan Brewer.</p><script src="/__/firebase/8.10.1/firebase-app.js"></script><script src="/__/firebase/8.10.1/firebase-analytics.js"></script><script src="/__/firebase/init.js"></script><script>firebase.analytics();</script></div></div></div><script>
 // SPA algorithm stolen from Hayleigh Thompson's wonderful Modem library
 async function go_to(url, loader, back) {
-  if (url.pathname === window.location.pathname) {
+  if (!back && url.pathname === window.location.pathname) {
     if (url.hash) document.getElementById(url.hash.slice(1))?.scrollIntoView();
-    else document.body.scrollIntoView();
+    else window.scrollTo(0, 0);
     return;
   }
+  document.dispatchEvent(new Event('beforeunload'));
+  document.dispatchEvent(new Event('unload'));
   const $app = document.getElementById('arctic-app');
   if (loader) $app.innerHTML = '<div id="arctic-loader"></div>';
   if (!back) window.history.pushState({}, '', url.href);
-  window.requestAnimationFrame(() => {
-    // scroll in #-link elements, as the browser would if we didn't preventDefault
-    if (url.hash) {
-      document.getElementById(url.hash.slice(1))?.scrollIntoView();
-    }
-  });
   // handle new path
-  console.log(url.pathname);
   const response = await fetch('/__pages/' + url.pathname + '/index.html');
   if (!response.ok) response = await fetch('/__pages/404.html');
   if (!response.ok) return;
   const html = await response.text();
   $app.innerHTML = html;
-  document.body.scrollIntoView();
+  // re-create script elements, so their javascript runs
+  const scripts = $app.querySelectorAll('script');
+  for (let i = 0; i < scripts.length; i++) {
+    const script = scripts[i];
+    const n = document.createElement('script');
+    for (let j = 0; j < script.attributes.length; j++) {
+      const attr = script.attributes[j];
+      n.setAttribute(attr.name, attr.value);
+    }
+    const t = document.createTextNode(script.innerHTML);
+    n.appendChild(t);
+    script.parentNode.replaceChild(n, script);
+  }
+  if (url.hash)
+    window.requestAnimationFrame(() =>
+      document.getElementById(url.hash.slice(1))?.scrollIntoView()
+    );
+  else window.scrollTo(0, 0);
+  window.requestAnimationFrame(() => 
+    document.dispatchEvent(new Event('DOMContentLoaded'))
+  );
 }
 document.addEventListener('click', async function(e) {
   const a = find_a(e.target);
@@ -85,5 +91,4 @@ function find_a(target) {
   if (!target || target.tagName === 'BODY') return null;
   if (target.tagName === 'A') return target;
   return find_a(target.parentElement);
-}
-  </script></div></body></html>
+}</script></div></body></html>

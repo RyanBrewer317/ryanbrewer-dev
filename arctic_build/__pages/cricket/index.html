@@ -1,0 +1,25 @@
+<!doctype html>
+<div><title>Cricket - Ryan Brewer</title><meta name="description" content="The Cricket Programming Language"><nav id="nav"><div id="nav-dropdown" onclick="document.getElementById(&#39;nav&#39;).classList.toggle(&#39;dropdown&#39;);document.body.classList.toggle(&#39;noscroll&#39;);">☰</div><a href="/" id="nav-home">Ryan Brewer</a><a href="/posts" id="nav-posts">Posts</a><a href="/wiki" id="nav-wiki">Wiki</a><a href="/contact" id="nav-contact">Contact</a><a href="/demos" id="nav-demos">Demos</a><a href="/feed.rss" id="nav-subscribe" onclick="window.location.href = &#39;/feed.rss&#39;"><img src="/rss-icon.png" id="rss-subscribe-icon">Subscribe</a></nav><div id="body"><h3>Cricket</h3><p>
+Cricket is a tiny little functional language.
+It can be implemented very quickly on various platforms.
+Cricket is lazy, specifically call-by-name.
+Side effects are done with explicitly-forced evaluation.
+Cricket is dynamically typed, and uses objects or lambdas for data.
+Cricket objects can refer to themselves in their methods, enabling much of OOP.
+Cricket is immutable, with object updates returning new objects.
+        </p><p>
+Cricket is designed such that ordinary programmers who aren&#39;t much into
+the academic theory behind functional programming can still find it easy and intuitive.
+No monads, for one.
+However, if you like the confidence in your code that comes with such solid theoretical foundations,
+rest assured that Cricket is inspired by fascinating categorical <a href="https://ncatlab.org/nlab/show/polarity+in+type+theory">connections</a>.
+The keywords are call-by-name, negative types, and side effects.
+        </p><pre><code>
+let iter = {
+  this.go: args-&gt;{
+    val: args.start, 
+    next: this.go{start: args.step(args.start), step: args.step}
+  }
+} in 
+console.write(iter.go{start: 7, step: n-&gt;n-1}.next.next.val)
+        </code></pre><p>To read more about Cricket, look <a href="https://github.com/RyanBrewer317/cricket_rs">here</a>.</p></div><div><div style="height:100pt;"></div><p id="copyright-notice" class="subtle-text">© 2024 Ryan Brewer.</p><script src="/__/firebase/8.10.1/firebase-app.js"></script><script src="/__/firebase/8.10.1/firebase-analytics.js"></script><script src="/__/firebase/init.js"></script><script>firebase.analytics();</script></div></div>
