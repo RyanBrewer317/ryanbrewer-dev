@@ -398,25 +398,33 @@ spa(Frame, Html) ->
 async function go_to(url, loader, back) {
   if (!back && url.pathname === window.location.pathname) {
     if (url.hash) document.getElementById(url.hash.slice(1))?.scrollIntoView();
-    else document.body.scrollIntoView();
+    else window.scrollTo(0, 0);
     return;
   }
   const $app = document.getElementById('arctic-app');
   if (loader) $app.innerHTML = '<div id=\"arctic-loader\"></div>';
   if (!back) window.history.pushState({}, '', url.href);
-  window.requestAnimationFrame(() => {
-    // scroll in #-link elements, as the browser would if we didn't preventDefault
-    if (url.hash) {
-      document.getElementById(url.hash.slice(1))?.scrollIntoView();
-    }
-  });
   // handle new path
   const response = await fetch('/__pages/' + url.pathname + '/index.html');
   if (!response.ok) response = await fetch('/__pages/404.html');
   if (!response.ok) return;
   const html = await response.text();
   $app.innerHTML = html;
-  document.body.scrollIntoView();
+  // re-create script elements, so their javascript runs
+  const scripts = $app.querySelectorAll('script');
+  for (const script in scripts) {
+    const n = document.createElement('script');
+    for (const attr in script.attributes)
+      n.setAttribute(attr.name, attr.value);
+    const t = document.createTextNode(script.innerHTML);
+    n.appendChild(t);
+    script.parentNode.replaceChild(script, n);
+  }
+  if (url.hash)
+    window.requestAnimationFrame(() =>
+      document.getElementById(url.hash.slice(1))?.scrollIntoView();
+    );
+  else window.scrollTo(0, 0);
 }
 document.addEventListener('click', async function(e) {
   const a = find_a(e.target);
@@ -440,8 +448,7 @@ function find_a(target) {
   if (!target || target.tagName === 'BODY') return null;
   if (target.tagName === 'A') return target;
   return find_a(target.parentElement);
-}
-  "/utf8>>
+}"/utf8>>
                 )]
         )
     ).
@@ -571,7 +578,7 @@ make_ssg_config(Processed_collections, Config, K) ->
                                                         value => _assert_fail,
                                                         module => <<"arctic/build"/utf8>>,
                                                         function => <<"make_ssg_config"/utf8>>,
-                                                        line => 356}
+                                                        line => 363}
                                                 )
                                     end,
                                     Cached_path = <<<<"arctic_build/"/utf8,
@@ -587,7 +594,7 @@ make_ssg_config(Processed_collections, Config, K) ->
                                                     message => Cached_path,
                                                     module => <<"arctic/build"/utf8>>,
                                                     function => <<"make_ssg_config"/utf8>>,
-                                                    line => 361})
+                                                    line => 368})
                                     end,
                                     case erlang:element(5, Config) of
                                         {some, _} ->
@@ -607,7 +614,7 @@ make_ssg_config(Processed_collections, Config, K) ->
                                                             message => Cached_path,
                                                             module => <<"arctic/build"/utf8>>,
                                                             function => <<"make_ssg_config"/utf8>>,
-                                                            line => 373}
+                                                            line => 380}
                                                     )
                                             end,
                                             _pipe@5 = S@1,
