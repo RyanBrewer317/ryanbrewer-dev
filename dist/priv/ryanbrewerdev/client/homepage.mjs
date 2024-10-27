@@ -156,14 +156,21 @@ function view(model) {
                 toList([]),
                 toList([
                   text(
-                    "I'm Ryan Brewer.\nI'm a passionate software developer working on open-source software \nfor safe, reliable, and portable applications.\nI specialize in a formal methods approach to systems design, with a focus on ergonomics.\nMy current biggest project is ",
+                    "I'm Ryan Brewer.\nI'm a passionate software developer working on open-source software \nfor safe, reliable, and portable applications.\nI specialize in a formal methods approach to systems design, with a focus on ergonomics.\nOne of my big projects is ",
                   ),
                   $html.a(
                     toList([href("https://github.com/RyanBrewer317/SaberVM")]),
                     toList([text("SaberVM")]),
                   ),
                   text(
-                    ",\na lightweight abstract machine for functional languages that aims \nto be formally memory-safe, fault-tolerant, and very small. \nWith SaberVM, I'm hoping to broaden accessibility to safe computation, \nboth by taking it out of the ivory tower of academia and \nby removing the need for expensive hardware.\nConsider supporting my work!\n",
+                    ",\na lightweight abstract machine for functional languages that aims \nto be formally memory-safe, fault-tolerant, and very small. \nWith SaberVM, I'm hoping to broaden accessibility to safe computation, \nboth by taking it out of the ivory tower of academia and \nby removing the need for expensive hardware.\nAnother big project is ",
+                  ),
+                  $html.a(
+                    toList([href("https://arctic-framework.org")]),
+                    toList([text("Arctic")]),
+                  ),
+                  text(
+                    ",\nA friendly web framework for easily building fast web applications in Gleam!\nArctic powers this website, as well as the one I just linked.\nIf my projects seem cool or valuable, consider supporting my work!\n",
                   ),
                 ]),
               ),
@@ -219,12 +226,21 @@ function view(model) {
             toList([href("https://github.com/RyanBrewer317/ryanbrewer-dev")]),
             toList([text("github")]),
           ),
-          text(". The only framework used is "),
+          text(
+            ". Instead of a typical web framework, I wrote my own web framework called ",
+          ),
+          $html.a(
+            toList([href("https://arctic-framework.org")]),
+            toList([text("Arctic")]),
+          ),
+          text(" on top of the amazing "),
           $html.a(
             toList([href("https://lustre.build/")]),
             toList([text("Lustre")]),
           ),
-          text("; I did all the scripting, markup, styles, and layout by hand."),
+          text(
+            ". Scripting, markup, styles, etc. for this site are all done by me :)",
+          ),
         ]),
       ),
     ]),

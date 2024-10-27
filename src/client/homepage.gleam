@@ -132,7 +132,7 @@ fn view(model: Model) -> Element(Msg) {
 I'm a passionate software developer working on open-source software 
 for safe, reliable, and portable applications.
 I specialize in a formal methods approach to systems design, with a focus on ergonomics.
-My current biggest project is ",
+One of my big projects is ",
             ),
             html.a([href("https://github.com/RyanBrewer317/SaberVM")], [
               text("SaberVM"),
@@ -144,7 +144,14 @@ to be formally memory-safe, fault-tolerant, and very small.
 With SaberVM, I'm hoping to broaden accessibility to safe computation, 
 both by taking it out of the ivory tower of academia and 
 by removing the need for expensive hardware.
-Consider supporting my work!
+Another big project is ",
+            ),
+            html.a([href("https://arctic-framework.org")], [text("Arctic")]),
+            text(
+              ",
+A friendly web framework for easily building fast web applications in Gleam!
+Arctic powers this website, as well as the one I just linked.
+If my projects seem cool or valuable, consider supporting my work!
 ",
             ),
           ]),
@@ -188,9 +195,15 @@ This website is hosted by Firebase and written in ",
         html.a([href("https://github.com/RyanBrewer317/ryanbrewer-dev")], [
           text("github"),
         ]),
-        text(". The only framework used is "),
+        text(
+          ". Instead of a typical web framework, I wrote my own web framework called ",
+        ),
+        html.a([href("https://arctic-framework.org")], [text("Arctic")]),
+        text(" on top of the amazing "),
         html.a([href("https://lustre.build/")], [text("Lustre")]),
-        text("; I did all the scripting, markup, styles, and layout by hand."),
+        text(
+          ". Scripting, markup, styles, etc. for this site are all done by me :)",
+        ),
       ]),
     ],
   )
