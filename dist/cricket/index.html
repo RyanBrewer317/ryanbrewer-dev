@@ -68,8 +68,9 @@ async function go_to(url, loader, back) {
       document.getElementById(url.hash.slice(1))?.scrollIntoView()
     );
   else window.scrollTo(0, 0);
-  window.requestAnimationFrame(() => 
-    document.dispatchEvent(new Event('DOMContentLoaded'))
+  setTimeout(() => 
+    document.dispatchEvent(new Event('DOMContentLoaded')),
+    100
   );
 }
 document.addEventListener('click', async function(e) {
