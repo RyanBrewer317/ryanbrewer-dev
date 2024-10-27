@@ -8,7 +8,16 @@ window.MathJax = {
   loader: {load: ['[tex]/unicode']},
   tex: {packages: {'[+]': ['unicode']}},
 };
-        </script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css"><script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script><script>hljs.highlightAll();</script><link rel="stylesheet" href="/style.css"></head><body><div><div id="arctic-app"><div><title>Search Wiki - Ryan Brewer</title><meta name="description" content="Look through Ryan&#39;s personal wiki"><script>const WIKIS = {"natural-transformation": {"id": "natural-transformation", "url": "/posts/natural-transformation", "title": "Natural Transformation", "tags": ["natural", "transformation", "naturality", "transformations", "functor", "cat", "functors", "theory", "categories", "category", "2-category", "2-cell", "2-morphism"]},
+        </script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css"><script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script><script>hljs.highlightAll();</script><link rel="stylesheet" href="/style.css"></head><body><div><script>
+let arctic_dom_content_loaded_listeners = [];
+document.prototype.arctic_addEventListener = document.prototype.addEventListener;
+document.prototype.addEventListener = function(type, listener, options) {
+  if (type === 'DOMContentLoaded') {
+    arctic_dom_content_loaded_listeners.push(listener);
+    document.arctic_addEventListener(type, listener, options);
+  } else document.arctic_addEventListener(type, listener, options);
+}
+       </script><div id="arctic-app"><div><title>Search Wiki - Ryan Brewer</title><meta name="description" content="Look through Ryan&#39;s personal wiki"><script>const WIKIS = {"natural-transformation": {"id": "natural-transformation", "url": "/posts/natural-transformation", "title": "Natural Transformation", "tags": ["natural", "transformation", "naturality", "transformations", "functor", "cat", "functors", "theory", "categories", "category", "2-category", "2-cell", "2-morphism"]},
 "natural-isomorphism": {"id": "natural-isomorphism", "url": "/posts/natural-isomorphism", "title": "Natural Isomorphism", "tags": ["natural", "transformation", "transformations", "functor", "category", "isomorphism"]},
 "monoidal-category": {"id": "monoidal-category", "url": "/posts/monoidal-category", "title": "Monoidal Category", "tags": ["monoid", "monoidal", "category", "categories", "string", "diagram", "diagrams", "bicategory", "bicategories", "2-category", "2-categories", "bifunctor"]},
 "linear-logic": {"id": "linear-logic", "url": "/posts/linear-logic", "title": "Linear Logic", "tags": ["girard", "resource", "substructural", "affine", "relevant", "resources", "category", "theory", "monoid", "monoidal", "string", "star", "autonomous", "star-autonomous", "*-autonomous", "categories", "once"]},
@@ -48,6 +57,9 @@ async function go_to(url, loader, back) {
   }
   document.dispatchEvent(new Event('beforeunload'));
   document.dispatchEvent(new Event('unload'));
+  for (const i = 0; i < arctic_dom_content_loaded_listeners.length; i++)
+    document.removeEventListener('DOMContentLoaded', arctic_dom_content_loaded_listeners[i]);
+  arctic_dom_content_loaded_listeners = [];
   const $app = document.getElementById('arctic-app');
   if (loader) $app.innerHTML = '<div id="arctic-loader"></div>';
   if (!back) window.history.pushState({}, '', url.href);

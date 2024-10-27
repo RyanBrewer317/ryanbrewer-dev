@@ -8,7 +8,16 @@ window.MathJax = {
   loader: {load: ['[tex]/unicode']},
   tex: {packages: {'[+]': ['unicode']}},
 };
-        </script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css"><script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script><script>hljs.highlightAll();</script><link rel="stylesheet" href="/style.css"></head><body><div><div id="arctic-app"><div><title>Search Posts - Ryan Brewer</title><meta name="description" content="Search Ryan&#39;s past posts"><script>const POSTS = {"cricket": {"id": "cricket", "url": "/posts/cricket", "title": "The Cricket Language", "date": "September 12, 2024", "tags": ["programming", "language", "tech", "announce", "announcement", "cricket", "untyped", "gradual", "gradually", "gradually-typed", "dynamically", "dynamically-typed", "dynamic", "type", "typed", "types", "object", "objects", "object-oriented", "oriented", "immutable"], "description": "Cricket is a lazy gradually-typed functional language with objects. It's very tiny but very expressive; anyone can implement it themselves!"},
+        </script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css"><script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script><script>hljs.highlightAll();</script><link rel="stylesheet" href="/style.css"></head><body><div><script>
+let arctic_dom_content_loaded_listeners = [];
+document.prototype.arctic_addEventListener = document.prototype.addEventListener;
+document.prototype.addEventListener = function(type, listener, options) {
+  if (type === 'DOMContentLoaded') {
+    arctic_dom_content_loaded_listeners.push(listener);
+    document.arctic_addEventListener(type, listener, options);
+  } else document.arctic_addEventListener(type, listener, options);
+}
+       </script><div id="arctic-app"><div><title>Search Posts - Ryan Brewer</title><meta name="description" content="Search Ryan&#39;s past posts"><script>const POSTS = {"cricket": {"id": "cricket", "url": "/posts/cricket", "title": "The Cricket Language", "date": "September 12, 2024", "tags": ["programming", "language", "tech", "announce", "announcement", "cricket", "untyped", "gradual", "gradually", "gradually-typed", "dynamically", "dynamically-typed", "dynamic", "type", "typed", "types", "object", "objects", "object-oriented", "oriented", "immutable"], "description": "Cricket is a lazy gradually-typed functional language with objects. It's very tiny but very expressive; anyone can implement it themselves!"},
 "getting-started-category-theory": {"id": "getting-started-category-theory", "url": "/posts/getting-started-category-theory", "title": "Getting Started with Category Theory", "date": "July 29, 2024", "tags": ["intro", "introduction", "getting", "started", "category", "theory", "categories", "object", "objects", "morphism", "morphisms", "functor", "functors", "natural", "transformation", "transformations", "product", "coproduct", "products", "coproducts", "limit", "colimit", "limits", "colimits", "initial", "terminal", "diagram", "diagrams", "bifunctor", "bifunctors", "monoid", "monoidal", "preorder", "universal", "construction", "cone", "cocone", "cones", "cocones", "co-cone", "co-cones", "beginner", "friendly", "reference", "getting", "started"], "description": "Category theory is a beautiful and powerful field but it can feel impenetrable without the right entry point. This post hopes to serve as a sort of beginner's guide and reference."},
 "type-of-sprintf": {"id": "type-of-sprintf", "url": "/posts/type-of-sprintf", "title": "The Type of Sprintf", "date": "May 14, 2024", "tags": ["dependent", "type", "types", "theory", "dependently", "large", "elimination", "eliminations", "sprintf", "agda", "printf", "format", "string", "refinement"], "description": "Most static type systems wouldn't let you make something like sprintf, whose type is determined by a format string. Dependent types can save the day!"},
 "simple-programming-languages": {"id": "simple-programming-languages", "url": "/posts/simple-programming-languages", "title": "Simple Programming Languages", "date": "March 20, 2024", "tags": ["simple", "programming", "language", "languages", "simplicity", "readability", "gleam", "go", "c", "ready-at-hand", "ready", "at", "hand", "first-order", "first", "order", "reason", "reasoning", "iteration", "cycle", "single", "way", "static", "type", "system", "obj", "heidegger", "aesthetic", "aesthetics"], "description": "Simple programming languages are wonderful to work in. But what is it about them that actually makes them simple? And why do we like that so much?"},
@@ -49,6 +58,9 @@ async function go_to(url, loader, back) {
   }
   document.dispatchEvent(new Event('beforeunload'));
   document.dispatchEvent(new Event('unload'));
+  for (const i = 0; i < arctic_dom_content_loaded_listeners.length; i++)
+    document.removeEventListener('DOMContentLoaded', arctic_dom_content_loaded_listeners[i]);
+  arctic_dom_content_loaded_listeners = [];
   const $app = document.getElementById('arctic-app');
   if (loader) $app.innerHTML = '<div id="arctic-loader"></div>';
   if (!back) window.history.pushState({}, '', url.href);
