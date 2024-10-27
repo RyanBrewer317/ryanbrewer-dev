@@ -38,6 +38,7 @@ pub fn main() {
     |> collection.with_renderer(render.wiki)
   let config =
     config.new()
+    |> config.turn_off_spa()
     |> config.add_collection(posts)
     |> config.add_collection(wiki)
     |> config.add_main_page("contact", contact.contact())

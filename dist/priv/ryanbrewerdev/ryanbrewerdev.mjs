@@ -37,18 +37,19 @@ export function main() {
   })();
   let config = (() => {
     let _pipe = $config.new$();
-    let _pipe$1 = $config.add_collection(_pipe, posts);
-    let _pipe$2 = $config.add_collection(_pipe$1, wiki);
-    let _pipe$3 = $config.add_main_page(_pipe$2, "contact", $contact.contact());
-    let _pipe$4 = $config.add_main_page(_pipe$3, "demos", $demos.demos());
-    let _pipe$5 = $config.add_main_page(
-      _pipe$4,
+    let _pipe$1 = $config.turn_off_spa(_pipe);
+    let _pipe$2 = $config.add_collection(_pipe$1, posts);
+    let _pipe$3 = $config.add_collection(_pipe$2, wiki);
+    let _pipe$4 = $config.add_main_page(_pipe$3, "contact", $contact.contact());
+    let _pipe$5 = $config.add_main_page(_pipe$4, "demos", $demos.demos());
+    let _pipe$6 = $config.add_main_page(
+      _pipe$5,
       "404",
       $unknown_page.unknown_page(),
     );
-    let _pipe$6 = $config.add_main_page(_pipe$5, "cricket", $cricket.cricket());
-    let _pipe$7 = $config.add_spa_frame(
-      _pipe$6,
+    let _pipe$7 = $config.add_main_page(_pipe$6, "cricket", $cricket.cricket());
+    let _pipe$8 = $config.add_spa_frame(
+      _pipe$7,
       (body) => {
         return $html.html(
           toList([$attribute.attribute("lang", "en")]),
@@ -71,7 +72,7 @@ export function main() {
       },
     );
     return $config.home_renderer(
-      _pipe$7,
+      _pipe$8,
       (collections) => {
         let $ = $list.find(
           collections,
@@ -81,7 +82,7 @@ export function main() {
           throw makeError(
             "assignment_no_match",
             "ryanbrewerdev",
-            63,
+            64,
             "",
             "Assignment pattern did not match",
             { value: $ }
@@ -100,7 +101,7 @@ export function main() {
     throw makeError(
       "panic",
       "ryanbrewerdev",
-      70,
+      71,
       "main",
       $snag.pretty_print(err),
       {}
