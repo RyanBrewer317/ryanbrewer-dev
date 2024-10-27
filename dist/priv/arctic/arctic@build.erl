@@ -412,10 +412,13 @@ async function go_to(url, loader, back) {
   $app.innerHTML = html;
   // re-create script elements, so their javascript runs
   const scripts = $app.querySelectorAll('script');
-  for (const script in scripts) {
+  for (let i = 0; i < scripts.length; i++) {
+    const script = scripts[i];
     const n = document.createElement('script');
-    for (const attr in script.attributes)
+    for (let j = 0; j < script.attributes.length; j++) {
+      const attr = script.attributes[j];
       n.setAttribute(attr.name, attr.value);
+    }
     const t = document.createTextNode(script.innerHTML);
     n.appendChild(t);
     script.parentNode.replaceChild(script, n);
@@ -578,7 +581,7 @@ make_ssg_config(Processed_collections, Config, K) ->
                                                         value => _assert_fail,
                                                         module => <<"arctic/build"/utf8>>,
                                                         function => <<"make_ssg_config"/utf8>>,
-                                                        line => 363}
+                                                        line => 366}
                                                 )
                                     end,
                                     Cached_path = <<<<"arctic_build/"/utf8,
@@ -594,7 +597,7 @@ make_ssg_config(Processed_collections, Config, K) ->
                                                     message => Cached_path,
                                                     module => <<"arctic/build"/utf8>>,
                                                     function => <<"make_ssg_config"/utf8>>,
-                                                    line => 368})
+                                                    line => 371})
                                     end,
                                     case erlang:element(5, Config) of
                                         {some, _} ->
@@ -614,7 +617,7 @@ make_ssg_config(Processed_collections, Config, K) ->
                                                             message => Cached_path,
                                                             module => <<"arctic/build"/utf8>>,
                                                             function => <<"make_ssg_config"/utf8>>,
-                                                            line => 380}
+                                                            line => 383}
                                                     )
                                             end,
                                             _pipe@5 = S@1,
