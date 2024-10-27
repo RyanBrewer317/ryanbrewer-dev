@@ -50,7 +50,6 @@ async function go_to(url, loader, back) {
     const n = document.createElement('script');
     for (let j = 0; j < script.attributes.length; j++) {
       const attr = script.attributes[j];
-      if (attr.name === 'type' && attr.value === 'module') continue;
       n.setAttribute(attr.name, attr.value);
     }
     const t = document.createTextNode(script.innerHTML + '\n;console.log(\'script executed\');');
