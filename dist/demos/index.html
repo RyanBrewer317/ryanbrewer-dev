@@ -42,7 +42,7 @@ async function go_to(url, loader, back) {
   if (!response.ok) response = await fetch('/__pages/404.html');
   if (!response.ok) return;
   const html = await response.text();
-  $app.innerHTML = html + '<script>document.dispatchEvent(new Event(\'DOMContentLoaded\'));</scr' + 'ipt>';
+  $app.innerHTML = html + '<script type="module">document.dispatchEvent(new Event(\'DOMContentLoaded\'));</scr' + 'ipt>';
   // re-create script elements, so their javascript runs
   const scripts = $app.querySelectorAll('script');
   for (let i = 0; i < scripts.length; i++) {
