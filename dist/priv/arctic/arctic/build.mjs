@@ -318,7 +318,7 @@ function spa(frame, html) {
       toList([
         $html.script(
           toList([]),
-          "\nlet arctic_dom_content_loaded_listeners = [];\ndocument.prototype.arctic_addEventListener = document.prototype.addEventListener;\ndocument.prototype.addEventListener = function(type, listener, options) {\n  if (type === 'DOMContentLoaded') {\n    arctic_dom_content_loaded_listeners.push(listener);\n    document.arctic_addEventListener(type, listener, options);\n  } else document.arctic_addEventListener(type, listener, options);\n}\n       ",
+          "\nif (typeof HTMLDocument === 'undefined') HTMLDocument = Document;\nlet arctic_dom_content_loaded_listeners = [];\nHTMLDocument.prototype.arctic_addEventListener = HTMLDocument.prototype.addEventListener;\nHTMLDocument.prototype.addEventListener = function(type, listener, options) {\n  if (type === 'DOMContentLoaded') {\n    arctic_dom_content_loaded_listeners.push(listener);\n    document.arctic_addEventListener(type, listener, options);\n  } else document.arctic_addEventListener(type, listener, options);\n}\n       ",
         ),
         $html.div(toList([$attribute.id("arctic-app")]), toList([html])),
         $html.script(
@@ -407,7 +407,7 @@ function make_ssg_config(processed_collections, config, k) {
                   throw makeError(
                     "assignment_no_match",
                     "arctic/build",
-                    382,
+                    383,
                     "",
                     "Assignment pattern did not match",
                     { value: $ }
@@ -424,7 +424,7 @@ function make_ssg_config(processed_collections, config, k) {
                     throw makeError(
                       "panic",
                       "arctic/build",
-                      387,
+                      388,
                       "",
                       cached_path,
                       {}
@@ -443,7 +443,7 @@ function make_ssg_config(processed_collections, config, k) {
                       throw makeError(
                         "panic",
                         "arctic/build",
-                        399,
+                        400,
                         "",
                         cached_path,
                         {}
