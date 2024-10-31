@@ -8,7 +8,9 @@ window.MathJax = {
   loader: {load: ['[tex]/unicode']},
   tex: {packages: {'[+]': ['unicode']}},
 };
-        </script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css"><script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script><script>hljs.highlightAll();</script><link rel="stylesheet" href="/style.css"></head><body><div><div id="arctic-app"><div><title>Genealogy of Morals - Ryan Brewer</title><meta name="description" content><nav id="nav"><div id="nav-dropdown" onclick="document.getElementById(&#39;nav&#39;).classList.toggle(&#39;dropdown&#39;);document.body.classList.toggle(&#39;noscroll&#39;);">☰</div><a href="/" id="nav-home">Ryan Brewer</a><a href="/posts" id="nav-posts">Posts</a><a href="/wiki" id="nav-wiki">Wiki</a><a href="/contact" id="nav-contact">Contact</a><a href="/demos" id="nav-demos">Demos</a><a href="/feed.rss" id="nav-subscribe" onclick="window.location.href = &#39;/feed.rss&#39;"><img src="/rss-icon.png" id="rss-subscribe-icon">Subscribe</a></nav><div id="body"><h1>Genealogy of Morals</h1><p><span>This is an entry on Nietzsche&#39;s classic book &quot;On the Genealogy of Morals&quot;.
+        </script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css"><script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script><script>hljs.highlightAll();</script><link rel="stylesheet" href="/style.css"></head><body><div><script>
+var _ARCTIC_C;
+       </script><div id="arctic-app"><div><title>Genealogy of Morals - Ryan Brewer</title><meta name="description" content><nav id="nav"><div id="nav-dropdown" onclick="document.getElementById(&#39;nav&#39;).classList.toggle(&#39;dropdown&#39;);document.body.classList.toggle(&#39;noscroll&#39;);">☰</div><a href="/" id="nav-home">Ryan Brewer</a><a href="/posts" id="nav-posts">Posts</a><a href="/wiki" id="nav-wiki">Wiki</a><a href="/contact" id="nav-contact">Contact</a><a href="/demos" id="nav-demos">Demos</a><a href="/feed.rss" id="nav-subscribe" onclick="window.location.href = &#39;/feed.rss&#39;"><img src="/rss-icon.png" id="rss-subscribe-icon">Subscribe</a></nav><div id="body"><h1>Genealogy of Morals</h1><p><span>This is an entry on Nietzsche&#39;s classic book &quot;On the Genealogy of Morals&quot;.
 </span></p><p><span>The general idea is that &quot;the selfless are the good&quot; is <i><span>not</span></i> a natural or inherent notion for humans. Nietzsche analyzes morality before Christianity, such as for the ancient Greeks and Romans, and finds a stark difference in attitude to modern Christian/Buddhist morality.
 </span></p><p><span>He shows that the free-spirited human was violent to their fellow humans for all sorts of reasons, and was proud of it. These kinds of people were &quot;good&quot; because they were the strongest. Everything they wanted, they took, and they were happy. There&#39;s a degree of idealism here as well, in the fact that if something terrible happened that was outside their control then it was still seen as a <i><span>personal</span></i> failure.
 </span></p><p><span>He then goes on to show how the oppressed/weak people (the &quot;bad&quot;) weaponized guilt to redefine morality. They argued that it&#39;s actually the <i><span>weak</span></i> who are good, because they are the ones who are &quot;selfless&quot; and &quot;self-sacrificing&quot;. Their weakness becomes a &quot;choice,&quot; and the strong become &quot;evil&quot; for &quot;choosing&quot; to be the strong.
@@ -24,6 +26,9 @@ async function go_to(url, loader, back) {
   }
   document.dispatchEvent(new Event('beforeunload'));
   document.dispatchEvent(new Event('unload'));
+  for (let i = 0; i < arctic_dom_content_loaded_listeners.length; i++)
+    document.removeEventListener('DOMContentLoaded', arctic_dom_content_loaded_listeners[i]);
+  arctic_dom_content_loaded_listeners = [];
   const $app = document.getElementById('arctic-app');
   if (loader) $app.innerHTML = '<div id="arctic-loader"></div>';
   if (!back) window.history.pushState({}, '', url.href);
@@ -32,7 +37,7 @@ async function go_to(url, loader, back) {
   if (!response.ok) response = await fetch('/__pages/404.html');
   if (!response.ok) return;
   const html = await response.text();
-  $app.innerHTML = html;
+  $app.innerHTML = '<script>_ARCTIC_C=0;</'+'script>'+html;
   // re-create script elements, so their javascript runs
   const scripts = $app.querySelectorAll('script');
   for (let i = 0; i < scripts.length; i++) {
@@ -42,7 +47,12 @@ async function go_to(url, loader, back) {
       const attr = script.attributes[j];
       n.setAttribute(attr.name, attr.value);
     }
-    const t = document.createTextNode(script.innerHTML);
+    const t = document.createTextNode(
+      script.innerHTML +
+      ';if(++_ARCTIC_C>=' +
+      scripts.length +
+      ')document.dispatchEvent(new Event(\'DOMContentLoaded\'));'
+    );
     n.appendChild(t);
     script.parentNode.replaceChild(n, script);
   }
@@ -51,9 +61,7 @@ async function go_to(url, loader, back) {
       document.getElementById(url.hash.slice(1))?.scrollIntoView()
     );
   else window.scrollTo(0, 0);
-  window.requestAnimationFrame(() => 
-    document.dispatchEvent(new Event('DOMContentLoaded'))
-  );
+  // setTimeout(() => document.dispatchEvent(new Event('DOMContentLoaded')), 100); // i cri ),x
 }
 document.addEventListener('click', async function(e) {
   const a = find_a(e.target);

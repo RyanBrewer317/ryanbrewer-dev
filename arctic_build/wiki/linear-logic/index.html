@@ -8,7 +8,9 @@ window.MathJax = {
   loader: {load: ['[tex]/unicode']},
   tex: {packages: {'[+]': ['unicode']}},
 };
-        </script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css"><script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script><script>hljs.highlightAll();</script><link rel="stylesheet" href="/style.css"></head><body><div><div id="arctic-app"><div><title>Linear Logic - Ryan Brewer</title><meta name="description" content><nav id="nav"><div id="nav-dropdown" onclick="document.getElementById(&#39;nav&#39;).classList.toggle(&#39;dropdown&#39;);document.body.classList.toggle(&#39;noscroll&#39;);">☰</div><a href="/" id="nav-home">Ryan Brewer</a><a href="/posts" id="nav-posts">Posts</a><a href="/wiki" id="nav-wiki">Wiki</a><a href="/contact" id="nav-contact">Contact</a><a href="/demos" id="nav-demos">Demos</a><a href="/feed.rss" id="nav-subscribe" onclick="window.location.href = &#39;/feed.rss&#39;"><img src="/rss-icon.png" id="rss-subscribe-icon">Subscribe</a></nav><div id="body"><h1>Linear Logic</h1><p><span>Linear logic, discovered by <a href="https://en.wikipedia.org/wiki/Jean-Yves_Girard"><span>Jean-Yves Girard</span></a>, is most commonly thought of as logic where facts must be used exactly once: they can&#39;t go unmentioned, and they are &quot;used up&quot; after their first use. This gives a powerful way to reason about resource usage, and is a theoretical inspiration for Rust&#39;s resource safety checks. This view of linear logic, when framed this way, is obviously very informal and missing important details. But it also gives a fairly limiting view of the possibilities linear logic offers. In its full definition, it&#39;s a <i><span>generalization</span></i> of &quot;normal, ordinary, every-day&quot; logic (sometimes called &quot;persistent&quot; or &quot;structural&quot; logic when talked about in comparison to linear logic). That is, linear logic puts restrictions on reasoning, but offers &quot;escape-hatches&quot; to do any ordinary reasoning. This has the powerful effect of annotating your proofs with the places that traditional rules are used. The end result is a clearer picture of what we&#39;re actually doing in our reasoning, and a fairly wide range of theoretical benefits arise from that clarity.
+        </script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css"><script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script><script>hljs.highlightAll();</script><link rel="stylesheet" href="/style.css"></head><body><div><script>
+var _ARCTIC_C;
+       </script><div id="arctic-app"><div><title>Linear Logic - Ryan Brewer</title><meta name="description" content><nav id="nav"><div id="nav-dropdown" onclick="document.getElementById(&#39;nav&#39;).classList.toggle(&#39;dropdown&#39;);document.body.classList.toggle(&#39;noscroll&#39;);">☰</div><a href="/" id="nav-home">Ryan Brewer</a><a href="/posts" id="nav-posts">Posts</a><a href="/wiki" id="nav-wiki">Wiki</a><a href="/contact" id="nav-contact">Contact</a><a href="/demos" id="nav-demos">Demos</a><a href="/feed.rss" id="nav-subscribe" onclick="window.location.href = &#39;/feed.rss&#39;"><img src="/rss-icon.png" id="rss-subscribe-icon">Subscribe</a></nav><div id="body"><h1>Linear Logic</h1><p><span>Linear logic, discovered by <a href="https://en.wikipedia.org/wiki/Jean-Yves_Girard"><span>Jean-Yves Girard</span></a>, is most commonly thought of as logic where facts must be used exactly once: they can&#39;t go unmentioned, and they are &quot;used up&quot; after their first use. This gives a powerful way to reason about resource usage, and is a theoretical inspiration for Rust&#39;s resource safety checks. This view of linear logic, when framed this way, is obviously very informal and missing important details. But it also gives a fairly limiting view of the possibilities linear logic offers. In its full definition, it&#39;s a <i><span>generalization</span></i> of &quot;normal, ordinary, every-day&quot; logic (sometimes called &quot;persistent&quot; or &quot;structural&quot; logic when talked about in comparison to linear logic). That is, linear logic puts restrictions on reasoning, but offers &quot;escape-hatches&quot; to do any ordinary reasoning. This has the powerful effect of annotating your proofs with the places that traditional rules are used. The end result is a clearer picture of what we&#39;re actually doing in our reasoning, and a fairly wide range of theoretical benefits arise from that clarity.
 </span></p><p><span>I&#39;ll start by thinking about linear logic from a logic perspective, instead of a computer science perspective. When studying logic, we generally have this concept of a context, written \(\Gamma\), holding all the facts we have available to us in a step of a proof. If \(\Gamma\) holds some fact \(A\), then from the facts of \(\Gamma\) we can <i><span>deduce</span></i> \(A\), since it&#39;s already one of those facts. This is written \(\Gamma\vdash A\), and pronounced &quot;Gamma entails A.&quot; These statements are called &quot;sequents.&quot; In ordinary logic, if you have \(\Gamma\vdash A\) and \(\Gamma\vdash B\), then it&#39;s possible to use the facts in \(\Gamma\) to prove the conjunction \(A\land B\), so we write the sequent \(\Gamma\vdash A\land B\). We often use a comma notation for contexts, like \(\Gamma,P\), to say &quot;any context \(\Gamma\), including an empty one, extended with the additional proposition \(P\).&quot;
 </span></p><p><span>In ordinary logic, if we have some sequent \(\Gamma\vdash P\), we&#39;re allowed to add any facts we want to the context, if we prove them. Formally, if \(\Gamma\vdash A\) and \(\Gamma\vdash B\), we can use the &quot;weakening&quot; rule to conclude \(\Gamma,A\vdash B\), since we know \(A\) doesn&#39;t contradict \(\Gamma\). Weakening allows us to duplicate anything in the context as many times as we want, so the context doesn&#39;t lose any information as we progress through a proof. Facts can be used more than once.
 </span></p><p><span>In ordinary logic, if we have the same thing duplicated in the context, we can throw out duplicates. Formally, if \(\Gamma,A,A\vdash B\), then we can use the &quot;contraction&quot; rule to conclude that \(\Gamma,A\vdash B\). That means that if a fact isn&#39;t necessary to prove something, we can throw it away. Facts can be used less than once.
@@ -30,6 +32,9 @@ async function go_to(url, loader, back) {
   }
   document.dispatchEvent(new Event('beforeunload'));
   document.dispatchEvent(new Event('unload'));
+  for (let i = 0; i < arctic_dom_content_loaded_listeners.length; i++)
+    document.removeEventListener('DOMContentLoaded', arctic_dom_content_loaded_listeners[i]);
+  arctic_dom_content_loaded_listeners = [];
   const $app = document.getElementById('arctic-app');
   if (loader) $app.innerHTML = '<div id="arctic-loader"></div>';
   if (!back) window.history.pushState({}, '', url.href);
@@ -38,7 +43,7 @@ async function go_to(url, loader, back) {
   if (!response.ok) response = await fetch('/__pages/404.html');
   if (!response.ok) return;
   const html = await response.text();
-  $app.innerHTML = html;
+  $app.innerHTML = '<script>_ARCTIC_C=0;</'+'script>'+html;
   // re-create script elements, so their javascript runs
   const scripts = $app.querySelectorAll('script');
   for (let i = 0; i < scripts.length; i++) {
@@ -48,7 +53,12 @@ async function go_to(url, loader, back) {
       const attr = script.attributes[j];
       n.setAttribute(attr.name, attr.value);
     }
-    const t = document.createTextNode(script.innerHTML);
+    const t = document.createTextNode(
+      script.innerHTML +
+      ';if(++_ARCTIC_C>=' +
+      scripts.length +
+      ')document.dispatchEvent(new Event(\'DOMContentLoaded\'));'
+    );
     n.appendChild(t);
     script.parentNode.replaceChild(n, script);
   }
@@ -57,9 +67,7 @@ async function go_to(url, loader, back) {
       document.getElementById(url.hash.slice(1))?.scrollIntoView()
     );
   else window.scrollTo(0, 0);
-  window.requestAnimationFrame(() => 
-    document.dispatchEvent(new Event('DOMContentLoaded'))
-  );
+  // setTimeout(() => document.dispatchEvent(new Event('DOMContentLoaded')), 100); // i cri ),x
 }
 document.addEventListener('click', async function(e) {
   const a = find_a(e.target);

@@ -8,7 +8,9 @@ window.MathJax = {
   loader: {load: ['[tex]/unicode']},
   tex: {packages: {'[+]': ['unicode']}},
 };
-        </script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css"><script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script><script>hljs.highlightAll();</script><link rel="stylesheet" href="/style.css"></head><body><div><div id="arctic-app"><div><title>A Beginner&#39;s Guide to Programming Language Academia - Ryan Brewer</title><meta name="description" content="This post briefly maps out many different subfields of programming language theory, in an effort to make it more accessible to those outside academia."><nav id="nav"><div id="nav-dropdown" onclick="document.getElementById(&#39;nav&#39;).classList.toggle(&#39;dropdown&#39;);document.body.classList.toggle(&#39;noscroll&#39;);">☰</div><a href="/" id="nav-home">Ryan Brewer</a><a href="/posts" id="nav-posts">Posts</a><a href="/wiki" id="nav-wiki">Wiki</a><a href="/contact" id="nav-contact">Contact</a><a href="/demos" id="nav-demos">Demos</a><a href="/feed.rss" id="nav-subscribe" onclick="window.location.href = &#39;/feed.rss&#39;"><img src="/rss-icon.png" id="rss-subscribe-icon">Subscribe</a></nav><div id="body"><h1>A Beginner&#39;s Guide to Programming Language Academia</h1><div class="date">January 28, 2024</div><p><span>After my last <a href="https://ryanbrewer.dev/posts/safe-mmm-with-coeffects.html"><span>post</span></a>, a few people seemed interested in the papers I read, so I thought I&#39;d write a (necessarily long) post mapping out my experience of programming language papers, with tons of recommendations for programming language developers to start exploring. At the end I&#39;ll have a list of all the papers I mention throughout the post. Note that this is just my own journey through the academia, and will be missing plenty of important work. Hopefully what I have here will serve as good jumping off points for your own PL research.
+        </script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css"><script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script><script>hljs.highlightAll();</script><link rel="stylesheet" href="/style.css"></head><body><div><script>
+var _ARCTIC_C;
+       </script><div id="arctic-app"><div><title>A Beginner&#39;s Guide to Programming Language Academia - Ryan Brewer</title><meta name="description" content="This post briefly maps out many different subfields of programming language theory, in an effort to make it more accessible to those outside academia."><nav id="nav"><div id="nav-dropdown" onclick="document.getElementById(&#39;nav&#39;).classList.toggle(&#39;dropdown&#39;);document.body.classList.toggle(&#39;noscroll&#39;);">☰</div><a href="/" id="nav-home">Ryan Brewer</a><a href="/posts" id="nav-posts">Posts</a><a href="/wiki" id="nav-wiki">Wiki</a><a href="/contact" id="nav-contact">Contact</a><a href="/demos" id="nav-demos">Demos</a><a href="/feed.rss" id="nav-subscribe" onclick="window.location.href = &#39;/feed.rss&#39;"><img src="/rss-icon.png" id="rss-subscribe-icon">Subscribe</a></nav><div id="body"><h1>A Beginner&#39;s Guide to Programming Language Academia</h1><div class="date">January 28, 2024</div><p><span>After my last <a href="https://ryanbrewer.dev/posts/safe-mmm-with-coeffects.html"><span>post</span></a>, a few people seemed interested in the papers I read, so I thought I&#39;d write a (necessarily long) post mapping out my experience of programming language papers, with tons of recommendations for programming language developers to start exploring. At the end I&#39;ll have a list of all the papers I mention throughout the post. Note that this is just my own journey through the academia, and will be missing plenty of important work. Hopefully what I have here will serve as good jumping off points for your own PL research.
 </span></p><p><span>If you aren&#39;t familiar reading academic papers, don&#39;t worry! It&#39;s not as hard as you think. My best advice for getting started is patience. Papers will often use terms you (or I) are not familiar with, but then they&#39;ll define the terms later in the paper. I don&#39;t know why people write this way, but it seems to be a convention. Also, when you read a paper, start with the abstract, introduction, and conclusion. Leave the actual technical details of the work to the end.
 </span></p><p><span>For terms that they don&#39;t define, there are two youtube playlists I HAVE to recommend, by <a href="https://youtube.com/playlist?list=PLbgaMIhjbmEnaH_LTkxLI7FMa2HsnawM_&amp;si=FIZVKTC8TXFz-IfI"><span>Bartozs Milewski</span></a> and <a href="https://youtube.com/playlist?list=PLCTMeyjMKRkqTM2-9HXH81tvpdROs-nz3&amp;si=2iJc5syQCdk2rbjz"><span>Richard Southwell</span></a>. I especially recommend the latter one, for getting me up to speed on a ton of important concepts in an accessible way. The things that it taught me that you should probably know: intuitionistic logic, sequent calculus, dependent types, the Curry-Howard isomorphism. If you don&#39;t like youtube videos, many blog posts across the internet explain pieces of these ideas. Exercise your Google-Fu! (Or whatever search engine you use.) Self learning requires a lot of googling.
 </span></p><p><span>The prerequisites for this post are all over the place: if you don&#39;t understand something, just skip it! There may be other things in other sections that are more digestable. I hope this post will have something for people who are fairly advanced too, since some of these things are pretty niche, even in PL.
@@ -94,6 +96,9 @@ async function go_to(url, loader, back) {
   }
   document.dispatchEvent(new Event('beforeunload'));
   document.dispatchEvent(new Event('unload'));
+  for (let i = 0; i < arctic_dom_content_loaded_listeners.length; i++)
+    document.removeEventListener('DOMContentLoaded', arctic_dom_content_loaded_listeners[i]);
+  arctic_dom_content_loaded_listeners = [];
   const $app = document.getElementById('arctic-app');
   if (loader) $app.innerHTML = '<div id="arctic-loader"></div>';
   if (!back) window.history.pushState({}, '', url.href);
@@ -102,7 +107,7 @@ async function go_to(url, loader, back) {
   if (!response.ok) response = await fetch('/__pages/404.html');
   if (!response.ok) return;
   const html = await response.text();
-  $app.innerHTML = html;
+  $app.innerHTML = '<script>_ARCTIC_C=0;</'+'script>'+html;
   // re-create script elements, so their javascript runs
   const scripts = $app.querySelectorAll('script');
   for (let i = 0; i < scripts.length; i++) {
@@ -112,7 +117,12 @@ async function go_to(url, loader, back) {
       const attr = script.attributes[j];
       n.setAttribute(attr.name, attr.value);
     }
-    const t = document.createTextNode(script.innerHTML);
+    const t = document.createTextNode(
+      script.innerHTML +
+      ';if(++_ARCTIC_C>=' +
+      scripts.length +
+      ')document.dispatchEvent(new Event(\'DOMContentLoaded\'));'
+    );
     n.appendChild(t);
     script.parentNode.replaceChild(n, script);
   }
@@ -121,9 +131,7 @@ async function go_to(url, loader, back) {
       document.getElementById(url.hash.slice(1))?.scrollIntoView()
     );
   else window.scrollTo(0, 0);
-  window.requestAnimationFrame(() => 
-    document.dispatchEvent(new Event('DOMContentLoaded'))
-  );
+  // setTimeout(() => document.dispatchEvent(new Event('DOMContentLoaded')), 100); // i cri ),x
 }
 document.addEventListener('click', async function(e) {
   const a = find_a(e.target);
