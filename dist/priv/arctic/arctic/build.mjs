@@ -323,7 +323,7 @@ function spa(frame, html) {
         $html.div(toList([$attribute.id("arctic-app")]), toList([html])),
         $html.script(
           toList([]),
-          "\n// SPA algorithm stolen from Hayleigh Thompson's wonderful Modem library\nasync function go_to(url, loader, back) {\n  if (!back && url.pathname === window.location.pathname) {\n    if (url.hash) document.getElementById(url.hash.slice(1))?.scrollIntoView();\n    else window.scrollTo(0, 0);\n    return;\n  }\n  document.dispatchEvent(new Event('beforeunload'));\n  document.dispatchEvent(new Event('unload'));\n  for (let i = 0; i < arctic_dom_content_loaded_listeners.length; i++)\n    document.removeEventListener('DOMContentLoaded', arctic_dom_content_loaded_listeners[i]);\n  arctic_dom_content_loaded_listeners = [];\n  const $app = document.getElementById('arctic-app');\n  if (loader) $app.innerHTML = '<div id=\"arctic-loader\"></div>';\n  if (!back) window.history.pushState({}, '', url.href);\n  // handle new path\n  const response = await fetch('/__pages/' + url.pathname + '/index.html');\n  if (!response.ok) response = await fetch('/__pages/404.html');\n  if (!response.ok) return;\n  const html = await response.text();\n  $app.innerHTML = '<script>_ARCTIC_C=0;</'+'script>'+html;\n  // re-create script elements, so their javascript runs\n  const scripts = $app.querySelectorAll('script');\n  for (let i = 0; i < scripts.length; i++) {\n    const script = scripts[i];\n    const n = document.createElement('script');\n    for (let j = 0; j < script.attributes.length; j++) {\n      const attr = script.attributes[j];\n      n.setAttribute(attr.name, attr.value);\n    }\n    n.setAttribute('defer', 'true');\n    n.onload = \n      (n.onload || '') + \n      ';if(++_ARCTIC_C>=' +\n      scripts.length +\n      ')document.dispatchEvent(new Event(\\'DOMContentLoaded\\'));';\n    const t = document.createTextNode(script.innerHTML+';console.log(\\'script\\',_ARCTIC_C);');\n    n.appendChild(t);\n    script.parentNode.replaceChild(n, script);\n  }\n  if (url.hash)\n    window.requestAnimationFrame(() =>\n      document.getElementById(url.hash.slice(1))?.scrollIntoView()\n    );\n  else window.scrollTo(0, 0);\n  // setTimeout(() => document.dispatchEvent(new Event('DOMContentLoaded')), 100); // i cri ),x\n}\ndocument.addEventListener('click', async function(e) {\n  const a = find_a(e.target);\n  if (!a) return;\n  try {\n    const url = new URL(a.href);\n    const is_external = url.host !== window.location.host;\n    if (is_external) return;\n    event.preventDefault();\n    go_to(url, false, false);\n  } catch {\n    return;\n  }\n});\nwindow.addEventListener('popstate', (e) => {\n  e.preventDefault();\n  const url = new URL(window.location.href);\n  go_to(url, false, true);\n});\nfunction find_a(target) {\n  if (!target || target.tagName === 'BODY') return null;\n  if (target.tagName === 'A') return target;\n  return find_a(target.parentElement);\n}",
+          "\n// SPA algorithm stolen from Hayleigh Thompson's wonderful Modem library\nasync function go_to(url, loader, back) {\n  if (!back && url.pathname === window.location.pathname) {\n    if (url.hash) document.getElementById(url.hash.slice(1))?.scrollIntoView();\n    else window.scrollTo(0, 0);\n    return;\n  }\n  document.dispatchEvent(new Event('beforeunload'));\n  document.dispatchEvent(new Event('unload'));\n  for (let i = 0; i < arctic_dom_content_loaded_listeners.length; i++)\n    document.removeEventListener('DOMContentLoaded', arctic_dom_content_loaded_listeners[i]);\n  arctic_dom_content_loaded_listeners = [];\n  const $app = document.getElementById('arctic-app');\n  if (loader) $app.innerHTML = '<div id=\"arctic-loader\"></div>';\n  if (!back) window.history.pushState({}, '', url.href);\n  // handle new path\n  const response = await fetch('/__pages/' + url.pathname + '/index.html');\n  if (!response.ok) response = await fetch('/__pages/404.html');\n  if (!response.ok) return;\n  const html = await response.text();\n  $app.innerHTML = '<script>_ARCTIC_C=0;</'+'script>'+html;\n  // re-create script elements, so their javascript runs\n  const scripts = $app.querySelectorAll('script');\n  for (let i = 0; i < scripts.length; i++) {\n    const script = scripts[i];\n    const n = document.createElement('script');\n    n.setAttribute('defer', 'true');\n    if (script.innerHTML === '') n.onload = \n      (n.onload || '') + \n      ';if(++_ARCTIC_C>=' +\n      scripts.length +\n      ')document.dispatchEvent(new Event(\\'DOMContentLoaded\\'));';\n    else {\n      const t = document.createTextNode(\n        script.innerHTML +\n        ';console.log(\\'script\\',_ARCTIC_C);' +\n        'if(++_ARCTIC_C>=' +\n        scripts.length +\n        ')document.dispatchEvent(new Event(\\'DOMContentLoaded\\'));'\n      );\n      n.appendChild(t);\n    }\n    for (let j = 0; j < script.attributes.length; j++) {\n      const attr = script.attributes[j];\n      n.setAttribute(attr.name, attr.value);\n    }\n    script.parentNode.replaceChild(n, script);\n  }\n  window.requestAnimationFrame(() => {\n    if (url.hash)\n      document.getElementById(url.hash.slice(1))?.scrollIntoView();\n    else\n      window.scrollTo(0, 0);\n  });\n  // setTimeout(() => document.dispatchEvent(new Event('DOMContentLoaded')), 100); // i cri ),x\n}\ndocument.addEventListener('click', async function(e) {\n  const a = find_a(e.target);\n  if (!a) return;\n  try {\n    const url = new URL(a.href);\n    const is_external = url.host !== window.location.host;\n    if (is_external) return;\n    event.preventDefault();\n    go_to(url, false, false);\n  } catch {\n    return;\n  }\n});\nwindow.addEventListener('popstate', (e) => {\n  e.preventDefault();\n  const url = new URL(window.location.href);\n  go_to(url, false, true);\n});\nfunction find_a(target) {\n  if (!target || target.tagName === 'BODY') return null;\n  if (target.tagName === 'A') return target;\n  return find_a(target.parentElement);\n}",
         ),
       ]),
     ),
@@ -407,7 +407,7 @@ function make_ssg_config(processed_collections, config, k) {
                   throw makeError(
                     "assignment_no_match",
                     "arctic/build",
-                    391,
+                    400,
                     "",
                     "Assignment pattern did not match",
                     { value: $ }
@@ -424,7 +424,7 @@ function make_ssg_config(processed_collections, config, k) {
                     throw makeError(
                       "panic",
                       "arctic/build",
-                      396,
+                      405,
                       "",
                       cached_path,
                       {}
@@ -443,7 +443,7 @@ function make_ssg_config(processed_collections, config, k) {
                       throw makeError(
                         "panic",
                         "arctic/build",
-                        408,
+                        417,
                         "",
                         cached_path,
                         {}
