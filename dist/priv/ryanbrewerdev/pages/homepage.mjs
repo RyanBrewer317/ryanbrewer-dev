@@ -3,6 +3,7 @@ import * as $list from "../../gleam_stdlib/gleam/list.mjs";
 import * as $attribute from "../../lustre/lustre/attribute.mjs";
 import * as $element from "../../lustre/lustre/element.mjs";
 import * as $html from "../../lustre/lustre/element/html.mjs";
+import * as $head from "../components/head.mjs";
 import * as $navbar from "../components/navbar.mjs";
 import { navbar } from "../components/navbar.mjs";
 import * as $tail from "../components/tail.mjs";
@@ -14,6 +15,10 @@ export function homepage(posts) {
   return $html.div(
     toList([]),
     toList([
+      $head.local_head(
+        "Ryan Brewer's Blog",
+        "The place Ryan writes his thoughts and shows off SaberVM and other cool projects.",
+      ),
       $html.script(
         toList([$attribute.attribute("type", "module")]),
         "import { main } from \"/priv/ryanbrewerdev/client/homepage.mjs\";\n document.addEventListener(\"DOMContentLoaded\", () => {\n   const dispatch = main({});\n });",

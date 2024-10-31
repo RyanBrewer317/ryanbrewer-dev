@@ -3,6 +3,7 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 import arctic.{type Page}
+import components/head
 import components/navbar.{navbar}
 import components/tail.{tail}
 import gleam/option.{Some}
@@ -35,11 +36,7 @@ fn render_wiki_as_list(wiki: Page) -> List(Element(Nil)) {
 
 pub fn post(post: Page) -> Element(Nil) {
   html.div([], [
-    html.title([], post.title <> " - Ryan Brewer"),
-    html.meta([
-      attribute.name("description"),
-      attribute.attribute("content", post.blerb),
-    ]),
+    head.local_head(post.title, post.blerb),
     navbar(),
     html.div([attribute.id("body")], render_post_as_list(post)),
     tail(),
@@ -48,11 +45,7 @@ pub fn post(post: Page) -> Element(Nil) {
 
 pub fn wiki(wiki: Page) -> Element(Nil) {
   html.div([], [
-    html.title([], wiki.title <> " - Ryan Brewer"),
-    html.meta([
-      attribute.name("description"),
-      attribute.attribute("content", wiki.blerb),
-    ]),
+    head.local_head(wiki.title, wiki.blerb),
     navbar(),
     html.div([attribute.id("body")], render_wiki_as_list(wiki)),
     tail(),

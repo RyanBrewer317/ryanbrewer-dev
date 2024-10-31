@@ -11,10 +11,11 @@ import lustre/element/html
 
 pub fn unknown_page() -> Element(Nil) {
   html.html([attribute.attribute("lang", "en")], [
-    head("404 - Ryan Brewer", "Unknown Page", [
+    head([
       html.link([attribute.rel("stylesheet"), attribute.href("/style.css")]),
     ]),
     html.body([], [
+      head.local_head("404 - Ryan Brewer", "Unknown Page"),
       navbar(),
       html.div([attribute.id("body")], [
         html.span([attribute.id("unknown-page-banner")], [

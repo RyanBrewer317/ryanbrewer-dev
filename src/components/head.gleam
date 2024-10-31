@@ -7,11 +7,35 @@ import lustre/attribute.{attribute}
 import lustre/element.{type Element}
 import lustre/element/html
 
-pub fn head(
-  title: String,
-  description: String,
-  extra: List(Element(Nil)),
-) -> Element(Nil) {
+pub fn local_head(title: String, description: String) -> Element(Nil) {
+  html.div([], [
+    html.title([], title <> " - Ryan Brewer"),
+    html.meta([attribute.name("description"), attribute("content", description)]),
+    html.script(
+      [
+        attribute("type", "text/javascript"),
+        attribute("async", "true"),
+        attribute(
+          "src",
+          "https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js",
+        ),
+      ],
+      "",
+    ),
+    html.script(
+      [],
+      "
+window.MathJax = {
+  loader: {load: ['[tex]/unicode']},
+  tex: {packages: {'[+]': ['unicode']}},
+};
+        ",
+    ),
+    html.script([], "hljs.highlightAll();"),
+  ])
+}
+
+pub fn head(extra: List(Element(Nil))) -> Element(Nil) {
   html.head(
     [],
     list.append(
@@ -33,15 +57,10 @@ function gtag(){dataLayer.push(arguments);}
 gtag('js', new Date());
         ",
         ),
-        html.title([], title <> " - Ryan Brewer"),
         html.meta([attribute("charset", "UTF-8")]),
         html.meta([
           attribute.name("viewport"),
           attribute("content", "width=device-width, initial-scale=1.0"),
-        ]),
-        html.meta([
-          attribute.name("description"),
-          attribute("content", description),
         ]),
         html.link([
           attribute.rel("icon"),
@@ -73,26 +92,6 @@ gtag('js', new Date());
           [attribute.src("https://polyfill.io/v3/polyfill.min.js?features=es6")],
           "",
         ),
-        html.script(
-          [
-            attribute("type", "text/javascript"),
-            attribute("async", "true"),
-            attribute(
-              "src",
-              "https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js",
-            ),
-          ],
-          "",
-        ),
-        html.script(
-          [],
-          "
-window.MathJax = {
-  loader: {load: ['[tex]/unicode']},
-  tex: {packages: {'[+]': ['unicode']}},
-};
-        ",
-        ),
         html.link([
           attribute.rel("stylesheet"),
           attribute.href(
@@ -107,7 +106,6 @@ window.MathJax = {
           ],
           "",
         ),
-        html.script([], "hljs.highlightAll();"),
       ],
       extra,
     ),

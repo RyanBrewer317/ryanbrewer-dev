@@ -3,6 +3,7 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 import arctic.{type CacheablePage}
+import components/head
 import components/navbar.{navbar}
 import components/tail.{tail}
 import components/thumbnail
@@ -13,6 +14,10 @@ import lustre/element/html
 
 pub fn homepage(posts: List(CacheablePage)) -> Element(Nil) {
   html.div([], [
+    head.local_head(
+      "Ryan Brewer's Blog",
+      "The place Ryan writes his thoughts and shows off SaberVM and other cool projects.",
+    ),
     html.script(
       [attribute.attribute("type", "module")],
       "import { main } from \"/priv/ryanbrewerdev/client/homepage.mjs\";

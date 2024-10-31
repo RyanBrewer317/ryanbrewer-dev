@@ -54,8 +54,6 @@ export function main() {
           toList([$attribute.attribute("lang", "en")]),
           toList([
             $head.head(
-              "Ryan Brewer's Blog",
-              "The place Ryan writes his thoughts and shows off SaberVM and other cool projects.",
               toList([
                 $html.link(
                   toList([
@@ -81,7 +79,7 @@ export function main() {
           throw makeError(
             "assignment_no_match",
             "ryanbrewerdev",
-            63,
+            56,
             "",
             "Assignment pattern did not match",
             { value: $ }
@@ -100,7 +98,7 @@ export function main() {
     throw makeError(
       "panic",
       "ryanbrewerdev",
-      70,
+      63,
       "main",
       $snag.pretty_print(err),
       {}

@@ -3,6 +3,7 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 import arctic.{type CacheablePage}
+import components/head
 import components/navbar.{navbar}
 import components/script_posts.{script_posts}
 import components/tail.{tail}
@@ -52,11 +53,7 @@ fn searchbox() -> Element(Nil) {
 
 pub fn list_posts(posts: List(CacheablePage)) -> Element(Nil) {
   html.div([], [
-    html.title([], "Search Posts - Ryan Brewer"),
-    html.meta([
-      attribute.name("description"),
-      attribute.attribute("content", "Search Ryan's past posts"),
-    ]),
+    head.local_head("Search Posts", "Search Ryan's past posts"),
     script_posts(posts),
     script(),
     navbar(),

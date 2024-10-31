@@ -3,6 +3,7 @@ import { attribute, id } from "../../lustre/lustre/attribute.mjs";
 import * as $element from "../../lustre/lustre/element.mjs";
 import * as $html from "../../lustre/lustre/element/html.mjs";
 import { div, html, script } from "../../lustre/lustre/element/html.mjs";
+import * as $head from "../components/head.mjs";
 import * as $navbar from "../components/navbar.mjs";
 import { navbar } from "../components/navbar.mjs";
 import * as $tail from "../components/tail.mjs";
@@ -13,15 +14,9 @@ export function demos() {
   return $html.div(
     toList([]),
     toList([
-      $html.title(toList([]), "Demos - Ryan Brewer"),
-      $html.meta(
-        toList([
-          $attribute.name("description"),
-          $attribute.attribute(
-            "content",
-            "Interactive demonstrations of concepts from programming language theory",
-          ),
-        ]),
+      $head.local_head(
+        "Demos",
+        "Interactive demonstrations of concepts from programming language theory",
       ),
       script(
         toList([attribute("type", "module")]),

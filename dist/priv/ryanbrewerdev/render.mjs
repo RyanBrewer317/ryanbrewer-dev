@@ -6,6 +6,7 @@ import { attribute } from "../lustre/lustre/attribute.mjs";
 import * as $element from "../lustre/lustre/element.mjs";
 import { text } from "../lustre/lustre/element.mjs";
 import * as $html from "../lustre/lustre/element/html.mjs";
+import * as $head from "./components/head.mjs";
 import * as $navbar from "./components/navbar.mjs";
 import { navbar } from "./components/navbar.mjs";
 import * as $tail from "./components/tail.mjs";
@@ -30,7 +31,7 @@ function render_post_as_list(post) {
         throw makeError(
           "assignment_no_match",
           "render",
-          24,
+          25,
           "",
           "Assignment pattern did not match",
           { value: $ }
@@ -59,13 +60,7 @@ export function post(post) {
   return $html.div(
     toList([]),
     toList([
-      $html.title(toList([]), post.title + " - Ryan Brewer"),
-      $html.meta(
-        toList([
-          $attribute.name("description"),
-          $attribute.attribute("content", post.blerb),
-        ]),
-      ),
+      $head.local_head(post.title, post.blerb),
       navbar(),
       $html.div(toList([$attribute.id("body")]), render_post_as_list(post)),
       tail(),
@@ -77,13 +72,7 @@ export function wiki(wiki) {
   return $html.div(
     toList([]),
     toList([
-      $html.title(toList([]), wiki.title + " - Ryan Brewer"),
-      $html.meta(
-        toList([
-          $attribute.name("description"),
-          $attribute.attribute("content", wiki.blerb),
-        ]),
-      ),
+      $head.local_head(wiki.title, wiki.blerb),
       navbar(),
       $html.div(toList([$attribute.id("body")]), render_wiki_as_list(wiki)),
       tail(),

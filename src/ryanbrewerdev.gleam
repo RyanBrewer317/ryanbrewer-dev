@@ -46,16 +46,9 @@ pub fn main() {
     |> config.add_main_page("cricket", cricket.cricket())
     |> config.add_spa_frame(fn(body) {
       html.html([attribute.attribute("lang", "en")], [
-        head.head(
-          "Ryan Brewer's Blog",
-          "The place Ryan writes his thoughts and shows off SaberVM and other cool projects.",
-          [
-            html.link([
-              attribute.rel("stylesheet"),
-              attribute.href("/style.css"),
-            ]),
-          ],
-        ),
+        head.head([
+          html.link([attribute.rel("stylesheet"), attribute.href("/style.css")]),
+        ]),
         html.body([], [body]),
       ])
     })

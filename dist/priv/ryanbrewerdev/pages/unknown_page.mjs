@@ -15,8 +15,6 @@ export function unknown_page() {
     toList([$attribute.attribute("lang", "en")]),
     toList([
       head(
-        "404 - Ryan Brewer",
-        "Unknown Page",
         toList([
           $html.link(
             toList([$attribute.rel("stylesheet"), $attribute.href("/style.css")]),
@@ -26,6 +24,7 @@ export function unknown_page() {
       $html.body(
         toList([]),
         toList([
+          $head.local_head("404 - Ryan Brewer", "Unknown Page"),
           navbar(),
           $html.div(
             toList([$attribute.id("body")]),

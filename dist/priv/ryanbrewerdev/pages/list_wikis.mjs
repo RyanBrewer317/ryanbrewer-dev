@@ -4,6 +4,7 @@ import * as $attribute from "../../lustre/lustre/attribute.mjs";
 import { attribute } from "../../lustre/lustre/attribute.mjs";
 import * as $element from "../../lustre/lustre/element.mjs";
 import * as $html from "../../lustre/lustre/element/html.mjs";
+import * as $head from "../components/head.mjs";
 import * as $navbar from "../components/navbar.mjs";
 import { navbar } from "../components/navbar.mjs";
 import * as $script_wikis from "../components/script_wikis.mjs";
@@ -36,13 +37,7 @@ export function list_wikis(wikis) {
   return $html.div(
     toList([]),
     toList([
-      $html.title(toList([]), "Search Wiki - Ryan Brewer"),
-      $html.meta(
-        toList([
-          $attribute.name("description"),
-          $attribute.attribute("content", "Look through Ryan's personal wiki"),
-        ]),
-      ),
+      $head.local_head("Search Wiki", "Look through Ryan's personal wiki"),
       script_wikis(wikis),
       script(),
       navbar(),

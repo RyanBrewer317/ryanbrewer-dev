@@ -4,6 +4,7 @@ import * as $attribute from "../../lustre/lustre/attribute.mjs";
 import { attribute } from "../../lustre/lustre/attribute.mjs";
 import * as $element from "../../lustre/lustre/element.mjs";
 import * as $html from "../../lustre/lustre/element/html.mjs";
+import * as $head from "../components/head.mjs";
 import * as $navbar from "../components/navbar.mjs";
 import { navbar } from "../components/navbar.mjs";
 import * as $script_posts from "../components/script_posts.mjs";
@@ -36,13 +37,7 @@ export function list_posts(posts) {
   return $html.div(
     toList([]),
     toList([
-      $html.title(toList([]), "Search Posts - Ryan Brewer"),
-      $html.meta(
-        toList([
-          $attribute.name("description"),
-          $attribute.attribute("content", "Search Ryan's past posts"),
-        ]),
-      ),
+      $head.local_head("Search Posts", "Search Ryan's past posts"),
       script_posts(posts),
       script(),
       navbar(),

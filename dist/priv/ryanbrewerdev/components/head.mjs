@@ -5,7 +5,38 @@ import * as $element from "../../lustre/lustre/element.mjs";
 import * as $html from "../../lustre/lustre/element/html.mjs";
 import { toList } from "../gleam.mjs";
 
-export function head(title, description, extra) {
+export function local_head(title, description) {
+  return $html.div(
+    toList([]),
+    toList([
+      $html.title(toList([]), title + " - Ryan Brewer"),
+      $html.meta(
+        toList([
+          $attribute.name("description"),
+          attribute("content", description),
+        ]),
+      ),
+      $html.script(
+        toList([
+          attribute("type", "text/javascript"),
+          attribute("async", "true"),
+          attribute(
+            "src",
+            "https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js",
+          ),
+        ]),
+        "",
+      ),
+      $html.script(
+        toList([]),
+        "\nwindow.MathJax = {\n  loader: {load: ['[tex]/unicode']},\n  tex: {packages: {'[+]': ['unicode']}},\n};\n        ",
+      ),
+      $html.script(toList([]), "hljs.highlightAll();"),
+    ]),
+  );
+}
+
+export function head(extra) {
   return $html.head(
     toList([]),
     $list.append(
@@ -23,18 +54,11 @@ export function head(title, description, extra) {
           toList([]),
           "\nwindow.dataLayer = window.dataLayer || [];\nfunction gtag(){dataLayer.push(arguments);}\ngtag('js', new Date());\n        ",
         ),
-        $html.title(toList([]), title + " - Ryan Brewer"),
         $html.meta(toList([attribute("charset", "UTF-8")])),
         $html.meta(
           toList([
             $attribute.name("viewport"),
             attribute("content", "width=device-width, initial-scale=1.0"),
-          ]),
-        ),
-        $html.meta(
-          toList([
-            $attribute.name("description"),
-            attribute("content", description),
           ]),
         ),
         $html.link(
@@ -81,21 +105,6 @@ export function head(title, description, extra) {
           ]),
           "",
         ),
-        $html.script(
-          toList([
-            attribute("type", "text/javascript"),
-            attribute("async", "true"),
-            attribute(
-              "src",
-              "https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js",
-            ),
-          ]),
-          "",
-        ),
-        $html.script(
-          toList([]),
-          "\nwindow.MathJax = {\n  loader: {load: ['[tex]/unicode']},\n  tex: {packages: {'[+]': ['unicode']}},\n};\n        ",
-        ),
         $html.link(
           toList([
             $attribute.rel("stylesheet"),
@@ -112,7 +121,6 @@ export function head(title, description, extra) {
           ]),
           "",
         ),
-        $html.script(toList([]), "hljs.highlightAll();"),
       ]),
       extra,
     ),

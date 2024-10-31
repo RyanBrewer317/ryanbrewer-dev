@@ -2,6 +2,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
+import components/head
 import components/navbar.{navbar}
 import components/tail.{tail}
 import lustre/attribute
@@ -10,11 +11,7 @@ import lustre/element/html
 
 pub fn cricket() -> Element(Nil) {
   html.div([], [
-    html.title([], "Cricket - Ryan Brewer"),
-    html.meta([
-      attribute.name("description"),
-      attribute.attribute("content", "The Cricket Programming Language"),
-    ]),
+    head.local_head("Cricket", "The Cricket Programming Language"),
     navbar(),
     html.div([attribute.id("body")], [
       html.h3([], [text("Cricket")]),

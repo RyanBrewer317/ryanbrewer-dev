@@ -2,6 +2,7 @@ import * as $attribute from "../../lustre/lustre/attribute.mjs";
 import * as $element from "../../lustre/lustre/element.mjs";
 import { text } from "../../lustre/lustre/element.mjs";
 import * as $html from "../../lustre/lustre/element/html.mjs";
+import * as $head from "../components/head.mjs";
 import * as $navbar from "../components/navbar.mjs";
 import { navbar } from "../components/navbar.mjs";
 import * as $tail from "../components/tail.mjs";
@@ -12,13 +13,7 @@ export function cricket() {
   return $html.div(
     toList([]),
     toList([
-      $html.title(toList([]), "Cricket - Ryan Brewer"),
-      $html.meta(
-        toList([
-          $attribute.name("description"),
-          $attribute.attribute("content", "The Cricket Programming Language"),
-        ]),
-      ),
+      $head.local_head("Cricket", "The Cricket Programming Language"),
       navbar(),
       $html.div(
         toList([$attribute.id("body")]),
