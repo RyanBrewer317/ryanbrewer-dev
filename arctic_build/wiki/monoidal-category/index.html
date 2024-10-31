@@ -35,9 +35,6 @@ async function go_to(url, loader, back) {
   }
   document.dispatchEvent(new Event('beforeunload'));
   document.dispatchEvent(new Event('unload'));
-  for (let i = 0; i < arctic_dom_content_loaded_listeners.length; i++)
-    document.removeEventListener('DOMContentLoaded', arctic_dom_content_loaded_listeners[i]);
-  arctic_dom_content_loaded_listeners = [];
   const $app = document.getElementById('arctic-app');
   if (loader) $app.innerHTML = '<div id="arctic-loader"></div>';
   if (!back) window.history.pushState({}, '', url.href);
