@@ -59,28 +59,41 @@ async function go_to(url, loader, back) {
   $app.innerHTML = '<script>_ARCTIC_C=0;</'+'script>'+html;
   // re-create script elements, so their javascript runs
   const scripts = $app.querySelectorAll('script');
-  for (let i = 0; i < scripts.length; i++) {
+  const num_scripts = scripts.length;
+  for (let i = 0; i < num_scripts; i++) {
     const script = scripts[i];
     const n = document.createElement('script');
+    n.setAttribute('defer', 'true');
+    if (script.innerHTML === '') n.onload = 
+      () => {
+        console.log('script',_ARCTIC_C);
+        if(++_ARCTIC_C>=num_scripts)document.dispatchEvent(new Event('DOMContentLoaded'));
+      };
+      //(n.onload || '') + 
+      //';if(++_ARCTIC_C>=' +
+      //num_scripts +
+      //')document.dispatchEvent(new Event(\'DOMContentLoaded\'));';
+    else {
+      const t = document.createTextNode(
+        script.innerHTML +
+        ';console.log(\'script\',_ARCTIC_C);' +
+        'if(++_ARCTIC_C>=' + num_scripts +
+        ')document.dispatchEvent(new Event(\'DOMContentLoaded\'));'
+      );
+      n.appendChild(t);
+    }
     for (let j = 0; j < script.attributes.length; j++) {
       const attr = script.attributes[j];
       n.setAttribute(attr.name, attr.value);
     }
-    n.setAttribute('defer', 'true');
-    n.onload = 
-      (n.onload || '') + 
-      ';if(++_ARCTIC_C>=' +
-      scripts.length +
-      ')document.dispatchEvent(new Event(\'DOMContentLoaded\'));';
-    const t = document.createTextNode(script.innerHTML+';console.log(\'script\',_ARCTIC_C);');
-    n.appendChild(t);
     script.parentNode.replaceChild(n, script);
   }
-  if (url.hash)
-    window.requestAnimationFrame(() =>
-      document.getElementById(url.hash.slice(1))?.scrollIntoView()
-    );
-  else window.scrollTo(0, 0);
+  window.requestAnimationFrame(() => {
+    if (url.hash)
+      document.getElementById(url.hash.slice(1))?.scrollIntoView();
+    else
+      window.scrollTo(0, 0);
+  });
   // setTimeout(() => document.dispatchEvent(new Event('DOMContentLoaded')), 100); // i cri ),x
 }
 document.addEventListener('click', async function(e) {
