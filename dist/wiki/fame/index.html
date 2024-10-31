@@ -10,6 +10,15 @@ window.MathJax = {
 };
         </script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css"><script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script><script>hljs.highlightAll();</script><link rel="stylesheet" href="/style.css"></head><body><div><script>
 var _ARCTIC_C;
+if (typeof HTMLDocument === 'undefined') HTMLDocument = Document;
+let arctic_dom_content_loaded_listeners = [];
+HTMLDocument.prototype.arctic_addEventListener = HTMLDocument.prototype.addEventListener;
+HTMLDocument.prototype.addEventListener = function(type, listener, options) {
+  if (type === 'DOMContentLoaded') {
+    arctic_dom_content_loaded_listeners.push(listener);
+    document.arctic_addEventListener(type, listener, options);
+  } else document.arctic_addEventListener(type, listener, options);
+}
        </script><div id="arctic-app"><div><title>Fame - Ryan Brewer</title><meta name="description" content><nav id="nav"><div id="nav-dropdown" onclick="document.getElementById(&#39;nav&#39;).classList.toggle(&#39;dropdown&#39;);document.body.classList.toggle(&#39;noscroll&#39;);">☰</div><a href="/" id="nav-home">Ryan Brewer</a><a href="/posts" id="nav-posts">Posts</a><a href="/wiki" id="nav-wiki">Wiki</a><a href="/contact" id="nav-contact">Contact</a><a href="/demos" id="nav-demos">Demos</a><a href="/feed.rss" id="nav-subscribe" onclick="window.location.href = &#39;/feed.rss&#39;"><img src="/rss-icon.png" id="rss-subscribe-icon">Subscribe</a></nav><div id="body"><h1>Fame</h1><p><span>This entry is for me, and my life goals. I&#39;m just spit-balling here, on October 11, 2024.
 </span></p><p><span>I know I want to be rich and famous. It sounds so stupid, and not all of my reasons are great. I&#39;m a communist and environmentalist, which is certainly at odds with the dream lifestyle. And certainly a big reason I want to do it is the capitalist propaganda I&#39;ve been exposed to.
 </span></p><p><span>I can justify exploitation if it&#39;s the exploitation of machines. That&#39;s something I stand by: the only way to ethically and sustainably maintain our <a href="https://news.harvard.edu/gazette/story/2020/09/joseph-henrich-explores-weird-societies/"><span>W.E.I.R.D.</span></a> standard of living is to swap the exploitation of humans with the exploitation of machines. This is necessary for the communist world I want to live in. But (perhaps surprisingly) I don&#39;t really see how I can contribute to this directly. I don&#39;t think there are theoretical limitations I can fix, and I certainly don&#39;t think I can start robotics companies that replace human labor at the necessary scale.
@@ -34,6 +43,9 @@ async function go_to(url, loader, back) {
   }
   document.dispatchEvent(new Event('beforeunload'));
   document.dispatchEvent(new Event('unload'));
+  for (let i = 0; i < arctic_dom_content_loaded_listeners.length; i++)
+    document.removeEventListener('DOMContentLoaded', arctic_dom_content_loaded_listeners[i]);
+  arctic_dom_content_loaded_listeners = [];
   const $app = document.getElementById('arctic-app');
   if (loader) $app.innerHTML = '<div id="arctic-loader"></div>';
   if (!back) window.history.pushState({}, '', url.href);
@@ -52,12 +64,13 @@ async function go_to(url, loader, back) {
       const attr = script.attributes[j];
       n.setAttribute(attr.name, attr.value);
     }
-    const t = document.createTextNode(
-      script.innerHTML +
+    n.setAttribute('defer', 'true');
+    n.onload = 
+      (n.onload || '') + 
       ';if(++_ARCTIC_C>=' +
       scripts.length +
-      ')document.dispatchEvent(new Event(\'DOMContentLoaded\'));'
-    );
+      ')document.dispatchEvent(new Event(\'DOMContentLoaded\'));';
+    const t = document.createTextNode(script.innerHTML+';console.log(\'script\',_ARCTIC_C);');
     n.appendChild(t);
     script.parentNode.replaceChild(n, script);
   }

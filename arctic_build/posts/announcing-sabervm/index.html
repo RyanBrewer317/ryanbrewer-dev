@@ -10,6 +10,15 @@ window.MathJax = {
 };
         </script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css"><script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script><script>hljs.highlightAll();</script><link rel="stylesheet" href="/style.css"></head><body><div><script>
 var _ARCTIC_C;
+if (typeof HTMLDocument === 'undefined') HTMLDocument = Document;
+let arctic_dom_content_loaded_listeners = [];
+HTMLDocument.prototype.arctic_addEventListener = HTMLDocument.prototype.addEventListener;
+HTMLDocument.prototype.addEventListener = function(type, listener, options) {
+  if (type === 'DOMContentLoaded') {
+    arctic_dom_content_loaded_listeners.push(listener);
+    document.arctic_addEventListener(type, listener, options);
+  } else document.arctic_addEventListener(type, listener, options);
+}
        </script><div id="arctic-app"><div><title>Announcing the Saber Virtual Machine - Ryan Brewer</title><meta name="description" content="This post announces SaberVM, an abstract machine for functional programs that guarantees safety, reliability, and portability."><nav id="nav"><div id="nav-dropdown" onclick="document.getElementById(&#39;nav&#39;).classList.toggle(&#39;dropdown&#39;);document.body.classList.toggle(&#39;noscroll&#39;);">☰</div><a href="/" id="nav-home">Ryan Brewer</a><a href="/posts" id="nav-posts">Posts</a><a href="/wiki" id="nav-wiki">Wiki</a><a href="/contact" id="nav-contact">Contact</a><a href="/demos" id="nav-demos">Demos</a><a href="/feed.rss" id="nav-subscribe" onclick="window.location.href = &#39;/feed.rss&#39;"><img src="/rss-icon.png" id="rss-subscribe-icon">Subscribe</a></nav><div id="body"><h1>Announcing the Saber Virtual Machine</h1><div class="date">January 18, 2024</div><p><span>In this post I&#39;m excited to announce the <a href="https://github.com/RyanBrewer317/SaberVM"><span>Saber Virtual Machine</span></a>, or SaberVM. It&#39;s a project I&#39;ve been working hard on for the past month, with fascinating properties and an in-progress MVP implementation that&#39;s coming along well. If you like writing functional languages and want a portable backend to target that&#39;s fast and/or safe, you may be very interested in SaberVM, especially in its upcoming AOT-compile-to-optimized-native form.
 </span></p><h3><span>What is it?
 </span></h3><p><span>SaberVM is a compiler backend for functional languages. Specifically, it is an abstract stack machine, with many possible implementations. It takes in CPS code that&#39;s been closure-converted and hoisted, and executes it or AOT compiles it to a native binary. My current implementation is a naive bytecode VM in Rust, without JITing, mostly for rapid prototyping as the design settles.
@@ -36,6 +45,9 @@ async function go_to(url, loader, back) {
   }
   document.dispatchEvent(new Event('beforeunload'));
   document.dispatchEvent(new Event('unload'));
+  for (let i = 0; i < arctic_dom_content_loaded_listeners.length; i++)
+    document.removeEventListener('DOMContentLoaded', arctic_dom_content_loaded_listeners[i]);
+  arctic_dom_content_loaded_listeners = [];
   const $app = document.getElementById('arctic-app');
   if (loader) $app.innerHTML = '<div id="arctic-loader"></div>';
   if (!back) window.history.pushState({}, '', url.href);
@@ -54,12 +66,13 @@ async function go_to(url, loader, back) {
       const attr = script.attributes[j];
       n.setAttribute(attr.name, attr.value);
     }
-    const t = document.createTextNode(
-      script.innerHTML +
+    n.setAttribute('defer', 'true');
+    n.onload = 
+      (n.onload || '') + 
       ';if(++_ARCTIC_C>=' +
       scripts.length +
-      ')document.dispatchEvent(new Event(\'DOMContentLoaded\'));'
-    );
+      ')document.dispatchEvent(new Event(\'DOMContentLoaded\'));';
+    const t = document.createTextNode(script.innerHTML+';console.log(\'script\',_ARCTIC_C);');
     n.appendChild(t);
     script.parentNode.replaceChild(n, script);
   }

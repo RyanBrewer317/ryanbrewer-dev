@@ -10,6 +10,15 @@ window.MathJax = {
 };
         </script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css"><script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script><script>hljs.highlightAll();</script><link rel="stylesheet" href="/style.css"></head><body><div><script>
 var _ARCTIC_C;
+if (typeof HTMLDocument === 'undefined') HTMLDocument = Document;
+let arctic_dom_content_loaded_listeners = [];
+HTMLDocument.prototype.arctic_addEventListener = HTMLDocument.prototype.addEventListener;
+HTMLDocument.prototype.addEventListener = function(type, listener, options) {
+  if (type === 'DOMContentLoaded') {
+    arctic_dom_content_loaded_listeners.push(listener);
+    document.arctic_addEventListener(type, listener, options);
+  } else document.arctic_addEventListener(type, listener, options);
+}
        </script><div id="arctic-app"><div><title>Exponential Object - Ryan Brewer</title><meta name="description" content><nav id="nav"><div id="nav-dropdown" onclick="document.getElementById(&#39;nav&#39;).classList.toggle(&#39;dropdown&#39;);document.body.classList.toggle(&#39;noscroll&#39;);">☰</div><a href="/" id="nav-home">Ryan Brewer</a><a href="/posts" id="nav-posts">Posts</a><a href="/wiki" id="nav-wiki">Wiki</a><a href="/contact" id="nav-contact">Contact</a><a href="/demos" id="nav-demos">Demos</a><a href="/feed.rss" id="nav-subscribe" onclick="window.location.href = &#39;/feed.rss&#39;"><img src="/rss-icon.png" id="rss-subscribe-icon">Subscribe</a></nav><div id="body"><h1>Exponential Object</h1><p><span>In many cases, the arrows of a <a href="/wiki/category"><span>category</span></a> will also have some representation as objects in that same category. For example, in a category of sets and functions, functions are also sets, so may be present as both arrows and objects in the category. Categories where <i><span>every</span></i> arrow has a corresponding object are called &quot;closed,&quot; though this adjective doesn&#39;t appear by itself because there are several types of &quot;closed:&quot; &quot;monoidal closed,&quot; &quot;cartesian closed,&quot; and other&#39;s; I&#39;ll discuss them in a moment. The object of an arrow \(f:X\to Y\) is called an &quot;exponential&quot; or &quot;exponential object&quot; and is written \(Y^X\). This notation comes from the idea that if \(X\) and \(Y\) are sets, the number of elements (functions) in the set \(X\to Y\) is equal to the number of elements in \(Y\) raised to the power of the number of elements in \(X\), which is kinda fun I think.
 </span></p><p><span>In a <a href="/wiki/monoidal-category"><span>monoidal category</span></a>, given objects \(X\) and \(Y\), an exponential object \(Y^X\) is an object such that there&#39;s an arrow \(\texttt{eval}:Y^X\otimes X\to Y\). It&#39;s a universal construction, so for any candidate exponential object \(Z\) with its arrow \(e:Z\otimes X\to Y\), there&#39;s exactly one arrow \(u: Z\to Y^X\) such that the following diagram commutes:
 </span></p><div class="diagram"><img src="/image-0-exponential-object.svg" onload="this.width *= 2.25;"></div><p><span>The notation \(u\otimes id_X\) is taking advantage of the fact that \(\otimes\) is a bifunctor, so can map a pair of morphisms \(u:Z\to Y^X\) and \(id_X:X\to X\) into a morphism from \(Z\otimes X\) to \(Y^X\otimes X\). With this sort of notation you have to just know that the things on either side of the \(\otimes\) are morphisms, not objects, to know what&#39;s going on. Note that when the tensor product is some specific bifunctor (like a cartesian product), we write that instead of \(\otimes\) (like \(\times\)).
@@ -26,6 +35,9 @@ async function go_to(url, loader, back) {
   }
   document.dispatchEvent(new Event('beforeunload'));
   document.dispatchEvent(new Event('unload'));
+  for (let i = 0; i < arctic_dom_content_loaded_listeners.length; i++)
+    document.removeEventListener('DOMContentLoaded', arctic_dom_content_loaded_listeners[i]);
+  arctic_dom_content_loaded_listeners = [];
   const $app = document.getElementById('arctic-app');
   if (loader) $app.innerHTML = '<div id="arctic-loader"></div>';
   if (!back) window.history.pushState({}, '', url.href);
@@ -44,12 +56,13 @@ async function go_to(url, loader, back) {
       const attr = script.attributes[j];
       n.setAttribute(attr.name, attr.value);
     }
-    const t = document.createTextNode(
-      script.innerHTML +
+    n.setAttribute('defer', 'true');
+    n.onload = 
+      (n.onload || '') + 
       ';if(++_ARCTIC_C>=' +
       scripts.length +
-      ')document.dispatchEvent(new Event(\'DOMContentLoaded\'));'
-    );
+      ')document.dispatchEvent(new Event(\'DOMContentLoaded\'));';
+    const t = document.createTextNode(script.innerHTML+';console.log(\'script\',_ARCTIC_C);');
     n.appendChild(t);
     script.parentNode.replaceChild(n, script);
   }

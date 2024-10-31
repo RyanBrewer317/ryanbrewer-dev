@@ -10,6 +10,15 @@ window.MathJax = {
 };
         </script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css"><script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script><script>hljs.highlightAll();</script><link rel="stylesheet" href="/style.css"></head><body><div><script>
 var _ARCTIC_C;
+if (typeof HTMLDocument === 'undefined') HTMLDocument = Document;
+let arctic_dom_content_loaded_listeners = [];
+HTMLDocument.prototype.arctic_addEventListener = HTMLDocument.prototype.addEventListener;
+HTMLDocument.prototype.addEventListener = function(type, listener, options) {
+  if (type === 'DOMContentLoaded') {
+    arctic_dom_content_loaded_listeners.push(listener);
+    document.arctic_addEventListener(type, listener, options);
+  } else document.arctic_addEventListener(type, listener, options);
+}
        </script><div id="arctic-app"><div><title>Simple Programming Languages - Ryan Brewer</title><meta name="description" content="Simple programming languages are wonderful to work in. But what is it about them that actually makes them simple? And why do we like that so much?"><nav id="nav"><div id="nav-dropdown" onclick="document.getElementById(&#39;nav&#39;).classList.toggle(&#39;dropdown&#39;);document.body.classList.toggle(&#39;noscroll&#39;);">☰</div><a href="/" id="nav-home">Ryan Brewer</a><a href="/posts" id="nav-posts">Posts</a><a href="/wiki" id="nav-wiki">Wiki</a><a href="/contact" id="nav-contact">Contact</a><a href="/demos" id="nav-demos">Demos</a><a href="/feed.rss" id="nav-subscribe" onclick="window.location.href = &#39;/feed.rss&#39;"><img src="/rss-icon.png" id="rss-subscribe-icon">Subscribe</a></nav><div id="body"><h1>Simple Programming Languages</h1><div class="date">March 20, 2024</div><p><span>I love simple programming languages, like Gleam, Go, and C. I know I&#39;m not alone; there&#39;s something wonderful about using a simple language: reading it, using it in a team, coming back to it after a long time, the list goes on.
 </span></p><p><span>In this post I want to make this kind of simplicity more precise and talk about some reasons it&#39;s important. I propose five key ideas for simple programming languages: ready-at-hand features, fast iteration cycles, a single way of doing things, first-order reasoning principles, and simple static type systems. I discuss each of these at length below.
 </span></p><h3><span>Ready-At-Hand
@@ -111,6 +120,9 @@ async function go_to(url, loader, back) {
   }
   document.dispatchEvent(new Event('beforeunload'));
   document.dispatchEvent(new Event('unload'));
+  for (let i = 0; i < arctic_dom_content_loaded_listeners.length; i++)
+    document.removeEventListener('DOMContentLoaded', arctic_dom_content_loaded_listeners[i]);
+  arctic_dom_content_loaded_listeners = [];
   const $app = document.getElementById('arctic-app');
   if (loader) $app.innerHTML = '<div id="arctic-loader"></div>';
   if (!back) window.history.pushState({}, '', url.href);
@@ -129,12 +141,13 @@ async function go_to(url, loader, back) {
       const attr = script.attributes[j];
       n.setAttribute(attr.name, attr.value);
     }
-    const t = document.createTextNode(
-      script.innerHTML +
+    n.setAttribute('defer', 'true');
+    n.onload = 
+      (n.onload || '') + 
       ';if(++_ARCTIC_C>=' +
       scripts.length +
-      ')document.dispatchEvent(new Event(\'DOMContentLoaded\'));'
-    );
+      ')document.dispatchEvent(new Event(\'DOMContentLoaded\'));';
+    const t = document.createTextNode(script.innerHTML+';console.log(\'script\',_ARCTIC_C);');
     n.appendChild(t);
     script.parentNode.replaceChild(n, script);
   }

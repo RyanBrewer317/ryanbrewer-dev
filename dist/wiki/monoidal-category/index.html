@@ -10,6 +10,15 @@ window.MathJax = {
 };
         </script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css"><script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script><script>hljs.highlightAll();</script><link rel="stylesheet" href="/style.css"></head><body><div><script>
 var _ARCTIC_C;
+if (typeof HTMLDocument === 'undefined') HTMLDocument = Document;
+let arctic_dom_content_loaded_listeners = [];
+HTMLDocument.prototype.arctic_addEventListener = HTMLDocument.prototype.addEventListener;
+HTMLDocument.prototype.addEventListener = function(type, listener, options) {
+  if (type === 'DOMContentLoaded') {
+    arctic_dom_content_loaded_listeners.push(listener);
+    document.arctic_addEventListener(type, listener, options);
+  } else document.arctic_addEventListener(type, listener, options);
+}
        </script><div id="arctic-app"><div><title>Monoidal Category - Ryan Brewer</title><meta name="description" content><nav id="nav"><div id="nav-dropdown" onclick="document.getElementById(&#39;nav&#39;).classList.toggle(&#39;dropdown&#39;);document.body.classList.toggle(&#39;noscroll&#39;);">☰</div><a href="/" id="nav-home">Ryan Brewer</a><a href="/posts" id="nav-posts">Posts</a><a href="/wiki" id="nav-wiki">Wiki</a><a href="/contact" id="nav-contact">Contact</a><a href="/demos" id="nav-demos">Demos</a><a href="/feed.rss" id="nav-subscribe" onclick="window.location.href = &#39;/feed.rss&#39;"><img src="/rss-icon.png" id="rss-subscribe-icon">Subscribe</a></nav><div id="body"><h1>Monoidal Category</h1><p><span>A monoidal category is a <a href="/wiki/category"><span>category</span></a> \(C\) with a bifunctor \(\otimes:C\times C\to C\) and an object \(I\) such that \(\otimes\) is associative and \(I\otimes X=X=X\otimes I\) for any object \(X\) in \(C\). \(\otimes\) is called the &quot;tensor product.&quot; Well, that&#39;s just a <i><span>strict</span></i> monoidal category; monoidal categories, on the other hand, only need these equations to be isomorphisms. This means they additionally have three <a href="/wiki/natural-isomorphism"><span>natural isomorphisms</span></a>: an &quot;associator&quot; \(\alpha_{X,Y,Z}:X\otimes(Y\otimes Z)\cong(X\otimes Y)\otimes Z\), a &quot;left unitor&quot; \(\lambda_X:I\otimes X\cong X\), and a &quot;right unitor&quot; \(\rho_X:X\otimes I\cong X\). These have to satisfy two coherence conditions.
 </span></p><p><span>Monoidal categories are famous enough that you may hear their coherence conditions referenced by name without any extra explanation. That is, you may be expected to know them by name. The first is called the &quot;triangle identity,&quot; though there are many things called that. It is depicted by the following commuting diagram:
 </span></p><div class="diagram"><img src="/image-0-monoidal-category.svg" onload="this.width *= 2.25;"></div><p><span>The notation \(id_X\otimes\lambda_Y\) is taking advantage of the bifunctoriality of \(\otimes\), mapping a pair of morphisms \(id_X:X\to X\) and \(\lambda_Y:(I\otimes Y)\to Y\) into the morphism \(id_X\otimes\lambda_Y:X\otimes(I\otimes Y)\to X\otimes Y\). You have to do some mental grammar-checking to realize that \(id_X\otimes\lambda_Y\) is nonsense because \(id_X\) and \(\lambda_Y\) are morphisms in this category, not objects, to realize that we&#39;re using this second usage of the \(\otimes\) notation.
@@ -35,6 +44,9 @@ async function go_to(url, loader, back) {
   }
   document.dispatchEvent(new Event('beforeunload'));
   document.dispatchEvent(new Event('unload'));
+  for (let i = 0; i < arctic_dom_content_loaded_listeners.length; i++)
+    document.removeEventListener('DOMContentLoaded', arctic_dom_content_loaded_listeners[i]);
+  arctic_dom_content_loaded_listeners = [];
   const $app = document.getElementById('arctic-app');
   if (loader) $app.innerHTML = '<div id="arctic-loader"></div>';
   if (!back) window.history.pushState({}, '', url.href);
@@ -53,12 +65,13 @@ async function go_to(url, loader, back) {
       const attr = script.attributes[j];
       n.setAttribute(attr.name, attr.value);
     }
-    const t = document.createTextNode(
-      script.innerHTML +
+    n.setAttribute('defer', 'true');
+    n.onload = 
+      (n.onload || '') + 
       ';if(++_ARCTIC_C>=' +
       scripts.length +
-      ')document.dispatchEvent(new Event(\'DOMContentLoaded\'));'
-    );
+      ')document.dispatchEvent(new Event(\'DOMContentLoaded\'));';
+    const t = document.createTextNode(script.innerHTML+';console.log(\'script\',_ARCTIC_C);');
     n.appendChild(t);
     script.parentNode.replaceChild(n, script);
   }
