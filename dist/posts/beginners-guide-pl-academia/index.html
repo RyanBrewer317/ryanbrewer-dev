@@ -19,7 +19,7 @@ window.MathJax = {
   loader: {load: ['[tex]/unicode']},
   tex: {packages: {'[+]': ['unicode']}},
 };
-        </script><script>hljs.highlightAll();</script></div><nav id="nav"><div id="nav-dropdown" onclick="document.getElementById(&#39;nav&#39;).classList.toggle(&#39;dropdown&#39;);document.body.classList.toggle(&#39;noscroll&#39;);">☰</div><a href="/" id="nav-home">Ryan Brewer</a><a href="/posts" id="nav-posts">Posts</a><a href="/wiki" id="nav-wiki">Wiki</a><a href="/contact" id="nav-contact">Contact</a><a href="/demos" id="nav-demos">Demos</a><a href="/feed.rss" id="nav-subscribe" onclick="window.location.href = &#39;/feed.rss&#39;"><img src="/rss-icon.png" id="rss-subscribe-icon">Subscribe</a></nav><div id="body"><h1>A Beginner&#39;s Guide to Programming Language Academia</h1><div class="date">January 28, 2024</div><p><span>After my last <a href="https://ryanbrewer.dev/posts/safe-mmm-with-coeffects.html"><span>post</span></a>, a few people seemed interested in the papers I read, so I thought I&#39;d write a (necessarily long) post mapping out my experience of programming language papers, with tons of recommendations for programming language developers to start exploring. At the end I&#39;ll have a list of all the papers I mention throughout the post. Note that this is just my own journey through the academia, and will be missing plenty of important work. Hopefully what I have here will serve as good jumping off points for your own PL research.
+        </script><script>hljs.highlightAll();</script></div><nav id="nav"><div id="nav-dropdown" onclick="document.getElementById(&#39;nav&#39;).classList.toggle(&#39;dropdown&#39;);document.body.classList.toggle(&#39;noscroll&#39;);">☰</div><a href="/" id="nav-home" onclick="document.body.classList.remove(&#39;noscroll&#39;);">Ryan Brewer</a><a href="/posts" id="nav-posts" onclick="document.body.classList.remove(&#39;noscroll&#39;);">Posts</a><a href="/wiki" id="nav-wiki" onclick="document.body.classList.remove(&#39;noscroll&#39;);">Wiki</a><a href="/contact" id="nav-contact" onclick="document.body.classList.remove(&#39;noscroll&#39;);">Contact</a><a href="/demos" id="nav-demos" onclick="document.body.classList.remove(&#39;noscroll&#39;);">Demos</a><a href="/feed.rss" id="nav-subscribe" onclick="window.location.href = &#39;/feed.rss&#39;"><img src="/rss-icon.png" id="rss-subscribe-icon">Subscribe</a></nav><div id="body"><h1>A Beginner&#39;s Guide to Programming Language Academia</h1><div class="date">January 28, 2024</div><p><span>After my last <a href="https://ryanbrewer.dev/posts/safe-mmm-with-coeffects.html"><span>post</span></a>, a few people seemed interested in the papers I read, so I thought I&#39;d write a (necessarily long) post mapping out my experience of programming language papers, with tons of recommendations for programming language developers to start exploring. At the end I&#39;ll have a list of all the papers I mention throughout the post. Note that this is just my own journey through the academia, and will be missing plenty of important work. Hopefully what I have here will serve as good jumping off points for your own PL research.
 </span></p><p><span>If you aren&#39;t familiar reading academic papers, don&#39;t worry! It&#39;s not as hard as you think. My best advice for getting started is patience. Papers will often use terms you (or I) are not familiar with, but then they&#39;ll define the terms later in the paper. I don&#39;t know why people write this way, but it seems to be a convention. Also, when you read a paper, start with the abstract, introduction, and conclusion. Leave the actual technical details of the work to the end.
 </span></p><p><span>For terms that they don&#39;t define, there are two youtube playlists I HAVE to recommend, by <a href="https://youtube.com/playlist?list=PLbgaMIhjbmEnaH_LTkxLI7FMa2HsnawM_&amp;si=FIZVKTC8TXFz-IfI"><span>Bartozs Milewski</span></a> and <a href="https://youtube.com/playlist?list=PLCTMeyjMKRkqTM2-9HXH81tvpdROs-nz3&amp;si=2iJc5syQCdk2rbjz"><span>Richard Southwell</span></a>. I especially recommend the latter one, for getting me up to speed on a ton of important concepts in an accessible way. The things that it taught me that you should probably know: intuitionistic logic, sequent calculus, dependent types, the Curry-Howard isomorphism. If you don&#39;t like youtube videos, many blog posts across the internet explain pieces of these ideas. Exercise your Google-Fu! (Or whatever search engine you use.) Self learning requires a lot of googling.
 </span></p><p><span>The prerequisites for this post are all over the place: if you don&#39;t understand something, just skip it! There may be other things in other sections that are more digestable. I hope this post will have something for people who are fairly advanced too, since some of these things are pretty niche, even in PL.
@@ -96,7 +96,7 @@ window.MathJax = {
 </span></p><p>[<span>The Delta-calculus: syntax and types](https://arxiv.org/abs/1803.09660) (2018) by Luigi Liquori and Claude Stolze.
 </span></p><p>[<span>Dependently-Typed Programming with Logical Equality Reflection](https://dl.acm.org/doi/10.1145/3607852) (2023) by Yiyan Liu and Stephanie Weirich.
 </span></p></div><div><div style="height:100pt;"></div><p id="copyright-notice" class="subtle-text">© 2024 Ryan Brewer.</p><script src="/__/firebase/8.10.1/firebase-app.js"></script><script src="/__/firebase/8.10.1/firebase-analytics.js"></script><script src="/__/firebase/init.js"></script><script>firebase.analytics();</script></div></div></div><script>
-// SPA algorithm stolen from Hayleigh Thompson's wonderful Modem library
+// SPA algorithm partially inspired by Hayleigh Thompson's wonderful Modem library
 async function go_to(url, loader, back) {
   if (!back && url.pathname === window.location.pathname) {
     if (url.hash) document.getElementById(url.hash.slice(1))?.scrollIntoView();
@@ -123,25 +123,23 @@ async function go_to(url, loader, back) {
   for (let i = 0; i < num_scripts; i++) {
     const script = scripts[i];
     const n = document.createElement('script');
-    n.setAttribute('defer', 'true');
-    if (script.innerHTML === '') n.onload = 
-      () => {
-        console.log('script',_ARCTIC_C);
-        if(++_ARCTIC_C>=num_scripts)document.dispatchEvent(new Event('DOMContentLoaded'));
+    // scripts load nondeterministically, so we figure out when they've all finished via the _ARCTIC_C barrier
+    if (script.innerHTML === '') {
+      // external scripts don't run their inline js, so they need an onload listener
+      n.onload = () => {
+        if (++_ARCTIC_C >= num_scripts)
+          document.dispatchEvent(new Event('DOMContentLoaded'));
       };
-      //(n.onload || '') + 
-      //';if(++_ARCTIC_C>=' +
-      //num_scripts +
-      //')document.dispatchEvent(new Event(\'DOMContentLoaded\'));';
-    else {
+    } else {
+      // inline scripts might not trigger onload, so they get js appended to the end instead
       const t = document.createTextNode(
         script.innerHTML +
-        ';console.log(\'script\',_ARCTIC_C);' +
-        'if(++_ARCTIC_C>=' + num_scripts +
+        ';if(++_ARCTIC_C>=' + num_scripts +
         ')document.dispatchEvent(new Event(\'DOMContentLoaded\'));'
       );
       n.appendChild(t);
     }
+    // attributes at the end because 'src' needs to load after onload is listening
     for (let j = 0; j < script.attributes.length; j++) {
       const attr = script.attributes[j];
       n.setAttribute(attr.name, attr.value);
@@ -154,7 +152,6 @@ async function go_to(url, loader, back) {
     else
       window.scrollTo(0, 0);
   });
-  // setTimeout(() => document.dispatchEvent(new Event('DOMContentLoaded')), 100); // i cri ),x
 }
 document.addEventListener('click', async function(e) {
   const a = find_a(e.target);

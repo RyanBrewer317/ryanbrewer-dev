@@ -19,7 +19,7 @@ window.MathJax = {
   loader: {load: ['[tex]/unicode']},
   tex: {packages: {'[+]': ['unicode']}},
 };
-        </script><script>hljs.highlightAll();</script></div><nav id="nav"><div id="nav-dropdown" onclick="document.getElementById(&#39;nav&#39;).classList.toggle(&#39;dropdown&#39;);document.body.classList.toggle(&#39;noscroll&#39;);">☰</div><a href="/" id="nav-home">Ryan Brewer</a><a href="/posts" id="nav-posts">Posts</a><a href="/wiki" id="nav-wiki">Wiki</a><a href="/contact" id="nav-contact">Contact</a><a href="/demos" id="nav-demos">Demos</a><a href="/feed.rss" id="nav-subscribe" onclick="window.location.href = &#39;/feed.rss&#39;"><img src="/rss-icon.png" id="rss-subscribe-icon">Subscribe</a></nav><div id="body"><h1>Aesthetics</h1><p><span>This entry encompasses my philosophy of aesthetics. It does not attempt to be a survey of the field, though I will make references to relevant philosophers when appropriate.
+        </script><script>hljs.highlightAll();</script></div><nav id="nav"><div id="nav-dropdown" onclick="document.getElementById(&#39;nav&#39;).classList.toggle(&#39;dropdown&#39;);document.body.classList.toggle(&#39;noscroll&#39;);">☰</div><a href="/" id="nav-home" onclick="document.body.classList.remove(&#39;noscroll&#39;);">Ryan Brewer</a><a href="/posts" id="nav-posts" onclick="document.body.classList.remove(&#39;noscroll&#39;);">Posts</a><a href="/wiki" id="nav-wiki" onclick="document.body.classList.remove(&#39;noscroll&#39;);">Wiki</a><a href="/contact" id="nav-contact" onclick="document.body.classList.remove(&#39;noscroll&#39;);">Contact</a><a href="/demos" id="nav-demos" onclick="document.body.classList.remove(&#39;noscroll&#39;);">Demos</a><a href="/feed.rss" id="nav-subscribe" onclick="window.location.href = &#39;/feed.rss&#39;"><img src="/rss-icon.png" id="rss-subscribe-icon">Subscribe</a></nav><div id="body"><h1>Aesthetics</h1><p><span>This entry encompasses my philosophy of aesthetics. It does not attempt to be a survey of the field, though I will make references to relevant philosophers when appropriate.
 </span></p><p><span>We know from Wittgenstein that children learn language by experiencing people use sounds, gestures, etc. to reference their surroundings and communicate. That is, the child picks up on the repetitions in the symbols, and gets an intuitive grasp of the language via its patterns. This is a philosophy of language with many pleasing properties. It explains how we know what words mean and use them correctly, yet struggle to define them. It explains why people&#39;s definitions can differ in significant ways but we&#39;re still able to communicate: we&#39;re citing patterns we&#39;ve both experienced about those words, which have enough overlap to make us coherent to each other in the context of the conversation. We all have our own understandings of the words, because we all have different experience of them, but our experiences are close enough, enough of the time, to meaningfully cite them with each other. This is vaguely in line with Chomsky&#39;s notion of the idiolect.
 </span></p><p><span>We also know from Heidegger that the newborn child is traumatized as they enter existence. With absolutely nothing to go on, and time ceaselessly, mercilessly marching forward without a break, the child must find any bearings they can to make sense of the world. The world is a confusing flash of sensations: light, sound, color, hunger, pain. There is some combination of sensations <i><span>all the time.</span></i>
 </span></p><p><span>But, over time, patterns emerge from the chaos. Certain things always seem to be a certain way, every single time. We are faced with Hume&#39;s problem of induction, but here induction is all the child has to go on. <i><span>Induction is the only way to feel some sense of security and control in this inexplicable sudden existence.</span></i> For if a child finds a pattern, and then it is confirmed at the next opportunity, and the next, and the next, then the child will start to feel that they can <i><span>predict</span></i> things.
@@ -30,7 +30,7 @@ window.MathJax = {
 </span></p><p><span>Think about when people&#39;s tastes <i><span>differ:</span></i> it&#39;s people from different cultures, or social classes. The height of elitist art is often a meta-commentary on recent elitist art, because the great art critics have an enormous amount of that art in their lives. A normal person who doesn&#39;t look at &quot;fine art&quot; very much won&#39;t have the same aesthetic experience, because the work of art is a reference to life experiences that they don&#39;t have. People from lower social classes have very different life experiences, and the art that targets them as an audience is very different.
 </span></p><p><span>Notice how the phenomenon of apparent objectivity is explanatory both for aesthetics and language. I truly think it&#39;s useful to think in terms of general symbols: art and language are deeply intertwined.
 </span></p><p><span>Art has two roles in society. One is to entertain, the other is to drive positive change. For an artist of the first category, all you need to try to do is confirm your audience&#39;s expectations about existence. It&#39;s worth thinking deeply and critically about what that means: people expect certain things when listening to a pop song, but they also expect it to be different from other pop songs in important ways (the song&#39;s unique identity and spice). Satisfying all these expectations will get you pretty close to the pop songs that succeed or even go viral. On the other hand, for an artist trying to positively change society, your job is to make what <i><span>is</span></i> right, <i><span>feel</span></i> right. Every experience people have shifts their average experience. Give them experiences that make them gradually see society as you believe it truly is.</span></p></div><div><div style="height:100pt;"></div><p id="copyright-notice" class="subtle-text">© 2024 Ryan Brewer.</p><script src="/__/firebase/8.10.1/firebase-app.js"></script><script src="/__/firebase/8.10.1/firebase-analytics.js"></script><script src="/__/firebase/init.js"></script><script>firebase.analytics();</script></div></div></div><script>
-// SPA algorithm stolen from Hayleigh Thompson's wonderful Modem library
+// SPA algorithm partially inspired by Hayleigh Thompson's wonderful Modem library
 async function go_to(url, loader, back) {
   if (!back && url.pathname === window.location.pathname) {
     if (url.hash) document.getElementById(url.hash.slice(1))?.scrollIntoView();
@@ -57,25 +57,23 @@ async function go_to(url, loader, back) {
   for (let i = 0; i < num_scripts; i++) {
     const script = scripts[i];
     const n = document.createElement('script');
-    n.setAttribute('defer', 'true');
-    if (script.innerHTML === '') n.onload = 
-      () => {
-        console.log('script',_ARCTIC_C);
-        if(++_ARCTIC_C>=num_scripts)document.dispatchEvent(new Event('DOMContentLoaded'));
+    // scripts load nondeterministically, so we figure out when they've all finished via the _ARCTIC_C barrier
+    if (script.innerHTML === '') {
+      // external scripts don't run their inline js, so they need an onload listener
+      n.onload = () => {
+        if (++_ARCTIC_C >= num_scripts)
+          document.dispatchEvent(new Event('DOMContentLoaded'));
       };
-      //(n.onload || '') + 
-      //';if(++_ARCTIC_C>=' +
-      //num_scripts +
-      //')document.dispatchEvent(new Event(\'DOMContentLoaded\'));';
-    else {
+    } else {
+      // inline scripts might not trigger onload, so they get js appended to the end instead
       const t = document.createTextNode(
         script.innerHTML +
-        ';console.log(\'script\',_ARCTIC_C);' +
-        'if(++_ARCTIC_C>=' + num_scripts +
+        ';if(++_ARCTIC_C>=' + num_scripts +
         ')document.dispatchEvent(new Event(\'DOMContentLoaded\'));'
       );
       n.appendChild(t);
     }
+    // attributes at the end because 'src' needs to load after onload is listening
     for (let j = 0; j < script.attributes.length; j++) {
       const attr = script.attributes[j];
       n.setAttribute(attr.name, attr.value);
@@ -88,7 +86,6 @@ async function go_to(url, loader, back) {
     else
       window.scrollTo(0, 0);
   });
-  // setTimeout(() => document.dispatchEvent(new Event('DOMContentLoaded')), 100); // i cri ),x
 }
 document.addEventListener('click', async function(e) {
   const a = find_a(e.target);

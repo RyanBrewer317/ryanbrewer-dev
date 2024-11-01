@@ -19,7 +19,7 @@ window.MathJax = {
   loader: {load: ['[tex]/unicode']},
   tex: {packages: {'[+]': ['unicode']}},
 };
-        </script><script>hljs.highlightAll();</script></div><nav id="nav"><div id="nav-dropdown" onclick="document.getElementById(&#39;nav&#39;).classList.toggle(&#39;dropdown&#39;);document.body.classList.toggle(&#39;noscroll&#39;);">☰</div><a href="/" id="nav-home">Ryan Brewer</a><a href="/posts" id="nav-posts">Posts</a><a href="/wiki" id="nav-wiki">Wiki</a><a href="/contact" id="nav-contact">Contact</a><a href="/demos" id="nav-demos">Demos</a><a href="/feed.rss" id="nav-subscribe" onclick="window.location.href = &#39;/feed.rss&#39;"><img src="/rss-icon.png" id="rss-subscribe-icon">Subscribe</a></nav><div id="body"><h1>Advanced Typechecking for Stack-Based Languages</h1><div class="date">February 18, 2024</div><p><span>It&#39;s been a while since I posted anything, because I&#39;ve been hard at work on SaberVM&#39;s <a href="https://github.com/RyanBrewer317/SaberVM"><span>implementation</span></a> and a little lambda calculus <a href="https://github.com/RyanBrewer317/SaberLC"><span>compiler</span></a> that targets SaberVM. I thought I should take the time to write a short post discussing one of the interesting aspects of my implementation, a performant typechecker for SaberVM&#39;s type system. As SaberVM uses a stack-based bytecode language, there isn&#39;t much out there on how to typecheck it. The best example I could find of a similar language was Web Assembly&#39;s typed stack-based bytecode, but that type system is extremely simple compared to SaberVM&#39;s.
+        </script><script>hljs.highlightAll();</script></div><nav id="nav"><div id="nav-dropdown" onclick="document.getElementById(&#39;nav&#39;).classList.toggle(&#39;dropdown&#39;);document.body.classList.toggle(&#39;noscroll&#39;);">☰</div><a href="/" id="nav-home" onclick="document.body.classList.remove(&#39;noscroll&#39;);">Ryan Brewer</a><a href="/posts" id="nav-posts" onclick="document.body.classList.remove(&#39;noscroll&#39;);">Posts</a><a href="/wiki" id="nav-wiki" onclick="document.body.classList.remove(&#39;noscroll&#39;);">Wiki</a><a href="/contact" id="nav-contact" onclick="document.body.classList.remove(&#39;noscroll&#39;);">Contact</a><a href="/demos" id="nav-demos" onclick="document.body.classList.remove(&#39;noscroll&#39;);">Demos</a><a href="/feed.rss" id="nav-subscribe" onclick="window.location.href = &#39;/feed.rss&#39;"><img src="/rss-icon.png" id="rss-subscribe-icon">Subscribe</a></nav><div id="body"><h1>Advanced Typechecking for Stack-Based Languages</h1><div class="date">February 18, 2024</div><p><span>It&#39;s been a while since I posted anything, because I&#39;ve been hard at work on SaberVM&#39;s <a href="https://github.com/RyanBrewer317/SaberVM"><span>implementation</span></a> and a little lambda calculus <a href="https://github.com/RyanBrewer317/SaberLC"><span>compiler</span></a> that targets SaberVM. I thought I should take the time to write a short post discussing one of the interesting aspects of my implementation, a performant typechecker for SaberVM&#39;s type system. As SaberVM uses a stack-based bytecode language, there isn&#39;t much out there on how to typecheck it. The best example I could find of a similar language was Web Assembly&#39;s typed stack-based bytecode, but that type system is extremely simple compared to SaberVM&#39;s.
 </span></p><h3><span>Simple Stack-Based Typechecking
 </span></h3><p><span>The basics of typechecking stack-based code is extremely simple and elegant. You could think of it as a form of abstract interpretation, if you&#39;re familiar with that idea. All you do is you have a stack at compile-time, specifically a stack of <i><span>types.</span></i> It&#39;s called the &quot;type stack.&quot; You run through each instruction in each function, and if you see, say, an <code><span>add_f64</span></code> instruction with a type of <code><span>(float64,float64)-&gt;float64</span></code>, then you pop two types off the type stack, confirm that they&#39;re <code><span>float64</span></code>, and then push a <code><span>float64</span></code> onto the type stack.
 </span></p><p><span>What&#39;s beautiful about this process is how it mirrors program execution. But, instead of pushing and popping <i><span>values,</span></i> you push and pop the <i><span>types</span></i> of those values. If the type stack doesn&#39;t have enough types to pop off, then you know the run-time stack won&#39;t have enough <i><span>values</span></i> to pop off, which is now something that is caught at compile-time. If you pop the wrong type, then the run-time stack would have a value of the wrong type, so you have a type error, discovered at compile-time.
@@ -40,7 +40,7 @@ window.MathJax = {
 </span></p><p><span>The main reference I have for prior work is <a href="https://binji.github.io/posts/webassembly-type-checking/"><span>this</span></a> great article on Web Assembly&#39;s typechecker.
 </span></p><p><span>If you&#39;re interested in this project and want to know more, I have another post about it <a href="https://ryanbrewer.dev/posts/announcing-svm.html"><span>here</span></a>. If you&#39;re excited about SaberVM&#39;s future, consider starring it on <a href="https://github.com/RyanBrewer317/SaberVM"><span>github</span></a> (which has a more in-depth description of the project), or even <a href="https://github.com/sponsors/RyanBrewer317"><span>sponsoring</span></a> me or supporting me on <a href="https://ko-fi.com/ryanbrewer"><span>ko-fi</span></a>!
 </span></p></div><div><div style="height:100pt;"></div><p id="copyright-notice" class="subtle-text">© 2024 Ryan Brewer.</p><script src="/__/firebase/8.10.1/firebase-app.js"></script><script src="/__/firebase/8.10.1/firebase-analytics.js"></script><script src="/__/firebase/init.js"></script><script>firebase.analytics();</script></div></div></div><script>
-// SPA algorithm stolen from Hayleigh Thompson's wonderful Modem library
+// SPA algorithm partially inspired by Hayleigh Thompson's wonderful Modem library
 async function go_to(url, loader, back) {
   if (!back && url.pathname === window.location.pathname) {
     if (url.hash) document.getElementById(url.hash.slice(1))?.scrollIntoView();
@@ -67,25 +67,23 @@ async function go_to(url, loader, back) {
   for (let i = 0; i < num_scripts; i++) {
     const script = scripts[i];
     const n = document.createElement('script');
-    n.setAttribute('defer', 'true');
-    if (script.innerHTML === '') n.onload = 
-      () => {
-        console.log('script',_ARCTIC_C);
-        if(++_ARCTIC_C>=num_scripts)document.dispatchEvent(new Event('DOMContentLoaded'));
+    // scripts load nondeterministically, so we figure out when they've all finished via the _ARCTIC_C barrier
+    if (script.innerHTML === '') {
+      // external scripts don't run their inline js, so they need an onload listener
+      n.onload = () => {
+        if (++_ARCTIC_C >= num_scripts)
+          document.dispatchEvent(new Event('DOMContentLoaded'));
       };
-      //(n.onload || '') + 
-      //';if(++_ARCTIC_C>=' +
-      //num_scripts +
-      //')document.dispatchEvent(new Event(\'DOMContentLoaded\'));';
-    else {
+    } else {
+      // inline scripts might not trigger onload, so they get js appended to the end instead
       const t = document.createTextNode(
         script.innerHTML +
-        ';console.log(\'script\',_ARCTIC_C);' +
-        'if(++_ARCTIC_C>=' + num_scripts +
+        ';if(++_ARCTIC_C>=' + num_scripts +
         ')document.dispatchEvent(new Event(\'DOMContentLoaded\'));'
       );
       n.appendChild(t);
     }
+    // attributes at the end because 'src' needs to load after onload is listening
     for (let j = 0; j < script.attributes.length; j++) {
       const attr = script.attributes[j];
       n.setAttribute(attr.name, attr.value);
@@ -98,7 +96,6 @@ async function go_to(url, loader, back) {
     else
       window.scrollTo(0, 0);
   });
-  // setTimeout(() => document.dispatchEvent(new Event('DOMContentLoaded')), 100); // i cri ),x
 }
 document.addEventListener('click', async function(e) {
   const a = find_a(e.target);

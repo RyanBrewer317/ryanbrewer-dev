@@ -18,19 +18,46 @@ pub fn navbar() -> Element(a) {
       ],
       [text("☰")],
     ),
-    html.a([attribute.href("/"), attribute.id("nav-home")], [
-      text("Ryan Brewer"),
-    ]),
-    html.a([attribute.href("/posts"), attribute.id("nav-posts")], [
-      text("Posts"),
-    ]),
-    html.a([attribute.href("/wiki"), attribute.id("nav-wiki")], [text("Wiki")]),
-    html.a([attribute.href("/contact"), attribute.id("nav-contact")], [
-      text("Contact"),
-    ]),
-    html.a([attribute.href("/demos"), attribute.id("nav-demos")], [
-      text("Demos"),
-    ]),
+    html.a(
+      [
+        attribute.href("/"),
+        attribute.id("nav-home"),
+        attribute("onclick", "document.body.classList.remove('noscroll');"),
+      ],
+      [text("Ryan Brewer")],
+    ),
+    html.a(
+      [
+        attribute.href("/posts"),
+        attribute.id("nav-posts"),
+        attribute("onclick", "document.body.classList.remove('noscroll');"),
+      ],
+      [text("Posts")],
+    ),
+    html.a(
+      [
+        attribute.href("/wiki"),
+        attribute.id("nav-wiki"),
+        attribute("onclick", "document.body.classList.remove('noscroll');"),
+      ],
+      [text("Wiki")],
+    ),
+    html.a(
+      [
+        attribute.href("/contact"),
+        attribute.id("nav-contact"),
+        attribute("onclick", "document.body.classList.remove('noscroll');"),
+      ],
+      [text("Contact")],
+    ),
+    html.a(
+      [
+        attribute.href("/demos"),
+        attribute.id("nav-demos"),
+        attribute("onclick", "document.body.classList.remove('noscroll');"),
+      ],
+      [text("Demos")],
+    ),
     html.a(
       [
         attribute.href("/feed.rss"),

@@ -20,23 +20,43 @@ export function navbar() {
         toList([text("☰")]),
       ),
       $html.a(
-        toList([$attribute.href("/"), $attribute.id("nav-home")]),
+        toList([
+          $attribute.href("/"),
+          $attribute.id("nav-home"),
+          attribute("onclick", "document.body.classList.remove('noscroll');"),
+        ]),
         toList([text("Ryan Brewer")]),
       ),
       $html.a(
-        toList([$attribute.href("/posts"), $attribute.id("nav-posts")]),
+        toList([
+          $attribute.href("/posts"),
+          $attribute.id("nav-posts"),
+          attribute("onclick", "document.body.classList.remove('noscroll');"),
+        ]),
         toList([text("Posts")]),
       ),
       $html.a(
-        toList([$attribute.href("/wiki"), $attribute.id("nav-wiki")]),
+        toList([
+          $attribute.href("/wiki"),
+          $attribute.id("nav-wiki"),
+          attribute("onclick", "document.body.classList.remove('noscroll');"),
+        ]),
         toList([text("Wiki")]),
       ),
       $html.a(
-        toList([$attribute.href("/contact"), $attribute.id("nav-contact")]),
+        toList([
+          $attribute.href("/contact"),
+          $attribute.id("nav-contact"),
+          attribute("onclick", "document.body.classList.remove('noscroll');"),
+        ]),
         toList([text("Contact")]),
       ),
       $html.a(
-        toList([$attribute.href("/demos"), $attribute.id("nav-demos")]),
+        toList([
+          $attribute.href("/demos"),
+          $attribute.id("nav-demos"),
+          attribute("onclick", "document.body.classList.remove('noscroll');"),
+        ]),
         toList([text("Demos")]),
       ),
       $html.a(

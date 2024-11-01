@@ -19,7 +19,7 @@ window.MathJax = {
   loader: {load: ['[tex]/unicode']},
   tex: {packages: {'[+]': ['unicode']}},
 };
-        </script><script>hljs.highlightAll();</script></div><nav id="nav"><div id="nav-dropdown" onclick="document.getElementById(&#39;nav&#39;).classList.toggle(&#39;dropdown&#39;);document.body.classList.toggle(&#39;noscroll&#39;);">☰</div><a href="/" id="nav-home">Ryan Brewer</a><a href="/posts" id="nav-posts">Posts</a><a href="/wiki" id="nav-wiki">Wiki</a><a href="/contact" id="nav-contact">Contact</a><a href="/demos" id="nav-demos">Demos</a><a href="/feed.rss" id="nav-subscribe" onclick="window.location.href = &#39;/feed.rss&#39;"><img src="/rss-icon.png" id="rss-subscribe-icon">Subscribe</a></nav><div id="body"><h1>Simple Programming Languages</h1><div class="date">March 20, 2024</div><p><span>I love simple programming languages, like Gleam, Go, and C. I know I&#39;m not alone; there&#39;s something wonderful about using a simple language: reading it, using it in a team, coming back to it after a long time, the list goes on.
+        </script><script>hljs.highlightAll();</script></div><nav id="nav"><div id="nav-dropdown" onclick="document.getElementById(&#39;nav&#39;).classList.toggle(&#39;dropdown&#39;);document.body.classList.toggle(&#39;noscroll&#39;);">☰</div><a href="/" id="nav-home" onclick="document.body.classList.remove(&#39;noscroll&#39;);">Ryan Brewer</a><a href="/posts" id="nav-posts" onclick="document.body.classList.remove(&#39;noscroll&#39;);">Posts</a><a href="/wiki" id="nav-wiki" onclick="document.body.classList.remove(&#39;noscroll&#39;);">Wiki</a><a href="/contact" id="nav-contact" onclick="document.body.classList.remove(&#39;noscroll&#39;);">Contact</a><a href="/demos" id="nav-demos" onclick="document.body.classList.remove(&#39;noscroll&#39;);">Demos</a><a href="/feed.rss" id="nav-subscribe" onclick="window.location.href = &#39;/feed.rss&#39;"><img src="/rss-icon.png" id="rss-subscribe-icon">Subscribe</a></nav><div id="body"><h1>Simple Programming Languages</h1><div class="date">March 20, 2024</div><p><span>I love simple programming languages, like Gleam, Go, and C. I know I&#39;m not alone; there&#39;s something wonderful about using a simple language: reading it, using it in a team, coming back to it after a long time, the list goes on.
 </span></p><p><span>In this post I want to make this kind of simplicity more precise and talk about some reasons it&#39;s important. I propose five key ideas for simple programming languages: ready-at-hand features, fast iteration cycles, a single way of doing things, first-order reasoning principles, and simple static type systems. I discuss each of these at length below.
 </span></p><h3><span>Ready-At-Hand
 </span></h3><p><span>In the philosophy of technology there&#39;s a very useful concept: &quot;presence-at-hand&quot; vs. &quot;readiness-at-hand.&quot; When something is present-at-hand, it&#39;s currently taking up our thoughts and in our immediate consciousness. If it&#39;s instead ready-at-hand, it&#39;s like we can&#39;t even tell that it&#39;s there until we want to use it. For example, when we walk into our kitchen for the millionth time, we&#39;re not really aware of all the cupboards, food, appliances, table, chairs, decorations, or whatever else you have in your kitchen. At least for me, it&#39;s almost like I only see the fridge if I&#39;m coming for a quick bite. As I sit down, I become aware of the table and chairs, which were ready-at-hand and now become present-at-hand, and I don&#39;t think a single thought about the fridge, which becomes ready-at-hand.
@@ -111,7 +111,7 @@ pub fn print_all_plus_one(l: List(Int)) {
 </span></p><p><span>I&#39;m quite interested in simple programming languages, obviously, and I plan to write a little language that pushes these ideas even further than Gleam does, with no lambdas like OBJ. I also have some ideas for doing this with no garbage collector, borrowing ideas from Mojo&#39;s Python-friendly borrow checker.
 </span></p><p><span>To summarize, the five key ideas are: readiness-at-hand, iteration speed, one-way-of-doing-things, first-order reasoning, and simple static type systems. I truly think this is the right direction for language design to go in the long run, not complex languages like Haskell and Rust.
 </span></p></div><div><div style="height:100pt;"></div><p id="copyright-notice" class="subtle-text">© 2024 Ryan Brewer.</p><script src="/__/firebase/8.10.1/firebase-app.js"></script><script src="/__/firebase/8.10.1/firebase-analytics.js"></script><script src="/__/firebase/init.js"></script><script>firebase.analytics();</script></div></div></div><script>
-// SPA algorithm stolen from Hayleigh Thompson's wonderful Modem library
+// SPA algorithm partially inspired by Hayleigh Thompson's wonderful Modem library
 async function go_to(url, loader, back) {
   if (!back && url.pathname === window.location.pathname) {
     if (url.hash) document.getElementById(url.hash.slice(1))?.scrollIntoView();
@@ -138,25 +138,23 @@ async function go_to(url, loader, back) {
   for (let i = 0; i < num_scripts; i++) {
     const script = scripts[i];
     const n = document.createElement('script');
-    n.setAttribute('defer', 'true');
-    if (script.innerHTML === '') n.onload = 
-      () => {
-        console.log('script',_ARCTIC_C);
-        if(++_ARCTIC_C>=num_scripts)document.dispatchEvent(new Event('DOMContentLoaded'));
+    // scripts load nondeterministically, so we figure out when they've all finished via the _ARCTIC_C barrier
+    if (script.innerHTML === '') {
+      // external scripts don't run their inline js, so they need an onload listener
+      n.onload = () => {
+        if (++_ARCTIC_C >= num_scripts)
+          document.dispatchEvent(new Event('DOMContentLoaded'));
       };
-      //(n.onload || '') + 
-      //';if(++_ARCTIC_C>=' +
-      //num_scripts +
-      //')document.dispatchEvent(new Event(\'DOMContentLoaded\'));';
-    else {
+    } else {
+      // inline scripts might not trigger onload, so they get js appended to the end instead
       const t = document.createTextNode(
         script.innerHTML +
-        ';console.log(\'script\',_ARCTIC_C);' +
-        'if(++_ARCTIC_C>=' + num_scripts +
+        ';if(++_ARCTIC_C>=' + num_scripts +
         ')document.dispatchEvent(new Event(\'DOMContentLoaded\'));'
       );
       n.appendChild(t);
     }
+    // attributes at the end because 'src' needs to load after onload is listening
     for (let j = 0; j < script.attributes.length; j++) {
       const attr = script.attributes[j];
       n.setAttribute(attr.name, attr.value);
@@ -169,7 +167,6 @@ async function go_to(url, loader, back) {
     else
       window.scrollTo(0, 0);
   });
-  // setTimeout(() => document.dispatchEvent(new Event('DOMContentLoaded')), 100); // i cri ),x
 }
 document.addEventListener('click', async function(e) {
   const a = find_a(e.target);

@@ -19,7 +19,7 @@ window.MathJax = {
   loader: {load: ['[tex]/unicode']},
   tex: {packages: {'[+]': ['unicode']}},
 };
-        </script><script>hljs.highlightAll();</script></div><nav id="nav"><div id="nav-dropdown" onclick="document.getElementById(&#39;nav&#39;).classList.toggle(&#39;dropdown&#39;);document.body.classList.toggle(&#39;noscroll&#39;);">☰</div><a href="/" id="nav-home">Ryan Brewer</a><a href="/posts" id="nav-posts">Posts</a><a href="/wiki" id="nav-wiki">Wiki</a><a href="/contact" id="nav-contact">Contact</a><a href="/demos" id="nav-demos">Demos</a><a href="/feed.rss" id="nav-subscribe" onclick="window.location.href = &#39;/feed.rss&#39;"><img src="/rss-icon.png" id="rss-subscribe-icon">Subscribe</a></nav><div id="body"><h1>An Introduction to Proofs with Dependent Types</h1><div class="date">December 3, 2023</div><p><span>When I was first introduced to proof assistants like Coq, I thought it would be graduate-level material that was way beyond what I could ever hope to understand. However, the essence of how they work is surprisingly simple, and very beautiful. In this post I will explain the intuition behind dependent types and their relationship with proofs, using a C-like syntax.
+        </script><script>hljs.highlightAll();</script></div><nav id="nav"><div id="nav-dropdown" onclick="document.getElementById(&#39;nav&#39;).classList.toggle(&#39;dropdown&#39;);document.body.classList.toggle(&#39;noscroll&#39;);">☰</div><a href="/" id="nav-home" onclick="document.body.classList.remove(&#39;noscroll&#39;);">Ryan Brewer</a><a href="/posts" id="nav-posts" onclick="document.body.classList.remove(&#39;noscroll&#39;);">Posts</a><a href="/wiki" id="nav-wiki" onclick="document.body.classList.remove(&#39;noscroll&#39;);">Wiki</a><a href="/contact" id="nav-contact" onclick="document.body.classList.remove(&#39;noscroll&#39;);">Contact</a><a href="/demos" id="nav-demos" onclick="document.body.classList.remove(&#39;noscroll&#39;);">Demos</a><a href="/feed.rss" id="nav-subscribe" onclick="window.location.href = &#39;/feed.rss&#39;"><img src="/rss-icon.png" id="rss-subscribe-icon">Subscribe</a></nav><div id="body"><h1>An Introduction to Proofs with Dependent Types</h1><div class="date">December 3, 2023</div><p><span>When I was first introduced to proof assistants like Coq, I thought it would be graduate-level material that was way beyond what I could ever hope to understand. However, the essence of how they work is surprisingly simple, and very beautiful. In this post I will explain the intuition behind dependent types and their relationship with proofs, using a C-like syntax.
 </span></p><p><span>A little familiarity with dependent types and proof assistants like Agda or Coq will help you understand this post, but isn&#39;t necessary. A familiarity with basic logic is assumed, including &quot;for all.&quot; A familiarity with programming in statically-typed languages like C, Go, OCaml, or TypeScript is assumed.
 </span></p><h3><span>Logic in Types
 </span></h3><p><span>In academia, there is a well-known correspondence between logic and type systems, called the Curry-Howard Isomorphism. It&#39;s a big name but the idea is simple: if a type has a value in it, then it&#39;s &quot;true,&quot; and if it&#39;s empty, it&#39;s &quot;false.&quot; So <code><span>void</span></code> is false and <code><span>int</span></code> is true, for example.
@@ -40,7 +40,7 @@ window.MathJax = {
 </span></p><h3><span>Tip of the Iceberg
 </span></h3><p><span>This concludes my first real blog post. Needless to say these ideas are the tip of a very large iceberg. For example, types like <code><span>int</span></code> seem pretty different from useful proposition types like <code><span>0&lt;=i</span></code>. To find out more about that difference, look up <code><span>Prop</span></code> and <code><span>Set</span></code> in Coq&#39;s type system. I also didn&#39;t explain &quot;there exists;&quot; The search term here is &quot;Sigma&quot; (\(Sigma\)) types, which I may write about more in the future. And there&#39;s still a ways to go before you get a full proof assistant. I think that this article gives a good foundation for exploring this iceberg on your own, but it was intended to set up future posts I want to write about the corners of the iceberg that really fascinate me.
 </span></p></div><div><div style="height:100pt;"></div><p id="copyright-notice" class="subtle-text">© 2024 Ryan Brewer.</p><script src="/__/firebase/8.10.1/firebase-app.js"></script><script src="/__/firebase/8.10.1/firebase-analytics.js"></script><script src="/__/firebase/init.js"></script><script>firebase.analytics();</script></div></div></div><script>
-// SPA algorithm stolen from Hayleigh Thompson's wonderful Modem library
+// SPA algorithm partially inspired by Hayleigh Thompson's wonderful Modem library
 async function go_to(url, loader, back) {
   if (!back && url.pathname === window.location.pathname) {
     if (url.hash) document.getElementById(url.hash.slice(1))?.scrollIntoView();
@@ -67,25 +67,23 @@ async function go_to(url, loader, back) {
   for (let i = 0; i < num_scripts; i++) {
     const script = scripts[i];
     const n = document.createElement('script');
-    n.setAttribute('defer', 'true');
-    if (script.innerHTML === '') n.onload = 
-      () => {
-        console.log('script',_ARCTIC_C);
-        if(++_ARCTIC_C>=num_scripts)document.dispatchEvent(new Event('DOMContentLoaded'));
+    // scripts load nondeterministically, so we figure out when they've all finished via the _ARCTIC_C barrier
+    if (script.innerHTML === '') {
+      // external scripts don't run their inline js, so they need an onload listener
+      n.onload = () => {
+        if (++_ARCTIC_C >= num_scripts)
+          document.dispatchEvent(new Event('DOMContentLoaded'));
       };
-      //(n.onload || '') + 
-      //';if(++_ARCTIC_C>=' +
-      //num_scripts +
-      //')document.dispatchEvent(new Event(\'DOMContentLoaded\'));';
-    else {
+    } else {
+      // inline scripts might not trigger onload, so they get js appended to the end instead
       const t = document.createTextNode(
         script.innerHTML +
-        ';console.log(\'script\',_ARCTIC_C);' +
-        'if(++_ARCTIC_C>=' + num_scripts +
+        ';if(++_ARCTIC_C>=' + num_scripts +
         ')document.dispatchEvent(new Event(\'DOMContentLoaded\'));'
       );
       n.appendChild(t);
     }
+    // attributes at the end because 'src' needs to load after onload is listening
     for (let j = 0; j < script.attributes.length; j++) {
       const attr = script.attributes[j];
       n.setAttribute(attr.name, attr.value);
@@ -98,7 +96,6 @@ async function go_to(url, loader, back) {
     else
       window.scrollTo(0, 0);
   });
-  // setTimeout(() => document.dispatchEvent(new Event('DOMContentLoaded')), 100); // i cri ),x
 }
 document.addEventListener('click', async function(e) {
   const a = find_a(e.target);

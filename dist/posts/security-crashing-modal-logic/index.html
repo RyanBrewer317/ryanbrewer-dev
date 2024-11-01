@@ -19,7 +19,7 @@ window.MathJax = {
   loader: {load: ['[tex]/unicode']},
   tex: {packages: {'[+]': ['unicode']}},
 };
-        </script><script>hljs.highlightAll();</script></div><nav id="nav"><div id="nav-dropdown" onclick="document.getElementById(&#39;nav&#39;).classList.toggle(&#39;dropdown&#39;);document.body.classList.toggle(&#39;noscroll&#39;);">☰</div><a href="/" id="nav-home">Ryan Brewer</a><a href="/posts" id="nav-posts">Posts</a><a href="/wiki" id="nav-wiki">Wiki</a><a href="/contact" id="nav-contact">Contact</a><a href="/demos" id="nav-demos">Demos</a><a href="/feed.rss" id="nav-subscribe" onclick="window.location.href = &#39;/feed.rss&#39;"><img src="/rss-icon.png" id="rss-subscribe-icon">Subscribe</a></nav><div id="body"><h1>Security and Crashing with Modal Logic</h1><div class="date">December 17, 2023</div><p><span>Modal logic is a fascinating field which has been applied to computer science in all sorts of weird ways. In this post I&#39;ll talk about an interpretation of modal logic that I&#39;ve been exploring which gives type-theoretic interpretations to crashing and security.
+        </script><script>hljs.highlightAll();</script></div><nav id="nav"><div id="nav-dropdown" onclick="document.getElementById(&#39;nav&#39;).classList.toggle(&#39;dropdown&#39;);document.body.classList.toggle(&#39;noscroll&#39;);">☰</div><a href="/" id="nav-home" onclick="document.body.classList.remove(&#39;noscroll&#39;);">Ryan Brewer</a><a href="/posts" id="nav-posts" onclick="document.body.classList.remove(&#39;noscroll&#39;);">Posts</a><a href="/wiki" id="nav-wiki" onclick="document.body.classList.remove(&#39;noscroll&#39;);">Wiki</a><a href="/contact" id="nav-contact" onclick="document.body.classList.remove(&#39;noscroll&#39;);">Contact</a><a href="/demos" id="nav-demos" onclick="document.body.classList.remove(&#39;noscroll&#39;);">Demos</a><a href="/feed.rss" id="nav-subscribe" onclick="window.location.href = &#39;/feed.rss&#39;"><img src="/rss-icon.png" id="rss-subscribe-icon">Subscribe</a></nav><div id="body"><h1>Security and Crashing with Modal Logic</h1><div class="date">December 17, 2023</div><p><span>Modal logic is a fascinating field which has been applied to computer science in all sorts of weird ways. In this post I&#39;ll talk about an interpretation of modal logic that I&#39;ve been exploring which gives type-theoretic interpretations to crashing and security.
 </span></p><p><span>This post assumes a familiarity with logic, and a very vague familiarity with monads, comonads, and the <a href="/logic-in-types.html"><span>Curry-Howard correspondance</span></a>. Also, I need to say from the start that this post is not very rigorous; it&#39;s meant as interesting food for thought and intuition.
 </span></p><h3><span>What&#39;s Modal Logic?
 </span></h3><p><span>Modal logic is a version of logic that has two new and fascinating operators, <code><span>Possibly</span></code> and <code><span>Necessarily</span></code>. These operators work exactly as you&#39;d expect, but it&#39;s hard to say exactly <i><span>what</span></i> it is that we expect, so I&#39;ll simplify the idea. Consider the python program below:
@@ -44,7 +44,7 @@ print(z)
 </span></p><h3><span>Conclusion
 </span></h3><p><span>That&#39;s all I have to say about this stuff for now but I hope to keep exploring modal logic as a language for security and crashing. I care a lot about crashing because I like the <a href="https://en.wikipedia.org/wiki/Crash-only_software"><span>crash-only software</span></a> philosophy a lot, and <a href="https://en.wikipedia.org/wiki/Microreboot"><span>microreboot</span></a> architectures, but I&#39;m a type theorist and logician primarily. I have a crash-based project I&#39;m working on that I&#39;ll hopefully post about soon. Also, if you&#39;re interested in how comonads are useful I&#39;ve <i><span>got</span></i> to link <a href="https://dl.acm.org/doi/10.1145/3408993"><span>this</span></a>. I hope this was interesting!
 </span></p></div><div><div style="height:100pt;"></div><p id="copyright-notice" class="subtle-text">© 2024 Ryan Brewer.</p><script src="/__/firebase/8.10.1/firebase-app.js"></script><script src="/__/firebase/8.10.1/firebase-analytics.js"></script><script src="/__/firebase/init.js"></script><script>firebase.analytics();</script></div></div></div><script>
-// SPA algorithm stolen from Hayleigh Thompson's wonderful Modem library
+// SPA algorithm partially inspired by Hayleigh Thompson's wonderful Modem library
 async function go_to(url, loader, back) {
   if (!back && url.pathname === window.location.pathname) {
     if (url.hash) document.getElementById(url.hash.slice(1))?.scrollIntoView();
@@ -71,25 +71,23 @@ async function go_to(url, loader, back) {
   for (let i = 0; i < num_scripts; i++) {
     const script = scripts[i];
     const n = document.createElement('script');
-    n.setAttribute('defer', 'true');
-    if (script.innerHTML === '') n.onload = 
-      () => {
-        console.log('script',_ARCTIC_C);
-        if(++_ARCTIC_C>=num_scripts)document.dispatchEvent(new Event('DOMContentLoaded'));
+    // scripts load nondeterministically, so we figure out when they've all finished via the _ARCTIC_C barrier
+    if (script.innerHTML === '') {
+      // external scripts don't run their inline js, so they need an onload listener
+      n.onload = () => {
+        if (++_ARCTIC_C >= num_scripts)
+          document.dispatchEvent(new Event('DOMContentLoaded'));
       };
-      //(n.onload || '') + 
-      //';if(++_ARCTIC_C>=' +
-      //num_scripts +
-      //')document.dispatchEvent(new Event(\'DOMContentLoaded\'));';
-    else {
+    } else {
+      // inline scripts might not trigger onload, so they get js appended to the end instead
       const t = document.createTextNode(
         script.innerHTML +
-        ';console.log(\'script\',_ARCTIC_C);' +
-        'if(++_ARCTIC_C>=' + num_scripts +
+        ';if(++_ARCTIC_C>=' + num_scripts +
         ')document.dispatchEvent(new Event(\'DOMContentLoaded\'));'
       );
       n.appendChild(t);
     }
+    // attributes at the end because 'src' needs to load after onload is listening
     for (let j = 0; j < script.attributes.length; j++) {
       const attr = script.attributes[j];
       n.setAttribute(attr.name, attr.value);
@@ -102,7 +100,6 @@ async function go_to(url, loader, back) {
     else
       window.scrollTo(0, 0);
   });
-  // setTimeout(() => document.dispatchEvent(new Event('DOMContentLoaded')), 100); // i cri ),x
 }
 document.addEventListener('click', async function(e) {
   const a = find_a(e.target);

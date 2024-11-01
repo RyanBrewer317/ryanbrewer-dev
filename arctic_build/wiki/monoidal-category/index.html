@@ -19,7 +19,7 @@ window.MathJax = {
   loader: {load: ['[tex]/unicode']},
   tex: {packages: {'[+]': ['unicode']}},
 };
-        </script><script>hljs.highlightAll();</script></div><nav id="nav"><div id="nav-dropdown" onclick="document.getElementById(&#39;nav&#39;).classList.toggle(&#39;dropdown&#39;);document.body.classList.toggle(&#39;noscroll&#39;);">☰</div><a href="/" id="nav-home">Ryan Brewer</a><a href="/posts" id="nav-posts">Posts</a><a href="/wiki" id="nav-wiki">Wiki</a><a href="/contact" id="nav-contact">Contact</a><a href="/demos" id="nav-demos">Demos</a><a href="/feed.rss" id="nav-subscribe" onclick="window.location.href = &#39;/feed.rss&#39;"><img src="/rss-icon.png" id="rss-subscribe-icon">Subscribe</a></nav><div id="body"><h1>Monoidal Category</h1><p><span>A monoidal category is a <a href="/wiki/category"><span>category</span></a> \(C\) with a bifunctor \(\otimes:C\times C\to C\) and an object \(I\) such that \(\otimes\) is associative and \(I\otimes X=X=X\otimes I\) for any object \(X\) in \(C\). \(\otimes\) is called the &quot;tensor product.&quot; Well, that&#39;s just a <i><span>strict</span></i> monoidal category; monoidal categories, on the other hand, only need these equations to be isomorphisms. This means they additionally have three <a href="/wiki/natural-isomorphism"><span>natural isomorphisms</span></a>: an &quot;associator&quot; \(\alpha_{X,Y,Z}:X\otimes(Y\otimes Z)\cong(X\otimes Y)\otimes Z\), a &quot;left unitor&quot; \(\lambda_X:I\otimes X\cong X\), and a &quot;right unitor&quot; \(\rho_X:X\otimes I\cong X\). These have to satisfy two coherence conditions.
+        </script><script>hljs.highlightAll();</script></div><nav id="nav"><div id="nav-dropdown" onclick="document.getElementById(&#39;nav&#39;).classList.toggle(&#39;dropdown&#39;);document.body.classList.toggle(&#39;noscroll&#39;);">☰</div><a href="/" id="nav-home" onclick="document.body.classList.remove(&#39;noscroll&#39;);">Ryan Brewer</a><a href="/posts" id="nav-posts" onclick="document.body.classList.remove(&#39;noscroll&#39;);">Posts</a><a href="/wiki" id="nav-wiki" onclick="document.body.classList.remove(&#39;noscroll&#39;);">Wiki</a><a href="/contact" id="nav-contact" onclick="document.body.classList.remove(&#39;noscroll&#39;);">Contact</a><a href="/demos" id="nav-demos" onclick="document.body.classList.remove(&#39;noscroll&#39;);">Demos</a><a href="/feed.rss" id="nav-subscribe" onclick="window.location.href = &#39;/feed.rss&#39;"><img src="/rss-icon.png" id="rss-subscribe-icon">Subscribe</a></nav><div id="body"><h1>Monoidal Category</h1><p><span>A monoidal category is a <a href="/wiki/category"><span>category</span></a> \(C\) with a bifunctor \(\otimes:C\times C\to C\) and an object \(I\) such that \(\otimes\) is associative and \(I\otimes X=X=X\otimes I\) for any object \(X\) in \(C\). \(\otimes\) is called the &quot;tensor product.&quot; Well, that&#39;s just a <i><span>strict</span></i> monoidal category; monoidal categories, on the other hand, only need these equations to be isomorphisms. This means they additionally have three <a href="/wiki/natural-isomorphism"><span>natural isomorphisms</span></a>: an &quot;associator&quot; \(\alpha_{X,Y,Z}:X\otimes(Y\otimes Z)\cong(X\otimes Y)\otimes Z\), a &quot;left unitor&quot; \(\lambda_X:I\otimes X\cong X\), and a &quot;right unitor&quot; \(\rho_X:X\otimes I\cong X\). These have to satisfy two coherence conditions.
 </span></p><p><span>Monoidal categories are famous enough that you may hear their coherence conditions referenced by name without any extra explanation. That is, you may be expected to know them by name. The first is called the &quot;triangle identity,&quot; though there are many things called that. It is depicted by the following commuting diagram:
 </span></p><div class="diagram"><img src="/image-0-monoidal-category.svg" onload="this.width *= 2.25;"></div><p><span>The notation \(id_X\otimes\lambda_Y\) is taking advantage of the bifunctoriality of \(\otimes\), mapping a pair of morphisms \(id_X:X\to X\) and \(\lambda_Y:(I\otimes Y)\to Y\) into the morphism \(id_X\otimes\lambda_Y:X\otimes(I\otimes Y)\to X\otimes Y\). You have to do some mental grammar-checking to realize that \(id_X\otimes\lambda_Y\) is nonsense because \(id_X\) and \(\lambda_Y\) are morphisms in this category, not objects, to realize that we&#39;re using this second usage of the \(\otimes\) notation.
 </span></p><p><span>The second coherence condition is far more famous, in the sense that I&#39;ve heard people reference it by name instead of saying what it is, quite a number of times. This is called the &quot;pentagon identity,&quot; depicted with the following commuting diagram:
@@ -35,7 +35,7 @@ window.MathJax = {
 </span></p><p><span>String diagrams naturally give an idea of a factory assembly line, since objects are contained in the lines going from morphism to morphism, which are stops along the way. In this way they give an idea of parallel computation: two parallel objects \(X\otimes Z\) are carried in parallel along lines that don&#39;t interact with each other \(f\otimes g\) into two parallel outputs \(Y\otimes W\).
 </span></p><p><span>Monoidal categories are also used to model linear logic. The category must be more than just monoidal (it must be &quot;star-autonomous&quot;) but the essence is still here. Think about that factory assembly line. If you want an object \(X\) to get used by multiple computations, you need a transformation \(w:X\to X\otimes X\); it&#39;s literally the only way. In this sense the morphisms along a string diagram are <i><span>consuming</span></i> their inputs. If you don&#39;t have \(w\) then values can only be used at most once. Similarly, if an object ends up unused by any morphism, then it must find itself among the objects at the end (the top) of the diagram; the only way to get rid of lines is to consume them with morphisms. An interesting example that comes up surprisingly often would be something like <code><span>c:X\to I</span></code>, which visually makes a line end early, at the \(c\) morphism. If there&#39;s nothing like \(c\), then objects must be used at least once (possibly by being used as part of the final tensor product). If there&#39;s no \(c\) or \(w\), objects must get used exactly once. If you&#39;re familiar with substructural logic, this should be very familiar: \(w\) is weakening and \(c\) is contraction. Having neither gets you something linear, having \(w\) gives you something relevant, having \(c\) gives you something affine, and having both gets you to something more standard. Note again that to actually model linear, relevant, or affine <i><span>logic</span></i> one needs the full construction of the star-autonomous category, to model things like negation.
 </span></p></div><div><div style="height:100pt;"></div><p id="copyright-notice" class="subtle-text">© 2024 Ryan Brewer.</p><script src="/__/firebase/8.10.1/firebase-app.js"></script><script src="/__/firebase/8.10.1/firebase-analytics.js"></script><script src="/__/firebase/init.js"></script><script>firebase.analytics();</script></div></div></div><script>
-// SPA algorithm stolen from Hayleigh Thompson's wonderful Modem library
+// SPA algorithm partially inspired by Hayleigh Thompson's wonderful Modem library
 async function go_to(url, loader, back) {
   if (!back && url.pathname === window.location.pathname) {
     if (url.hash) document.getElementById(url.hash.slice(1))?.scrollIntoView();
@@ -62,25 +62,23 @@ async function go_to(url, loader, back) {
   for (let i = 0; i < num_scripts; i++) {
     const script = scripts[i];
     const n = document.createElement('script');
-    n.setAttribute('defer', 'true');
-    if (script.innerHTML === '') n.onload = 
-      () => {
-        console.log('script',_ARCTIC_C);
-        if(++_ARCTIC_C>=num_scripts)document.dispatchEvent(new Event('DOMContentLoaded'));
+    // scripts load nondeterministically, so we figure out when they've all finished via the _ARCTIC_C barrier
+    if (script.innerHTML === '') {
+      // external scripts don't run their inline js, so they need an onload listener
+      n.onload = () => {
+        if (++_ARCTIC_C >= num_scripts)
+          document.dispatchEvent(new Event('DOMContentLoaded'));
       };
-      //(n.onload || '') + 
-      //';if(++_ARCTIC_C>=' +
-      //num_scripts +
-      //')document.dispatchEvent(new Event(\'DOMContentLoaded\'));';
-    else {
+    } else {
+      // inline scripts might not trigger onload, so they get js appended to the end instead
       const t = document.createTextNode(
         script.innerHTML +
-        ';console.log(\'script\',_ARCTIC_C);' +
-        'if(++_ARCTIC_C>=' + num_scripts +
+        ';if(++_ARCTIC_C>=' + num_scripts +
         ')document.dispatchEvent(new Event(\'DOMContentLoaded\'));'
       );
       n.appendChild(t);
     }
+    // attributes at the end because 'src' needs to load after onload is listening
     for (let j = 0; j < script.attributes.length; j++) {
       const attr = script.attributes[j];
       n.setAttribute(attr.name, attr.value);
@@ -93,7 +91,6 @@ async function go_to(url, loader, back) {
     else
       window.scrollTo(0, 0);
   });
-  // setTimeout(() => document.dispatchEvent(new Event('DOMContentLoaded')), 100); // i cri ),x
 }
 document.addEventListener('click', async function(e) {
   const a = find_a(e.target);
