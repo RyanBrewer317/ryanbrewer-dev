@@ -1,14 +1,14 @@
 -module(lustre@element).
 -compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch]).
 
--export([element/3, keyed/2, namespaced/4, advanced/6, text/1, none/0, fragment/1, map/2, to_string/1, to_document_string/1, to_string_builder/1, to_document_string_builder/1]).
+-export([element/3, keyed/2, namespaced/4, advanced/6, text/1, none/0, fragment/1, map/2, get_root/1, to_string/1, to_document_string/1, to_string_builder/1, to_document_string_builder/1, to_readable_string/1]).
 
--file("/home/runner/work/lustre/lustre/src/lustre/element.gleam", 89).
+-file("/Users/hayleigh/work/lustre-labs/lustre/src/lustre/element.gleam", 90).
 -spec element(
     binary(),
-    list(lustre@internals@vdom:attribute(ONC)),
-    list(lustre@internals@vdom:element(ONC))
-) -> lustre@internals@vdom:element(ONC).
+    list(lustre@internals@vdom:attribute(OOX)),
+    list(lustre@internals@vdom:element(OOX))
+) -> lustre@internals@vdom:element(OOX).
 element(Tag, Attrs, Children) ->
     case Tag of
         <<"area"/utf8>> ->
@@ -64,8 +64,8 @@ element(Tag, Attrs, Children) ->
                 false}
     end.
 
--file("/home/runner/work/lustre/lustre/src/lustre/element.gleam", 173).
--spec do_keyed(lustre@internals@vdom:element(ONP), binary()) -> lustre@internals@vdom:element(ONP).
+-file("/Users/hayleigh/work/lustre-labs/lustre/src/lustre/element.gleam", 174).
+-spec do_keyed(lustre@internals@vdom:element(OPK), binary()) -> lustre@internals@vdom:element(OPK).
 do_keyed(El, Key) ->
     case El of
         {element, _, Namespace, Tag, Attrs, Children, Self_closing, Void} ->
@@ -74,38 +74,15 @@ do_keyed(El, Key) ->
         {map, Subtree} ->
             {map, fun() -> do_keyed(Subtree(), Key) end};
 
-        {fragment, Elements, _} ->
-            _pipe = Elements,
-            _pipe@1 = gleam@list:index_map(
-                _pipe,
-                fun(Element, Idx) -> case Element of
-                        {element, El_key, _, _, _, _, _, _} ->
-                            New_key = case El_key of
-                                <<""/utf8>> ->
-                                    <<<<Key/binary, "-"/utf8>>/binary,
-                                        (gleam@int:to_string(Idx))/binary>>;
-
-                                _ ->
-                                    <<<<Key/binary, "-"/utf8>>/binary,
-                                        El_key/binary>>
-                            end,
-                            do_keyed(Element, New_key);
-
-                        _ ->
-                            do_keyed(Element, Key)
-                    end end
-            ),
-            {fragment, _pipe@1, Key};
-
         _ ->
             El
     end.
 
--file("/home/runner/work/lustre/lustre/src/lustre/element.gleam", 163).
+-file("/Users/hayleigh/work/lustre-labs/lustre/src/lustre/element.gleam", 164).
 -spec keyed(
-    fun((list(lustre@internals@vdom:element(ONI))) -> lustre@internals@vdom:element(ONI)),
-    list({binary(), lustre@internals@vdom:element(ONI)})
-) -> lustre@internals@vdom:element(ONI).
+    fun((list(lustre@internals@vdom:element(OPD))) -> lustre@internals@vdom:element(OPD)),
+    list({binary(), lustre@internals@vdom:element(OPD)})
+) -> lustre@internals@vdom:element(OPD).
 keyed(El, Children) ->
     El(
         (gleam@list:map(
@@ -117,61 +94,49 @@ keyed(El, Children) ->
         ))
     ).
 
--file("/home/runner/work/lustre/lustre/src/lustre/element.gleam", 208).
+-file("/Users/hayleigh/work/lustre-labs/lustre/src/lustre/element.gleam", 195).
 -spec namespaced(
     binary(),
     binary(),
-    list(lustre@internals@vdom:attribute(ONS)),
-    list(lustre@internals@vdom:element(ONS))
-) -> lustre@internals@vdom:element(ONS).
+    list(lustre@internals@vdom:attribute(OPN)),
+    list(lustre@internals@vdom:element(OPN))
+) -> lustre@internals@vdom:element(OPN).
 namespaced(Namespace, Tag, Attrs, Children) ->
     {element, <<""/utf8>>, Namespace, Tag, Attrs, Children, false, false}.
 
--file("/home/runner/work/lustre/lustre/src/lustre/element.gleam", 230).
+-file("/Users/hayleigh/work/lustre-labs/lustre/src/lustre/element.gleam", 217).
 -spec advanced(
     binary(),
     binary(),
-    list(lustre@internals@vdom:attribute(ONY)),
-    list(lustre@internals@vdom:element(ONY)),
+    list(lustre@internals@vdom:attribute(OPT)),
+    list(lustre@internals@vdom:element(OPT)),
     boolean(),
     boolean()
-) -> lustre@internals@vdom:element(ONY).
+) -> lustre@internals@vdom:element(OPT).
 advanced(Namespace, Tag, Attrs, Children, Self_closing, Void) ->
     {element, <<""/utf8>>, Namespace, Tag, Attrs, Children, Self_closing, Void}.
 
--file("/home/runner/work/lustre/lustre/src/lustre/element.gleam", 254).
+-file("/Users/hayleigh/work/lustre-labs/lustre/src/lustre/element.gleam", 241).
 -spec text(binary()) -> lustre@internals@vdom:element(any()).
 text(Content) ->
     {text, Content}.
 
--file("/home/runner/work/lustre/lustre/src/lustre/element.gleam", 262).
+-file("/Users/hayleigh/work/lustre-labs/lustre/src/lustre/element.gleam", 249).
 -spec none() -> lustre@internals@vdom:element(any()).
 none() ->
     {text, <<""/utf8>>}.
 
--file("/home/runner/work/lustre/lustre/src/lustre/element.gleam", 277).
--spec flatten_fragment_elements(list(lustre@internals@vdom:element(OOM))) -> list(lustre@internals@vdom:element(OOM)).
-flatten_fragment_elements(Elements) ->
-    gleam@list:fold_right(
-        Elements,
-        [],
-        fun(New_elements, Element) -> case Element of
-                {fragment, Fr_elements, _} ->
-                    lists:append(Fr_elements, New_elements);
-
-                El ->
-                    [El | New_elements]
-            end end
+-file("/Users/hayleigh/work/lustre-labs/lustre/src/lustre/element.gleam", 258).
+-spec fragment(list(lustre@internals@vdom:element(OQD))) -> lustre@internals@vdom:element(OQD).
+fragment(Elements) ->
+    element(
+        <<"lustre-fragment"/utf8>>,
+        [lustre@attribute:style([{<<"display"/utf8>>, <<"contents"/utf8>>}])],
+        Elements
     ).
 
--file("/home/runner/work/lustre/lustre/src/lustre/element.gleam", 271).
--spec fragment(list(lustre@internals@vdom:element(OOI))) -> lustre@internals@vdom:element(OOI).
-fragment(Elements) ->
-    _pipe = flatten_fragment_elements(Elements),
-    {fragment, _pipe, <<""/utf8>>}.
-
--file("/home/runner/work/lustre/lustre/src/lustre/element.gleam", 299).
--spec map(lustre@internals@vdom:element(OOQ), fun((OOQ) -> OOS)) -> lustre@internals@vdom:element(OOS).
+-file("/Users/hayleigh/work/lustre-labs/lustre/src/lustre/element.gleam", 275).
+-spec map(lustre@internals@vdom:element(OQH), fun((OQH) -> OQJ)) -> lustre@internals@vdom:element(OQJ).
 map(Element, F) ->
     case Element of
         {text, Content} ->
@@ -199,26 +164,22 @@ map(Element, F) ->
                         ),
                         Self_closing,
                         Void}
-                end};
-
-        {fragment, Elements, Key@1} ->
-            {map,
-                fun() ->
-                    {fragment,
-                        gleam@list:map(
-                            Elements,
-                            fun(_capture@2) -> map(_capture@2, F) end
-                        ),
-                        Key@1}
                 end}
     end.
 
--file("/home/runner/work/lustre/lustre/src/lustre/element.gleam", 329).
+-file("/Users/hayleigh/work/lustre-labs/lustre/src/lustre/element.gleam", 297).
+-spec get_root(fun((fun((OQL) -> nil), gleam@dynamic:dynamic_()) -> nil)) -> lustre@effect:effect(OQL).
+get_root(Effect) ->
+    lustre@effect:custom(
+        fun(Dispatch, _, _, Root) -> Effect(Dispatch, Root) end
+    ).
+
+-file("/Users/hayleigh/work/lustre-labs/lustre/src/lustre/element.gleam", 311).
 -spec to_string(lustre@internals@vdom:element(any())) -> binary().
 to_string(Element) ->
     lustre@internals@vdom:element_to_string(Element).
 
--file("/home/runner/work/lustre/lustre/src/lustre/element.gleam", 340).
+-file("/Users/hayleigh/work/lustre-labs/lustre/src/lustre/element.gleam", 322).
 -spec to_document_string(lustre@internals@vdom:element(any())) -> binary().
 to_document_string(El) ->
     _pipe = lustre@internals@vdom:element_to_string(case El of
@@ -243,12 +204,12 @@ to_document_string(El) ->
         end),
     gleam@string:append(<<"<!doctype html>\n"/utf8>>, _pipe).
 
--file("/home/runner/work/lustre/lustre/src/lustre/element.gleam", 358).
+-file("/Users/hayleigh/work/lustre-labs/lustre/src/lustre/element.gleam", 340).
 -spec to_string_builder(lustre@internals@vdom:element(any())) -> gleam@string_builder:string_builder().
 to_string_builder(Element) ->
     lustre@internals@vdom:element_to_string_builder(Element).
 
--file("/home/runner/work/lustre/lustre/src/lustre/element.gleam", 369).
+-file("/Users/hayleigh/work/lustre-labs/lustre/src/lustre/element.gleam", 351).
 -spec to_document_string_builder(lustre@internals@vdom:element(any())) -> gleam@string_builder:string_builder().
 to_document_string_builder(El) ->
     _pipe = lustre@internals@vdom:element_to_string_builder(case El of
@@ -272,3 +233,8 @@ to_document_string_builder(El) ->
                 )
         end),
     gleam@string_builder:prepend(_pipe, <<"<!doctype html>\n"/utf8>>).
+
+-file("/Users/hayleigh/work/lustre-labs/lustre/src/lustre/element.gleam", 387).
+-spec to_readable_string(lustre@internals@vdom:element(any())) -> binary().
+to_readable_string(El) ->
+    lustre@internals@vdom:element_to_snapshot(El).

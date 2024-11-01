@@ -1,12 +1,13 @@
-import * as $int from "../../gleam_stdlib/gleam/int.mjs";
+import * as $dynamic from "../../gleam_stdlib/gleam/dynamic.mjs";
 import * as $list from "../../gleam_stdlib/gleam/list.mjs";
 import * as $string from "../../gleam_stdlib/gleam/string.mjs";
 import * as $string_builder from "../../gleam_stdlib/gleam/string_builder.mjs";
-import { toList, prepend as listPrepend } from "../gleam.mjs";
+import { toList } from "../gleam.mjs";
 import * as $attribute from "../lustre/attribute.mjs";
 import { attribute } from "../lustre/attribute.mjs";
+import * as $effect from "../lustre/effect.mjs";
 import * as $vdom from "../lustre/internals/vdom.mjs";
-import { Element, Fragment, Map, Text } from "../lustre/internals/vdom.mjs";
+import { Element, Map, Text } from "../lustre/internals/vdom.mjs";
 
 export function element(tag, attrs, children) {
   if (tag === "area") {
@@ -62,28 +63,6 @@ function do_keyed(el, key) {
   } else if (el instanceof Map) {
     let subtree = el.subtree;
     return new Map(() => { return do_keyed(subtree(), key); });
-  } else if (el instanceof Fragment) {
-    let elements = el.elements;
-    let _pipe = elements;
-    let _pipe$1 = $list.index_map(
-      _pipe,
-      (element, idx) => {
-        if (element instanceof Element) {
-          let el_key = element.key;
-          let new_key = (() => {
-            if (el_key === "") {
-              return (key + "-") + $int.to_string(idx);
-            } else {
-              return (key + "-") + el_key;
-            }
-          })();
-          return do_keyed(element, new_key);
-        } else {
-          return do_keyed(element, key);
-        }
-      },
-    );
-    return new Fragment(_pipe$1, key);
   } else {
     return el;
   }
@@ -118,25 +97,12 @@ export function none() {
   return new Text("");
 }
 
-function flatten_fragment_elements(elements) {
-  return $list.fold_right(
-    elements,
-    toList([]),
-    (new_elements, element) => {
-      if (element instanceof Fragment) {
-        let fr_elements = element.elements;
-        return $list.append(fr_elements, new_elements);
-      } else {
-        let el = element;
-        return listPrepend(el, new_elements);
-      }
-    },
-  );
-}
-
 export function fragment(elements) {
-  let _pipe = flatten_fragment_elements(elements);
-  return new Fragment(_pipe, "");
+  return element(
+    "lustre-fragment",
+    toList([$attribute.style(toList([["display", "contents"]]))]),
+    elements,
+  );
 }
 
 export function map(element, f) {
@@ -146,7 +112,7 @@ export function map(element, f) {
   } else if (element instanceof Map) {
     let subtree = element.subtree;
     return new Map(() => { return map(subtree(), f); });
-  } else if (element instanceof Element) {
+  } else {
     let key = element.key;
     let namespace = element.namespace;
     let tag = element.tag;
@@ -170,18 +136,13 @@ export function map(element, f) {
         );
       },
     );
-  } else {
-    let elements = element.elements;
-    let key = element.key;
-    return new Map(
-      () => {
-        return new Fragment(
-          $list.map(elements, (_capture) => { return map(_capture, f); }),
-          key,
-        );
-      },
-    );
   }
+}
+
+export function get_root(effect) {
+  return $effect.custom(
+    (dispatch, _, _1, root) => { return effect(dispatch, root); },
+  );
 }
 
 export function to_string(element) {
@@ -240,4 +201,8 @@ export function to_document_string_builder(el) {
     })(),
   );
   return $string_builder.prepend(_pipe, "<!doctype html>\n");
+}
+
+export function to_readable_string(el) {
+  return $vdom.element_to_snapshot(el);
 }

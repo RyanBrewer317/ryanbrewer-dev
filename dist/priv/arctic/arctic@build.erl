@@ -387,14 +387,29 @@ spa(Frame, Html) ->
     Frame(
         lustre@element@html:'div'(
             [],
-            [lustre@element@html:'div'(
+            [lustre@element@html:script(
+                    [],
+                    <<"
+var _ARCTIC_C;
+if (typeof HTMLDocument === 'undefined') HTMLDocument = Document;
+let arctic_dom_content_loaded_listeners = [];
+HTMLDocument.prototype.arctic_addEventListener = HTMLDocument.prototype.addEventListener;
+HTMLDocument.prototype.addEventListener = function(type, listener, options) {
+  if (type === 'DOMContentLoaded') {
+    arctic_dom_content_loaded_listeners.push(listener);
+    document.arctic_addEventListener(type, listener, options);
+  } else document.arctic_addEventListener(type, listener, options);
+}
+       "/utf8>>
+                ),
+                lustre@element@html:'div'(
                     [lustre@attribute:id(<<"arctic-app"/utf8>>)],
                     [Html]
                 ),
                 lustre@element@html:script(
                     [],
                     <<"
-// SPA algorithm stolen from Hayleigh Thompson's wonderful Modem library
+// SPA algorithm partially inspired by Hayleigh Thompson's wonderful Modem library
 async function go_to(url, loader, back) {
   if (!back && url.pathname === window.location.pathname) {
     if (url.hash) document.getElementById(url.hash.slice(1))?.scrollIntoView();
@@ -403,6 +418,9 @@ async function go_to(url, loader, back) {
   }
   document.dispatchEvent(new Event('beforeunload'));
   document.dispatchEvent(new Event('unload'));
+  for (let i = 0; i < arctic_dom_content_loaded_listeners.length; i++)
+    document.removeEventListener('DOMContentLoaded', arctic_dom_content_loaded_listeners[i]);
+  arctic_dom_content_loaded_listeners = [];
   const $app = document.getElementById('arctic-app');
   if (loader) $app.innerHTML = '<div id=\"arctic-loader\"></div>';
   if (!back) window.history.pushState({}, '', url.href);
@@ -411,26 +429,42 @@ async function go_to(url, loader, back) {
   if (!response.ok) response = await fetch('/__pages/404.html');
   if (!response.ok) return;
   const html = await response.text();
-  $app.innerHTML = html;
+  $app.innerHTML = '<script>_ARCTIC_C=0;</'+'script>'+html;
   // re-create script elements, so their javascript runs
   const scripts = $app.querySelectorAll('script');
-  for (let i = 0; i < scripts.length; i++) {
+  const num_scripts = scripts.length;
+  for (let i = 0; i < num_scripts; i++) {
     const script = scripts[i];
     const n = document.createElement('script');
+    // scripts load nondeterministically, so we figure out when they've all finished via the _ARCTIC_C barrier
+    if (script.innerHTML === '') {
+      // external scripts don't run their inline js, so they need an onload listener
+      n.onload = () => {
+        if (++_ARCTIC_C >= num_scripts)
+          document.dispatchEvent(new Event('DOMContentLoaded'));
+      };
+    } else {
+      // inline scripts might not trigger onload, so they get js appended to the end instead
+      const t = document.createTextNode(
+        script.innerHTML +
+        ';if(++_ARCTIC_C>=' + num_scripts +
+        ')document.dispatchEvent(new Event(\\'DOMContentLoaded\\'));'
+      );
+      n.appendChild(t);
+    }
+    // attributes at the end because 'src' needs to load after onload is listening
     for (let j = 0; j < script.attributes.length; j++) {
       const attr = script.attributes[j];
       n.setAttribute(attr.name, attr.value);
     }
-    const t = document.createTextNode(script.innerHTML);
-    n.appendChild(t);
     script.parentNode.replaceChild(n, script);
   }
-  if (url.hash)
-    window.requestAnimationFrame(() =>
-      document.getElementById(url.hash.slice(1))?.scrollIntoView()
-    );
-  else window.scrollTo(0, 0);
-  document.dispatchEvent(new Event('DOMContentLoaded'));
+  window.requestAnimationFrame(() => {
+    if (url.hash)
+      document.getElementById(url.hash.slice(1))?.scrollIntoView();
+    else
+      window.scrollTo(0, 0);
+  });
 }
 document.addEventListener('click', async function(e) {
   const a = find_a(e.target);
@@ -460,11 +494,11 @@ function find_a(target) {
     ).
 
 -spec add_route(
-    lustre@ssg:config(any(), UGT, UGU),
+    lustre@ssg:config(any(), UGV, UGW),
     arctic:config(),
     binary(),
     lustre@internals@vdom:element(nil)
-) -> lustre@ssg:config(lustre@ssg:has_static_routes(), UGT, UGU).
+) -> lustre@ssg:config(lustre@ssg:has_static_routes(), UGV, UGW).
 add_route(Ssg_config, Config, Path, Content) ->
     case erlang:element(5, Config) of
         {some, Frame} ->
@@ -584,7 +618,7 @@ make_ssg_config(Processed_collections, Config, K) ->
                                                         value => _assert_fail,
                                                         module => <<"arctic/build"/utf8>>,
                                                         function => <<"make_ssg_config"/utf8>>,
-                                                        line => 369}
+                                                        line => 403}
                                                 )
                                     end,
                                     Cached_path = <<<<"arctic_build/"/utf8,
@@ -600,7 +634,7 @@ make_ssg_config(Processed_collections, Config, K) ->
                                                     message => Cached_path,
                                                     module => <<"arctic/build"/utf8>>,
                                                     function => <<"make_ssg_config"/utf8>>,
-                                                    line => 374})
+                                                    line => 408})
                                     end,
                                     case erlang:element(5, Config) of
                                         {some, _} ->
@@ -620,7 +654,7 @@ make_ssg_config(Processed_collections, Config, K) ->
                                                             message => Cached_path,
                                                             module => <<"arctic/build"/utf8>>,
                                                             function => <<"make_ssg_config"/utf8>>,
-                                                            line => 386}
+                                                            line => 420}
                                                     )
                                             end,
                                             _pipe@5 = S@1,

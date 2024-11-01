@@ -3,88 +3,42 @@
 
 -export(['and'/2, 'or'/2, negate/1, nor/2, nand/2, exclusive_or/2, exclusive_nor/2, compare/2, to_int/1, to_string/1, guard/3, lazy_guard/3]).
 
+-file("/Users/louis/src/gleam/stdlib/src/gleam/bool.gleam", 33).
 -spec 'and'(boolean(), boolean()) -> boolean().
 'and'(A, B) ->
     A andalso B.
 
+-file("/Users/louis/src/gleam/stdlib/src/gleam/bool.gleam", 59).
 -spec 'or'(boolean(), boolean()) -> boolean().
 'or'(A, B) ->
     A orelse B.
 
+-file("/Users/louis/src/gleam/stdlib/src/gleam/bool.gleam", 79).
 -spec negate(boolean()) -> boolean().
 negate(Bool) ->
-    case Bool of
-        true ->
-            false;
+    not Bool.
 
-        false ->
-            true
-    end.
-
+-file("/Users/louis/src/gleam/stdlib/src/gleam/bool.gleam", 107).
 -spec nor(boolean(), boolean()) -> boolean().
 nor(A, B) ->
-    case {A, B} of
-        {false, false} ->
-            true;
+    not (A orelse B).
 
-        {false, true} ->
-            false;
-
-        {true, false} ->
-            false;
-
-        {true, true} ->
-            false
-    end.
-
+-file("/Users/louis/src/gleam/stdlib/src/gleam/bool.gleam", 135).
 -spec nand(boolean(), boolean()) -> boolean().
 nand(A, B) ->
-    case {A, B} of
-        {false, false} ->
-            true;
+    not (A andalso B).
 
-        {false, true} ->
-            true;
-
-        {true, false} ->
-            true;
-
-        {true, true} ->
-            false
-    end.
-
+-file("/Users/louis/src/gleam/stdlib/src/gleam/bool.gleam", 163).
 -spec exclusive_or(boolean(), boolean()) -> boolean().
 exclusive_or(A, B) ->
-    case {A, B} of
-        {false, false} ->
-            false;
+    A /= B.
 
-        {false, true} ->
-            true;
-
-        {true, false} ->
-            true;
-
-        {true, true} ->
-            false
-    end.
-
+-file("/Users/louis/src/gleam/stdlib/src/gleam/bool.gleam", 191).
 -spec exclusive_nor(boolean(), boolean()) -> boolean().
 exclusive_nor(A, B) ->
-    case {A, B} of
-        {false, false} ->
-            true;
+    A =:= B.
 
-        {false, true} ->
-            false;
-
-        {true, false} ->
-            false;
-
-        {true, true} ->
-            true
-    end.
-
+-file("/Users/louis/src/gleam/stdlib/src/gleam/bool.gleam", 206).
 -spec compare(boolean(), boolean()) -> gleam@order:order().
 compare(A, B) ->
     case {A, B} of
@@ -101,6 +55,7 @@ compare(A, B) ->
             lt
     end.
 
+-file("/Users/louis/src/gleam/stdlib/src/gleam/bool.gleam", 229).
 -spec to_int(boolean()) -> integer().
 to_int(Bool) ->
     case Bool of
@@ -111,6 +66,7 @@ to_int(Bool) ->
             1
     end.
 
+-file("/Users/louis/src/gleam/stdlib/src/gleam/bool.gleam", 250).
 -spec to_string(boolean()) -> binary().
 to_string(Bool) ->
     case Bool of
@@ -121,7 +77,8 @@ to_string(Bool) ->
             <<"True"/utf8>>
     end.
 
--spec guard(boolean(), DKG, fun(() -> DKG)) -> DKG.
+-file("/Users/louis/src/gleam/stdlib/src/gleam/bool.gleam", 309).
+-spec guard(boolean(), BVG, fun(() -> BVG)) -> BVG.
 guard(Requirement, Consequence, Alternative) ->
     case Requirement of
         true ->
@@ -131,7 +88,8 @@ guard(Requirement, Consequence, Alternative) ->
             Alternative()
     end.
 
--spec lazy_guard(boolean(), fun(() -> DKH), fun(() -> DKH)) -> DKH.
+-file("/Users/louis/src/gleam/stdlib/src/gleam/bool.gleam", 350).
+-spec lazy_guard(boolean(), fun(() -> BVH), fun(() -> BVH)) -> BVH.
 lazy_guard(Requirement, Consequence, Alternative) ->
     case Requirement of
         true ->

@@ -7,6 +7,7 @@ import {
   floor as do_floor,
   round as js_round,
   truncate as do_truncate,
+  identity as do_to_float,
   power as do_power,
   random_uniform as random,
 } from "../gleam_stdlib.mjs";
@@ -124,6 +125,11 @@ function do_round(x) {
 
 export function round(x) {
   return do_round(x);
+}
+
+export function to_precision(x, precision) {
+  let factor = do_power(10.0, do_to_float(- precision));
+  return do_to_float(round(divideFloat(x, factor))) * factor;
 }
 
 function do_sum(loop$numbers, loop$initial) {

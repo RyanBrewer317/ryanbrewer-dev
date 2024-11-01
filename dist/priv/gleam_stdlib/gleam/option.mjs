@@ -130,8 +130,8 @@ function do_values(list, acc) {
   if (list.hasLength(0)) {
     return acc;
   } else {
-    let x = list.head;
-    let xs = list.tail;
+    let first = list.head;
+    let rest = list.tail;
     let accumulate = (acc, item) => {
       if (item instanceof Some) {
         let value = item[0];
@@ -140,7 +140,7 @@ function do_values(list, acc) {
         return acc;
       }
     };
-    return accumulate(do_values(xs, acc), x);
+    return accumulate(do_values(rest, acc), first);
   }
 }
 

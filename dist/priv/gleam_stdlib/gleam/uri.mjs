@@ -81,8 +81,8 @@ function extra_required(loop$list, loop$remaining) {
     } else if (list.hasLength(0)) {
       return remaining;
     } else {
-      let xs = list.tail;
-      loop$list = xs;
+      let rest = list.tail;
+      loop$list = rest;
       loop$remaining = remaining - 1;
     }
   }

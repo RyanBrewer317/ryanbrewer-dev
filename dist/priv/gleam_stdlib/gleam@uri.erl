@@ -13,6 +13,7 @@
         gleam@option:option(binary()),
         gleam@option:option(binary())}.
 
+-file("/Users/louis/src/gleam/stdlib/src/gleam/uri.gleam", 116).
 -spec regex_submatches(binary(), binary()) -> list(gleam@option:option(binary())).
 regex_submatches(Pattern, String) ->
     _pipe = Pattern,
@@ -26,6 +27,7 @@ regex_submatches(Pattern, String) ->
     _pipe@5 = gleam@result:map(_pipe@4, fun(M) -> erlang:element(3, M) end),
     gleam@result:unwrap(_pipe@5, []).
 
+-file("/Users/louis/src/gleam/stdlib/src/gleam/uri.gleam", 126).
 -spec noneify_query(gleam@option:option(binary())) -> gleam@option:option(binary()).
 noneify_query(X) ->
     case X of
@@ -42,6 +44,7 @@ noneify_query(X) ->
             end
     end.
 
+-file("/Users/louis/src/gleam/stdlib/src/gleam/uri.gleam", 137).
 -spec noneify_empty_string(gleam@option:option(binary())) -> gleam@option:option(binary()).
 noneify_empty_string(X) ->
     case X of
@@ -55,6 +58,7 @@ noneify_empty_string(X) ->
             X
     end.
 
+-file("/Users/louis/src/gleam/stdlib/src/gleam/uri.gleam", 178).
 -spec extra_required(list(any()), integer()) -> integer().
 extra_required(List, Remaining) ->
     case List of
@@ -64,15 +68,17 @@ extra_required(List, Remaining) ->
         [] ->
             Remaining;
 
-        [_ | Xs] ->
-            extra_required(Xs, Remaining - 1)
+        [_ | Rest] ->
+            extra_required(Rest, Remaining - 1)
     end.
 
--spec pad_list(list(gleam@option:option(FJX)), integer()) -> list(gleam@option:option(FJX)).
+-file("/Users/louis/src/gleam/stdlib/src/gleam/uri.gleam", 173).
+-spec pad_list(list(gleam@option:option(FJT)), integer()) -> list(gleam@option:option(FJT)).
 pad_list(List, Size) ->
     _pipe = List,
     lists:append(_pipe, gleam@list:repeat(none, extra_required(List, Size))).
 
+-file("/Users/louis/src/gleam/stdlib/src/gleam/uri.gleam", 145).
 -spec split_authority(gleam@option:option(binary())) -> {gleam@option:option(binary()),
     gleam@option:option(binary()),
     gleam@option:option(integer())}.
@@ -107,18 +113,22 @@ split_authority(Authority) ->
             end
     end.
 
+-file("/Users/louis/src/gleam/stdlib/src/gleam/uri.gleam", 56).
 -spec parse(binary()) -> {ok, uri()} | {error, nil}.
 parse(Uri_string) ->
     gleam_stdlib:uri_parse(Uri_string).
 
+-file("/Users/louis/src/gleam/stdlib/src/gleam/uri.gleam", 198).
 -spec parse_query(binary()) -> {ok, list({binary(), binary()})} | {error, nil}.
 parse_query(Query) ->
     gleam_stdlib:parse_query(Query).
 
+-file("/Users/louis/src/gleam/stdlib/src/gleam/uri.gleam", 242).
 -spec percent_encode(binary()) -> binary().
 percent_encode(Value) ->
     gleam_stdlib:percent_encode(Value).
 
+-file("/Users/louis/src/gleam/stdlib/src/gleam/uri.gleam", 225).
 -spec query_pair({binary(), binary()}) -> gleam@string_builder:string_builder().
 query_pair(Pair) ->
     gleam@string_builder:from_strings(
@@ -127,6 +137,7 @@ query_pair(Pair) ->
             percent_encode(erlang:element(2, Pair))]
     ).
 
+-file("/Users/louis/src/gleam/stdlib/src/gleam/uri.gleam", 217).
 -spec query_to_string(list({binary(), binary()})) -> binary().
 query_to_string(Query) ->
     _pipe = Query,
@@ -138,10 +149,12 @@ query_to_string(Query) ->
     _pipe@3 = gleam@string_builder:concat(_pipe@2),
     gleam@string_builder:to_string(_pipe@3).
 
+-file("/Users/louis/src/gleam/stdlib/src/gleam/uri.gleam", 259).
 -spec percent_decode(binary()) -> {ok, binary()} | {error, nil}.
 percent_decode(Value) ->
     gleam_stdlib:percent_decode(Value).
 
+-file("/Users/louis/src/gleam/stdlib/src/gleam/uri.gleam", 267).
 -spec do_remove_dot_segments(list(binary()), list(binary())) -> list(binary()).
 do_remove_dot_segments(Input, Accumulator) ->
     case Input of
@@ -168,14 +181,17 @@ do_remove_dot_segments(Input, Accumulator) ->
             do_remove_dot_segments(Rest, Accumulator@5)
     end.
 
+-file("/Users/louis/src/gleam/stdlib/src/gleam/uri.gleam", 286).
 -spec remove_dot_segments(list(binary())) -> list(binary()).
 remove_dot_segments(Input) ->
     do_remove_dot_segments(Input, []).
 
+-file("/Users/louis/src/gleam/stdlib/src/gleam/uri.gleam", 302).
 -spec path_segments(binary()) -> list(binary()).
 path_segments(Path) ->
     remove_dot_segments(gleam@string:split(Path, <<"/"/utf8>>)).
 
+-file("/Users/louis/src/gleam/stdlib/src/gleam/uri.gleam", 318).
 -spec to_string(uri()) -> binary().
 to_string(Uri) ->
     Parts = case erlang:element(8, Uri) of
@@ -231,6 +247,7 @@ to_string(Uri) ->
     end,
     gleam@string:concat(Parts@5).
 
+-file("/Users/louis/src/gleam/stdlib/src/gleam/uri.gleam", 362).
 -spec origin(uri()) -> {ok, binary()} | {error, nil}.
 origin(Uri) ->
     {uri, Scheme, _, Host, Port, _, _, _} = Uri,
@@ -261,14 +278,17 @@ origin(Uri) ->
             {error, nil}
     end.
 
--spec drop_last(list(FKX)) -> list(FKX).
+-file("/Users/louis/src/gleam/stdlib/src/gleam/uri.gleam", 379).
+-spec drop_last(list(FKT)) -> list(FKT).
 drop_last(Elements) ->
     gleam@list:take(Elements, erlang:length(Elements) - 1).
 
+-file("/Users/louis/src/gleam/stdlib/src/gleam/uri.gleam", 383).
 -spec join_segments(list(binary())) -> binary().
 join_segments(Segments) ->
     gleam@string:join([<<""/utf8>> | Segments], <<"/"/utf8>>).
 
+-file("/Users/louis/src/gleam/stdlib/src/gleam/uri.gleam", 393).
 -spec merge(uri(), uri()) -> {ok, uri()} | {error, nil}.
 merge(Base, Relative) ->
     case Base of

@@ -3,7 +3,7 @@
 
 -export([escape/1]).
 
--file("/home/runner/work/lustre/lustre/src/lustre/internals/escape.gleam", 83).
+-file("/Users/hayleigh/work/lustre-labs/lustre/src/lustre/internals/escape.gleam", 83).
 -spec do_escape_normal(
     bitstring(),
     integer(),
@@ -139,7 +139,7 @@ do_escape_normal(Bin, Skip, Original, Acc, Len) ->
                     line => 156})
     end.
 
--file("/home/runner/work/lustre/lustre/src/lustre/internals/escape.gleam", 37).
+-file("/Users/hayleigh/work/lustre-labs/lustre/src/lustre/internals/escape.gleam", 37).
 -spec do_escape(bitstring(), integer(), bitstring(), list(bitstring())) -> list(bitstring()).
 do_escape(Bin, Skip, Original, Acc) ->
     case Bin of
@@ -177,7 +177,7 @@ do_escape(Bin, Skip, Original, Acc) ->
                     line => 78})
     end.
 
--file("/home/runner/work/lustre/lustre/src/lustre/internals/escape.gleam", 9).
+-file("/Users/hayleigh/work/lustre-labs/lustre/src/lustre/internals/escape.gleam", 9).
 -spec escape(binary()) -> binary().
 escape(Text) ->
     Bits = <<Text/binary>>,

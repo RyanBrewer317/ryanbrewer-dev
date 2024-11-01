@@ -1,4 +1,6 @@
 import { toList, remainderInt } from "../gleam.mjs";
+import * as $int from "../gleam/int.mjs";
+import * as $order from "../gleam/order.mjs";
 import * as $string from "../gleam/string.mjs";
 import {
   bit_array_from_string as from_string,
@@ -9,7 +11,8 @@ import {
   decode64,
   base16_encode,
   base16_decode,
-  bit_array_inspect as inspect,
+  bit_array_inspect as do_inspect,
+  bit_array_compare as compare,
   bit_array_to_string as do_to_string,
 } from "../gleam_stdlib.mjs";
 
@@ -18,9 +21,9 @@ export {
   base16_encode,
   base64_encode,
   byte_size,
+  compare,
   concat,
   from_string,
-  inspect,
   slice,
 };
 
@@ -52,6 +55,10 @@ export function base64_url_decode(encoded) {
   let _pipe$1 = $string.replace(_pipe, "-", "+");
   let _pipe$2 = $string.replace(_pipe$1, "_", "/");
   return base64_decode(_pipe$2);
+}
+
+export function inspect(input) {
+  return do_inspect(input, "<<") + ">>";
 }
 
 export function is_utf8(bits) {

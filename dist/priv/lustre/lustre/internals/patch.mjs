@@ -22,7 +22,7 @@ import {
 import { coerce as unsafe_coerce } from "../../lustre-escape.ffi.mjs";
 import * as $constants from "../../lustre/internals/constants.mjs";
 import * as $vdom from "../../lustre/internals/vdom.mjs";
-import { Attribute, Element, Event, Fragment, Map, Text } from "../../lustre/internals/vdom.mjs";
+import { Attribute, Element, Event, Map, Text } from "../../lustre/internals/vdom.mjs";
 
 export class Diff extends $CustomType {
   constructor(x0) {
@@ -128,7 +128,7 @@ function do_key_sort(loop$xs, loop$ys) {
         throw makeError(
           "assignment_no_match",
           "lustre/internals/patch",
-          298,
+          289,
           "do_key_sort",
           "Assignment pattern did not match",
           { value: $ }
@@ -140,7 +140,7 @@ function do_key_sort(loop$xs, loop$ys) {
         throw makeError(
           "assignment_no_match",
           "lustre/internals/patch",
-          299,
+          290,
           "do_key_sort",
           "Assignment pattern did not match",
           { value: $1 }
@@ -369,9 +369,9 @@ function attribute_dict(attributes) {
             new Attribute("style", styles$1, false),
           );
         } else if ($.isOk()) {
-          return $dict.insert(dict, "class", attr);
+          return $dict.insert(dict, "style", attr);
         } else {
-          return $dict.insert(dict, "class", attr);
+          return $dict.insert(dict, "style", attr);
         }
       } else if (attr instanceof Attribute) {
         let key = attr[0];
@@ -514,20 +514,6 @@ function do_elements(loop$diff, loop$old, loop$new, loop$key) {
           handlers: handlers
         });
         return do_element_list(diff$1, old_children, new_children, key);
-      } else if (old$1 instanceof Element && new$1 instanceof Element) {
-        return diff.withFields({
-          created: $dict.insert(diff.created, key, new$1),
-          handlers: fold_event_handlers(diff.handlers, new$1, key)
-        });
-      } else if (old$1 instanceof Fragment && new$1 instanceof Fragment) {
-        let old_elements = old$1.elements;
-        let new_elements = new$1.elements;
-        return do_element_list(diff, old_elements, new_elements, key);
-      } else if (new$1 instanceof Fragment) {
-        return diff.withFields({
-          created: $dict.insert(diff.created, key, new$1),
-          handlers: fold_event_handlers(diff.handlers, new$1, key)
-        });
       } else {
         return diff.withFields({
           created: $dict.insert(diff.created, key, new$1),
@@ -570,7 +556,7 @@ function fold_event_handlers(loop$handlers, loop$element, loop$key) {
       loop$handlers = handlers;
       loop$element = subtree();
       loop$key = key;
-    } else if (element instanceof Element) {
+    } else {
       let attrs = element.attrs;
       let children = element.children;
       let handlers$1 = $list.fold(
@@ -588,9 +574,6 @@ function fold_event_handlers(loop$handlers, loop$element, loop$key) {
         },
       );
       return fold_element_list_event_handlers(handlers$1, children, key);
-    } else {
-      let elements$1 = element.elements;
-      return fold_element_list_event_handlers(handlers, elements$1, key);
     }
   }
 }

@@ -80,6 +80,17 @@ export function is_disjoint(first, second) {
   return isEqual(intersection(first, second), new$());
 }
 
+export function each(set, fun) {
+  return fold(
+    set,
+    undefined,
+    (nil, member) => {
+      fun(member);
+      return nil;
+    },
+  );
+}
+
 const token = undefined;
 
 export function insert(set, member) {

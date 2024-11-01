@@ -42,8 +42,8 @@ export function from_string(pattern) {
   return compile(pattern, new Options(false, false));
 }
 
-export function check(regex, content) {
-  return do_check(regex, content);
+export function check(regex, string) {
+  return do_check(regex, string);
 }
 
 export function split(regex, string) {

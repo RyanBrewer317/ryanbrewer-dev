@@ -208,6 +208,10 @@ export function alt(text) {
   return attribute("alt", text);
 }
 
+export function content(text) {
+  return attribute("content", text);
+}
+
 export function autoplay(should_autoplay) {
   return property("autoplay", should_autoplay);
 }

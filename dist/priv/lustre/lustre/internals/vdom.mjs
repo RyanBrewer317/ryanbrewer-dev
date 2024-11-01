@@ -45,14 +45,6 @@ export class Map extends $CustomType {
   }
 }
 
-export class Fragment extends $CustomType {
-  constructor(elements, key) {
-    super();
-    this.elements = elements;
-    this.key = key;
-  }
-}
-
 export class Attribute extends $CustomType {
   constructor(x0, x1, as_property) {
     super();
@@ -275,6 +267,225 @@ function attributes_to_string_builder(attrs) {
   ];
 }
 
+function children_to_snapshot_builder(
+  loop$html,
+  loop$children,
+  loop$raw_text,
+  loop$indent
+) {
+  while (true) {
+    let html = loop$html;
+    let children = loop$children;
+    let raw_text = loop$raw_text;
+    let indent = loop$indent;
+    if (children.atLeastLength(2) &&
+    children.head instanceof Text &&
+    children.tail.head instanceof Text) {
+      let a = children.head.content;
+      let b = children.tail.head.content;
+      let rest = children.tail.tail;
+      loop$html = html;
+      loop$children = listPrepend(new Text(a + b), rest);
+      loop$raw_text = raw_text;
+      loop$indent = indent;
+    } else if (children.atLeastLength(1)) {
+      let child = children.head;
+      let rest = children.tail;
+      let _pipe = child;
+      let _pipe$1 = do_element_to_snapshot_builder(_pipe, raw_text, indent);
+      let _pipe$2 = $string_builder.append(_pipe$1, "\n");
+      let _pipe$3 = ((_capture) => {
+        return $string_builder.append_builder(html, _capture);
+      })(_pipe$2);
+      loop$html = _pipe$3;
+      loop$children = rest;
+      loop$raw_text = raw_text;
+      loop$indent = indent;
+    } else {
+      return html;
+    }
+  }
+}
+
+function do_element_to_snapshot_builder(
+  loop$element,
+  loop$raw_text,
+  loop$indent
+) {
+  while (true) {
+    let element = loop$element;
+    let raw_text = loop$raw_text;
+    let indent = loop$indent;
+    let spaces = $string.repeat("  ", indent);
+    if (element instanceof Text && element.content === "") {
+      return $string_builder.new$();
+    } else if (element instanceof Text && (raw_text)) {
+      let content = element.content;
+      return $string_builder.from_strings(toList([spaces, content]));
+    } else if (element instanceof Text) {
+      let content = element.content;
+      return $string_builder.from_strings(toList([spaces, escape(content)]));
+    } else if (element instanceof Map) {
+      let subtree = element.subtree;
+      loop$element = subtree();
+      loop$raw_text = raw_text;
+      loop$indent = indent;
+    } else if (element instanceof Element && (element.self_closing)) {
+      let namespace = element.namespace;
+      let tag = element.tag;
+      let attrs = element.attrs;
+      let self_closing = element.self_closing;
+      let html = $string_builder.from_string("<" + tag);
+      let $ = attributes_to_string_builder(
+        (() => {
+          if (namespace === "") {
+            return attrs;
+          } else {
+            return listPrepend(
+              new Attribute("xmlns", $dynamic.from(namespace), false),
+              attrs,
+            );
+          }
+        })(),
+      );
+      let attrs$1 = $[0];
+      let _pipe = html;
+      let _pipe$1 = $string_builder.prepend(_pipe, spaces);
+      let _pipe$2 = $string_builder.append_builder(_pipe$1, attrs$1);
+      return $string_builder.append(_pipe$2, "/>");
+    } else if (element instanceof Element && (element.void)) {
+      let namespace = element.namespace;
+      let tag = element.tag;
+      let attrs = element.attrs;
+      let void$ = element.void;
+      let html = $string_builder.from_string("<" + tag);
+      let $ = attributes_to_string_builder(
+        (() => {
+          if (namespace === "") {
+            return attrs;
+          } else {
+            return listPrepend(
+              new Attribute("xmlns", $dynamic.from(namespace), false),
+              attrs,
+            );
+          }
+        })(),
+      );
+      let attrs$1 = $[0];
+      let _pipe = html;
+      let _pipe$1 = $string_builder.prepend(_pipe, spaces);
+      let _pipe$2 = $string_builder.append_builder(_pipe$1, attrs$1);
+      return $string_builder.append(_pipe$2, ">");
+    } else if (element instanceof Element &&
+    element.namespace === "" &&
+    element.children.hasLength(0)) {
+      let tag = element.tag;
+      let attrs = element.attrs;
+      let html = $string_builder.from_string("<" + tag);
+      let $ = attributes_to_string_builder(attrs);
+      let attrs$1 = $[0];
+      let _pipe = html;
+      let _pipe$1 = $string_builder.prepend(_pipe, spaces);
+      let _pipe$2 = $string_builder.append_builder(_pipe$1, attrs$1);
+      let _pipe$3 = $string_builder.append(_pipe$2, ">");
+      return $string_builder.append(_pipe$3, ("</" + tag) + ">");
+    } else if (element instanceof Element &&
+    element.namespace === "" &&
+    element.tag === "style" &&
+    !element.self_closing &&
+    !element.void) {
+      let tag = element.tag;
+      let attrs = element.attrs;
+      let children = element.children;
+      let html = $string_builder.from_string("<" + tag);
+      let $ = attributes_to_string_builder(attrs);
+      let attrs$1 = $[0];
+      let _pipe = html;
+      let _pipe$1 = $string_builder.prepend(_pipe, spaces);
+      let _pipe$2 = $string_builder.append_builder(_pipe$1, attrs$1);
+      let _pipe$3 = $string_builder.append(_pipe$2, ">");
+      let _pipe$4 = children_to_snapshot_builder(
+        _pipe$3,
+        children,
+        true,
+        indent + 1,
+      );
+      let _pipe$5 = $string_builder.append(_pipe$4, spaces);
+      return $string_builder.append(_pipe$5, ("</" + tag) + ">");
+    } else if (element instanceof Element &&
+    element.namespace === "" &&
+    element.tag === "script" &&
+    !element.self_closing &&
+    !element.void) {
+      let tag = element.tag;
+      let attrs = element.attrs;
+      let children = element.children;
+      let html = $string_builder.from_string("<" + tag);
+      let $ = attributes_to_string_builder(attrs);
+      let attrs$1 = $[0];
+      let _pipe = html;
+      let _pipe$1 = $string_builder.prepend(_pipe, spaces);
+      let _pipe$2 = $string_builder.append_builder(_pipe$1, attrs$1);
+      let _pipe$3 = $string_builder.append(_pipe$2, ">");
+      let _pipe$4 = children_to_snapshot_builder(
+        _pipe$3,
+        children,
+        true,
+        indent + 1,
+      );
+      let _pipe$5 = $string_builder.append(_pipe$4, spaces);
+      return $string_builder.append(_pipe$5, ("</" + tag) + ">");
+    } else {
+      let namespace = element.namespace;
+      let tag = element.tag;
+      let attrs = element.attrs;
+      let children = element.children;
+      let html = $string_builder.from_string("<" + tag);
+      let $ = attributes_to_string_builder(
+        (() => {
+          if (namespace === "") {
+            return attrs;
+          } else {
+            return listPrepend(
+              new Attribute("xmlns", $dynamic.from(namespace), false),
+              attrs,
+            );
+          }
+        })(),
+      );
+      let attrs$1 = $[0];
+      let inner_html = $[1];
+      if (inner_html === "") {
+        let _pipe = html;
+        let _pipe$1 = $string_builder.prepend(_pipe, spaces);
+        let _pipe$2 = $string_builder.append_builder(_pipe$1, attrs$1);
+        let _pipe$3 = $string_builder.append(_pipe$2, ">\n");
+        let _pipe$4 = children_to_snapshot_builder(
+          _pipe$3,
+          children,
+          raw_text,
+          indent + 1,
+        );
+        let _pipe$5 = $string_builder.append(_pipe$4, spaces);
+        return $string_builder.append(_pipe$5, ("</" + tag) + ">");
+      } else {
+        let _pipe = html;
+        let _pipe$1 = $string_builder.append_builder(_pipe, attrs$1);
+        return $string_builder.append(
+          _pipe$1,
+          (((">" + inner_html) + "</") + tag) + ">",
+        );
+      }
+    }
+  }
+}
+
+export function element_to_snapshot(element) {
+  let _pipe = element;
+  let _pipe$1 = do_element_to_snapshot_builder(_pipe, false, 0);
+  return $string_builder.to_string(_pipe$1);
+}
+
 function children_to_string_builder(html, children, raw_text) {
   return $list.fold(
     children,
@@ -381,7 +592,7 @@ function do_element_to_string_builder(loop$element, loop$raw_text) {
       let _pipe$2 = $string_builder.append(_pipe$1, ">");
       let _pipe$3 = children_to_string_builder(_pipe$2, children, true);
       return $string_builder.append(_pipe$3, ("</" + tag) + ">");
-    } else if (element instanceof Element) {
+    } else {
       let namespace = element.namespace;
       let tag = element.tag;
       let attrs = element.attrs;
@@ -415,13 +626,6 @@ function do_element_to_string_builder(loop$element, loop$raw_text) {
           (((">" + inner_html) + "</") + tag) + ">",
         );
       }
-    } else {
-      let elements = element.elements;
-      return children_to_string_builder(
-        $string_builder.new$(),
-        elements,
-        raw_text,
-      );
     }
   }
 }
@@ -459,7 +663,7 @@ export function element_to_json(loop$element, loop$key) {
       let subtree = element.subtree;
       loop$element = subtree();
       loop$key = key;
-    } else if (element instanceof Element) {
+    } else {
       let namespace = element.namespace;
       let tag = element.tag;
       let attrs = element.attrs;
@@ -482,11 +686,6 @@ export function element_to_json(loop$element, loop$key) {
           ["self_closing", $json.bool(self_closing)],
           ["void", $json.bool(void$)],
         ]),
-      );
-    } else {
-      let elements = element.elements;
-      return $json.object(
-        toList([["elements", do_element_list_to_json(elements, key)]]),
       );
     }
   }
@@ -515,7 +714,7 @@ function do_handlers(loop$element, loop$handlers, loop$key) {
       loop$element = subtree();
       loop$handlers = handlers;
       loop$key = key;
-    } else if (element instanceof Element) {
+    } else {
       let attrs = element.attrs;
       let children = element.children;
       let handlers$1 = $list.fold(
@@ -533,9 +732,6 @@ function do_handlers(loop$element, loop$handlers, loop$key) {
         },
       );
       return do_element_list_handlers(children, handlers$1, key);
-    } else {
-      let elements = element.elements;
-      return do_element_list_handlers(elements, handlers, key);
     }
   }
 }

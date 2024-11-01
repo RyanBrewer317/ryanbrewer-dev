@@ -50,7 +50,7 @@ function getHits(q, w) {
   return hits;
 }
   </script><nav id="nav"><div id="nav-dropdown" onclick="document.getElementById(&#39;nav&#39;).classList.toggle(&#39;dropdown&#39;);document.body.classList.toggle(&#39;noscroll&#39;);">☰</div><a href="/" id="nav-home">Ryan Brewer</a><a href="/posts" id="nav-posts">Posts</a><a href="/wiki" id="nav-wiki">Wiki</a><a href="/contact" id="nav-contact">Contact</a><a href="/demos" id="nav-demos">Demos</a><a href="/feed.rss" id="nav-subscribe" onclick="window.location.href = &#39;/feed.rss&#39;"><img src="/rss-icon.png" id="rss-subscribe-icon">Subscribe</a></nav><div id="body"><input type="text" id="search-wiki" placeholder="Search..." onkeyup="searchWikisKeyUp()" title="Enter search terms"><ul id="search-wiki-menu"><li id="natural-transformation" class="wiki-thumbnail"><h3><a href="../wiki/natural-transformation">Natural Transformation</a></h3></li><li id="natural-isomorphism" class="wiki-thumbnail"><h3><a href="../wiki/natural-isomorphism">Natural Isomorphism</a></h3></li><li id="monoidal-category" class="wiki-thumbnail"><h3><a href="../wiki/monoidal-category">Monoidal Category</a></h3></li><li id="linear-logic" class="wiki-thumbnail"><h3><a href="../wiki/linear-logic">Linear Logic</a></h3></li><li id="genealogy-of-morals" class="wiki-thumbnail"><h3><a href="../wiki/genealogy-of-morals">Genealogy of Morals</a></h3></li><li id="functor" class="wiki-thumbnail"><h3><a href="../wiki/functor">Functor</a></h3></li><li id="functor-category" class="wiki-thumbnail"><h3><a href="../wiki/functor-category">Functor Category</a></h3></li><li id="first-wiki" class="wiki-thumbnail"><h3><a href="../wiki/first-wiki">My First Wiki Page</a></h3></li><li id="fame" class="wiki-thumbnail"><h3><a href="../wiki/fame">Fame</a></h3></li><li id="exponential-object" class="wiki-thumbnail"><h3><a href="../wiki/exponential-object">Exponential Object</a></h3></li><li id="category" class="wiki-thumbnail"><h3><a href="../wiki/category">Category</a></h3></li><li id="cat" class="wiki-thumbnail"><h3><a href="../wiki/cat">Cat</a></h3></li><li id="aesthetics" class="wiki-thumbnail"><h3><a href="../wiki/aesthetics">Aesthetics</a></h3></li></ul></div><div><div style="height:100pt;"></div><p id="copyright-notice" class="subtle-text">© 2024 Ryan Brewer.</p><script src="/__/firebase/8.10.1/firebase-app.js"></script><script src="/__/firebase/8.10.1/firebase-analytics.js"></script><script src="/__/firebase/init.js"></script><script>firebase.analytics();</script></div></div></div><script>
-// SPA algorithm stolen from Hayleigh Thompson's wonderful Modem library
+// SPA algorithm partially inspired by Hayleigh Thompson's wonderful Modem library
 async function go_to(url, loader, back) {
   if (!back && url.pathname === window.location.pathname) {
     if (url.hash) document.getElementById(url.hash.slice(1))?.scrollIntoView();
@@ -77,25 +77,23 @@ async function go_to(url, loader, back) {
   for (let i = 0; i < num_scripts; i++) {
     const script = scripts[i];
     const n = document.createElement('script');
-    n.setAttribute('defer', 'true');
-    if (script.innerHTML === '') n.onload = 
-      () => {
-        console.log('script',_ARCTIC_C);
-        if(++_ARCTIC_C>=num_scripts)document.dispatchEvent(new Event('DOMContentLoaded'));
+    // scripts load nondeterministically, so we figure out when they've all finished via the _ARCTIC_C barrier
+    if (script.innerHTML === '') {
+      // external scripts don't run their inline js, so they need an onload listener
+      n.onload = () => {
+        if (++_ARCTIC_C >= num_scripts)
+          document.dispatchEvent(new Event('DOMContentLoaded'));
       };
-      //(n.onload || '') + 
-      //';if(++_ARCTIC_C>=' +
-      //num_scripts +
-      //')document.dispatchEvent(new Event(\'DOMContentLoaded\'));';
-    else {
+    } else {
+      // inline scripts might not trigger onload, so they get js appended to the end instead
       const t = document.createTextNode(
         script.innerHTML +
-        ';console.log(\'script\',_ARCTIC_C);' +
-        'if(++_ARCTIC_C>=' + num_scripts +
+        ';if(++_ARCTIC_C>=' + num_scripts +
         ')document.dispatchEvent(new Event(\'DOMContentLoaded\'));'
       );
       n.appendChild(t);
     }
+    // attributes at the end because 'src' needs to load after onload is listening
     for (let j = 0; j < script.attributes.length; j++) {
       const attr = script.attributes[j];
       n.setAttribute(attr.name, attr.value);
@@ -108,7 +106,6 @@ async function go_to(url, loader, back) {
     else
       window.scrollTo(0, 0);
   });
-  // setTimeout(() => document.dispatchEvent(new Event('DOMContentLoaded')), 100); // i cri ),x
 }
 document.addEventListener('click', async function(e) {
   const a = find_a(e.target);

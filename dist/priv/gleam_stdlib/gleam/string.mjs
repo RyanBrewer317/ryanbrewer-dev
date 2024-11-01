@@ -6,7 +6,6 @@ import {
   remainderInt,
   divideInt,
 } from "../gleam.mjs";
-import * as $iterator from "../gleam/iterator.mjs";
 import * as $list from "../gleam/list.mjs";
 import * as $option from "../gleam/option.mjs";
 import { None, Some } from "../gleam/option.mjs";
@@ -17,6 +16,7 @@ import {
   lowercase as do_lowercase,
   uppercase as do_uppercase,
   less_than,
+  string_slice as do_slice,
   crop_string as crop,
   contains_string as contains,
   starts_with as do_starts_with,
@@ -52,6 +52,17 @@ export function length(string) {
   return do_length(string);
 }
 
+function do_reverse(string) {
+  let _pipe = string;
+  let _pipe$1 = $string_builder.from_string(_pipe);
+  let _pipe$2 = $string_builder.reverse(_pipe$1);
+  return $string_builder.to_string(_pipe$2);
+}
+
+export function reverse(string) {
+  return do_reverse(string);
+}
+
 export function replace(string, pattern, substitute) {
   let _pipe = string;
   let _pipe$1 = $string_builder.from_string(_pipe);
@@ -79,93 +90,6 @@ export function compare(a, b) {
       return new $order.Gt();
     }
   }
-}
-
-export function starts_with(string, prefix) {
-  return do_starts_with(string, prefix);
-}
-
-export function ends_with(string, suffix) {
-  return do_ends_with(string, suffix);
-}
-
-export function split_once(x, substring) {
-  return do_split_once(x, substring);
-}
-
-export function append(first, second) {
-  let _pipe = first;
-  let _pipe$1 = $string_builder.from_string(_pipe);
-  let _pipe$2 = $string_builder.append(_pipe$1, second);
-  return $string_builder.to_string(_pipe$2);
-}
-
-export function concat(strings) {
-  let _pipe = strings;
-  let _pipe$1 = $string_builder.from_strings(_pipe);
-  return $string_builder.to_string(_pipe$1);
-}
-
-export function repeat(string, times) {
-  let _pipe = $iterator.repeat(string);
-  let _pipe$1 = $iterator.take(_pipe, times);
-  let _pipe$2 = $iterator.to_list(_pipe$1);
-  return concat(_pipe$2);
-}
-
-export function join(strings, separator) {
-  return do_join(strings, separator);
-}
-
-export function trim(string) {
-  return do_trim(string);
-}
-
-export function trim_left(string) {
-  return do_trim_left(string);
-}
-
-export function trim_right(string) {
-  return do_trim_right(string);
-}
-
-export function pop_grapheme(string) {
-  return do_pop_grapheme(string);
-}
-
-function do_to_graphemes(loop$string, loop$acc) {
-  while (true) {
-    let string = loop$string;
-    let acc = loop$acc;
-    let $ = pop_grapheme(string);
-    if ($.isOk()) {
-      let grapheme = $[0][0];
-      let rest = $[0][1];
-      loop$string = rest;
-      loop$acc = listPrepend(grapheme, acc);
-    } else {
-      return acc;
-    }
-  }
-}
-
-function do_reverse(string) {
-  let _pipe = string;
-  let _pipe$1 = to_graphemes(_pipe);
-  let _pipe$2 = $list.reverse(_pipe$1);
-  return concat(_pipe$2);
-}
-
-export function reverse(string) {
-  return do_reverse(string);
-}
-
-function do_slice(string, idx, len) {
-  let _pipe = string;
-  let _pipe$1 = to_graphemes(_pipe);
-  let _pipe$2 = $list.drop(_pipe$1, idx);
-  let _pipe$3 = $list.take(_pipe$2, len);
-  return concat(_pipe$3);
 }
 
 export function slice(string, idx, len) {
@@ -206,6 +130,116 @@ export function drop_right(string, num_graphemes) {
   }
 }
 
+export function starts_with(string, prefix) {
+  return do_starts_with(string, prefix);
+}
+
+export function ends_with(string, suffix) {
+  return do_ends_with(string, suffix);
+}
+
+export function split_once(string, substring) {
+  return do_split_once(string, substring);
+}
+
+export function append(first, second) {
+  let _pipe = first;
+  let _pipe$1 = $string_builder.from_string(_pipe);
+  let _pipe$2 = $string_builder.append(_pipe$1, second);
+  return $string_builder.to_string(_pipe$2);
+}
+
+export function concat(strings) {
+  let _pipe = strings;
+  let _pipe$1 = $string_builder.from_strings(_pipe);
+  return $string_builder.to_string(_pipe$1);
+}
+
+function do_repeat(loop$string, loop$times, loop$acc) {
+  while (true) {
+    let string = loop$string;
+    let times = loop$times;
+    let acc = loop$acc;
+    let $ = times <= 0;
+    if ($) {
+      return acc;
+    } else {
+      loop$string = string;
+      loop$times = times - 1;
+      loop$acc = acc + string;
+    }
+  }
+}
+
+export function repeat(string, times) {
+  return do_repeat(string, times, "");
+}
+
+export function join(strings, separator) {
+  return do_join(strings, separator);
+}
+
+function padding(size, pad_string) {
+  let pad_string_length = length(pad_string);
+  let num_pads = divideInt(size, pad_string_length);
+  let extra = remainderInt(size, pad_string_length);
+  return repeat(pad_string, num_pads) + slice(pad_string, 0, extra);
+}
+
+export function pad_left(string, desired_length, pad_string) {
+  let current_length = length(string);
+  let to_pad_length = desired_length - current_length;
+  let $ = to_pad_length <= 0;
+  if ($) {
+    return string;
+  } else {
+    return padding(to_pad_length, pad_string) + string;
+  }
+}
+
+export function pad_right(string, desired_length, pad_string) {
+  let current_length = length(string);
+  let to_pad_length = desired_length - current_length;
+  let $ = to_pad_length <= 0;
+  if ($) {
+    return string;
+  } else {
+    return string + padding(to_pad_length, pad_string);
+  }
+}
+
+export function trim(string) {
+  return do_trim(string);
+}
+
+export function trim_left(string) {
+  return do_trim_left(string);
+}
+
+export function trim_right(string) {
+  return do_trim_right(string);
+}
+
+export function pop_grapheme(string) {
+  return do_pop_grapheme(string);
+}
+
+function do_to_graphemes(loop$string, loop$acc) {
+  while (true) {
+    let string = loop$string;
+    let acc = loop$acc;
+    let $ = pop_grapheme(string);
+    if ($.isOk()) {
+      let grapheme = $[0][0];
+      let rest = $[0][1];
+      loop$string = rest;
+      loop$acc = listPrepend(grapheme, acc);
+    } else {
+      return acc;
+    }
+  }
+}
+
 export function split(x, substring) {
   if (substring === "") {
     return to_graphemes(x);
@@ -215,36 +249,6 @@ export function split(x, substring) {
     let _pipe$2 = $string_builder.split(_pipe$1, substring);
     return $list.map(_pipe$2, $string_builder.to_string);
   }
-}
-
-function padding(size, pad_string) {
-  let pad_length = length(pad_string);
-  let num_pads = divideInt(size, pad_length);
-  let extra = remainderInt(size, pad_length);
-  let _pipe = $iterator.repeat(pad_string);
-  let _pipe$1 = $iterator.take(_pipe, num_pads);
-  return $iterator.append(
-    _pipe$1,
-    $iterator.single(slice(pad_string, 0, extra)),
-  );
-}
-
-export function pad_left(string, desired_length, pad_string) {
-  let current_length = length(string);
-  let to_pad_length = desired_length - current_length;
-  let _pipe = padding(to_pad_length, pad_string);
-  let _pipe$1 = $iterator.append(_pipe, $iterator.single(string));
-  let _pipe$2 = $iterator.to_list(_pipe$1);
-  return concat(_pipe$2);
-}
-
-export function pad_right(string, desired_length, pad_string) {
-  let current_length = length(string);
-  let to_pad_length = desired_length - current_length;
-  let _pipe = $iterator.single(string);
-  let _pipe$1 = $iterator.append(_pipe, padding(to_pad_length, pad_string));
-  let _pipe$2 = $iterator.to_list(_pipe$1);
-  return concat(_pipe$2);
 }
 
 function do_to_utf_codepoints(string) {
@@ -278,16 +282,16 @@ export function utf_codepoint_to_int(cp) {
   return do_utf_codepoint_to_int(cp);
 }
 
-export function to_option(s) {
-  if (s === "") {
+export function to_option(string) {
+  if (string === "") {
     return new None();
   } else {
-    return new Some(s);
+    return new Some(string);
   }
 }
 
-export function first(s) {
-  let $ = pop_grapheme(s);
+export function first(string) {
+  let $ = pop_grapheme(string);
   if ($.isOk()) {
     let first$1 = $[0][0];
     return new Ok(first$1);
@@ -297,8 +301,8 @@ export function first(s) {
   }
 }
 
-export function last(s) {
-  let $ = pop_grapheme(s);
+export function last(string) {
+  let $ = pop_grapheme(string);
   if ($.isOk() && $[0][1] === "") {
     let first$1 = $[0][0];
     return new Ok(first$1);
@@ -311,8 +315,8 @@ export function last(s) {
   }
 }
 
-export function capitalise(s) {
-  let $ = pop_grapheme(s);
+export function capitalise(string) {
+  let $ = pop_grapheme(string);
   if ($.isOk()) {
     let first$1 = $[0][0];
     let rest = $[0][1];

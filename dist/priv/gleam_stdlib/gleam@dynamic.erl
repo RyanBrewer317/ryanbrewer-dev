@@ -10,49 +10,60 @@
 
 -type unknown_tuple() :: any().
 
+-file("/Users/louis/src/gleam/stdlib/src/gleam/dynamic.gleam", 31).
 -spec from(any()) -> dynamic_().
 from(A) ->
     gleam_stdlib:identity(A).
 
+-file("/Users/louis/src/gleam/stdlib/src/gleam/dynamic.gleam", 39).
 -spec dynamic(dynamic_()) -> {ok, dynamic_()} | {error, list(decode_error())}.
 dynamic(Value) ->
     {ok, Value}.
 
+-file("/Users/louis/src/gleam/stdlib/src/gleam/dynamic.gleam", 60).
 -spec bit_array(dynamic_()) -> {ok, bitstring()} | {error, list(decode_error())}.
 bit_array(Data) ->
     gleam_stdlib:decode_bit_array(Data).
 
+-file("/Users/louis/src/gleam/stdlib/src/gleam/dynamic.gleam", 107).
 -spec put_expected(decode_error(), binary()) -> decode_error().
 put_expected(Error, Expected) ->
     erlang:setelement(2, Error, Expected).
 
+-file("/Users/louis/src/gleam/stdlib/src/gleam/dynamic.gleam", 118).
 -spec classify(dynamic_()) -> binary().
 classify(Data) ->
     gleam_stdlib:classify_dynamic(Data).
 
+-file("/Users/louis/src/gleam/stdlib/src/gleam/dynamic.gleam", 141).
 -spec int(dynamic_()) -> {ok, integer()} | {error, list(decode_error())}.
 int(Data) ->
     gleam_stdlib:decode_int(Data).
 
+-file("/Users/louis/src/gleam/stdlib/src/gleam/dynamic.gleam", 164).
 -spec float(dynamic_()) -> {ok, float()} | {error, list(decode_error())}.
 float(Data) ->
     gleam_stdlib:decode_float(Data).
 
+-file("/Users/louis/src/gleam/stdlib/src/gleam/dynamic.gleam", 187).
 -spec bool(dynamic_()) -> {ok, boolean()} | {error, list(decode_error())}.
 bool(Data) ->
     gleam_stdlib:decode_bool(Data).
 
+-file("/Users/louis/src/gleam/stdlib/src/gleam/dynamic.gleam", 213).
 -spec shallow_list(dynamic_()) -> {ok, list(dynamic_())} |
     {error, list(decode_error())}.
 shallow_list(Value) ->
     gleam_stdlib:decode_list(Value).
 
--spec optional(fun((dynamic_()) -> {ok, DOG} | {error, list(decode_error())})) -> fun((dynamic_()) -> {ok,
-        gleam@option:option(DOG)} |
+-file("/Users/louis/src/gleam/stdlib/src/gleam/dynamic.gleam", 356).
+-spec optional(fun((dynamic_()) -> {ok, CJC} | {error, list(decode_error())})) -> fun((dynamic_()) -> {ok,
+        gleam@option:option(CJC)} |
     {error, list(decode_error())}).
 optional(Decode) ->
     fun(Value) -> gleam_stdlib:decode_option(Value, Decode) end.
 
+-file("/Users/louis/src/gleam/stdlib/src/gleam/dynamic.gleam", 491).
 -spec at_least_decode_tuple_error(integer(), dynamic_()) -> {ok, any()} |
     {error, list(decode_error())}.
 at_least_decode_tuple_error(Size, Data) ->
@@ -74,8 +85,9 @@ at_least_decode_tuple_error(Size, Data) ->
     end,
     {error, [Error]}.
 
--spec any(list(fun((dynamic_()) -> {ok, DSG} | {error, list(decode_error())}))) -> fun((dynamic_()) -> {ok,
-        DSG} |
+-file("/Users/louis/src/gleam/stdlib/src/gleam/dynamic.gleam", 1021).
+-spec any(list(fun((dynamic_()) -> {ok, CNC} | {error, list(decode_error())}))) -> fun((dynamic_()) -> {ok,
+        CNC} |
     {error, list(decode_error())}).
 any(Decoders) ->
     fun(Data) -> case Decoders of
@@ -93,6 +105,7 @@ any(Decoders) ->
                 end
         end end.
 
+-file("/Users/louis/src/gleam/stdlib/src/gleam/dynamic.gleam", 1517).
 -spec all_errors({ok, any()} | {error, list(decode_error())}) -> list(decode_error()).
 all_errors(Result) ->
     case Result of
@@ -103,10 +116,11 @@ all_errors(Result) ->
             Errors
     end.
 
+-file("/Users/louis/src/gleam/stdlib/src/gleam/dynamic.gleam", 1054).
 -spec decode1(
-    fun((DSK) -> DSL),
-    fun((dynamic_()) -> {ok, DSK} | {error, list(decode_error())})
-) -> fun((dynamic_()) -> {ok, DSL} | {error, list(decode_error())}).
+    fun((CNG) -> CNH),
+    fun((dynamic_()) -> {ok, CNG} | {error, list(decode_error())})
+) -> fun((dynamic_()) -> {ok, CNH} | {error, list(decode_error())}).
 decode1(Constructor, T1) ->
     fun(Value) -> case T1(Value) of
             {ok, A} ->
@@ -116,6 +130,7 @@ decode1(Constructor, T1) ->
                 {error, all_errors(A@1)}
         end end.
 
+-file("/Users/louis/src/gleam/stdlib/src/gleam/dynamic.gleam", 563).
 -spec push_path(decode_error(), any()) -> decode_error().
 push_path(Error, Name) ->
     Name@1 = gleam_stdlib:identity(Name),
@@ -134,10 +149,11 @@ push_path(Error, Name) ->
     end,
     erlang:setelement(4, Error, [Name@3 | erlang:element(4, Error)]).
 
+-file("/Users/louis/src/gleam/stdlib/src/gleam/dynamic.gleam", 248).
 -spec result(
-    fun((dynamic_()) -> {ok, DNU} | {error, list(decode_error())}),
-    fun((dynamic_()) -> {ok, DNW} | {error, list(decode_error())})
-) -> fun((dynamic_()) -> {ok, {ok, DNU} | {error, DNW}} |
+    fun((dynamic_()) -> {ok, CIQ} | {error, list(decode_error())}),
+    fun((dynamic_()) -> {ok, CIS} | {error, list(decode_error())})
+) -> fun((dynamic_()) -> {ok, {ok, CIQ} | {error, CIS}} |
     {error, list(decode_error())}).
 result(Decode_ok, Decode_error) ->
     fun(Value) ->
@@ -175,8 +191,9 @@ result(Decode_ok, Decode_error) ->
         )
     end.
 
--spec list(fun((dynamic_()) -> {ok, DOB} | {error, list(decode_error())})) -> fun((dynamic_()) -> {ok,
-        list(DOB)} |
+-file("/Users/louis/src/gleam/stdlib/src/gleam/dynamic.gleam", 301).
+-spec list(fun((dynamic_()) -> {ok, CIX} | {error, list(decode_error())})) -> fun((dynamic_()) -> {ok,
+        list(CIX)} |
     {error, list(decode_error())}).
 list(Decoder_type) ->
     fun(Dynamic) ->
@@ -188,16 +205,18 @@ list(Decoder_type) ->
                 ) end)
     end.
 
+-file("/Users/louis/src/gleam/stdlib/src/gleam/dynamic.gleam", 87).
 -spec map_errors(
-    {ok, DMP} | {error, list(decode_error())},
+    {ok, CHL} | {error, list(decode_error())},
     fun((decode_error()) -> decode_error())
-) -> {ok, DMP} | {error, list(decode_error())}.
+) -> {ok, CHL} | {error, list(decode_error())}.
 map_errors(Result, F) ->
     gleam@result:map_error(
         Result,
         fun(_capture) -> gleam@list:map(_capture, F) end
     ).
 
+-file("/Users/louis/src/gleam/stdlib/src/gleam/dynamic.gleam", 95).
 -spec decode_string(dynamic_()) -> {ok, binary()} |
     {error, list(decode_error())}.
 decode_string(Data) ->
@@ -221,14 +240,16 @@ decode_string(Data) ->
             end end
     ).
 
+-file("/Users/louis/src/gleam/stdlib/src/gleam/dynamic.gleam", 83).
 -spec string(dynamic_()) -> {ok, binary()} | {error, list(decode_error())}.
 string(Data) ->
     decode_string(Data).
 
+-file("/Users/louis/src/gleam/stdlib/src/gleam/dynamic.gleam", 385).
 -spec field(
     any(),
-    fun((dynamic_()) -> {ok, DOQ} | {error, list(decode_error())})
-) -> fun((dynamic_()) -> {ok, DOQ} | {error, list(decode_error())}).
+    fun((dynamic_()) -> {ok, CJM} | {error, list(decode_error())})
+) -> fun((dynamic_()) -> {ok, CJM} | {error, list(decode_error())}).
 field(Name, Inner_type) ->
     fun(Value) ->
         Missing_field_error = {decode_error,
@@ -247,10 +268,11 @@ field(Name, Inner_type) ->
         )
     end.
 
+-file("/Users/louis/src/gleam/stdlib/src/gleam/dynamic.gleam", 427).
 -spec optional_field(
     any(),
-    fun((dynamic_()) -> {ok, DOU} | {error, list(decode_error())})
-) -> fun((dynamic_()) -> {ok, gleam@option:option(DOU)} |
+    fun((dynamic_()) -> {ok, CJQ} | {error, list(decode_error())})
+) -> fun((dynamic_()) -> {ok, gleam@option:option(CJQ)} |
     {error, list(decode_error())}).
 optional_field(Name, Inner_type) ->
     fun(Value) ->
@@ -274,10 +296,11 @@ optional_field(Name, Inner_type) ->
         )
     end.
 
+-file("/Users/louis/src/gleam/stdlib/src/gleam/dynamic.gleam", 470).
 -spec element(
     integer(),
-    fun((dynamic_()) -> {ok, DPC} | {error, list(decode_error())})
-) -> fun((dynamic_()) -> {ok, DPC} | {error, list(decode_error())}).
+    fun((dynamic_()) -> {ok, CJY} | {error, list(decode_error())})
+) -> fun((dynamic_()) -> {ok, CJY} | {error, list(decode_error())}).
 element(Index, Inner_type) ->
     fun(Data) ->
         gleam@result:'try'(
@@ -314,6 +337,7 @@ element(Index, Inner_type) ->
         )
     end.
 
+-file("/Users/louis/src/gleam/stdlib/src/gleam/dynamic.gleam", 553).
 -spec tuple_errors({ok, any()} | {error, list(decode_error())}, binary()) -> list(decode_error()).
 tuple_errors(Result, Name) ->
     case Result of
@@ -327,10 +351,11 @@ tuple_errors(Result, Name) ->
             )
     end.
 
+-file("/Users/louis/src/gleam/stdlib/src/gleam/dynamic.gleam", 629).
 -spec tuple2(
-    fun((dynamic_()) -> {ok, DQC} | {error, list(decode_error())}),
-    fun((dynamic_()) -> {ok, DQE} | {error, list(decode_error())})
-) -> fun((dynamic_()) -> {ok, {DQC, DQE}} | {error, list(decode_error())}).
+    fun((dynamic_()) -> {ok, CKY} | {error, list(decode_error())}),
+    fun((dynamic_()) -> {ok, CLA} | {error, list(decode_error())})
+) -> fun((dynamic_()) -> {ok, {CKY, CLA}} | {error, list(decode_error())}).
 tuple2(Decode1, Decode2) ->
     fun(Value) ->
         gleam@result:'try'(
@@ -353,11 +378,12 @@ tuple2(Decode1, Decode2) ->
         )
     end.
 
+-file("/Users/louis/src/gleam/stdlib/src/gleam/dynamic.gleam", 698).
 -spec tuple3(
-    fun((dynamic_()) -> {ok, DQH} | {error, list(decode_error())}),
-    fun((dynamic_()) -> {ok, DQJ} | {error, list(decode_error())}),
-    fun((dynamic_()) -> {ok, DQL} | {error, list(decode_error())})
-) -> fun((dynamic_()) -> {ok, {DQH, DQJ, DQL}} | {error, list(decode_error())}).
+    fun((dynamic_()) -> {ok, CLD} | {error, list(decode_error())}),
+    fun((dynamic_()) -> {ok, CLF} | {error, list(decode_error())}),
+    fun((dynamic_()) -> {ok, CLH} | {error, list(decode_error())})
+) -> fun((dynamic_()) -> {ok, {CLD, CLF, CLH}} | {error, list(decode_error())}).
 tuple3(Decode1, Decode2, Decode3) ->
     fun(Value) ->
         gleam@result:'try'(
@@ -384,12 +410,13 @@ tuple3(Decode1, Decode2, Decode3) ->
         )
     end.
 
+-file("/Users/louis/src/gleam/stdlib/src/gleam/dynamic.gleam", 769).
 -spec tuple4(
-    fun((dynamic_()) -> {ok, DQO} | {error, list(decode_error())}),
-    fun((dynamic_()) -> {ok, DQQ} | {error, list(decode_error())}),
-    fun((dynamic_()) -> {ok, DQS} | {error, list(decode_error())}),
-    fun((dynamic_()) -> {ok, DQU} | {error, list(decode_error())})
-) -> fun((dynamic_()) -> {ok, {DQO, DQQ, DQS, DQU}} |
+    fun((dynamic_()) -> {ok, CLK} | {error, list(decode_error())}),
+    fun((dynamic_()) -> {ok, CLM} | {error, list(decode_error())}),
+    fun((dynamic_()) -> {ok, CLO} | {error, list(decode_error())}),
+    fun((dynamic_()) -> {ok, CLQ} | {error, list(decode_error())})
+) -> fun((dynamic_()) -> {ok, {CLK, CLM, CLO, CLQ}} |
     {error, list(decode_error())}).
 tuple4(Decode1, Decode2, Decode3, Decode4) ->
     fun(Value) ->
@@ -421,13 +448,14 @@ tuple4(Decode1, Decode2, Decode3, Decode4) ->
         )
     end.
 
+-file("/Users/louis/src/gleam/stdlib/src/gleam/dynamic.gleam", 842).
 -spec tuple5(
-    fun((dynamic_()) -> {ok, DQX} | {error, list(decode_error())}),
-    fun((dynamic_()) -> {ok, DQZ} | {error, list(decode_error())}),
-    fun((dynamic_()) -> {ok, DRB} | {error, list(decode_error())}),
-    fun((dynamic_()) -> {ok, DRD} | {error, list(decode_error())}),
-    fun((dynamic_()) -> {ok, DRF} | {error, list(decode_error())})
-) -> fun((dynamic_()) -> {ok, {DQX, DQZ, DRB, DRD, DRF}} |
+    fun((dynamic_()) -> {ok, CLT} | {error, list(decode_error())}),
+    fun((dynamic_()) -> {ok, CLV} | {error, list(decode_error())}),
+    fun((dynamic_()) -> {ok, CLX} | {error, list(decode_error())}),
+    fun((dynamic_()) -> {ok, CLZ} | {error, list(decode_error())}),
+    fun((dynamic_()) -> {ok, CMB} | {error, list(decode_error())})
+) -> fun((dynamic_()) -> {ok, {CLT, CLV, CLX, CLZ, CMB}} |
     {error, list(decode_error())}).
 tuple5(Decode1, Decode2, Decode3, Decode4, Decode5) ->
     fun(Value) ->
@@ -467,14 +495,15 @@ tuple5(Decode1, Decode2, Decode3, Decode4, Decode5) ->
         )
     end.
 
+-file("/Users/louis/src/gleam/stdlib/src/gleam/dynamic.gleam", 917).
 -spec tuple6(
-    fun((dynamic_()) -> {ok, DRI} | {error, list(decode_error())}),
-    fun((dynamic_()) -> {ok, DRK} | {error, list(decode_error())}),
-    fun((dynamic_()) -> {ok, DRM} | {error, list(decode_error())}),
-    fun((dynamic_()) -> {ok, DRO} | {error, list(decode_error())}),
-    fun((dynamic_()) -> {ok, DRQ} | {error, list(decode_error())}),
-    fun((dynamic_()) -> {ok, DRS} | {error, list(decode_error())})
-) -> fun((dynamic_()) -> {ok, {DRI, DRK, DRM, DRO, DRQ, DRS}} |
+    fun((dynamic_()) -> {ok, CME} | {error, list(decode_error())}),
+    fun((dynamic_()) -> {ok, CMG} | {error, list(decode_error())}),
+    fun((dynamic_()) -> {ok, CMI} | {error, list(decode_error())}),
+    fun((dynamic_()) -> {ok, CMK} | {error, list(decode_error())}),
+    fun((dynamic_()) -> {ok, CMM} | {error, list(decode_error())}),
+    fun((dynamic_()) -> {ok, CMO} | {error, list(decode_error())})
+) -> fun((dynamic_()) -> {ok, {CME, CMG, CMI, CMK, CMM, CMO}} |
     {error, list(decode_error())}).
 tuple6(Decode1, Decode2, Decode3, Decode4, Decode5, Decode6) ->
     fun(Value) ->
@@ -524,10 +553,11 @@ tuple6(Decode1, Decode2, Decode3, Decode4, Decode5, Decode6) ->
         )
     end.
 
+-file("/Users/louis/src/gleam/stdlib/src/gleam/dynamic.gleam", 968).
 -spec dict(
-    fun((dynamic_()) -> {ok, DRV} | {error, list(decode_error())}),
-    fun((dynamic_()) -> {ok, DRX} | {error, list(decode_error())})
-) -> fun((dynamic_()) -> {ok, gleam@dict:dict(DRV, DRX)} |
+    fun((dynamic_()) -> {ok, CMR} | {error, list(decode_error())}),
+    fun((dynamic_()) -> {ok, CMT} | {error, list(decode_error())})
+) -> fun((dynamic_()) -> {ok, gleam@dict:dict(CMR, CMT)} |
     {error, list(decode_error())}).
 dict(Key_type, Value_type) ->
     fun(Value) ->
@@ -582,26 +612,28 @@ dict(Key_type, Value_type) ->
         )
     end.
 
+-file("/Users/louis/src/gleam/stdlib/src/gleam/dynamic.gleam", 1082).
 -spec decode2(
-    fun((DSO, DSP) -> DSQ),
-    fun((dynamic_()) -> {ok, DSO} | {error, list(decode_error())}),
-    fun((dynamic_()) -> {ok, DSP} | {error, list(decode_error())})
-) -> fun((dynamic_()) -> {ok, DSQ} | {error, list(decode_error())}).
+    fun((CNK, CNL) -> CNM),
+    fun((dynamic_()) -> {ok, CNK} | {error, list(decode_error())}),
+    fun((dynamic_()) -> {ok, CNL} | {error, list(decode_error())})
+) -> fun((dynamic_()) -> {ok, CNM} | {error, list(decode_error())}).
 decode2(Constructor, T1, T2) ->
     fun(Value) -> case {T1(Value), T2(Value)} of
             {{ok, A}, {ok, B}} ->
                 {ok, Constructor(A, B)};
 
             {A@1, B@1} ->
-                {error, gleam@list:concat([all_errors(A@1), all_errors(B@1)])}
+                {error, gleam@list:flatten([all_errors(A@1), all_errors(B@1)])}
         end end.
 
+-file("/Users/louis/src/gleam/stdlib/src/gleam/dynamic.gleam", 1114).
 -spec decode3(
-    fun((DSU, DSV, DSW) -> DSX),
-    fun((dynamic_()) -> {ok, DSU} | {error, list(decode_error())}),
-    fun((dynamic_()) -> {ok, DSV} | {error, list(decode_error())}),
-    fun((dynamic_()) -> {ok, DSW} | {error, list(decode_error())})
-) -> fun((dynamic_()) -> {ok, DSX} | {error, list(decode_error())}).
+    fun((CNQ, CNR, CNS) -> CNT),
+    fun((dynamic_()) -> {ok, CNQ} | {error, list(decode_error())}),
+    fun((dynamic_()) -> {ok, CNR} | {error, list(decode_error())}),
+    fun((dynamic_()) -> {ok, CNS} | {error, list(decode_error())})
+) -> fun((dynamic_()) -> {ok, CNT} | {error, list(decode_error())}).
 decode3(Constructor, T1, T2, T3) ->
     fun(Value) -> case {T1(Value), T2(Value), T3(Value)} of
             {{ok, A}, {ok, B}, {ok, C}} ->
@@ -609,18 +641,19 @@ decode3(Constructor, T1, T2, T3) ->
 
             {A@1, B@1, C@1} ->
                 {error,
-                    gleam@list:concat(
+                    gleam@list:flatten(
                         [all_errors(A@1), all_errors(B@1), all_errors(C@1)]
                     )}
         end end.
 
+-file("/Users/louis/src/gleam/stdlib/src/gleam/dynamic.gleam", 1160).
 -spec decode4(
-    fun((DTC, DTD, DTE, DTF) -> DTG),
-    fun((dynamic_()) -> {ok, DTC} | {error, list(decode_error())}),
-    fun((dynamic_()) -> {ok, DTD} | {error, list(decode_error())}),
-    fun((dynamic_()) -> {ok, DTE} | {error, list(decode_error())}),
-    fun((dynamic_()) -> {ok, DTF} | {error, list(decode_error())})
-) -> fun((dynamic_()) -> {ok, DTG} | {error, list(decode_error())}).
+    fun((CNY, CNZ, COA, COB) -> COC),
+    fun((dynamic_()) -> {ok, CNY} | {error, list(decode_error())}),
+    fun((dynamic_()) -> {ok, CNZ} | {error, list(decode_error())}),
+    fun((dynamic_()) -> {ok, COA} | {error, list(decode_error())}),
+    fun((dynamic_()) -> {ok, COB} | {error, list(decode_error())})
+) -> fun((dynamic_()) -> {ok, COC} | {error, list(decode_error())}).
 decode4(Constructor, T1, T2, T3, T4) ->
     fun(X) -> case {T1(X), T2(X), T3(X), T4(X)} of
             {{ok, A}, {ok, B}, {ok, C}, {ok, D}} ->
@@ -628,7 +661,7 @@ decode4(Constructor, T1, T2, T3, T4) ->
 
             {A@1, B@1, C@1, D@1} ->
                 {error,
-                    gleam@list:concat(
+                    gleam@list:flatten(
                         [all_errors(A@1),
                             all_errors(B@1),
                             all_errors(C@1),
@@ -636,14 +669,15 @@ decode4(Constructor, T1, T2, T3, T4) ->
                     )}
         end end.
 
+-file("/Users/louis/src/gleam/stdlib/src/gleam/dynamic.gleam", 1216).
 -spec decode5(
-    fun((DTM, DTN, DTO, DTP, DTQ) -> DTR),
-    fun((dynamic_()) -> {ok, DTM} | {error, list(decode_error())}),
-    fun((dynamic_()) -> {ok, DTN} | {error, list(decode_error())}),
-    fun((dynamic_()) -> {ok, DTO} | {error, list(decode_error())}),
-    fun((dynamic_()) -> {ok, DTP} | {error, list(decode_error())}),
-    fun((dynamic_()) -> {ok, DTQ} | {error, list(decode_error())})
-) -> fun((dynamic_()) -> {ok, DTR} | {error, list(decode_error())}).
+    fun((COI, COJ, COK, COL, COM) -> CON),
+    fun((dynamic_()) -> {ok, COI} | {error, list(decode_error())}),
+    fun((dynamic_()) -> {ok, COJ} | {error, list(decode_error())}),
+    fun((dynamic_()) -> {ok, COK} | {error, list(decode_error())}),
+    fun((dynamic_()) -> {ok, COL} | {error, list(decode_error())}),
+    fun((dynamic_()) -> {ok, COM} | {error, list(decode_error())})
+) -> fun((dynamic_()) -> {ok, CON} | {error, list(decode_error())}).
 decode5(Constructor, T1, T2, T3, T4, T5) ->
     fun(X) -> case {T1(X), T2(X), T3(X), T4(X), T5(X)} of
             {{ok, A}, {ok, B}, {ok, C}, {ok, D}, {ok, E}} ->
@@ -651,7 +685,7 @@ decode5(Constructor, T1, T2, T3, T4, T5) ->
 
             {A@1, B@1, C@1, D@1, E@1} ->
                 {error,
-                    gleam@list:concat(
+                    gleam@list:flatten(
                         [all_errors(A@1),
                             all_errors(B@1),
                             all_errors(C@1),
@@ -660,15 +694,16 @@ decode5(Constructor, T1, T2, T3, T4, T5) ->
                     )}
         end end.
 
+-file("/Users/louis/src/gleam/stdlib/src/gleam/dynamic.gleam", 1276).
 -spec decode6(
-    fun((DTY, DTZ, DUA, DUB, DUC, DUD) -> DUE),
-    fun((dynamic_()) -> {ok, DTY} | {error, list(decode_error())}),
-    fun((dynamic_()) -> {ok, DTZ} | {error, list(decode_error())}),
-    fun((dynamic_()) -> {ok, DUA} | {error, list(decode_error())}),
-    fun((dynamic_()) -> {ok, DUB} | {error, list(decode_error())}),
-    fun((dynamic_()) -> {ok, DUC} | {error, list(decode_error())}),
-    fun((dynamic_()) -> {ok, DUD} | {error, list(decode_error())})
-) -> fun((dynamic_()) -> {ok, DUE} | {error, list(decode_error())}).
+    fun((COU, COV, COW, COX, COY, COZ) -> CPA),
+    fun((dynamic_()) -> {ok, COU} | {error, list(decode_error())}),
+    fun((dynamic_()) -> {ok, COV} | {error, list(decode_error())}),
+    fun((dynamic_()) -> {ok, COW} | {error, list(decode_error())}),
+    fun((dynamic_()) -> {ok, COX} | {error, list(decode_error())}),
+    fun((dynamic_()) -> {ok, COY} | {error, list(decode_error())}),
+    fun((dynamic_()) -> {ok, COZ} | {error, list(decode_error())})
+) -> fun((dynamic_()) -> {ok, CPA} | {error, list(decode_error())}).
 decode6(Constructor, T1, T2, T3, T4, T5, T6) ->
     fun(X) -> case {T1(X), T2(X), T3(X), T4(X), T5(X), T6(X)} of
             {{ok, A}, {ok, B}, {ok, C}, {ok, D}, {ok, E}, {ok, F}} ->
@@ -676,7 +711,7 @@ decode6(Constructor, T1, T2, T3, T4, T5, T6) ->
 
             {A@1, B@1, C@1, D@1, E@1, F@1} ->
                 {error,
-                    gleam@list:concat(
+                    gleam@list:flatten(
                         [all_errors(A@1),
                             all_errors(B@1),
                             all_errors(C@1),
@@ -686,16 +721,17 @@ decode6(Constructor, T1, T2, T3, T4, T5, T6) ->
                     )}
         end end.
 
+-file("/Users/louis/src/gleam/stdlib/src/gleam/dynamic.gleam", 1341).
 -spec decode7(
-    fun((DUM, DUN, DUO, DUP, DUQ, DUR, DUS) -> DUT),
-    fun((dynamic_()) -> {ok, DUM} | {error, list(decode_error())}),
-    fun((dynamic_()) -> {ok, DUN} | {error, list(decode_error())}),
-    fun((dynamic_()) -> {ok, DUO} | {error, list(decode_error())}),
-    fun((dynamic_()) -> {ok, DUP} | {error, list(decode_error())}),
-    fun((dynamic_()) -> {ok, DUQ} | {error, list(decode_error())}),
-    fun((dynamic_()) -> {ok, DUR} | {error, list(decode_error())}),
-    fun((dynamic_()) -> {ok, DUS} | {error, list(decode_error())})
-) -> fun((dynamic_()) -> {ok, DUT} | {error, list(decode_error())}).
+    fun((CPI, CPJ, CPK, CPL, CPM, CPN, CPO) -> CPP),
+    fun((dynamic_()) -> {ok, CPI} | {error, list(decode_error())}),
+    fun((dynamic_()) -> {ok, CPJ} | {error, list(decode_error())}),
+    fun((dynamic_()) -> {ok, CPK} | {error, list(decode_error())}),
+    fun((dynamic_()) -> {ok, CPL} | {error, list(decode_error())}),
+    fun((dynamic_()) -> {ok, CPM} | {error, list(decode_error())}),
+    fun((dynamic_()) -> {ok, CPN} | {error, list(decode_error())}),
+    fun((dynamic_()) -> {ok, CPO} | {error, list(decode_error())})
+) -> fun((dynamic_()) -> {ok, CPP} | {error, list(decode_error())}).
 decode7(Constructor, T1, T2, T3, T4, T5, T6, T7) ->
     fun(X) -> case {T1(X), T2(X), T3(X), T4(X), T5(X), T6(X), T7(X)} of
             {{ok, A}, {ok, B}, {ok, C}, {ok, D}, {ok, E}, {ok, F}, {ok, G}} ->
@@ -703,7 +739,7 @@ decode7(Constructor, T1, T2, T3, T4, T5, T6, T7) ->
 
             {A@1, B@1, C@1, D@1, E@1, F@1, G@1} ->
                 {error,
-                    gleam@list:concat(
+                    gleam@list:flatten(
                         [all_errors(A@1),
                             all_errors(B@1),
                             all_errors(C@1),
@@ -714,17 +750,18 @@ decode7(Constructor, T1, T2, T3, T4, T5, T6, T7) ->
                     )}
         end end.
 
+-file("/Users/louis/src/gleam/stdlib/src/gleam/dynamic.gleam", 1410).
 -spec decode8(
-    fun((DVC, DVD, DVE, DVF, DVG, DVH, DVI, DVJ) -> DVK),
-    fun((dynamic_()) -> {ok, DVC} | {error, list(decode_error())}),
-    fun((dynamic_()) -> {ok, DVD} | {error, list(decode_error())}),
-    fun((dynamic_()) -> {ok, DVE} | {error, list(decode_error())}),
-    fun((dynamic_()) -> {ok, DVF} | {error, list(decode_error())}),
-    fun((dynamic_()) -> {ok, DVG} | {error, list(decode_error())}),
-    fun((dynamic_()) -> {ok, DVH} | {error, list(decode_error())}),
-    fun((dynamic_()) -> {ok, DVI} | {error, list(decode_error())}),
-    fun((dynamic_()) -> {ok, DVJ} | {error, list(decode_error())})
-) -> fun((dynamic_()) -> {ok, DVK} | {error, list(decode_error())}).
+    fun((CPY, CPZ, CQA, CQB, CQC, CQD, CQE, CQF) -> CQG),
+    fun((dynamic_()) -> {ok, CPY} | {error, list(decode_error())}),
+    fun((dynamic_()) -> {ok, CPZ} | {error, list(decode_error())}),
+    fun((dynamic_()) -> {ok, CQA} | {error, list(decode_error())}),
+    fun((dynamic_()) -> {ok, CQB} | {error, list(decode_error())}),
+    fun((dynamic_()) -> {ok, CQC} | {error, list(decode_error())}),
+    fun((dynamic_()) -> {ok, CQD} | {error, list(decode_error())}),
+    fun((dynamic_()) -> {ok, CQE} | {error, list(decode_error())}),
+    fun((dynamic_()) -> {ok, CQF} | {error, list(decode_error())})
+) -> fun((dynamic_()) -> {ok, CQG} | {error, list(decode_error())}).
 decode8(Constructor, T1, T2, T3, T4, T5, T6, T7, T8) ->
     fun(X) -> case {T1(X), T2(X), T3(X), T4(X), T5(X), T6(X), T7(X), T8(X)} of
             {{ok, A},
@@ -739,7 +776,7 @@ decode8(Constructor, T1, T2, T3, T4, T5, T6, T7, T8) ->
 
             {A@1, B@1, C@1, D@1, E@1, F@1, G@1, H@1} ->
                 {error,
-                    gleam@list:concat(
+                    gleam@list:flatten(
                         [all_errors(A@1),
                             all_errors(B@1),
                             all_errors(C@1),
@@ -751,18 +788,19 @@ decode8(Constructor, T1, T2, T3, T4, T5, T6, T7, T8) ->
                     )}
         end end.
 
+-file("/Users/louis/src/gleam/stdlib/src/gleam/dynamic.gleam", 1483).
 -spec decode9(
-    fun((DVU, DVV, DVW, DVX, DVY, DVZ, DWA, DWB, DWC) -> DWD),
-    fun((dynamic_()) -> {ok, DVU} | {error, list(decode_error())}),
-    fun((dynamic_()) -> {ok, DVV} | {error, list(decode_error())}),
-    fun((dynamic_()) -> {ok, DVW} | {error, list(decode_error())}),
-    fun((dynamic_()) -> {ok, DVX} | {error, list(decode_error())}),
-    fun((dynamic_()) -> {ok, DVY} | {error, list(decode_error())}),
-    fun((dynamic_()) -> {ok, DVZ} | {error, list(decode_error())}),
-    fun((dynamic_()) -> {ok, DWA} | {error, list(decode_error())}),
-    fun((dynamic_()) -> {ok, DWB} | {error, list(decode_error())}),
-    fun((dynamic_()) -> {ok, DWC} | {error, list(decode_error())})
-) -> fun((dynamic_()) -> {ok, DWD} | {error, list(decode_error())}).
+    fun((CQQ, CQR, CQS, CQT, CQU, CQV, CQW, CQX, CQY) -> CQZ),
+    fun((dynamic_()) -> {ok, CQQ} | {error, list(decode_error())}),
+    fun((dynamic_()) -> {ok, CQR} | {error, list(decode_error())}),
+    fun((dynamic_()) -> {ok, CQS} | {error, list(decode_error())}),
+    fun((dynamic_()) -> {ok, CQT} | {error, list(decode_error())}),
+    fun((dynamic_()) -> {ok, CQU} | {error, list(decode_error())}),
+    fun((dynamic_()) -> {ok, CQV} | {error, list(decode_error())}),
+    fun((dynamic_()) -> {ok, CQW} | {error, list(decode_error())}),
+    fun((dynamic_()) -> {ok, CQX} | {error, list(decode_error())}),
+    fun((dynamic_()) -> {ok, CQY} | {error, list(decode_error())})
+) -> fun((dynamic_()) -> {ok, CQZ} | {error, list(decode_error())}).
 decode9(Constructor, T1, T2, T3, T4, T5, T6, T7, T8, T9) ->
     fun(X) ->
         case {T1(X), T2(X), T3(X), T4(X), T5(X), T6(X), T7(X), T8(X), T9(X)} of
@@ -779,7 +817,7 @@ decode9(Constructor, T1, T2, T3, T4, T5, T6, T7, T8, T9) ->
 
             {A@1, B@1, C@1, D@1, E@1, F@1, G@1, H@1, I@1} ->
                 {error,
-                    gleam@list:concat(
+                    gleam@list:flatten(
                         [all_errors(A@1),
                             all_errors(B@1),
                             all_errors(C@1),

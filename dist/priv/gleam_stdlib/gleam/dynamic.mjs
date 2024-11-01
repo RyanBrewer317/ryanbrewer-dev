@@ -550,7 +550,7 @@ export function decode2(constructor, t1, t2) {
     } else {
       let a = $;
       let b = $1;
-      return new Error($list.concat(toList([all_errors(a), all_errors(b)])));
+      return new Error($list.flatten(toList([all_errors(a), all_errors(b)])));
     }
   };
 }
@@ -570,7 +570,7 @@ export function decode3(constructor, t1, t2, t3) {
       let b = $1;
       let c = $2;
       return new Error(
-        $list.concat(toList([all_errors(a), all_errors(b), all_errors(c)])),
+        $list.flatten(toList([all_errors(a), all_errors(b), all_errors(c)])),
       );
     }
   };
@@ -594,7 +594,7 @@ export function decode4(constructor, t1, t2, t3, t4) {
       let c = $2;
       let d = $3;
       return new Error(
-        $list.concat(
+        $list.flatten(
           toList([all_errors(a), all_errors(b), all_errors(c), all_errors(d)]),
         ),
       );
@@ -623,7 +623,7 @@ export function decode5(constructor, t1, t2, t3, t4, t5) {
       let d = $3;
       let e = $4;
       return new Error(
-        $list.concat(
+        $list.flatten(
           toList([
             all_errors(a),
             all_errors(b),
@@ -666,7 +666,7 @@ export function decode6(constructor, t1, t2, t3, t4, t5, t6) {
       let e = $4;
       let f = $5;
       return new Error(
-        $list.concat(
+        $list.flatten(
           toList([
             all_errors(a),
             all_errors(b),
@@ -714,7 +714,7 @@ export function decode7(constructor, t1, t2, t3, t4, t5, t6, t7) {
       let f = $5;
       let g = $6;
       return new Error(
-        $list.concat(
+        $list.flatten(
           toList([
             all_errors(a),
             all_errors(b),
@@ -767,7 +767,7 @@ export function decode8(constructor, t1, t2, t3, t4, t5, t6, t7, t8) {
       let g = $6;
       let h = $7;
       return new Error(
-        $list.concat(
+        $list.flatten(
           toList([
             all_errors(a),
             all_errors(b),
@@ -825,7 +825,7 @@ export function decode9(constructor, t1, t2, t3, t4, t5, t6, t7, t8, t9) {
       let h = $7;
       let i = $8;
       return new Error(
-        $list.concat(
+        $list.flatten(
           toList([
             all_errors(a),
             all_errors(b),

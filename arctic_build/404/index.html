@@ -59,7 +59,7 @@ if (window.location.pathname === '/posts/typechecking-sabervm.html')
 if (window.location.pathname === '/posts/cricket.html')
   window.location.href = '/posts/cricket';
       </script><div><div style="height:100pt;"></div><p id="copyright-notice" class="subtle-text">© 2024 Ryan Brewer.</p><script src="/__/firebase/8.10.1/firebase-app.js"></script><script src="/__/firebase/8.10.1/firebase-analytics.js"></script><script src="/__/firebase/init.js"></script><script>firebase.analytics();</script></div></body></html></div><script>
-// SPA algorithm stolen from Hayleigh Thompson's wonderful Modem library
+// SPA algorithm partially inspired by Hayleigh Thompson's wonderful Modem library
 async function go_to(url, loader, back) {
   if (!back && url.pathname === window.location.pathname) {
     if (url.hash) document.getElementById(url.hash.slice(1))?.scrollIntoView();
@@ -86,25 +86,23 @@ async function go_to(url, loader, back) {
   for (let i = 0; i < num_scripts; i++) {
     const script = scripts[i];
     const n = document.createElement('script');
-    n.setAttribute('defer', 'true');
-    if (script.innerHTML === '') n.onload = 
-      () => {
-        console.log('script',_ARCTIC_C);
-        if(++_ARCTIC_C>=num_scripts)document.dispatchEvent(new Event('DOMContentLoaded'));
+    // scripts load nondeterministically, so we figure out when they've all finished via the _ARCTIC_C barrier
+    if (script.innerHTML === '') {
+      // external scripts don't run their inline js, so they need an onload listener
+      n.onload = () => {
+        if (++_ARCTIC_C >= num_scripts)
+          document.dispatchEvent(new Event('DOMContentLoaded'));
       };
-      //(n.onload || '') + 
-      //';if(++_ARCTIC_C>=' +
-      //num_scripts +
-      //')document.dispatchEvent(new Event(\'DOMContentLoaded\'));';
-    else {
+    } else {
+      // inline scripts might not trigger onload, so they get js appended to the end instead
       const t = document.createTextNode(
         script.innerHTML +
-        ';console.log(\'script\',_ARCTIC_C);' +
-        'if(++_ARCTIC_C>=' + num_scripts +
+        ';if(++_ARCTIC_C>=' + num_scripts +
         ')document.dispatchEvent(new Event(\'DOMContentLoaded\'));'
       );
       n.appendChild(t);
     }
+    // attributes at the end because 'src' needs to load after onload is listening
     for (let j = 0; j < script.attributes.length; j++) {
       const attr = script.attributes[j];
       n.setAttribute(attr.name, attr.value);
@@ -117,7 +115,6 @@ async function go_to(url, loader, back) {
     else
       window.scrollTo(0, 0);
   });
-  // setTimeout(() => document.dispatchEvent(new Event('DOMContentLoaded')), 100); // i cri ),x
 }
 document.addEventListener('click', async function(e) {
   const a = find_a(e.target);

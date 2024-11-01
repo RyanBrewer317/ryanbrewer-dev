@@ -12,7 +12,6 @@ import * as $list from "../gleam/list.mjs";
 import * as $option from "../gleam/option.mjs";
 import { None, Some } from "../gleam/option.mjs";
 import * as $order from "../gleam/order.mjs";
-import * as $result from "../gleam/result.mjs";
 
 class Stop extends $CustomType {}
 
@@ -889,17 +888,28 @@ export function fold_until(iterator, initial, f) {
   return do_fold_until(_pipe, f, initial);
 }
 
-function do_try_fold(continuation, f, accumulator) {
-  let $ = continuation();
-  if ($ instanceof Stop) {
-    return new Ok(accumulator);
-  } else {
-    let elem = $[0];
-    let next = $[1];
-    return $result.try$(
-      f(accumulator, elem),
-      (accumulator) => { return do_try_fold(next, f, accumulator); },
-    );
+function do_try_fold(loop$continuation, loop$f, loop$accumulator) {
+  while (true) {
+    let continuation = loop$continuation;
+    let f = loop$f;
+    let accumulator = loop$accumulator;
+    let $ = continuation();
+    if ($ instanceof Stop) {
+      return new Ok(accumulator);
+    } else {
+      let elem = $[0];
+      let next = $[1];
+      let $1 = f(accumulator, elem);
+      if ($1.isOk()) {
+        let result = $1[0];
+        loop$continuation = next;
+        loop$f = f;
+        loop$accumulator = result;
+      } else {
+        let error = $1;
+        return error;
+      }
+    }
   }
 }
 

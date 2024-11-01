@@ -76,10 +76,10 @@ function do_keys_acc(loop$list, loop$acc) {
     if (list.hasLength(0)) {
       return reverse_and_concat(acc, toList([]));
     } else {
-      let x = list.head;
-      let xs = list.tail;
-      loop$list = xs;
-      loop$acc = listPrepend(x[0], acc);
+      let first = list.head;
+      let rest = list.tail;
+      loop$list = rest;
+      loop$acc = listPrepend(first[0], acc);
     }
   }
 }
@@ -100,10 +100,10 @@ function do_values_acc(loop$list, loop$acc) {
     if (list.hasLength(0)) {
       return reverse_and_concat(acc, toList([]));
     } else {
-      let x = list.head;
-      let xs = list.tail;
-      loop$list = xs;
-      loop$acc = listPrepend(x[1], acc);
+      let first = list.head;
+      let rest = list.tail;
+      loop$list = rest;
+      loop$acc = listPrepend(first[1], acc);
     }
   }
 }
@@ -134,11 +134,11 @@ function insert_taken(loop$dict, loop$desired_keys, loop$acc) {
     if (desired_keys.hasLength(0)) {
       return acc;
     } else {
-      let x = desired_keys.head;
-      let xs = desired_keys.tail;
+      let first = desired_keys.head;
+      let rest = desired_keys.tail;
       loop$dict = dict;
-      loop$desired_keys = xs;
-      loop$acc = insert$1(acc, x);
+      loop$desired_keys = rest;
+      loop$acc = insert$1(acc, first);
     }
   }
 }
@@ -162,10 +162,10 @@ function fold_inserts(loop$new_entries, loop$dict) {
     if (new_entries.hasLength(0)) {
       return dict;
     } else {
-      let x = new_entries.head;
-      let xs = new_entries.tail;
-      loop$new_entries = xs;
-      loop$dict = insert_pair(dict, x);
+      let first = new_entries.head;
+      let rest = new_entries.tail;
+      loop$new_entries = rest;
+      loop$dict = insert_pair(dict, first);
     }
   }
 }
@@ -191,10 +191,10 @@ export function drop(loop$dict, loop$disallowed_keys) {
     if (disallowed_keys.hasLength(0)) {
       return dict;
     } else {
-      let x = disallowed_keys.head;
-      let xs = disallowed_keys.tail;
-      loop$dict = delete$(dict, x);
-      loop$disallowed_keys = xs;
+      let first = disallowed_keys.head;
+      let rest = disallowed_keys.tail;
+      loop$dict = delete$(dict, first);
+      loop$disallowed_keys = rest;
     }
   }
 }
@@ -233,8 +233,7 @@ export function fold(dict, initial, fun) {
 
 function do_map_values(f, dict) {
   let f$1 = (dict, k, v) => { return insert(dict, k, f(k, v)); };
-  let _pipe = dict;
-  return fold(_pipe, new$(), f$1);
+  return fold(dict, new$(), f$1);
 }
 
 export function map_values(dict, fun) {
