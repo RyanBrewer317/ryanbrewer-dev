@@ -30,18 +30,14 @@ But for Gleam and Go, compiler performance is some of the best in class. Go is f
 
 It's also worth mentioning gleam's dependency system is extremely nice. It works with the Hex package manager of Erlang and Elixir, and therefore generates beautiful HexDocs documentation pages for you to make libraries easy to find and make good documentation the norm. To see how convenient gleam makes everything, see the options that come up when I type `gleam` into my terminal and hit enter:
 
-@code
- $ gleam
-\
-gleam 1.0.0
-\
+@code(plaintext)
+ $ gleam\n
+gleam 1.0.0\n
 USAGE:
-    gleam <SUBCOMMAND>
-\
+    gleam <SUBCOMMAND>\n
 OPTIONS:
     -h, --help       Print help information
-    -V, --version    Print version information
-\
+    -V, --version    Print version information\n
 SUBCOMMANDS:
     add        Add new project dependencies
     build      Build the project
@@ -73,7 +69,7 @@ But in many cases these languages argue that the sacrifices made for performance
 
 Gleam takes this idea even further. Following its functional lineage, there are *no* loop constructs, just recursion and things like `map` and `fold`. Tail call optimization is used so these compile a lot like how a while loop would. Furthermore, Gleam doesn't even have `if`! Instead, there is only (powerful) pattern matching with (powerful) guards. Fibonacci might be written like so:
 
-@code
+@code(plaintext)
 pub fn fib(n: Int) -> Int {
   case n < 2 {
     True -> n
@@ -97,11 +93,10 @@ C and Go are fairly first-order. They both *support* higher order functions (tho
 
 You'd think Gleam would be hurting in this category, as a functional language, but it actually has design choices for this too. Local variable bindings in Gleam aren't recursive, explicitly to encourage functions to be lifted to the top-level. Gleam uses the `|>` operator to make higher-order code much easier to read and think about. Gleam's (awesome!) `use` syntax subsumes most uses of lambdas in functions, in a way that feels a lot like writing comfy, simple imperative code. For example, you can get something like for-loops:
 
-@code
+@code(plaintext)
 import gleam/int
 import gleam/list
-import gleam/io
-\
+import gleam/io\n
 /// for each i in a list, print i+1
 pub fn print_all_plus_one(l: List(Int)) {
   // this is contrived; normally you'd use only one loop

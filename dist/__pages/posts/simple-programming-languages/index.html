@@ -17,17 +17,17 @@ window.MathJax = {
 </span></p><p><span>Obviously, C needs a little bit of slack here, because it&#39;s designed as a single-pass compiler originally, but its design is quite good considering that constraint. Say what you will about header files being annoying, I think they&#39;re quite ergonomic under those circumstances. They offer an out-of-orderness that we take for granted now but that definitely counts as a ready-at-hand feature.
 </span></p><p><span>But for Gleam and Go, compiler performance is some of the best in class. Go is famous for this, so I won&#39;t say too much about it. The Gleam compiler is written in Rust and the designers have been very explicit that it will never be self-hosted, as that would hurt compiler performance and make distribution harder. Files are parsed and processed in parallel where possible, and I&#39;ve personally found my Gleam projects to compile instantly.
 </span></p><p><span>It&#39;s also worth mentioning gleam&#39;s dependency system is extremely nice. It works with the Hex package manager of Erlang and Elixir, and therefore generates beautiful HexDocs documentation pages for you to make libraries easy to find and make good documentation the norm. To see how convenient gleam makes everything, see the options that come up when I type <code><span>gleam</span></code> into my terminal and hit enter:
-</span></p><pre><code> $ gleam
-\
+</span></p><pre><code class="language-plaintext"> $ gleam
+
 gleam 1.0.0
-\
+
 USAGE:
     gleam &lt;SUBCOMMAND&gt;
-\
+
 OPTIONS:
     -h, --help       Print help information
     -V, --version    Print version information
-\
+
 SUBCOMMANDS:
     add        Add new project dependencies
     build      Build the project
@@ -53,7 +53,7 @@ SUBCOMMANDS:
 </span></h3><p><span>Designing a language for fast compile times often means a lot of fancy features aren&#39;t possible. For example, Go isn&#39;t planning on adding metaprogramming, and for a long time wasn&#39;t even planning on adding generics. 
 </span></p><p><span>But in many cases these languages argue that the sacrifices made for performance are actually better language design choices anyway. Go wants all of its looping code to be with a for loop, all of its &quot;this-or-that&quot; code to be with if statements, and all of its &quot;choose-one-of-these&quot; code to be with switch statements. To that end, for loops and switch statements are a little unusual in Go, and there&#39;s no while loop. Go&#39;s concurrency story is very committed to one approach, unlike Rust which is the opposite. Functional code is possible to some degree but Go&#39;s lambdas are a pain in the ass to write. Go&#39;s type system solves every type challenge with interfaces.
 </span></p><p><span>Gleam takes this idea even further. Following its functional lineage, there are <i><span>no</span></i> loop constructs, just recursion and things like <code><span>map</span></code> and <code><span>fold</span></code>. Tail call optimization is used so these compile a lot like how a while loop would. Furthermore, Gleam doesn&#39;t even have <code><span>if</span></code>! Instead, there is only (powerful) pattern matching with (powerful) guards. Fibonacci might be written like so:
-</span></p><pre><code>pub fn fib(n: Int) -&gt; Int {
+</span></p><pre><code class="language-plaintext">pub fn fib(n: Int) -&gt; Int {
   case n &lt; 2 {
     True -&gt; n
     False -&gt; fib(n - 1) + fib(n - 2)
@@ -67,10 +67,10 @@ SUBCOMMANDS:
 </span></h3><p><span>In academia there&#39;s a language called <a href="https://en.wikipedia.org/wiki/OBJ_(programming_language"><span>OBJ</span></a>) designed to be like a functional language with no lambdas (technically it&#39;s a &quot;term rewriting&quot; language). The scholars behind it argue that higher-order functions are difficult for humans to reason about, and they offer interesting ways to recover much of the expressivity of closures in other (vaguely object-oriented) ways.
 </span></p><p><span>C and Go are fairly first-order. They both <i><span>support</span></i> higher order functions (though C closures are very do-it-all-yourself of course), but that style of code is not idiomatic at all. Like I said before, loops should be with the provided loop constructs and dynamic behavior should generally be achieved in other ways. This feels almost explicit as you write Go and C code, and Go is clearly doing this more out of ideology than technical issues. Python lambdas are like this too, to a lesser extent.
 </span></p><p><span>You&#39;d think Gleam would be hurting in this category, as a functional language, but it actually has design choices for this too. Local variable bindings in Gleam aren&#39;t recursive, explicitly to encourage functions to be lifted to the top-level. Gleam uses the <code><span>|&gt;</span></code> operator to make higher-order code much easier to read and think about. Gleam&#39;s (awesome!) <code><span>use</span></code> syntax subsumes most uses of lambdas in functions, in a way that feels a lot like writing comfy, simple imperative code. For example, you can get something like for-loops:
-</span></p><pre><code>import gleam/int
+</span></p><pre><code class="language-plaintext">import gleam/int
 import gleam/list
 import gleam/io
-\
+
 /// for each i in a list, print i+1
 pub fn print_all_plus_one(l: List(Int)) {
   // this is contrived; normally you&#39;d use only one loop
