@@ -1,0 +1,11 @@
+id: large-and-small-categories
+title: Large and Small Categories
+tags: large,small,category,categories,theory,size,level,universe
+
+It's nice to say that a [category](/wiki/category) has a set of objects, but many categories talk about set theory itself, which means their objects are "too big" to form sets. The basic example of this is \\(\\texttt{Set}\\), the category of sets and functions between them. Since the objects are all sets, they don't form a set, or else it would be "the set of all sets" and thus contain itself, which is not allowed. So we go up a level and say that \\(\\texttt{Set}\\) is a "large category," which means its objects form a proper class ("the class of all sets") instead of a set. Then a "small category" is one whose objects form a set. 
+
+The other big important example [\\(\\texttt{Cat}\\)](/wiki/cat), which is a large category ("the category of all small categories") because if it were a small category then it would include itself as an object *and* its objects would form a set (by the definition of "small" here), which means that that set would contain itself. Thus the objects of \\(\\texttt{Cat}\\) form a proper class.
+
+Since both \\(\\texttt{Cat}\\) and \\(\\texttt{Set}\\) are large categories, you'll hopefully notice that large categories are hugely consequential to category theory as a practice. For that reason, we ultimately don't limit our study to small categories as you might expect when coming from other areas of mathematics. For example, you'll often see the definition of category as having a "class of objects" instead of a "set of objects," and these sorts of technical considerations (that other disciplines avoid at all costs) permeating every aspect of category theory as a practice.
+
+We also have a notion of "locally small category" and "locally large category." "Locally" typically means we're talking about the homsets of a category. So "locally small" means the morphisms from one object to another form a set, and "locally large" means the morphisms from one object to another form a proper class (in which case you might refer to it as a "homclass" or something like that, though at this point you usually take the leap to "hom object").
