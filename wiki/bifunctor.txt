@@ -2,7 +2,7 @@ id: bifunctor
 title: Bifunctor
 tags: category,theory,functor,functors,product,products,functoriality,bifunctoriality,bifunctors,monoid,monoidal
 
-A bifunctor is a [functor](/wiki/functor) from a product category to another [category](/wiki/category). This is useful because it gives a notion of two-argument functor (hence the name).
+A bifunctor is a [functor](/wiki/functor) from a [product category](/wiki/product-category) to another [category](/wiki/category). This is useful because it gives a notion of two-argument functor (hence the name).
 
 The definition and laws can be derived from the definition of a functor and a product category, but the main points are that the condition of "functoriality" becomes a condition of "bifunctoriality:" Given two product-category morphisms \\(h, k\\) and \\(f, g\\), bifunctoriality of a bifunctor \\(F\\) states that \\(F((h, k)\\circ(f, g))=F(h\\circ f, k\\circ g)\\). This really is just functoriality, specialized to the case of a product category in the domain of the functor.
 
