@@ -1,0 +1,7 @@
+id: product-category
+title: Product Category
+tags: bifunctor,bifunctors,category,theory,monoid,monoidal,product,cat
+
+A product category \\(C\\times D\\) is a [category](/wiki/category) whose objects are pairs \\((c,d)\\) where \\(c\\) is an object of \\(C\\) and \\(d\\) is an object of \\(D\\). Arrows are pairs \\((f,g):(X,Y)\\to(Z,W)\\) where \\(f:X\\to Z\\) is a morphism in \\(C\\) and \\(g:Y\\to W\\) is a morphism in \\(D\\). Composition is defined in the obvious way: \\((h,k)\\circ(f,g)=(h\\circ f,k\\circ g)\\). [\\(\\texttt{Cat}\\)](/wiki/cat) is a cartesian category, and product categories are the cartesian product of categories.
+
+Notice that a product category morphism \\(p:(X,Y)\\to(Z,W)\\) has no "diagonal information flow" or whatever you'd want to call it: the \\(Z\\) has no dependence on the \\(Y\\) and the \\(W\\) has no dependence on the \\(X\\), with regards to the morphism \\(p\\). This is because \\(p\\) is a pair of morphisms, one in \\(C\\) and one in \\(D\\), which only know about their corresponding inputs, so they couldn't possibly vary with respect to the other input. In [string diagrams](/wiki/monoidal-category) based on the cartesian product of \\(\\texttt{Cat}\\), this lack of information flow is represented by the fact that the the boxes and wires are drawn parallel to each other, but not touching. There's an "air gap" between them.
