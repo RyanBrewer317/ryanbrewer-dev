@@ -87,7 +87,7 @@ As AI code completion becomes more popular, this one-way approach becomes even m
 
 ### First Order Reasoning
 
-In academia there's a language called [OBJ](https://en.wikipedia.org/wiki/OBJ_(programming_language)) designed to be like a functional language with no lambdas (technically it's a "term rewriting" language). The scholars behind it argue that higher-order functions are difficult for humans to reason about, and they offer interesting ways to recover much of the expressivity of closures in other (vaguely object-oriented) ways.
+In academia there's a language called [OBJ](https://en.wikipedia.org/wiki/OBJ_(programming_language\)) designed to be like a functional language with no lambdas (technically it's a "term rewriting" language). The scholars behind it argue that higher-order functions are difficult for humans to reason about, and they offer interesting ways to recover much of the expressivity of closures in other (vaguely object-oriented) ways.
 
 C and Go are fairly first-order. They both *support* higher order functions (though C closures are very do-it-all-yourself of course), but that style of code is not idiomatic at all. Like I said before, loops should be with the provided loop constructs and dynamic behavior should generally be achieved in other ways. This feels almost explicit as you write Go and C code, and Go is clearly doing this more out of ideology than technical issues. Python lambdas are like this too, to a lesser extent.
 
