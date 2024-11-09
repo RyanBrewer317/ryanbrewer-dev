@@ -17,7 +17,7 @@ I often find that notation confusing, though, because it makes it seem like we j
 Notice that 2-cells *don't* go across homsets. That is to say, they *cannot* do this:
 
 @diagram
-    A\ar[r, ""{name=U,below},"f"] & B
+    A\ar[r, ""{name=U,below},"f"] & B \\
     C\ar[r, ""{name=D},"g"{below}] & D
     \ar[from=U,to=D,"h"]
 
