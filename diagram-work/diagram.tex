@@ -3,7 +3,8 @@
 \usepackage{tikz-cd}
 \begin{document}
 \begin{tikzcd}
-    T\circ T\circ T\ar[r,"id_T\circ\mu"]\ar[d,"\mu\circ id_T"] & T\circ T\ar[d,"\mu"] \\
-    T\circ T\ar[r,"\mu"] & T
+    A\ar[r, ""{name=U,below},"f"] & B
+    C\ar[r, ""{name=D},"g"{below}] & D
+    \ar[from=U,to=D,"h"]
 \end{tikzcd}
 \end{document}

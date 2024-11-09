@@ -21,7 +21,7 @@ The second coherence condition is far more famous, in the sense that I've heard 
 
 All of that is just boilerplate stuff for being able to define monoidal categories with natural isomorphisms instead of equalities (where I'd just call \\(\\otimes\\) associative and say \\(I\\) is its left and right unit).
 
-Any object \\(X\\) in a 2-category has a monoidal category that is the hom-object \\(\\texttt{Hom}(X,X)\\): we know it's a category because \\(X\\) is in a 2-category, we know that its objects are arrows from \\(X\\) to \\(X\\), and thus we know we can map any pair of objects into a third object, using composition, which is associative and which has \\(id_X\\) as its unit. Thus \\(\\otimes\\) is \\(\\circ\\) and \\(I\\) is \\(id_X\\). This also helps keep in mind the mind-expanding fact that, for certain categories, \\(\\circ\\) is a bifunctor!
+Any object \\(X\\) in a [2-category](/wiki/2-category) has a monoidal category that is the hom-object \\(\\texttt{Hom}(X,X)\\): we know it's a category because \\(X\\) is in a 2-category, we know that its objects are arrows from \\(X\\) to \\(X\\), and thus we know we can map any pair of objects into a third object, using composition, which is associative and which has \\(id_X\\) as its unit. Thus \\(\\otimes\\) is \\(\\circ\\) and \\(I\\) is \\(id_X\\). This also helps keep in mind the mind-expanding fact that, for certain categories, \\(\\circ\\) is a bifunctor!
 
 Monoidal categories have two directions of composition: "vertical" composition and "horizontal" composition, depicted in the following two diagrams respectively:
 

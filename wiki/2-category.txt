@@ -1,0 +1,30 @@
+id: 2-category
+title: 2-Category
+tags: category,theory,categories,monoidal,cat
+
+A 2-category is a [category](/wiki/category) \\(C\\) where the morphisms \\(C(A,B)\\) from one object \\(A\\) to another \\(B\\) form a category. That is, those morphisms are objects in some category, so there may be morphisms *between the morphisms!*
+
+We often include some notion of "nontriviality" here, because *any* set forms a category: the objects are the elements and the morphisms are strict equality. This is called a "discrete" category because there are no morphisms between objects, and indeed it's a fairly trivial (aka boring) category because the only arrows are identity arrows. So when we say that something is a 2-category we generally mean that the category formed by the elements of \\(C(A,B)\\) is a bit more interesting (aka nontrivial) in some way.
+
+Morphisms between morphisms in a 2-category are called 2-cells, regular morphisms are called 1-cells, and the objects are called 0-cells. 2-cells are often drawn like this:
+
+@diagram
+    A\ar[r,bend left=50,""{name=U,below},"f"]\ar[r,bend right=50,""{name=D},"g"{below}] & B
+    \ar[from=U,to=D,"h"]
+
+I often find that notation confusing, though, because it makes it seem like we just added some new construct to category theory, the arrows-between-arrows. In reality, it's just that there are two different categories, and one has some morphisms, and the other has those morphisms as objects. So there's nothing fundamentally new going on here.
+
+Notice that 2-cells *don't* go across homsets. That is to say, they *cannot* do this:
+
+@diagram
+    A\ar[r, ""{name=U,below},"f"] & B
+    C\ar[r, ""{name=D},"g"{below}] & D
+    \ar[from=U,to=D,"h"]
+
+This is *not* a valid 2-cell! 2-cells are *only* stuck within the same homset.
+
+The most famous 2-category is [\\(\\texttt{Cat}\\)](/wiki/cat), the category of [small categories](/wiki/large-and-small-categories). The objects are small categories, the morphisms are [functors](/wiki/functor), and the 2-cells are [natural transformations](/wiki/natural-transformation).
+
+It's hopefully obvious that there are also 3-categories, 4-categories, and so on. \\(\\infty\\)-categories have no limit to the depth of arrows-between-arrows-between-etc. though I'm simplifying here and they're a kind of fuzzy concept so things get very technical and advanced when talking about these categories. It's more advanced than what I know about.
+
+Note that the category of 1-categories (which is \\(\\texttt{Cat}\\)) is a 2-category; the category of 2-categories is a 3-category and this pattern continues indefinitely.
