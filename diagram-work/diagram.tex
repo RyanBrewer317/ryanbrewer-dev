@@ -1,0 +1,10 @@
+
+\documentclass[margin=0pt]{standalone}
+\usepackage{tikz-cd}
+\begin{document}
+\begin{tikzcd}
+    X\ar[r, ""{name=U,below},"f"] & Y \\
+    Z\ar[r, ""{name=D},"g"{below}] & W
+    \ar[from=U,to=D,"h"]
+\end{tikzcd}
+\end{document}

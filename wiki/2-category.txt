@@ -12,7 +12,7 @@ Morphisms between morphisms in a 2-category are called 2-cells, regular morphism
     A\ar[r,bend left=50,""{name=U,below},"f"]\ar[r,bend right=50,""{name=D},"g"{below}] & B
     \ar[from=U,to=D,"h"]
 
-I often find that notation confusing, though, because it makes it seem like we just added some new construct to category theory, the arrows-between-arrows. In reality, it's just that there are two different categories, and one has some morphisms, and the other has those morphisms as objects. So there's nothing fundamentally new going on here.
+I often find that notation confusing, though, because it makes it seem like we just added some brand new thing to category theory, the arrows-between-arrows. In reality, it's just that there are two different categories, and one has some morphisms, and the other has those morphisms as its objects. So there's nothing fundamentally new going on here.
 
 Notice that 2-cells *don't* go across homsets. That is to say, they *cannot* do this:
 
