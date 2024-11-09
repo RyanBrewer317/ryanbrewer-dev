@@ -73,21 +73,6 @@ gtag('js', new Date());
           attribute("title", "Ryan Brewer's Blog"),
           attribute.href("https://ryanbrewer.dev/feed.rss"),
         ]),
-        html.link([
-          attribute.rel("preconnect"),
-          attribute.href("https://fonts.googleapis.com"),
-        ]),
-        html.link([
-          attribute.rel("preconnect"),
-          attribute.href("https://fonts.gstatic.com"),
-          attribute("crossorigin", "true"),
-        ]),
-        html.link([
-          attribute.rel("stylesheet"),
-          attribute.href(
-            "https://fonts.googleapis.com/css2?family=Roboto&display=swap",
-          ),
-        ]),
         html.script(
           [attribute.src("https://polyfill.io/v3/polyfill.min.js?features=es6")],
           "",

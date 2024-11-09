@@ -76,27 +76,6 @@ export function head(extra) {
             $attribute.href("https://ryanbrewer.dev/feed.rss"),
           ]),
         ),
-        $html.link(
-          toList([
-            $attribute.rel("preconnect"),
-            $attribute.href("https://fonts.googleapis.com"),
-          ]),
-        ),
-        $html.link(
-          toList([
-            $attribute.rel("preconnect"),
-            $attribute.href("https://fonts.gstatic.com"),
-            attribute("crossorigin", "true"),
-          ]),
-        ),
-        $html.link(
-          toList([
-            $attribute.rel("stylesheet"),
-            $attribute.href(
-              "https://fonts.googleapis.com/css2?family=Roboto&display=swap",
-            ),
-          ]),
-        ),
         $html.script(
           toList([
             $attribute.src(
