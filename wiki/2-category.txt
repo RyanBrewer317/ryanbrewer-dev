@@ -17,11 +17,11 @@ I often find that notation confusing, though, because it makes it seem like we j
 Notice that 2-cells *don't* go across homsets. That is to say, they *cannot* do this:
 
 @diagram
-    A\ar[r, ""{name=U,below},"f"] & B \\
-    X\ar[r, ""{name=D},"g"{below}] & Y
+    X\ar[r, ""{name=U,below},"f"] & Y \\
+    Z\ar[r, ""{name=D},"g"{below}] & W
     \ar[from=U,to=D,"h"]
 
-This is *not* a valid 2-cell! It crosses from \\(C(A,B)\\) to \\(C(X,Y)\\), instead of staying in one of the other. 2-cells are *only* stuck within the same homset.
+This is *not* a valid 2-cell! It crosses from \\(C(X,Y)\\) to \\(C(Z,W)\\), instead of staying in one or the other. 2-cells are *only* stuck within the same homset.
 
 The most famous 2-category is [\\(\\texttt{Cat}\\)](/wiki/cat), the category of [small categories](/wiki/large-and-small-categories). The objects are small categories, the morphisms are [functors](/wiki/functor), and the 2-cells are [natural transformations](/wiki/natural-transformation).
 
