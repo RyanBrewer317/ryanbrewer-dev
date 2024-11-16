@@ -3,8 +3,10 @@
 \usepackage{tikz-cd}
 \begin{document}
 \begin{tikzcd}
-    X\ar[r, ""{name=U,below},"f"] & Y \\
-    Z\ar[r, ""{name=D},"g"{below}] & W
-    \ar[from=U,to=D,"h"]
+    & & a\ar[dll,"L"]\ar[drr,"R"]\ar[ddl,"\eta"] & & \\
+    La\ar[dr,"R"] & & & & Ra\ar[dl,"L"] \\
+    & R(La)\ar[dl,"L"] & & L(Ra)\ar[uul,"\epsilon"]\ar[dd,"\delta"]\ar[dr,"R"] & \\
+    L(R(La))\ar[dr,"R"] & & & & R(L(Ra))\ar[dl,"L"]
+    & R(L(R(La)))\ar[uu,"\mu"] & & L(R(L(Ra))) &
 \end{tikzcd}
 \end{document}
