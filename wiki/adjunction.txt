@@ -7,64 +7,68 @@ An adjunction \\(F\\dashv G\\) between two [categories](/wiki/category) \\(C\\) 
 In this example, \\(C\\) is said to be on the left, \\(F\\) is said to be going to the left, \\(D\\) is said to be on the right, and \\(G\\) is said to be going to the right. Thus it is common to use the letters \\(L\\) and \\(R\\) instead of \\(F\\) and \\(G\\) respectively. This idea of "left" and "right" are based on the following way of drawing adjunctions:
 
 @diagram
-    La\ar[d,"f"] & a\ar[l,"L"]\ar[d,"g"] \\
-    b\ar[r,"R"] & Rb
+    La\ar[d,"f"'] & a\ar[l,"L"']\ar[d,"g"] \\
+    b\ar[r,"R"'] & Rb
 
-In this diagram, the adjunction means each \\(f\\) has a \\(g\\) in one-to-one correspondence: as an isomorphism of homsets, \\(C(La,b)\\equiv D(a,Rb)).
+Now, we have to be careful when reading this! Remember that the left and right are in different categories, and the horizontal arrows are functors instead of arrows in either of the two categories. 
 
-If it's hard to imagine an isomorphism like this, let's take a simple example: currying. Let's take some ordinary category of types and functions, which we'll call \\(C\\). A multiple-argument function will be a morphism from a cartesian product, so for example \\(\\texttt{add}:\\texttt{int}\\times\\texttt{int}\\to\\texttt{int}\\). But as functional programmers, we know that there's an equivalent version of \\(\\texttt{add}\\), where we curry it: \\(\\texttt{add_c}:\\texttt{int}\\to(\\texttt{int}\\to\\texttt{int})\\). We can draw this nice diagram:
+Anyway, in this diagram, the adjunction means each \\(f\\) has a \\(g\\) in one-to-one correspondence: as an isomorphism of homsets, \\(C(La,b)\\simeq D(a,Rb)\\).
+
+If it's hard to imagine an isomorphism like this, let's take a simple example: currying. Let's take some ordinary category of types and functions, which we'll call \\(C\\). A multiple-argument function will be a morphism from a cartesian product, so for example \\(\\texttt{add}:\\texttt{int}\\times\\texttt{int}\\to\\texttt{int}\\). But as functional programmers, we know that there's an equivalent version of \\(\\texttt{add}\\), where we curry it: \\(\\texttt{add}_c:\\texttt{int}\\to(\\texttt{int}\\to\\texttt{int})\\). We can draw this nice diagram:
 
 @diagram
-    \texttt{int}\times\texttt{int}\ar[d,"add"] & \texttt{int}\ar[d,"add_c"] \\
-    \texttt{int} & \texttt{int}\to\texttt{int}
+    int\times int\ar[d,"add"'] & int\ar[d,"add_c"] \\
+    int & int\to int
 
 Now, if we're slightly more familiar with category theory, we might realize that \\(-\\times\\texttt{int}\\) is a functor, and so is \\(\\texttt{int}\\to-\\). So we can add those arrows to our diagram, to make it look very familiar:
 
 @diagram
-    \texttt{int}\times\texttt{int}\ar[d,"add"] & \texttt{int}\ar[d,"add_c"]\ar[l,"-\times\texttt{int}"] \\
-    \texttt{int}\ar[r,"\texttt{int}\to-"] & \texttt{int}\to\texttt{int}
+    int\times int\ar[d,"add"'] & int\ar[d,"add_c"]\ar[l,"-\times int"'] \\
+    int\ar[r,"int\to-"'] & int\to int
+
+Again, be weary that the arrows here are from up to three different categories, so it's not really a commutative diagram.
 
 The equivalence of multi-parameter functions and curried functions is an adjunction! I'm being informal in my presentation but hopefully you can roughly see the technical details. Specifically, it's actually a family of adjunctions, based on all the possible types of the second parameter. We can write this adjunction like this: \\(-\\times A\\dashv A\\to-\\), for the various types \\(A\\).
 
-Now to test our new equational powers: \\(La\\to b\\equiv a\\to Rb\\) means, in this case, \\(a\\times c\\to b\\equiv a\\to c\\to b\\). That's true! Going back and forth along that equivalence is exactly currying and uncurrying!
+Now to test our new equational powers: \\(La\\to b\\simeq a\\to Rb\\) means, in this case, \\(a\\times c\\to b\\simeq a\\to c\\to b\\). That's true! Going back and forth along that isomorphism is exactly currying and uncurrying!
 
 Now, one thing to notice is that this doesn't work if you swap the two functors. The left one is on the left, and the right one is on the right; the order matters. Therefore we talk about the "left adjoint functor" and the "right adjoint functor." If there's an adjunction \\(F\\dashv G\\), then we say \\(F\\) has a "right adjoint," namely \\(G\\), and \\(G\\) has a "left adjoint," namely \\(F\\).
 
 ### Unit, Counit, Monads
 
-Now, you may be coming to this wiki entry a little confused. Adjunctions are often talked about in discussions about monads, and often defined with a "unit" and "counit." So here's the craziest part about adjunctions, that makes them absolutely beautiful.
+Now, at this point in the wiki entry you might be a little confused. Adjunctions are often talked about in discussions about monads, and often defined with a "unit" and "counit." So here's the craziest part about adjunctions, that makes them absolutely beautiful.
 
 Remember that adjunction diagram from before? What if we pick \\(La\\) as our \\(b\\)?
 
 @diagram
-    La\ar[d,"f"] & a\ar[l,"L"]\ar[d,"g"] \\
-    La\ar[r,"R"] & R(La)
+    La\ar[d,"f"'] & a\ar[l,"L"']\ar[d,"g"] \\
+    La\ar[r,"R"'] & R(La)
 
-Well, now we actually know of an \\(f\\) that must exist: the identity morphism of \\(La\\)! And since there's a one-to-one correspondence between \\(f\\)s and \\(g\\)s, we know of a \\(g\\) that must exist as well, namely, whatever is assigned to \\(id_{La}\\) in the correspondence. We'll call whatever this is \\(\\eta:a\\to R(La)), or the "unit."
+Well, now we actually know of an \\(f\\) that must exist: the identity morphism of \\(La\\)! And since there's a one-to-one correspondence between \\(f\\)s and \\(g\\)s, we know of a \\(g\\) that must exist as well, namely, whatever is assigned to \\(id_{La}\\) in the correspondence. We'll call whatever this is \\(\\eta:a\\to R(La)\\), or the "unit."
 
 Obviously, we can do the same thing on the other side, with \\(a=Rb\\) instead:
 
 @diagram
-    L(Rb)\ar[d,"f"] & Rb\ar[l,"L"]\ar[d,"g"] \\
-    b\ar[r,"R"] & Rb
+    L(Rb)\ar[d,"f"'] & Rb\ar[l,"L"']\ar[d,"g"] \\
+    b\ar[r,"R"'] & Rb
 
-By the same logic, there must be something in correspondence with \\(id_{Rb}\\), which we'll call \\(\\epsilon:L(Rb)\\to b\\).
+By the same logic, there must be something in correspondence with \\(id_{Rb}\\), which we'll call \\(\\varepsilon:L(Rb)\\to b\\).
 
 (This is getting somewhere cool soon, just bear with me a moment!)
 
-Now, if we remember that \\(a\\) is the same as \\(Id_C a\\), the identity functor on \\(C\\) mapping the object \\(a\\) to itself, then we can see \\(\\eta:a\\to R(La)\\) as a transformation between functors \\(\\eta:Id_C\\to R\\circ L\\). Similarly, \\(\\epsilon:L\\circ R\\to Id_C\\). In fact, the unit and counit are both [natural transformations](/wiki/natural-transformation).
+Now, if we remember that \\(a\\) is the same as \\(Id_C\\; a\\), the identity functor on \\(C\\) mapping the object \\(a\\) to itself, then we can see \\(\\eta:a\\to R(La)\\) as a transformation between functors \\(\\eta:Id_C\\;\\to R\\circ L\\). Similarly, \\(\\varepsilon:L\\circ R\\to Id_C\\). In fact, the unit and counit are both [natural transformations](/wiki/natural-transformation).
 
-Now here's where things start to ramp up in coolness. The unit is actually always the unit of a monad \\(R\\circ L\\), where the join operator \\(\\mu_a:R(L(R(La)))\\to R(La)\\) is defined as \\(mu=R\\circ\\epsilon\\circ L\\) using [horizontal composition](/wiki/natural-transformation). But, far crazier, *every* monad is based on an adjunction in exactly this way. In the case of our currying adjunction above, we get the State monad! And every comonad is also based on an adjunction, using the counit of the comonad and \\(\\delta=L\\circ\\eta\\circ R\\); in the case of our currying example above, we get the Store comonad. 
+Now here's where things start to ramp up in coolness. The unit is actually always the unit of a monad \\(R\\circ L\\), where the join operator \\(\\mu_a:R(L(R(La)))\\to R(La)\\) is defined as \\(mu=R\\circ\\varepsilon\\circ L\\) using [horizontal composition](/wiki/natural-transformation). But, far crazier, *every* monad is based on an adjunction in exactly this way. In the case of our currying adjunction above, we get the State monad! And every comonad is \\(L\\circ R\\) for an adjunction \\(L\\dashv R\\), using the counit of the comonad and \\(\\delta=L\\circ\\eta\\circ R\\); in the case of our currying example above, we get the Store comonad. 
 
 Here's a massive diagram to show where a monad and comonad come out of an adjunction. Try using the functors from our currying example above to get the definition of the State monad and Store comonad!
 
 @diagram
     & & a\ar[dll,"L"']\ar[drr,"R"]\ar[ddl,"\eta"] & & \\
     La\ar[dr,"R"'] & & & & Ra\ar[dl,"L"] \\
-    & R(La)\ar[dl,"L"'] & & L(Ra)\ar[uul,"\epsilon"]\ar[dd,"\delta"']\ar[dr,"R"] & \\
+    & R(La)\ar[dl,"L"'] & & L(Ra)\ar[uul,"\varepsilon"]\ar[dd,"\delta"']\ar[dr,"R"] & \\
     L(R(La))\ar[dr,"R"'] & & & & R(L(Ra))\ar[dl,"L"] \\
     & R(L(R(La)))\ar[uu,"\mu"'] & & L(R(L(Ra))) &
 
-As crazy as it is that monads and comonads are inter-definable via adjunctions in this way, the main mathematical use of adjunctions is in the nice equation \\(La\\to b\\equiv a\\to Rb\\), or more generally written \\(C(La,b)\\equiv D(a,Rb)). So this "homset equivalence" is the main way they come up in math and category theory, even if the unit/counit definition feels more concrete and/or usable to the peasant functional programmer.
+As crazy as it is that monads and comonads are inter-definable via adjunctions in this way, the main mathematical use of adjunctions is in the nice equation \\(La\\to b\\simeq a\\to Rb\\), or more generally written \\(C(La,b)\\simeq D(a,Rb)\\). So this "homset isomorphism" is the main way they come up in math and category theory, even if the unit/counit definition feels more concrete and/or usable to the peasant functional programmer.
 
-Also, it's worth mentioning that an adjunction can be completely defined just by giving the unit and counit; the homset isomorphism can be derived from them. A morphism \\(f:La\\to b\\) is mapped to \\(R(f)\\circ\\eta:a\\to Rb\\), and a morphism \\(g:a\\to Rb\\) is mapped to \\(\\epsilon\\circ Lg:La\\to b\\); try going back and forth to check that this is indeed an isomorphism. This means that the unit/counit perspective is often called a "formulation" or "definition" of adjunctions, where as the homset isomorphism is another formulation/definition.
+Also, it's worth mentioning that an adjunction can be completely defined just by giving the unit and counit; the homset isomorphism can be derived from them. A morphism \\(f:La\\to b\\) is mapped to \\(R(f)\\circ\\eta:a\\to Rb\\), and a morphism \\(g:a\\to Rb\\) is mapped to \\(\\varepsilon\\circ Lg:La\\to b\\); try going back and forth to check that this is indeed an isomorphism. This means that the unit/counit perspective is often called a "formulation" or "definition" of adjunctions, where as the homset isomorphism is another formulation/definition.
