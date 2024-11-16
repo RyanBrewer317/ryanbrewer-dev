@@ -2,7 +2,7 @@ id: adjunction
 title: Adjunction
 tags: functor,monad,comonad,category,theory,categories,monads,comonads,functors,equality,equivalence,isomorphism,isomorphisms,unit,counit,natural
 
-An adjunction \\(F\\dashv G\\) between two [categories](/wiki/category) \\(C\\) and \\(D\\) is a pair of [functors](/wiki/functor) \\(F:D\\to C\\) and \\(G:C\\to D\\) that satisfy the isomorphism \\(F a\\to b=a\\to G b\\), where \\(a\\) is in \\(D\\) and \\(b\\) is in \\(C\\). Informally, adjunctions let you move something from one side of an arrow to the other, by swapping that something.
+An adjunction \\(F\\dashv G\\) between two [categories](/wiki/category) \\(C\\) and \\(D\\) is a pair of [functors](/wiki/functor) \\(F:D\\to C\\) and \\(G:C\\to D\\) that satisfy the isomorphism \\(F a\\to b\\simeq a\\to G b\\), where \\(a\\) is in \\(D\\) and \\(b\\) is in \\(C\\). Informally, adjunctions let you move something from one side of an arrow to the other, by swapping that something.
 
 In this example, \\(C\\) is said to be on the left, \\(F\\) is said to be going to the left, \\(D\\) is said to be on the right, and \\(G\\) is said to be going to the right. Thus it is common to use the letters \\(L\\) and \\(R\\) instead of \\(F\\) and \\(G\\) respectively. This idea of "left" and "right" are based on the following way of drawing adjunctions:
 
