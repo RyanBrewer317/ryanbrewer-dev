@@ -101,7 +101,6 @@ export function parse(dir, get_id, to_state) {
                     );
                   })(),
                   (_) => {
-                    $io.debug("made diagram.pdf");
                     return $result.try$(
                       (() => {
                         let _pipe = $shellout.command(
@@ -126,10 +125,7 @@ export function parse(dir, get_id, to_state) {
                           },
                         );
                       })(),
-                      (_) => {
-                        $io.debug((("made " + dir) + "/") + img_filename);
-                        return new Ok(out);
-                      },
+                      (_) => { return new Ok(out); },
                     );
                   },
                 );
