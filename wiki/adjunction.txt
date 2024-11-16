@@ -12,7 +12,7 @@ In this example, \\(C\\) is said to be on the left, \\(F\\) is said to be going 
 
 Now, we have to be careful when reading this! Remember that the left and right are in different categories, and the horizontal arrows are functors instead of arrows in either of the two categories. 
 
-Anyway, in this diagram, the adjunction means each \\(f\\) has a \\(g\\) in one-to-one correspondence: as an isomorphism of homsets, \\(C(La,b)\\simeq D(a,Rb)\\).
+Anyway, in this diagram, the adjunction means each \\(f\\) has a \\(g\\) in one-to-one correspondence: as an isomorphism of [homsets](/wiki/homset), \\(C(La,b)\\simeq D(a,Rb)\\).
 
 If it's hard to imagine an isomorphism like this, let's take a simple example: currying. Let's take some ordinary category of types and functions, which we'll call \\(C\\). A multiple-argument function will be a morphism from a cartesian product, so for example \\(\\texttt{add}:\\texttt{int}\\times\\texttt{int}\\to\\texttt{int}\\). But as functional programmers, we know that there's an equivalent version of \\(\\texttt{add}\\), where we curry it: \\(\\texttt{add}_c:\\texttt{int}\\to(\\texttt{int}\\to\\texttt{int})\\). We can draw this nice diagram:
 

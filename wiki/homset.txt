@@ -1,0 +1,13 @@
+id: homset
+title: Homsets and Hom-Objects
+tags: hom,hom-object,object,set,hom-set,homcategory,hom-category,category,theory,arrow,exonential,enriched,enrichment,enrich,morphism,function,space
+
+A homset is the set of morphisms from one object to another in a [category](/wiki/category). In a category \\(C\\), the set of morphisms from the object \\(A\\) in \\(C\\) to the object \\(B\\) in \\(C\\) is written \\(C(A,B)\\). When the category is obvious or abstracted away, the alternative notation \\(\\texttt{Hom}(A,B)\\) is often used.
+
+Notice that homsets have a direction: \\(C(A,B)\\) is not the same as \\(C(B,A)\\). So it's not quite right to say "the arrows between \\(A\\) and \\(B\\)." It's more accurate to say "the arrows from \\(A\\) to \\(B\\)," since there may be some arrows from \\(B\\) to \\(A\\) that we don't care about and therefore aren't considering.
+
+In some categories, the collections of morphisms \\(C(A,B)\\) may be proper classes rather than sets. That is, if they were sets, then one of those morphisms would be the set itself, which breaks the laws of set theory. Obviously this happens pretty rarely, but when it does happen it's called a "locally large" category, since "local" in category theory often refers to something about the homsets of a category. Ordinary categories are then called "locally small."
+
+In "higher category theory," the definition of a category is generalized further. The basic (non-proper-class) notion of homset is a set, so an object in \\(\\texttt{Set}\\), the category of sets. Higher category theory gives each category an "enrichment," which just means you can pick some other category instead of \\(\\texttt{Set}\\) to be the category of homsets. These are then called "hom-objects," both because they might not be sets and because they're objects from the enrichment category. We then say that the normal categories are "enriched over" \\(\\texttt{Set}\\), since their hom-objects are sets.
+
+A [2-category](/wiki/2-category) is a category enriched over [\\(\\texttt{Cat}\\)](/wiki/cat), the category of [small categories](/wiki/large-and-small-categories). That means that the hom-objects, the collection of arrows between two objects \\(A\\) and \\(B\\), in a 2-category \\(C\\) is a *category* (still written \\(C(A,B)\\)). Many, many interesting sets have a useful categorical structure, so 2-categories come up a lot and are a very useful idea.
