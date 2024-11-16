@@ -56,3 +56,5 @@
 "wiki/category.txt","O70ocs+P4PE8e/A1RA5ssRv3xFonGb+WSRQ7J9ZTR5M","id:category","title:Category","tags:category,categories,theory,object,objects,arrow,arrows,morphism,morphisms","blerb:"
 "wiki/bifunctor.txt","vT7v8fEJbXa0mLMGBghN3mmHcIR8ZTqWfopOBsaNI90","id:bifunctor","title:Bifunctor","tags:category,theory,functor,functors,product,products,functoriality,bifunctoriality,bifunctors,monoid,monoidal","blerb:"
 "wiki/adjunction.txt","7ybHTa2X03sYdXzsDSWmCgssCpWHN6G/yiNI0P5dhcs","id:adjunction","title:Adjunction","tags:functor,monad,comonad,category,theory,categories,monads,comonads,functors,equality,equivalence,isomorphism,isomorphisms,unit,counit,natural","blerb:"
+"wiki/security-types.txt","IsY1LCLDgmgpyM/F0yHdIYSf1OpqlxNboWprfPPiPLs","id:security-types","title:Security Types","tags:dcc,flac,ifc,information,flow,control,type,theory,authorization,taint,tracking,dependency,analysis","blerb:"
+"wiki/monoid.txt","1VtTmBvDRjjgzMuwdXKowwDZZBQgctsL4fd7M0h426c","id:monoid","title:Monoid","tags:monoidal","blerb:"

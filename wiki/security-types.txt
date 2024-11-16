@@ -1,0 +1,5 @@
+id: security-types
+title: Security Types
+tags: dcc,flac,ifc,information,flow,control,type,theory,authorization,taint,tracking,dependency,analysis
+
+Security types are a niche area of type theory research that allow expressions about what a computation is allowed to know about. This has obvious applications to security and privacy, but security type theory has also been used in many other applications, such as binding-time analysis, [garbage collection](http://dx.doi.org/10.1007/978-3-319-89722-6_4), [non-termination with dependent types](http://dx.doi.org/10.1145/3607852), and more.
