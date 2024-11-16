@@ -62,7 +62,7 @@ Here's a massive diagram to show where a monad and comonad come out of an adjunc
     & & a\ar[dll,"L"]\ar[drr,"R"]\ar[ddl,"\eta"] & & \\
     La\ar[dr,"R"] & & & & Ra\ar[dl,"L"] \\
     & R(La)\ar[dl,"L"] & & L(Ra)\ar[uul,"\epsilon"]\ar[dd,"\delta"]\ar[dr,"R"] & \\
-    L(R(La))\ar[dr,"R"] & & & & R(L(Ra))\ar[dl,"L"]
+    L(R(La))\ar[dr,"R"] & & & & R(L(Ra))\ar[dl,"L"] \\
     & R(L(R(La)))\ar[uu,"\mu"] & & L(R(L(Ra))) &
 
 As crazy as it is that monads and comonads are inter-definable via adjunctions in this way, the main mathematical use of adjunctions is in the nice equation \\(La\\to b\\equiv a\\to Rb\\), or more generally written \\(C(La,b)\\equiv D(a,Rb)). So this "homset equivalence" is the main way they come up in math and category theory, even if the unit/counit definition feels more concrete and/or usable to the peasant functional programmer.

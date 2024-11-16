@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en"><head><script async="true" src="https://www.googletagmanager.com/gtag/js?id=G-BDZJ8SX3Y1"></script><script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+        </script><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><link rel="icon" type="image/x-icon" href="/favicon.ico"><link rel="alternate" type="application/rss+xml" title="Ryan Brewer&#39;s Blog" href="https://ryanbrewer.dev/feed.rss"><script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css"><script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script><link rel="stylesheet" href="/style.css"></head><body><div><script>
+var _ARCTIC_C;
+if (typeof HTMLDocument === 'undefined') HTMLDocument = Document;
+let arctic_dom_content_loaded_listeners = [];
+HTMLDocument.prototype.arctic_addEventListener = HTMLDocument.prototype.addEventListener;
+HTMLDocument.prototype.addEventListener = function(type, listener, options) {
+  if (type === 'DOMContentLoaded') {
+    arctic_dom_content_loaded_listeners.push(listener);
+    document.arctic_addEventListener(type, listener, options);
+  } else document.arctic_addEventListener(type, listener, options);
+}
+       </script><div id="arctic-app"><div><div><title>Adjunction - Ryan Brewer</title><meta name="description" content><script type="text/javascript" async="true" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script><script>
+window.MathJax = {
+  loader: {load: ['[tex]/unicode']},
+  tex: {packages: {'[+]': ['unicode']}},
+};
+        </script><script>hljs.highlightAll();</script></div><nav id="nav"><div id="nav-dropdown" onclick="document.getElementById(&#39;nav&#39;).classList.toggle(&#39;dropdown&#39;);document.body.classList.toggle(&#39;noscroll&#39;);">☰</div><a href="/" id="nav-home" onclick="document.body.classList.remove(&#39;noscroll&#39;);">Ryan Brewer</a><a href="/posts" id="nav-posts" onclick="document.body.classList.remove(&#39;noscroll&#39;);">Posts</a><a href="/wiki" id="nav-wiki" onclick="document.body.classList.remove(&#39;noscroll&#39;);">Wiki</a><a href="/contact" id="nav-contact" onclick="document.body.classList.remove(&#39;noscroll&#39;);">Contact</a><a href="/demos" id="nav-demos" onclick="document.body.classList.remove(&#39;noscroll&#39;);">Demos</a><a href="/feed.rss" id="nav-subscribe" onclick="window.location.href = &#39;/feed.rss&#39;"><img src="/rss-icon.png" id="rss-subscribe-icon">Subscribe</a></nav><div id="body"><h1>Adjunction</h1><p><span>An adjunction \(F\dashv G\) between two <a href="/wiki/category"><span>categories</span></a> \(C\) and \(D\) is a pair of <a href="/wiki/functor"><span>functors</span></a> \(F:D\to C\) and \(G:C\to D\) that satisfy the isomorphism \(F a\to b=a\to G b\), where \(a\) is in \(D\) and \(b\) is in \(C\). Informally, adjunctions let you move something from one side of an arrow to the other, by swapping that something.
+</span></p><p><span>In this example, \(C\) is said to be on the left, \(F\) is said to be going to the left, \(D\) is said to be on the right, and \(G\) is said to be going to the right. Thus it is common to use the letters \(L\) and \(R\) instead of \(F\) and \(G\) respectively. This idea of &quot;left&quot; and &quot;right&quot; are based on the following way of drawing adjunctions:
+</span></p><div class="diagram"><img src="/image-0-adjunction.svg" onload="this.width *= 2.25;"></div><p><span>In this diagram, the adjunction means each \(f\) has a \(g\) in one-to-one correspondence: as an isomorphism of homsets, \(C(La,b)\equiv D(a,Rb)).
+</span></p><p><span>If it&#39;s hard to imagine an isomorphism like this, let&#39;s take a simple example: currying. Let&#39;s take some ordinary category of types and functions, which we&#39;ll call \(C\). A multiple-argument function will be a morphism from a cartesian product, so for example \(\texttt{add}:\texttt{int}\times\texttt{int}\to\texttt{int}\). But as functional programmers, we know that there&#39;s an equivalent version of \(\texttt{add}\), where we curry it: \(\texttt{add_c}:\texttt{int}\to(\texttt{int}\to\texttt{int})\). We can draw this nice diagram:
+</span></p><div class="diagram"><img src="/image-1-adjunction.svg" onload="this.width *= 2.25;"></div><p><span>Now, if we&#39;re slightly more familiar with category theory, we might realize that \(-\times\texttt{int}\) is a functor, and so is \(\texttt{int}\to-\). So we can add those arrows to our diagram, to make it look very familiar:
+</span></p><div class="diagram"><img src="/image-2-adjunction.svg" onload="this.width *= 2.25;"></div><p><span>The equivalence of multi-parameter functions and curried functions is an adjunction! I&#39;m being informal in my presentation but hopefully you can roughly see the technical details. Specifically, it&#39;s actually a family of adjunctions, based on all the possible types of the second parameter. We can write this adjunction like this: \(-\times A\dashv A\to-\), for the various types \(A\).
+</span></p><p><span>Now to test our new equational powers: \(La\to b\equiv a\to Rb\) means, in this case, \(a\times c\to b\equiv a\to c\to b\). That&#39;s true! Going back and forth along that equivalence is exactly currying and uncurrying!
+</span></p><p><span>Now, one thing to notice is that this doesn&#39;t work if you swap the two functors. The left one is on the left, and the right one is on the right; the order matters. Therefore we talk about the &quot;left adjoint functor&quot; and the &quot;right adjoint functor.&quot; If there&#39;s an adjunction \(F\dashv G\), then we say \(F\) has a &quot;right adjoint,&quot; namely \(G\), and \(G\) has a &quot;left adjoint,&quot; namely \(F\).
+</span></p><h3><span>Unit, Counit, Monads
+</span></h3><p><span>Now, you may be coming to this wiki entry a little confused. Adjunctions are often talked about in discussions about monads, and often defined with a &quot;unit&quot; and &quot;counit.&quot; So here&#39;s the craziest part about adjunctions, that makes them absolutely beautiful.
+</span></p><p><span>Remember that adjunction diagram from before? What if we pick \(La\) as our \(b\)?
+</span></p><div class="diagram"><img src="/image-3-adjunction.svg" onload="this.width *= 2.25;"></div><p><span>Well, now we actually know of an \(f\) that must exist: the identity morphism of \(La\)! And since there&#39;s a one-to-one correspondence between \(f\)s and \(g\)s, we know of a \(g\) that must exist as well, namely, whatever is assigned to \(id_{La}\) in the correspondence. We&#39;ll call whatever this is \(\eta:a\to R(La)), or the &quot;unit.&quot;
+</span></p><p><span>Obviously, we can do the same thing on the other side, with \(a=Rb\) instead:
+</span></p><div class="diagram"><img src="/image-4-adjunction.svg" onload="this.width *= 2.25;"></div><p><span>By the same logic, there must be something in correspondence with \(id_{Rb}\), which we&#39;ll call \(\epsilon:L(Rb)\to b\).
+</span></p><p><span>(This is getting somewhere cool soon, just bear with me a moment!)
+</span></p><p><span>Now, if we remember that \(a\) is the same as \(Id_C a\), the identity functor on \(C\) mapping the object \(a\) to itself, then we can see \(\eta:a\to R(La)\) as a transformation between functors \(\eta:Id_C\to R\circ L\). Similarly, \(\epsilon:L\circ R\to Id_C\). In fact, the unit and counit are both <a href="/wiki/natural-transformation"><span>natural transformations</span></a>.
+</span></p><p><span>Now here&#39;s where things start to ramp up in coolness. The unit is actually always the unit of a monad \(R\circ L\), where the join operator \(\mu_a:R(L(R(La)))\to R(La)\) is defined as \(mu=R\circ\epsilon\circ L\) using <a href="/wiki/natural-transformation"><span>horizontal composition</span></a>. But, far crazier, <i><span>every</span></i> monad is based on an adjunction in exactly this way. In the case of our currying adjunction above, we get the State monad! And every comonad is also based on an adjunction, using the counit of the comonad and \(\delta=L\circ\eta\circ R\); in the case of our currying example above, we get the Store comonad. 
+</span></p><p><span>Here&#39;s a massive diagram to show where a monad and comonad come out of an adjunction. Try using the functors from our currying example above to get the definition of the State monad and Store comonad!
+</span></p><div class="diagram"><img src="/image-5-adjunction.svg" onload="this.width *= 2.25;"></div><p><span>As crazy as it is that monads and comonads are inter-definable via adjunctions in this way, the main mathematical use of adjunctions is in the nice equation \(La\to b\equiv a\to Rb\), or more generally written \(C(La,b)\equiv D(a,Rb)). So this &quot;homset equivalence&quot; is the main way they come up in math and category theory, even if the unit/counit definition feels more concrete and/or usable to the peasant functional programmer.
+</span></p><p><span>Also, it&#39;s worth mentioning that an adjunction can be completely defined just by giving the unit and counit; the homset isomorphism can be derived from them. A morphism \(f:La\to b\) is mapped to \(R(f)\circ\eta:a\to Rb\), and a morphism \(g:a\to Rb\) is mapped to \(\epsilon\circ Lg:La\to b\); try going back and forth to check that this is indeed an isomorphism. This means that the unit/counit perspective is often called a &quot;formulation&quot; or &quot;definition&quot; of adjunctions, where as the homset isomorphism is another formulation/definition.</span></p></div><div><div style="height:100pt;"></div><p id="copyright-notice" class="subtle-text">© 2024 Ryan Brewer.</p><script src="/__/firebase/8.10.1/firebase-app.js"></script><script src="/__/firebase/8.10.1/firebase-analytics.js"></script><script src="/__/firebase/init.js"></script><script>firebase.analytics();</script></div></div></div><script>
+// SPA algorithm partially inspired by Hayleigh Thompson's wonderful Modem library
+async function go_to(url, loader, back) {
+  if (!back && url.pathname === window.location.pathname) {
+    if (url.hash) document.getElementById(url.hash.slice(1))?.scrollIntoView();
+    else window.scrollTo(0, 0);
+    return;
+  }
+  document.dispatchEvent(new Event('beforeunload'));
+  document.dispatchEvent(new Event('unload'));
+  for (let i = 0; i < arctic_dom_content_loaded_listeners.length; i++)
+    document.removeEventListener('DOMContentLoaded', arctic_dom_content_loaded_listeners[i]);
+  arctic_dom_content_loaded_listeners = [];
+  const $app = document.getElementById('arctic-app');
+  if (loader) $app.innerHTML = '<div id="arctic-loader"></div>';
+  if (!back) window.history.pushState({}, '', url.href);
+  // handle new path
+  const response = await fetch('/__pages/' + url.pathname + '/index.html');
+  if (!response.ok) response = await fetch('/__pages/404.html');
+  if (!response.ok) return;
+  const html = await response.text();
+  $app.innerHTML = '<script>_ARCTIC_C=0;</'+'script>'+html;
+  // re-create script elements, so their javascript runs
+  const scripts = $app.querySelectorAll('script');
+  const num_scripts = scripts.length;
+  for (let i = 0; i < num_scripts; i++) {
+    const script = scripts[i];
+    const n = document.createElement('script');
+    // scripts load nondeterministically, so we figure out when they've all finished via the _ARCTIC_C barrier
+    if (script.innerHTML === '') {
+      // external scripts don't run their inline js, so they need an onload listener
+      n.onload = () => {
+        if (++_ARCTIC_C >= num_scripts)
+          document.dispatchEvent(new Event('DOMContentLoaded'));
+      };
+    } else {
+      // inline scripts might not trigger onload, so they get js appended to the end instead
+      const t = document.createTextNode(
+        script.innerHTML +
+        ';if(++_ARCTIC_C>=' + num_scripts +
+        ')document.dispatchEvent(new Event(\'DOMContentLoaded\'));'
+      );
+      n.appendChild(t);
+    }
+    // attributes at the end because 'src' needs to load after onload is listening
+    for (let j = 0; j < script.attributes.length; j++) {
+      const attr = script.attributes[j];
+      n.setAttribute(attr.name, attr.value);
+    }
+    script.parentNode.replaceChild(n, script);
+  }
+  window.requestAnimationFrame(() => {
+    if (url.hash)
+      document.getElementById(url.hash.slice(1))?.scrollIntoView();
+    else
+      window.scrollTo(0, 0);
+  });
+}
+document.addEventListener('click', async function(e) {
+  const a = find_a(e.target);
+  if (!a) return;
+  try {
+    const url = new URL(a.href);
+    const is_external = url.host !== window.location.host;
+    if (is_external) return;
+    event.preventDefault();
+    go_to(url, false, false);
+  } catch {
+    return;
+  }
+});
+window.addEventListener('popstate', (e) => {
+  e.preventDefault();
+  const url = new URL(window.location.href);
+  go_to(url, false, true);
+});
+function find_a(target) {
+  if (!target || target.tagName === 'BODY') return null;
+  if (target.tagName === 'A') return target;
+  return find_a(target.parentElement);
+}</script></div></body></html>
