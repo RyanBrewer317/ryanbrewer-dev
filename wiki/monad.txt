@@ -1,0 +1,37 @@
+id: monad
+title: Monads and Comonads
+tags: functor,comonad,category,theory,adjunction,adjoint
+
+Here goes nothing, the infamous monad tutorial. I'm going to just stick to the math here, and suggest you go elsewhere for coding tutorials. Say you've got a [functor](/wiki/functor) \\(F:C\\to C\\) and two [natural transformations](/wiki/natural-transformation) \\(\\eta:Id_C\\to F\\) and \\(\\mu:F\\circ F\\to F\\) satisfying the "monad laws" below, then \\((F,\\eta,\\mu)\\) is a monad (originally called a "triple" in some places), though it's more common to just say \\(F\\) is a monad.
+
+The monad laws are that the following diagrams commute:
+
+@diagram
+    F\ar[r,bend left=50,"\eta\circ id_F"] & F\circ F\ar[l,bend left=50,"\mu"{below}]
+
+@diagram
+    F\ar[r,bend left=50,"id_F\circ\eta"] & F\circ F\ar[l,bend left=50,"\mu"{below}]
+
+@diagram
+    F\circ F\circ F\ar[r,"id_F\circ\mu"]\ar[d,"\mu\circ id_F"] & F\circ F\ar[d,"\mu"] \\
+    F\circ F\ar[r,"\mu"] & F
+
+In all of these cases, the composition \\(\\circ\\) is [horizontal composition](/wiki/natural-transformation) of natural transformations, which you can only tell from context. For example, \\(id_F:F\\to F\\) and \\(\\eta:Id_C\\to F\\) don't match end-to-end when put like \\(\\eta\\circ id_F\\), so interpreting that as vertical composition would just be nonsense. And when you swap the order, like \\(id_F\\circ\\eta\\), then the result is the same as \\(\\eta\\), so its type would be \\(Id_C\\to F\\) and not \\(F\\to F\\circ F\\). So in both of these cases we can tell that it's a horizontal composition instead of vertical, since that's the only thing that makes sense and has the right \\(F\\to F\\circ F\\) type.
+
+The essence of a monad is \\(\\mu\\), this notion of collapsing a \\(F(Fa)\\) into \\(Fa\\). It could mean chaining the two \\(F\\) operations into a single joint operation with the combined behavior, or it could mean trying the first one and then trying the second one only if the first succeeded (or failed, depending on the monad). Whatever the monad is, you can generally get the essence of its monad-ness by the particular details of its particular \\(\\mu\\).
+
+The dual of a monad is called a comonad, which is just a functor \\(F:C\\to C\\) and two natural transformations \\(\\varepsilon:F\\to Id_C\\) and \\(\\delta:F\\to F\\circ F\\) satisfying the commutative squares above but with reversed arrows:
+
+@diagram
+    F\ar[r,bend left=50,"\delta"] & F\circ F\ar[l,bend left=50,"\varepsilon\circ id_F"{below}]
+
+@diagram
+    F\ar[r,bend left=50,"\delta"] & F\circ F\ar[l,bend left=50,"id_F\circ\varepsilon"{below}]
+
+@diagram
+    F\circ F\circ F & F\circ F\ar[l,"id_F\circ\delta"] \\
+    F\circ F\ar[u,"\delta\circ id_F"] & F\ar[l,"\delta"]\ar[u,"\delta"]
+
+Comonads are generally under-appreciated, giving a useful notion of computation-in-context.
+
+Monads are related to their dual comonads by [adjunctions](/wiki/adjunction). In fact, a beautiful result is that \\(\\mu\\) can be defined for every monad generically using \\(\\varepsilon\\), and \\(\\delta\\) can be defined generically for every comonad using \\(\\eta\\), using the two functors in the adjunction (which are not the same as the monadic functor or comonadic functor, though they're related). Check out the later half of the entry on adjunctions for details about this.
