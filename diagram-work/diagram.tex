@@ -3,7 +3,7 @@
 \usepackage{tikz-cd}
 \begin{document}
 \begin{tikzcd}
-    int\times int\ar[d,"add"'] & int\ar[d,"add_c"]\ar[l,"-\times int"'] \\
-    int\ar[r,"int\to-"'] & int\to int
+    F\circ F\circ F & F\circ F\ar[l,"id_F\circ\delta"] \\
+    F\circ F\ar[u,"\delta\circ id_F"] & F\ar[l,"\delta"]\ar[u,"\delta"]
 \end{tikzcd}
 \end{document}

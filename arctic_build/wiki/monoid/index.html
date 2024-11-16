@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en"><head><script async="true" src="https://www.googletagmanager.com/gtag/js?id=G-BDZJ8SX3Y1"></script><script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+        </script><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><link rel="icon" type="image/x-icon" href="/favicon.ico"><link rel="alternate" type="application/rss+xml" title="Ryan Brewer&#39;s Blog" href="https://ryanbrewer.dev/feed.rss"><script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css"><script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script><link rel="stylesheet" href="/style.css"></head><body><div><script>
+var _ARCTIC_C;
+if (typeof HTMLDocument === 'undefined') HTMLDocument = Document;
+let arctic_dom_content_loaded_listeners = [];
+HTMLDocument.prototype.arctic_addEventListener = HTMLDocument.prototype.addEventListener;
+HTMLDocument.prototype.addEventListener = function(type, listener, options) {
+  if (type === 'DOMContentLoaded') {
+    arctic_dom_content_loaded_listeners.push(listener);
+    document.arctic_addEventListener(type, listener, options);
+  } else document.arctic_addEventListener(type, listener, options);
+}
+       </script><div id="arctic-app"><div><div><title>Monoid - Ryan Brewer</title><meta name="description" content><script type="text/javascript" async="true" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script><script>
+window.MathJax = {
+  loader: {load: ['[tex]/unicode']},
+  tex: {packages: {'[+]': ['unicode']}},
+};
+        </script><script>hljs.highlightAll();</script></div><nav id="nav"><div id="nav-dropdown" onclick="document.getElementById(&#39;nav&#39;).classList.toggle(&#39;dropdown&#39;);document.body.classList.toggle(&#39;noscroll&#39;);">☰</div><a href="/" id="nav-home" onclick="document.body.classList.remove(&#39;noscroll&#39;);">Ryan Brewer</a><a href="/posts" id="nav-posts" onclick="document.body.classList.remove(&#39;noscroll&#39;);">Posts</a><a href="/wiki" id="nav-wiki" onclick="document.body.classList.remove(&#39;noscroll&#39;);">Wiki</a><a href="/contact" id="nav-contact" onclick="document.body.classList.remove(&#39;noscroll&#39;);">Contact</a><a href="/demos" id="nav-demos" onclick="document.body.classList.remove(&#39;noscroll&#39;);">Demos</a><a href="/feed.rss" id="nav-subscribe" onclick="window.location.href = &#39;/feed.rss&#39;"><img src="/rss-icon.png" id="rss-subscribe-icon">Subscribe</a></nav><div id="body"><h1>Monoid</h1><p><span>Monoids are the formal concept of &quot;and then.&quot; You&#39;ve got some set of things \(S\), and you can put two of them together to get another thing in \(S\). If \(S\) is actions, then doing one &quot;and then&quot; the other is a new action, so it&#39;s also in \(S\). Monoids also have something in \(S\) for &quot;doing nothing,&quot; so if you &quot;do nothing and then&quot; something, you only did one thing, and if you do something &quot;and then do nothing,&quot; you only did one thing. If we call our &quot;and then&quot; operator \(otimes\), and our &quot;do nothing&quot; element \(e\), then we write the monoid \((S,\otimes,e)\).
+</span></p><p><span>To properly capture the idea of &quot;and then,&quot; we need to say that \(otimes\) is associative, and that \(e\) is an identity for \(otimes\). That just means three equations need to be true: \(a\otimes(b\otimes c)=(a\otimes b)\otimes c\), \(e\otimes a=a\), and \(a\otimes e=a\).
+</span></p><p><span>The most common example of a monoid is the set of natural numbers with addition, \((\mathbb{N},+,0)\). We can also use multiplication, \((\mathbb{N},\times,1)\). For addition, the idea is that \(2+3\) is \(2\) &quot;and then&quot; \(3\), which, by choosing \(+\), we&#39;ve defined to mean \(5\). When we choose multiplication instead, \(2\) &quot;and then&quot; \(3\) means \(6\) instead. And notice how the &quot;do nothing&quot; element changed as well.
+</span></p><p><span>The &quot;do nothing&quot; element is formally called the &quot;identity&quot; element or &quot;neutral&quot; element. The &quot;and then&quot; thing is formally called the &quot;operator&quot; or &quot;product.&quot; The set of things is formally called the &quot;underlying set&quot; or &quot;carrier set.&quot;
+</span></p><p><span>Notice that not all monoids are commutative; that is, \(a\otimes b\) doesn&#39;t always equal \(b\otimes a\). In general, \(a\) &quot;and then&quot; \(b\) is not the same as \(b\) &quot;and then&quot; \(a\). An example follows.
+</span></p><p><span>The most representative monoid for a set \(S\) is the set of <i><span>lists</span></i> of elements of \(S\). This is formally called the &quot;free monoid&quot; for \(S\), since we can generated a monoid &quot;for free&quot; from the elements of \(S\) using lists. If \(S\) is \(mathbb{N}\), then some example elements in the carrier set of the free monoid are \([1,1,7]\) and \([9,3]\). Putting them together gives \([1,1,7,9,3]\), this is formally called &quot;concatenation.&quot; The identity element is the empty list, \([]\). Writing \(\oplus\) for concatenation, the free monoid is \(([S],\oplus,[])\). Notice that this monoid operator is not commutative, since \([1,1,7]\oplus[9,3]\) is not the same as \([9,3]\oplus[1,1,7]\).
+</span></p><p><span>Why are lists the most representative monoid for a set? Any monoid whose carrier set is \(S\) can be seen as an equivalence class of the free monoid. For example, \((\mathbb{N},+,0)\) can be seen as (\([\mathbb{N}],\oplus,[]\)), except that we consider two lists equivalent when their sums are equal. So \([1,1,7]\equiv[9]\equiv[5,0,4,0,0]\), etc. When we add these equivalences, concatenation behaves just like addition, and the empty list behaves just like zero. As another example, you can hopefully see how seeing lists as equivalent when their <i><span>products</span></i> are equal then gives the multiplication monoid \((mathbb{N},\times,1)\).
+</span></p><p><span>A generalization of monoids is a &quot;<a href="/wiki/category"><span>category</span></a>,&quot; which perhaps encodes the idea of &quot;and then&quot; even better than monoids do. In a category, it&#39;s like the things are jigsaw-puzzle pieces, and the &quot;and then&quot; operation (called &quot;composition,&quot; written \(a\circ b\)) is gluing them together. It&#39;s a generalization of monoids because pieces can only be put together when their edges match up: \(a\) might have an \(x\) edge on the left and a \(y\) edge on the right, so \(a\circ b\) is only possible if \(b\) has a \(y\) edge on the left. For categories we write things like \(a:x\to y\) to talk about the left and right edges of \(a\). The identity element has matching edges on both sides, but now there&#39;s one for every kind of edge. A category is a monoid when all the edges on all the pieces (&quot;objects&quot;) are the same, so there&#39;s only one kind of edge and any two objects can be put together in either order to make a third object.</span></p></div><div><div style="height:100pt;"></div><p id="copyright-notice" class="subtle-text">© 2024 Ryan Brewer.</p><script src="/__/firebase/8.10.1/firebase-app.js"></script><script src="/__/firebase/8.10.1/firebase-analytics.js"></script><script src="/__/firebase/init.js"></script><script>firebase.analytics();</script></div></div></div><script>
+// SPA algorithm partially inspired by Hayleigh Thompson's wonderful Modem library
+async function go_to(url, loader, back) {
+  if (!back && url.pathname === window.location.pathname) {
+    if (url.hash) document.getElementById(url.hash.slice(1))?.scrollIntoView();
+    else window.scrollTo(0, 0);
+    return;
+  }
+  document.dispatchEvent(new Event('beforeunload'));
+  document.dispatchEvent(new Event('unload'));
+  for (let i = 0; i < arctic_dom_content_loaded_listeners.length; i++)
+    document.removeEventListener('DOMContentLoaded', arctic_dom_content_loaded_listeners[i]);
+  arctic_dom_content_loaded_listeners = [];
+  const $app = document.getElementById('arctic-app');
+  if (loader) $app.innerHTML = '<div id="arctic-loader"></div>';
+  if (!back) window.history.pushState({}, '', url.href);
+  // handle new path
+  const response = await fetch('/__pages/' + url.pathname + '/index.html');
+  if (!response.ok) response = await fetch('/__pages/404.html');
+  if (!response.ok) return;
+  const html = await response.text();
+  $app.innerHTML = '<script>_ARCTIC_C=0;</'+'script>'+html;
+  // re-create script elements, so their javascript runs
+  const scripts = $app.querySelectorAll('script');
+  const num_scripts = scripts.length;
+  for (let i = 0; i < num_scripts; i++) {
+    const script = scripts[i];
+    const n = document.createElement('script');
+    // scripts load nondeterministically, so we figure out when they've all finished via the _ARCTIC_C barrier
+    if (script.innerHTML === '') {
+      // external scripts don't run their inline js, so they need an onload listener
+      n.onload = () => {
+        if (++_ARCTIC_C >= num_scripts)
+          document.dispatchEvent(new Event('DOMContentLoaded'));
+      };
+    } else {
+      // inline scripts might not trigger onload, so they get js appended to the end instead
+      const t = document.createTextNode(
+        script.innerHTML +
+        ';if(++_ARCTIC_C>=' + num_scripts +
+        ')document.dispatchEvent(new Event(\'DOMContentLoaded\'));'
+      );
+      n.appendChild(t);
+    }
+    // attributes at the end because 'src' needs to load after onload is listening
+    for (let j = 0; j < script.attributes.length; j++) {
+      const attr = script.attributes[j];
+      n.setAttribute(attr.name, attr.value);
+    }
+    script.parentNode.replaceChild(n, script);
+  }
+  window.requestAnimationFrame(() => {
+    if (url.hash)
+      document.getElementById(url.hash.slice(1))?.scrollIntoView();
+    else
+      window.scrollTo(0, 0);
+  });
+}
+document.addEventListener('click', async function(e) {
+  const a = find_a(e.target);
+  if (!a) return;
+  try {
+    const url = new URL(a.href);
+    const is_external = url.host !== window.location.host;
+    if (is_external) return;
+    event.preventDefault();
+    go_to(url, false, false);
+  } catch {
+    return;
+  }
+});
+window.addEventListener('popstate', (e) => {
+  e.preventDefault();
+  const url = new URL(window.location.href);
+  go_to(url, false, true);
+});
+function find_a(target) {
+  if (!target || target.tagName === 'BODY') return null;
+  if (target.tagName === 'A') return target;
+  return find_a(target.parentElement);
+}</script></div></body></html>
