@@ -56,7 +56,7 @@ By the same logic, there must be something in correspondence with \\(id_{Rb}\\),
 
 (This is getting somewhere cool soon, just bear with me a moment!)
 
-Now, if we remember that \\(a\\) is the same as \\(Id_C\\; a\\), the identity functor on \\(C\\) mapping the object \\(a\\) to itself, then we can see \\(\\eta:a\\to R(La)\\) as a transformation between functors \\(\\eta:Id_C\\;\\to R\\circ L\\). Similarly, \\(\\varepsilon:L\\circ R\\to Id_C\\). In fact, the unit and counit are both [natural transformations](/wiki/natural-transformation).
+Now, if we remember that \\(a\\) is the same as \\(Id_C\\; a\\), the identity functor on \\(C\\) mapping the object \\(a\\) to itself, then we can see \\(\\eta:a\\to R(La)\\) as a transformation between functors \\(\\eta:Id_C\\to R\\circ L\\). Similarly, \\(\\varepsilon:L\\circ R\\to Id_C\\). In fact, the unit and counit are both [natural transformations](/wiki/natural-transformation).
 
 Now here's where things start to ramp up in coolness. The unit is actually always the unit of a monad \\(R\\circ L\\), where the join operator \\(\\mu_a:R(L(R(La)))\\to R(La)\\) is defined as \\(\\mu=R\\circ\\varepsilon\\circ L\\) using [horizontal composition](/wiki/natural-transformation). But, far crazier, *every* monad is based on an adjunction in exactly this way. In the case of our currying adjunction above, we get the State monad! And every comonad is \\(L\\circ R\\) for an adjunction \\(L\\dashv R\\), using the counit of the comonad and \\(\\delta=L\\circ\\eta\\circ R\\); in the case of our currying example above, we get the Store comonad. 
 
