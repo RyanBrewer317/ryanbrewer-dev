@@ -2,6 +2,7 @@ import * as $parse from "../../../arctic/arctic/parse.mjs";
 import * as $bool from "../../../gleam_stdlib/gleam/bool.mjs";
 import * as $dict from "../../../gleam_stdlib/gleam/dict.mjs";
 import * as $int from "../../../gleam_stdlib/gleam/int.mjs";
+import * as $io from "../../../gleam_stdlib/gleam/io.mjs";
 import * as $result from "../../../gleam_stdlib/gleam/result.mjs";
 import { map_error } from "../../../gleam_stdlib/gleam/result.mjs";
 import * as $attribute from "../../../lustre/lustre/attribute.mjs";
@@ -19,7 +20,7 @@ export function parse(dir, get_id, to_state) {
       throw makeError(
         "assignment_no_match",
         "arctic/plugin/diagram",
-        16,
+        17,
         "",
         "Assignment pattern did not match",
         { value: $ }
@@ -56,6 +57,7 @@ export function parse(dir, get_id, to_state) {
         );
       })(),
       (exists) => {
+        $io.debug(img_filename);
         return $bool.guard(
           exists,
           new Ok(out),
@@ -99,6 +101,7 @@ export function parse(dir, get_id, to_state) {
                     );
                   })(),
                   (_) => {
+                    $io.debug("made diagram.pdf");
                     return $result.try$(
                       (() => {
                         let _pipe = $shellout.command(
@@ -123,7 +126,10 @@ export function parse(dir, get_id, to_state) {
                           },
                         );
                       })(),
-                      (_) => { return new Ok(out); },
+                      (_) => {
+                        $io.debug((("made " + dir) + "/") + img_filename);
+                        return new Ok(out);
+                      },
                     );
                   },
                 );
