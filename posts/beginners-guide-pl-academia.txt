@@ -90,68 +90,68 @@ One final piece of advice I have for self-learning is talking to people. Part of
 
 Finally, here's the promised list of papers:
 
-[Quasi-static typing](https://dl.acm.org/doi/10.1145/96709.96747) (1990) by Satish R. Thatte.
+ [Quasi-static typing](https://dl.acm.org/doi/10.1145/96709.96747) (1990) by Satish R. Thatte.
 
-[Dynamic typing in a statically-typed language](https://dl.acm.org/doi/10.1145/75277.75296) (1989) by Martin Abadi, Luca Cardelli, Benjamin Pierce, and Gordon Plotkin.
+ [Dynamic typing in a statically-typed language](https://dl.acm.org/doi/10.1145/75277.75296) (1989) by Martin Abadi, Luca Cardelli, Benjamin Pierce, and Gordon Plotkin.
 
-[Well-Typed Programs Can’t Be Blamed](https://www.researchgate.net/publication/221602824_Well-Typed_Programs_Can't_Be_Blamed) (2009) by Philip Wadler and Robert Bruce Findler.
+ [Well-Typed Programs Can’t Be Blamed](https://www.researchgate.net/publication/221602824_Well-Typed_Programs_Can't_Be_Blamed) (2009) by Philip Wadler and Robert Bruce Findler.
 
-[Hybrid Type Checking](https://users.soe.ucsc.edu/~cormac/papers/popl06-hybrid.pdf) (2006) by Cormac Flanagan.
+ [Hybrid Type Checking](https://users.soe.ucsc.edu/~cormac/papers/popl06-hybrid.pdf) (2006) by Cormac Flanagan.
 
-[Refinement Types: A Tutorial](https://arxiv.org/abs/2010.07763) (2020) by Ranjit Jhala and Niki Vazou.
+ [Refinement Types: A Tutorial](https://arxiv.org/abs/2010.07763) (2020) by Ranjit Jhala and Niki Vazou.
 
-[Introduction to Generalized Type Systems](https://www.cambridge.org/core/journals/journal-of-functional-programming/article/introduction-to-generalized-type-systems/869991BA6A99180BF96A616894C6D710) (1991) by Henk Barendregt.
+ [Introduction to Generalized Type Systems](https://www.cambridge.org/core/journals/journal-of-functional-programming/article/introduction-to-generalized-type-systems/869991BA6A99180BF96A616894C6D710) (1991) by Henk Barendregt.
 
-[Decidable Type Inference for the Polymorphic Rewriting Calculus](https://www.researchgate.net/publication/29622149_Decidable_Type_Inference_for_the_Polymorphic_Rewriting_Calculus) (2006) by Horatiu Cirstea, Claude Kirchner, Luigi Liquori, and Benjamin Wack.
+ [Decidable Type Inference for the Polymorphic Rewriting Calculus](https://www.researchgate.net/publication/29622149_Decidable_Type_Inference_for_the_Polymorphic_Rewriting_Calculus) (2006) by Horatiu Cirstea, Claude Kirchner, Luigi Liquori, and Benjamin Wack.
 
-[Term Rewriting and All That](https://www.amazon.com/Term-Rewriting-That-Franz-Baader/dp/0521779200) (1998) by Franz Baader and Tobias Nipkow.
+ [Term Rewriting and All That](https://www.amazon.com/Term-Rewriting-That-Franz-Baader/dp/0521779200) (1998) by Franz Baader and Tobias Nipkow.
 
-[foetus – Termination Checker for Simple Functional Programs](https://www.semanticscholar.org/paper/foetus-Termination-Checker-for-Simple-Functional-Abel/c216d842401569de47d2472b84d33f4f38bbe670) (2002) by Andreas Abel.
+ [foetus – Termination Checker for Simple Functional Programs](https://www.semanticscholar.org/paper/foetus-Termination-Checker-for-Simple-Functional-Abel/c216d842401569de47d2472b84d33f4f38bbe670) (2002) by Andreas Abel.
 
-[Calculating sized types](https://dl.acm.org/doi/10.1145/328691.328893) (1999) by Wei-Ngan Chin and Siau-Cheng Khoo.
+ [Calculating sized types](https://dl.acm.org/doi/10.1145/328691.328893) (1999) by Wei-Ngan Chin and Siau-Cheng Khoo.
 
-[The Implicit Calculus of Constructions as a Programming Language with Dependent Types](https://link.springer.com/chapter/10.1007/978-3-540-78499-9_26) (2008) by Bruno Barras and Bruno Bernardo.
+ [The Implicit Calculus of Constructions as a Programming Language with Dependent Types](https://link.springer.com/chapter/10.1007/978-3-540-78499-9_26) (2008) by Bruno Barras and Bruno Bernardo.
 
-[Syntax and Semantics of Cedille](https://github.com/cedille/cedille.github.io/blob/master/semantics.pdf) (2018) by Aaron Stump.
+ [Syntax and Semantics of Cedille](https://github.com/cedille/cedille.github.io/blob/master/semantics.pdf) (2018) by Aaron Stump.
 
-[Experience With Safe Manual Memory-Management in Cyclone](https://dl.acm.org/doi/10.1145/1029873.1029883) (2004) by Michael Hicks, Greg Morrisett, Dan Grossman, and Trevor Jim.
+ [Experience With Safe Manual Memory-Management in Cyclone](https://dl.acm.org/doi/10.1145/1029873.1029883) (2004) by Michael Hicks, Greg Morrisett, Dan Grossman, and Trevor Jim.
 
-[Compiling With Types](https://www.semanticscholar.org/paper/Compiling-with-Types-Morrisett/75c668959ae112943b32d75bccc2d8bd5d6ee3b6) (1995) by Greg Morrisett.
+ [Compiling With Types](https://www.semanticscholar.org/paper/Compiling-with-Types-Morrisett/75c668959ae112943b32d75bccc2d8bd5d6ee3b6) (1995) by Greg Morrisett.
 
-[Compiling Polymorphism Using Intensional Type Analysis](https://dl.acm.org/doi/10.1145/199448.199475) (1995) by Robert Harper and Greg Morrisett.
+ [Compiling Polymorphism Using Intensional Type Analysis](https://dl.acm.org/doi/10.1145/199448.199475) (1995) by Robert Harper and Greg Morrisett.
 
-[Typed Memory Management in a Calculus of Capabilities](https://dl.acm.org/doi/10.1145/292540.292564) (1999) by Karl Crary, David Walker, and Greg Morrisett.
+ [Typed Memory Management in a Calculus of Capabilities](https://dl.acm.org/doi/10.1145/292540.292564) (1999) by Karl Crary, David Walker, and Greg Morrisett.
 
-[Region-Based Memory Management](https://www.sciencedirect.com/science/article/pii/S0890540196926139) (1997) by Mads Tofte and Jean-Pierre Talpin.
+ [Region-Based Memory Management](https://www.sciencedirect.com/science/article/pii/S0890540196926139) (1997) by Mads Tofte and Jean-Pierre Talpin.
 
-[Efficient Tree-Traversals: Reconciling Parallelism and Dense Data Representations](https://arxiv.org/abs/2107.00522) (2021) by Chaitanya Koparkar, Mike Rainey, Michael Vollmer, Milind Kulkarni, and Ryan R. Newton.
+ [Efficient Tree-Traversals: Reconciling Parallelism and Dense Data Representations](https://arxiv.org/abs/2107.00522) (2021) by Chaitanya Koparkar, Mike Rainey, Michael Vollmer, Milind Kulkarni, and Ryan R. Newton.
 
-[The Essence of Compiling with Continuations](https://dl.acm.org/doi/10.1145/173262.155113) (1993) by Cormac Flanagan, Amr Sabry, Bruce F. Duba, and Matthias Felleisen.
+ [The Essence of Compiling with Continuations](https://dl.acm.org/doi/10.1145/173262.155113) (1993) by Cormac Flanagan, Amr Sabry, Bruce F. Duba, and Matthias Felleisen.
 
-[Par means parallel: multiplicative linear logic proofs as concurrent functional programs](https://dl.acm.org/doi/10.1145/3371086) (2019) by Federico Aschieri and Francesco A. Genco.
+ [Par means parallel: multiplicative linear logic proofs as concurrent functional programs](https://dl.acm.org/doi/10.1145/3371086) (2019) by Federico Aschieri and Francesco A. Genco.
 
-[Choreographic Programming](https://portal.findresearcher.sdu.dk/en/publications/choreographic-programming) (2013) by Fabrizio Montesi.
+ [Choreographic Programming](https://portal.findresearcher.sdu.dk/en/publications/choreographic-programming) (2013) by Fabrizio Montesi.
 
-[LVars: Lattice-based Data Structures for Deterministic Parallelism](https://dl.acm.org/doi/10.1145/2502323.2502326) (2013) by Lindsey Kuper and Ryan R. Newton.
+ [LVars: Lattice-based Data Structures for Deterministic Parallelism](https://dl.acm.org/doi/10.1145/2502323.2502326) (2013) by Lindsey Kuper and Ryan R. Newton.
 
-[Linear Types can Change The World!](https://www.semanticscholar.org/paper/Linear-Types-can-Change-the-World!-Wadler/24c850390fba27fc6f3241cb34ce7bc6f3765627) (1990) by Philip Wadler.
+ [Linear Types can Change The World!](https://www.semanticscholar.org/paper/Linear-Types-can-Change-the-World!-Wadler/24c850390fba27fc6f3241cb34ce7bc6f3765627) (1990) by Philip Wadler.
 
-[Linear Regions Are All You Need](https://link.springer.com/chapter/10.1007/11693024_2) (2006) by Matthew Fluet, Greg Morrisett, and Amal Ahmed.
+ [Linear Regions Are All You Need](https://link.springer.com/chapter/10.1007/11693024_2) (2006) by Matthew Fluet, Greg Morrisett, and Amal Ahmed.
 
-[Alias Types](https://link.springer.com/chapter/10.1007/3-540-46425-5_24) (2000) by Frederick Smith, David Walker, and Greg Morrisett.
+ [Alias Types](https://link.springer.com/chapter/10.1007/3-540-46425-5_24) (2000) by Frederick Smith, David Walker, and Greg Morrisett.
 
-[A Core Calculus of Dependency](https://dl.acm.org/doi/10.1145/292540.292555) (1999) by Martín Abadi, Anindya Banerjee, Nevin Heintze, and Jon G. Riecke.
+ [A Core Calculus of Dependency](https://dl.acm.org/doi/10.1145/292540.292555) (1999) by Martín Abadi, Anindya Banerjee, Nevin Heintze, and Jon G. Riecke.
 
-[A Calculus for Flow-Limited Authorization](https://arxiv.org/abs/2104.10379) (2021) by Owen Arden, Anitha Gollamudi, Ethan Cecchetti, Stephen Chong, and Andrew C. Myers.
+ [A Calculus for Flow-Limited Authorization](https://arxiv.org/abs/2104.10379) (2021) by Owen Arden, Anitha Gollamudi, Ethan Cecchetti, Stephen Chong, and Andrew C. Myers.
 
-[Monadic and Comonadic Aspects of Dependency Analysis](https://arxiv.org/abs/2209.06334) (2022) by Pritam Choudhury.
+ [Monadic and Comonadic Aspects of Dependency Analysis](https://arxiv.org/abs/2209.06334) (2022) by Pritam Choudhury.
 
-[A Perspective on the Dependency Core Calculus](https://dl.acm.org/doi/10.1145/3264820.3264823) (2018) by Maximilian Algehed.
+ [A Perspective on the Dependency Core Calculus](https://dl.acm.org/doi/10.1145/3264820.3264823) (2018) by Maximilian Algehed.
 
-[Noninterference For Free](https://dl.acm.org/doi/10.1145/2784731.2784733) (2015) by William Bowman and Amal Ahmed.
+ [Noninterference For Free](https://dl.acm.org/doi/10.1145/2784731.2784733) (2015) by William Bowman and Amal Ahmed.
 
-[Theorems for free!](https://dl.acm.org/doi/10.1145/99370.99404) (1989) by Philip Wadler.
+ [Theorems for free!](https://dl.acm.org/doi/10.1145/99370.99404) (1989) by Philip Wadler.
 
-[The Delta-calculus: syntax and types](https://arxiv.org/abs/1803.09660) (2018) by Luigi Liquori and Claude Stolze.
+ [The Delta-calculus: syntax and types](https://arxiv.org/abs/1803.09660) (2018) by Luigi Liquori and Claude Stolze.
 
-[Dependently-Typed Programming with Logical Equality Reflection](https://dl.acm.org/doi/10.1145/3607852) (2023) by Yiyan Liu and Stephanie Weirich.
+ [Dependently-Typed Programming with Logical Equality Reflection](https://dl.acm.org/doi/10.1145/3607852) (2023) by Yiyan Liu and Stephanie Weirich.
