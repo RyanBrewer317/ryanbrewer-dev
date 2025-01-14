@@ -234,6 +234,16 @@ textarea:focus, input:focus, #search-posts:focus, #search-wiki:focus {
   filter: invert(1);
 }
 
+.math-block {
+  overflow-x: scroll;
+  scrollbar-width: none; /* firefox */
+  -ms-overflow-style: none; /* IE 10+ */
+}
+
+.math-block::-webkit-scrollbar { /* Chrome, Safari */
+  display: none;
+}
+
 #nav-dropdown {
   display: none;
 }
