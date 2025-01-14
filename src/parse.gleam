@@ -47,9 +47,9 @@ pub fn parse(path: String, content: String) -> Result(Page) {
     }
   })
   |> parse.add_static_component("math", fn(_args, body, data) {
-    use <- fn(k) { Ok(#(html.div([], k()), parse.get_state(data))) }
-    use line <- list.map(string.split(body, on: "\n"))
-    html.div([attribute.class("math-block")], [text("\\[" <> line <> "\\]")])
+    let el =
+      html.div([attribute.class("math-block")], [text("\\[" <> body <> "\\]")])
+    Ok(#(el, parse.get_state(data)))
   })
   |> parse.parse(path, content)
 }

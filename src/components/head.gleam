@@ -26,8 +26,8 @@ pub fn local_head(title: String, description: String) -> Element(Nil) {
       [],
       "
 window.MathJax = {
-  loader: {load: ['[tex]/unicode']},
-  tex: {packages: {'[+]': ['unicode']}},
+  loader: {load: ['[tex]/unicode','[tex]/bussproofs']},
+  tex: {packages: {'[+]': ['unicode','bussproofs']}},
 };
         ",
     ),

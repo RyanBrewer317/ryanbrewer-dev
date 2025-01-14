@@ -29,7 +29,7 @@ export function local_head(title, description) {
       ),
       $html.script(
         toList([]),
-        "\nwindow.MathJax = {\n  loader: {load: ['[tex]/unicode']},\n  tex: {packages: {'[+]': ['unicode']}},\n};\n        ",
+        "\nwindow.MathJax = {\n  loader: {load: ['[tex]/unicode','[tex]/bussproofs']},\n  tex: {packages: {'[+]': ['unicode','bussproofs']}},\n};\n        ",
       ),
       $html.script(toList([]), "hljs.highlightAll();"),
     ]),

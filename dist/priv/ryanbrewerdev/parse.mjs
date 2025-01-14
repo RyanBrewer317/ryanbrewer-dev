@@ -99,21 +99,11 @@ export function parse(path, content) {
     _pipe$6,
     "math",
     (_, body, data) => {
-      return ((k) => {
-        return new Ok([$html.div(toList([]), k()), $parse.get_state(data)]);
-      })(
-        () => {
-          return $list.map(
-            $string.split(body, "\n"),
-            (line) => {
-              return $html.div(
-                toList([$attribute.class$("math-block")]),
-                toList([text(("\\[" + line) + "\\]")]),
-              );
-            },
-          );
-        },
+      let el = $html.div(
+        toList([$attribute.class$("math-block")]),
+        toList([text(("\\[" + body) + "\\]")]),
       );
+      return new Ok([el, $parse.get_state(data)]);
     },
   );
   return $parse.parse(_pipe$7, path, content);

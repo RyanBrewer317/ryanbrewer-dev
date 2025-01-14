@@ -92,5 +92,12 @@
       <guid>https://ryanbrewer.dev/posts/cricket/</guid>
       <description><![CDATA[Cricket is a lazy gradually-typed functional language with objects. It's very tiny but very expressive; anyone can implement it themselves!  Read more <a href="https://ryanbrewer.dev/posts/cricket/">here</a>!]]></description>
     </item>
+    <item>
+      <title>Par Part 1: Sequent Calculus</title>
+      <pubDate>Mon, 13 Jan 2025 00:00:00 PST</pubDate>
+      <link>https://ryanbrewer.dev/posts/sequent-calculus/</link>
+      <guid>https://ryanbrewer.dev/posts/sequent-calculus/</guid>
+      <description><![CDATA[Sequent Calculus is a way of doing logic that's very explicit and mechanical. It's used as an important system and notation for type theory and logic related to programming languages.  Read more <a href="https://ryanbrewer.dev/posts/sequent-calculus/">here</a>!]]></description>
+    </item>
   </channel>
 </rss>

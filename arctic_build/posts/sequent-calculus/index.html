@@ -1,0 +1,417 @@
+<!doctype html>
+<html lang="en"><head><script async="true" src="https://www.googletagmanager.com/gtag/js?id=G-BDZJ8SX3Y1"></script><script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+        </script><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><link rel="icon" type="image/x-icon" href="/favicon.ico"><link rel="alternate" type="application/rss+xml" title="Ryan Brewer&#39;s Blog" href="https://ryanbrewer.dev/feed.rss"><script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css"><script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script><link rel="stylesheet" href="/style.css"></head><body><div><script>
+var _ARCTIC_C;
+if (typeof HTMLDocument === 'undefined') HTMLDocument = Document;
+let arctic_dom_content_loaded_listeners = [];
+HTMLDocument.prototype.arctic_addEventListener = HTMLDocument.prototype.addEventListener;
+HTMLDocument.prototype.addEventListener = function(type, listener, options) {
+  if (type === 'DOMContentLoaded') {
+    arctic_dom_content_loaded_listeners.push(listener);
+    document.arctic_addEventListener(type, listener, options);
+  } else document.arctic_addEventListener(type, listener, options);
+}
+       </script><div id="arctic-app"><div><div><title>Par Part 1: Sequent Calculus - Ryan Brewer</title><meta name="description" content="Sequent Calculus is a way of doing logic that&#39;s very explicit and mechanical. It&#39;s used as an important system and notation for type theory and logic related to programming languages."><script type="text/javascript" async="true" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script><script>
+window.MathJax = {
+  loader: {load: ['[tex]/unicode','[tex]/bussproofs']},
+  tex: {packages: {'[+]': ['unicode','bussproofs']}},
+};
+        </script><script>hljs.highlightAll();</script></div><nav id="nav"><div id="nav-dropdown" onclick="document.getElementById(&#39;nav&#39;).classList.toggle(&#39;dropdown&#39;);document.body.classList.toggle(&#39;noscroll&#39;);">☰</div><a href="/" id="nav-home" onclick="document.body.classList.remove(&#39;noscroll&#39;);">Ryan Brewer</a><a href="/posts" id="nav-posts" onclick="document.body.classList.remove(&#39;noscroll&#39;);">Posts</a><a href="/wiki" id="nav-wiki" onclick="document.body.classList.remove(&#39;noscroll&#39;);">Wiki</a><a href="/contact" id="nav-contact" onclick="document.body.classList.remove(&#39;noscroll&#39;);">Contact</a><a href="/demos" id="nav-demos" onclick="document.body.classList.remove(&#39;noscroll&#39;);">Demos</a><a href="/feed.rss" id="nav-subscribe" onclick="window.location.href = &#39;/feed.rss&#39;"><img src="/rss-icon.png" id="rss-subscribe-icon">Subscribe</a></nav><div id="body"><h1>Par Part 1: Sequent Calculus</h1><div class="date">January 13, 2025</div><p><span>This post is the first in a series on Logic. These ideas are very useful in understanding many important papers on programming language theory, especially papers on type theory and the lambda calculus. I will start with an explanation of sequents and Sequent Calculus as a system for doing logic, then I&#39;ll dive into linear logic in the next post. I&#39;ll finish the trilogy with a post on Par and computational interpretations of classical logic.
+</span></p><h3><span>Sequents
+</span></h3><p><span>Logic, as a field of study, has thousands of years of history. But in the early 1900s it exploded into new and interesting directions, as researchers in mathematics looked to logic to try and understand what it was that they were doing and why they could trust it. A brilliant logician named Gerhard Gentzen (unfortunately a Nazi, though some argue it was apathetically, or even under duress) developed the following notation for reasoning in 1934, which will be important to understand for the rest of the post. Why do you need a notation to understand this post? Some mathematical notations are brilliant for revealing what&#39;s really going on and instilling the perfect intuition in your brain, and Gentzen&#39;s notation is truly one of the best in this category.
+</span></p><div class="math-block">\[\begin{prooftree}
+\AxiomC{$A,B\vdash P$}
+\AxiomC{$C\vdash Q$}
+\BinaryInfC{$D\vdash R,S$}
+\end{prooftree}
+\]</div><p><span>This is called a &quot;sequent notation,&quot; because the pair of (possibly empty) lists of symbols surrounding a &quot;turnstile&quot; \(\vdash\) is called a &quot;sequent.&quot; As you can see here there are three sequents. Sequent notation can be challenging, and my best advice is to try to &quot;turn your brain off&quot; and see it as a dumb, mechanical symbol-rewriter. Let me explain.
+</span></p><p><span>The horizontal bar is describing &quot;inputs,&quot; on the top, and the &quot;output,&quot; on the bottom. This lets you create chains, like so:
+</span></p><div class="math-block">\[\begin{prooftree}
+\AxiomC{$C\vdash R$}
+\AxiomC{$A\vdash P$}
+\AxiomC{$B\vdash Q$}
+\BinaryInfC{$D\vdash S$}
+\BinaryInfC{$E\vdash T$}
+\end{prooftree}
+\]</div><p><span>This notation is used in two ways: &quot;inference rules&quot; and &quot;derivation trees.&quot; An inference rule only has one horizontal line, so only one &quot;top&quot; and one &quot;bottom.&quot; A derivation tree is a chain (like the one above) of inference rules, where each horizontal line (called a &quot;step,&quot; when talking about derivation trees) must match an inference rule. So the chain above, if it&#39;s a derivation tree, might be using the following two inference rules:
+</span></p><div class="math-block">\[\begin{prooftree}
+\AxiomC{$A\vdash P$}
+\AxiomC{$B\vdash Q$}
+\BinaryInfC{$D\vdash S$}
+\end{prooftree}
+\quad\quad
+\begin{prooftree}
+\AxiomC{$C\vdash R$}
+\AxiomC{$D\vdash S$}
+\BinaryInfC{$E\vdash T$}
+\end{prooftree}
+\]</div><p><span>Notice how the \(D\vdash S\) is acting as a point where the inference rules can be connected, because it&#39;s the bottom of one inference rule and part of the top of the other. Like legos, we can stack inference rules when the top of the bottom piece matches the bottom of the top piece. Since inference rules are descriptions of valid steps in a derivation tree, we often fill their top sequents with &quot;metavariables,&quot; which are like wildcards that match anything. The way to specify if something is a metavariable or not will depend on what you&#39;re doing, but typically any Greek or Latin (English) letter will be a metavariable. 
+</span></p><p><span>Unfortunately I really do mean &quot;typically,&quot; and not &quot;always:&quot; there are many, many exceptions to this, and you&#39;ll often find yourself using context clues to decipher sequent notation. If the same metavariable appears multiple times on the top of a sequent, then those parts of the &quot;input&quot; sequent have to be equal to each other for it to be considered a valid match, because each metavariable can only match one thing, even if multiple times. Note that metavariables can stand in for some component of an expression, an entire expression, or even multiple adjacent expressions in a list, but generally not for the whole sequent (both lists). Understanding what a metavariable is supposed to stand in for unfortunately also requires context clues! But when you see enough of these you quickly develop trustworthy expectations and intuitions, and the examples in this post will help with that. Lastly, the bottom of an inference rule will often mention the metavariables on the top, which just means &quot;whatever that metavariable matched in the input, fill that in here in the output.&quot; If there&#39;s a metavariable on the bottom that <i><span>isn&#39;t</span></i> mentioned on the top, then it could be filled with anything that the metavariable could match; it&#39;s up to you! You&#39;ll see clarifying examples in a moment.
+</span></p><h3><span>Sequent Calculus
+</span></h3><p><span>Let&#39;s do some reasoning with Gentzen&#39;s notation! The left side of the turnstile \(\vdash\) will be our assumptions, and the right side will be our conclusions. We&#39;ll interpret this as &quot;if all the propositions on the right are true, then at least one of the propositions on the left is true.&quot; In other words, the left can be seen as a big conjunction (&quot;and&quot;) and the right can be seen as a big disjunction (&quot;or&quot;). If the left side is empty then it should be impossible for everything on the right to be false (it&#39;s a tautological disjunction), and if the right side is empty then it should be impossible for everything on the left to be true (it&#39;s a contradictory conjunction). Here are some simple inference rules for reasoning around conjunctions:
+</span></p><div class="math-block">\[\begin{prooftree}
+\AxiomC{$\Gamma\vdash p,\Delta$}
+\AxiomC{$\Gamma\vdash q,\Delta$}
+\RightLabel{$\land$-R}
+\BinaryInfC{$\Gamma\vdash p\land q,\Delta$}
+\end{prooftree}
+\quad\quad
+\begin{prooftree}
+\AxiomC{$\Gamma,p\vdash\Delta$}
+\RightLabel{$\land$-L${}_1$}
+\UnaryInfC{$\Gamma,p\land q\vdash\Delta$}
+\end{prooftree}
+\quad\quad
+\begin{prooftree}
+\AxiomC{$\Gamma,q\vdash\Delta$}
+\RightLabel{$\land$-L${}_2$}
+\UnaryInfC{$\Gamma,p\land q\vdash\Delta$}
+\end{prooftree}
+\]</div><p><span>Here the capital greek letters \(\Gamma\) and \(\Delta\) (&quot;gamma&quot; and &quot;delta&quot;) are metavariables for zero or more adjacent propositions in a list, while lowercase latin letters \(p\) and \(q\) are metavariables for single propositions. To use these rules in a proof (derivation tree) we need a few more rules. First we need a way to start proofs, that is, a rule with a blank top:
+</span></p><div class="math-block">\[\begin{prooftree}
+\AxiomC{}
+\RightLabel{Axiom}
+\UnaryInfC{$p\vdash p$}
+\end{prooftree}
+\]</div><p><span>This says that no matter what (empty top), if you assume something then you can conclude it (\(p\vdash p\)). This is often called the Axiom rule, because it doesn&#39;t need to match anything on the top. Next we need the &quot;structural rules,&quot; which let us manage our lists. Each of the three structural rules come in two variants, called the left structural rules and the right structural rules.
+</span></p><div class="math-block">\[\begin{prooftree}
+\AxiomC{$\Gamma_1,p,q,\Gamma_2\vdash\Delta$}
+\RightLabel{Exch-L}
+\UnaryInfC{$\Gamma_1,q,p,\Gamma_2\vdash\Delta$}
+\end{prooftree}
+\quad\quad
+\begin{prooftree}
+\AxiomC{$\Gamma\vdash\Delta$}
+\RightLabel{Weak-L}
+\UnaryInfC{$\Gamma,p\vdash\Delta$}
+\end{prooftree}
+\quad\quad
+\begin{prooftree}
+\AxiomC{$\Gamma,p,p\vdash\Delta$}
+\RightLabel{Contr-L}
+\UnaryInfC{$\Gamma,p\vdash\Delta$}
+\end{prooftree}
+\]</div><div class="math-block">\[\begin{prooftree}
+\AxiomC{$\Gamma\vdash\Delta_1,p,q,\Delta_2$}
+\RightLabel{Exch-R}
+\UnaryInfC{$\Gamma\vdash\Delta_1,q,p,\Delta_1$}
+\end{prooftree}
+\quad\quad
+\begin{prooftree}
+\AxiomC{$\Gamma\vdash\Delta$}
+\RightLabel{Weak-R}
+\UnaryInfC{$\Gamma\vdash p,\Delta$}
+\end{prooftree}
+\quad\quad
+\begin{prooftree}
+\AxiomC{$\Gamma\vdash p,p,\Delta$}
+\RightLabel{Contr-R}
+\UnaryInfC{$\Gamma\vdash p,\Delta$}
+\end{prooftree}
+\]</div><p><span>The Exch (&quot;Exchange&quot;) rules let us reorder the lists, the Weak (&quot;Weakening&quot;) rules let us introduce more assumptions or conclusions than we need (making the proof &quot;weaker&quot;), and the Contr (&quot;Contraction&quot;) rules let us remove duplicate assumptions or conclusions.
+</span></p><p><span>Now we can start proving things, by constructing derivation trees. As long as the top is all &quot;Axiom&quot; steps and each step matches an inference rule, the derivation tree is a proof of the bottom sequent!
+</span></p><div class="math-block">\[\begin{prooftree}
+\AxiomC{}
+\RightLabel{Axiom}
+\UnaryInfC{$P\vdash P$}
+\RightLabel{Weak-L}
+\UnaryInfC{$P,Q\vdash P$}
+\AxiomC{}
+\RightLabel{Axiom}
+\UnaryInfC{$Q\vdash Q$}
+\RightLabel{Weak-L}
+\UnaryInfC{$Q,P\vdash Q$}
+\RightLabel{Exch-L}
+\UnaryInfC{$P,Q\vdash Q$}
+\RightLabel{$\land$-R}
+\BinaryInfC{$P,Q\vdash P\land Q$}
+\RightLabel{Weak-L}
+\UnaryInfC{$P,Q,R\vdash P\land Q$}
+\AxiomC{}
+\RightLabel{Axiom}
+\UnaryInfC{$R\vdash R$}
+\RightLabel{Weak-L}
+\UnaryInfC{$R,P\vdash R$}
+\RightLabel{Weak-L}
+\UnaryInfC{$R,P,Q\vdash R$}
+\RightLabel{Exch-L}
+\UnaryInfC{$P,R,Q\vdash R$}
+\RightLabel{Exch-L}
+\UnaryInfC{$P,Q,R\vdash R$}
+\BinaryInfC{$P,Q,R\vdash(P\land Q)\land R$}
+\end{prooftree}
+\]</div><h3><span>Natural Deduction
+</span></h3><p><span>What we have so far is called the Sequent Calculus, and it&#39;s so explicit and mechanical that it&#39;s a nice object of study in the field of Logic. But so many of these steps are administrative junk, so here&#39;s a tree with only the steps that matter to humans: 
+</span></p><div class="math-block">\[\begin{prooftree}
+\AxiomC{}
+\RightLabel{Axiom}
+\UnaryInfC{$P\vdash P$}
+\AxiomC{}
+\RightLabel{Axiom}
+\UnaryInfC{$Q\vdash Q$}
+\RightLabel{$\land$-R}
+\BinaryInfC{$P,Q\vdash P\land Q$}
+\AxiomC{}
+\RightLabel{Axiom}
+\UnaryInfC{$R\vdash R$}
+\RightLabel{$\land$-R}
+\BinaryInfC{$P,Q,R\vdash(P\land Q)\land R$}
+\end{prooftree}
+\]</div><p><span>This is a system called Sequent Natural Deduction. Only one proposition is allowed on the right of a turnstile. To see if two sequents match (so we can create a chain), we don&#39;t just look at what&#39;s written, but also imagine all the different ways of applying structural rules, to see if that produces any matches. The resulting system is much more complicated to study, but much nicer to use. One might say that a natural deduction proof distills the <i><span>essence</span></i> of the proof, presenting only the steps that matter. But there is an even more &quot;natural&quot; system than Sequent Natural Deduction, namely Natural Deduction:
+</span></p><div class="math-block">\[\begin{prooftree}
+\AxiomC{}
+\RightLabel{Axiom}
+\UnaryInfC{$P$}
+\AxiomC{}
+\RightLabel{Axiom}
+\UnaryInfC{$Q$}
+\RightLabel{$\land$-R}
+\BinaryInfC{$P\land Q$}
+\AxiomC{}
+\RightLabel{Axiom}
+\UnaryInfC{$R$}
+\RightLabel{$\land$-R}
+\BinaryInfC{$(P\land Q)\land R$}
+\end{prooftree}
+\]</div><p><span>Since a Sequent Natural Deduction sequent must always have exactly one proposition on the right side of the turnstile, it&#39;s possible to simply drop the assumptions and turnstile like this and have something that makes sense. Because really, the assumptions that matter for a proposition can always be found directly above it! As an object of study in the field of Logic, natural deduction is even more challenging than sequent natural deduction, exactly because it leaves more implicit so it can look like human reasoning. 
+</span></p><p><span>(I&#39;m borrowing the Stanford Encyclopedia of Philosophy&#39;s terminology here, because I like it, but people typically call sequent natural deduction and natural deduction both just &quot;natural deduction,&quot; without distinction.)
+</span></p><p><span>Notice that in the Sequent Calculus, the rules for conjunction either introduce conjunctions on the left or introduce conjunctions on the right. Sequent natural deduction (and therefore natural deduction, too) instead uses &quot;introduction rules&quot; and &quot;elimination rules.&quot; Here are examples:
+</span></p><div class="math-block">\[\begin{prooftree}
+\AxiomC{$\Gamma\vdash p$}
+\AxiomC{$\Gamma\vdash q$}
+\RightLabel{$\land$-Intro-R}
+\BinaryInfC{$\Gamma\vdash p\land q$}
+\end{prooftree}
+\quad\quad
+\begin{prooftree}
+\AxiomC{$\Gamma\vdash p\land q$}
+\RightLabel{$\land$-Elim-R${}_1$}
+\UnaryInfC{$\Gamma\vdash p$}
+\end{prooftree}
+\quad\quad
+\begin{prooftree}
+\AxiomC{$\Gamma\vdash p\land q$}
+\RightLabel{$\land$-Elim-R${}_2$}
+\UnaryInfC{$\Gamma\vdash q$}
+\end{prooftree}
+\]</div><div class="math-block">\[\begin{prooftree}
+\AxiomC{$\Gamma,p\vdash\Delta$}
+\RightLabel{$\land$-Intro-L${}_1$}
+\UnaryInfC{$\Gamma,p\land q\vdash\Delta$}
+\end{prooftree}
+\quad\quad
+\begin{prooftree}
+\AxiomC{$\Gamma,q\vdash\Delta$}
+\RightLabel{$\land$-Intro-L${}_2$}
+\UnaryInfC{$\Gamma,p\land q\vdash\Delta$}
+\end{prooftree}
+\quad\quad
+\begin{prooftree}
+\AxiomC{$\Gamma,p\land q\vdash\Delta$}
+\RightLabel{$\land$-Elim-L}
+\UnaryInfC{$\Gamma,p,q\vdash\Delta$}
+\end{prooftree}
+\]</div><p><span>Notice how all the rules are kind of duplicated, for operating on each side of the turnstile. That said, natural deduction doesn&#39;t have the right contraction and right weakening rules, or any other rules that would require or introduce multiple propositions on the right of the turnstile. It&#39;s also worth being aware that conjunction on the left is equivalent to the comma (hence the funny left conjunction elimination rule) so the left conjunction introduction rules are basically just left weakening.
+</span></p><h3><span>One-Sided Sequents
+</span></h3><p><span>Now we&#39;ve got way too many rules, it appears. Each rule is duplicated because there&#39;s one for the right of the turnstile and one for the left. One-sided sequent calculus can be done instead, where we just do everything on the right of the turnstile. To do things this way, let&#39;s start with introduction and elimination rules for negation (&quot;not&quot;). We do introduction and elimination rules instead of left-introduction and right-introduction rules because now we only have one side!
+</span></p><div class="math-block">\[\begin{prooftree}
+\AxiomC{}
+\RightLabel{$\neg$-Intro}
+\UnaryInfC{$\vdash p,\neg p$}
+\end{prooftree}
+\quad\quad
+\begin{prooftree}
+\AxiomC{$\vdash p,\Delta$}
+\AxiomC{$\vdash\neg p,\Delta$}
+\RightLabel{$\neg$-Elim or &quot;Cut&quot;}
+\BinaryInfC{$\vdash\Delta$}
+\end{prooftree}
+\]</div><p><span>These rules are starting to look very strange. It helps to remember that the comma here (on the right of the turnstile) is disjunction, so a one-sided sequent calculus is saying &quot;one of these propositions is true.&quot;
+</span></p><p><span>Now, disjunction and negation is all you need to define the other logical constants in classical logic. For example, \(P\Rightarrow Q\) (implication) is equivalent to \(\neg P\lor Q\). Having implication means we can simulate assumptions (aka the left side of the turnstile). So now we can easily translate our Sequent Calculus inference rules for conjunction from earlier into this one-sided sequent system! First I&#39;ll present the natural deduction rules, which were one-sided in the case of conjunction anyway, and then show derivable sequent calculus rules for conjunction on the left of the turnstile:
+</span></p><div class="math-block">\[\begin{prooftree}
+\AxiomC{$\vdash p,\Delta$}
+\AxiomC{$\vdash q,\Delta$}
+\RightLabel{$\land$-Intro}
+\BinaryInfC{$\vdash p\land q,\Delta$}
+\end{prooftree}
+\quad\quad
+\begin{prooftree}
+\AxiomC{$\vdash p\land q,\Delta$}
+\RightLabel{$\land$-Elim${}_1$}
+\UnaryInfC{$\vdash p,\Delta$}
+\end{prooftree}
+\quad\quad
+\begin{prooftree}
+\AxiomC{$\vdash p\land q,\Delta$}
+\RightLabel{$\land$-Elim${}_2$}
+\UnaryInfC{$\vdash p,\Delta$}
+\end{prooftree}
+\]</div><div class="math-block">\[\begin{prooftree}
+\AxiomC{$\vdash\neg p,\Delta$}
+\UnaryInfC{$\vdash\neg(p\land q),\Delta$}
+\end{prooftree}
+\quad\quad
+\begin{prooftree}
+\AxiomC{$\vdash\neg q,\Delta$}
+\UnaryInfC{$\vdash\neg(p\land q),\Delta$}
+\end{prooftree}
+\]</div><p><span>If the introduction and elimination rules for conjunction aren&#39;t making sense with how you understand conjunction, think of it this way. The comma on the right is disjunction, so at least one proposition in the list is true. Let&#39;s look at the two \(\land\)-Elim rules. If the conjunction is true, then either of its conjuncts are true, so replacing the conjunction with a conjunct is valid. If the conjunction is false, then something else in the list is true, so replacing the conjunction with anything, true or false, is valid. Now look at the \(\land\)-Intro rule. If \(p\) and \(q\) are both true, then it&#39;s possible every proposition in \(\Delta\) might be false, but the disjunction of \(p\land q\) and \(\Delta\) would still be true, since \(p\land q\) is true. On the other hand, if either \(p\) or \(q\) is false, then something in \(\Delta\) must be true, so the disjunction of \(p\land q\) and \(\Delta\) would be true even though \(p\land q\) is false. To summarize, the attitude to have is &quot;if everything in \(\Delta\) is false we can ignore it, otherwise what we&#39;re doing doesn&#39;t matter.&quot; This comes from the \(\texttt{False}\lor P\equiv P\) and \(\texttt{True}\lor P\equiv\texttt{True}\) rules of logic. This makes our rules look a little like the single-proposition-on-the-right calculi, such as natural deduction.
+</span></p><p><span>What you&#39;ll hopefully notice is that in the one-sided sequent calculus you can pretend that something is on the left simply by negating it. This is thought of as a deep beauty of logic, that the structure of the assumptions is just a negation of the structure of the potential conclusions. I&#39;ll explore this beauty more in future posts. It&#39;s this fact about simulating one side from the other with negation that allows one-sided sequent calculi to avoid duplicating rules (since there are no left rules), and thus have far fewer rules overall.
+</span></p><h3><span>Intuitionistic Logic
+</span></h3><p><span>As elegant as the one-sided sequent calculus is, it isn&#39;t used much in the field. This is because it is inherently classical. Note that our Axiom rule became the Law of Excluded Middle! Intuitionistic logic requires a left side, because implication is no longer equivalent to disjunction with a negation, and the left and right rules are no longer negations of each other. The typical rules for a comma on the right don&#39;t really match the funny way disjunction behaves in intuitionistic logic, so intuitionistic logic is always done as (sequent) natural deduction, with only one proposition on the right, which may be an intuitionistic disjunction. You could theoretically redefine the comma on the right to be intuitionistic disjunction, since right now the right comma in intuitionistic logic is undefined, but there would be no benefit to doing so. Intuitionistic disjunction has completely different rules, which aren&#39;t dual to or comparable to the comma on the left at all, and a disjunction symbol on the right serves its purpose well enough without needing to introduce anything extra like special right-comma rules. Here are the intuitionistic disjunction inference rules:
+</span></p><div class="math-block">\[\begin{prooftree}
+\AxiomC{$\Gamma\vdash p$}
+\RightLabel{$\lor$-Intro-R${}_1$}
+\UnaryInfC{$\Gamma\vdash p\lor q$}
+\end{prooftree}
+\quad\quad
+\begin{prooftree}
+\AxiomC{$\Gamma\vdash q$}
+\RightLabel{$\lor$-Intro-R${}_2$}
+\UnaryInfC{$\Gamma\vdash p\lor q$}
+\end{prooftree}
+\quad\quad
+\begin{prooftree}
+\AxiomC{$\Gamma\vdash p\lor q$}
+\AxiomC{$\Gamma,p\vdash r$}
+\AxiomC{$\Gamma,q\vdash r$}
+\RightLabel{$\lor$-Elim-R}
+\TrinaryInfC{$\Gamma\vdash r$}
+\end{prooftree}
+\]</div><div class="math-block">\[\begin{prooftree}
+\AxiomC{$\Gamma,p\vdash r$}
+\AxiomC{$\Gamma,q\vdash r$}
+\RightLabel{$\lor$-Intro-L}
+\BinaryInfC{$\Gamma,p\lor q\vdash r$}
+\end{prooftree}
+\quad\quad
+\begin{prooftree}
+\AxiomC{$\Gamma,p\lor q\vdash r$}
+\RightLabel{$\lor$-Elim-L${}_1$}
+\UnaryInfC{$\Gamma,p\vdash r$}
+\end{prooftree}
+\quad\quad
+\begin{prooftree}
+\AxiomC{$\Gamma,p\lor q\vdash r$}
+\RightLabel{$\lor$-Elim-L${}_2$}
+\UnaryInfC{$\Gamma,q\vdash r$}
+\end{prooftree}
+\]</div><p><span>The connection between natural deduction and intuitionistic logic is fairly strong. (One might say natural!) Classical natural deduction is possible but famously disappointing/unsatisfactory. It can be done by introducing a second Axiom rule that matches our (classical) one-sided sequent calculus&#39;s Axiom rule, that is, the law of excluded middle:
+</span></p><div class="math-block">\[\begin{prooftree}
+\AxiomC{}
+\RightLabel{LEM}
+\UnaryInfC{$\vdash p\lor\neg p$}
+\end{prooftree}
+\]</div><p><span>However, the useful thing about intuitionistic logic is that it can be given computational &quot;proof terms.&quot; These are expressions in some typed lambda calculus which have a normal form (don&#39;t loop forever during computation) only if their type is equivalent to a true proposition of intuitionistic logic. Hence the name &quot;proof terms:&quot; the existence of a fully-evaluated expression of a type is itself a proof of the corresponding proposition. In general, the study of classical logic doesn&#39;t use proof terms, though in later posts I&#39;ll explore ways that you <i><span>can,</span></i> in fact, give proof terms for classical logic. But for now I&#39;ll focus the discussion on the simple case of intuitionistic logic. 
+</span></p><p><span>For simplicity we&#39;ll limit intuitionistic logic to only implication and \(\texttt{False}\), which can express conjunction, disjunction, and negation. Then the correspondence between types and propositions is as follows: function types correspond to implication, and \(\texttt{False}\) corresponds to \(\texttt{void}\) (the type with no values). Then that simply-typed lambda calculus gives proof terms to this &quot;implicational fragment&quot; of propositional intuitionistic logic. We use slightly new notation for this:
+</span></p><div class="math-block">\[\begin{prooftree}
+\AxiomC{}
+\RightLabel{Axiom}
+\UnaryInfC{$x:p\vdash x:p$}
+\end{prooftree}
+\quad\quad
+\begin{prooftree}
+\AxiomC{$\Gamma,x:p\vdash e:q$}
+\RightLabel{$\Rightarrow$-Intro}
+\UnaryInfC{$\Gamma\vdash(\lambda x.e):p\Rightarrow q$}
+\end{prooftree}
+\quad\quad
+\begin{prooftree}
+\AxiomC{$\Gamma\vdash e_1:p\Rightarrow q$}
+\AxiomC{$\Gamma\vdash e_2:p$}
+\RightLabel{$\Rightarrow$-Elim}
+\BinaryInfC{$\Gamma\vdash(e_1\;e_2):q$}
+\end{prooftree}
+\]</div><p><span>Now we have these colons everywhere: \(e: p\) means \(e\) is a proof of \(p\), or equivalently that \(e\) is a simply-typed lambda calculus expression of type \(p\). A note on metavariables: \(x\) refers to variables in the lambda calculus, while \(e\) refers to any lambda calculus expressions. Therefore the proof terms in the context \(\Gamma\) will only be variables. \(\texttt{False}\) is can be introduced by picking it in \(p\) when using the Axiom rule. To stress that the types &quot;mean&quot; propositions, I&#39;m using logical notation for the types (such as \(p\Rightarrow q\) rather than the more typical \(t\to u\)). Because this is a simply-typed lambda calculus, you will find that these inference rules can&#39;t produce any expressions that loop forever during computation, so every expression on the right side of the turnstile will be a valid proof of its type/proposition.
+</span></p><p><span>Since metavariable use is a little more complex here, I&#39;ll introduce the proper formal notation for describing them. We usually specify the behavior of metavariables with a &quot;formal grammar,&quot; technically called a &quot;BNF grammar&quot; or &quot;Backus-Naur Form,&quot; written as follows:
+</span></p><div class="math-block">\[e::=x\mid\lambda x.e\mid e\;e
+\]</div><div class="math-block">\[p,q::=\texttt{False}\mid p\Rightarrow p
+\]</div><div class="math-block">\[\Gamma::=\cdot\mid\Gamma,x:p
+\]</div><p><span>On the left of the \(::=\) are the metavariables, and on the right are the things they can be replaced with. The \(\mid\) symbol means &quot;or,&quot; so the above grammar says that \(e\) can be any of the following: a variable like \(x\) or \(y\), a lambda abstraction \(\lambda x.e\), or an application \(e;e\). The other two lines are similar. Notice how these definitions are recursive. The \(\cdot\) symbol in the context is worth mentioning: it means the empty context, and technically a context like \(x:p,y:q\) is just a shorthand for \(\cdot,x:p,y:q\). But we&#39;ve been using this kind of shorthand for the whole post, as everyone does, instead of explicitly writing the empty context. In the wild it almost exclusively appears in formal grammars, not inference rules or derivation trees, so I&#39;ve continued that tradition here. With all that in mind, we would write that our proof system for intuitionistic logic has the following &quot;judgement form:&quot;
+</span></p><div class="math-block">\[\Gamma\vdash e:p
+\]</div><p><span>This specifies that a valid sequent (often called a &quot;judgement&quot; in this context), and should be thought of as equivalent to a statement like &quot;a valid sentence is a noun phrase followed by a verb phrase.&quot; In this case it would be like &quot;a valid sequent is a context (\(\Gamma\)) on the left, then a turnstile, then an expression (\(e\)), then a colon, then a proposition (\(p\)).&quot; We could have formally given grammars and judgement forms for the earlier inference rules, but the usage of metavariables was simple enough to omit them.
+</span></p><h3><span>Conclusion
+</span></h3><p><span>Thus ends the crash course on sequent notation and sequent calculi! A sequel post on linear logic is in the works, which makes heavy and elegant use of this system.</span></p></div><div><div style="height:100pt;"></div><p id="copyright-notice" class="subtle-text">© 2024 Ryan Brewer.</p><script src="/__/firebase/8.10.1/firebase-app.js"></script><script src="/__/firebase/8.10.1/firebase-analytics.js"></script><script src="/__/firebase/init.js"></script><script>firebase.analytics();</script></div></div></div><script>
+// SPA algorithm partially inspired by Hayleigh Thompson's wonderful Modem library
+async function go_to(url, loader, back) {
+  if (!back && url.pathname === window.location.pathname) {
+    if (url.hash) document.getElementById(url.hash.slice(1))?.scrollIntoView();
+    else window.scrollTo(0, 0);
+    return;
+  }
+  document.dispatchEvent(new Event('beforeunload'));
+  document.dispatchEvent(new Event('unload'));
+  for (let i = 0; i < arctic_dom_content_loaded_listeners.length; i++)
+    document.removeEventListener('DOMContentLoaded', arctic_dom_content_loaded_listeners[i]);
+  arctic_dom_content_loaded_listeners = [];
+  const $app = document.getElementById('arctic-app');
+  if (loader) $app.innerHTML = '<div id="arctic-loader"></div>';
+  if (!back) window.history.pushState({}, '', url.href);
+  // handle new path
+  const response = await fetch('/__pages/' + url.pathname + '/index.html');
+  if (!response.ok) response = await fetch('/__pages/404.html');
+  if (!response.ok) return;
+  const html = await response.text();
+  $app.innerHTML = '<script>_ARCTIC_C=0;</'+'script>'+html;
+  // re-create script elements, so their javascript runs
+  const scripts = $app.querySelectorAll('script');
+  const num_scripts = scripts.length;
+  for (let i = 0; i < num_scripts; i++) {
+    const script = scripts[i];
+    const n = document.createElement('script');
+    // scripts load nondeterministically, so we figure out when they've all finished via the _ARCTIC_C barrier
+    if (script.innerHTML === '') {
+      // external scripts don't run their inline js, so they need an onload listener
+      n.onload = () => {
+        if (++_ARCTIC_C >= num_scripts)
+          document.dispatchEvent(new Event('DOMContentLoaded'));
+      };
+    } else {
+      // inline scripts might not trigger onload, so they get js appended to the end instead
+      const t = document.createTextNode(
+        script.innerHTML +
+        ';if(++_ARCTIC_C>=' + num_scripts +
+        ')document.dispatchEvent(new Event(\'DOMContentLoaded\'));'
+      );
+      n.appendChild(t);
+    }
+    // attributes at the end because 'src' needs to load after onload is listening
+    for (let j = 0; j < script.attributes.length; j++) {
+      const attr = script.attributes[j];
+      n.setAttribute(attr.name, attr.value);
+    }
+    script.parentNode.replaceChild(n, script);
+  }
+  window.requestAnimationFrame(() => {
+    if (url.hash)
+      document.getElementById(url.hash.slice(1))?.scrollIntoView();
+    else
+      window.scrollTo(0, 0);
+  });
+}
+document.addEventListener('click', async function(e) {
+  const a = find_a(e.target);
+  if (!a) return;
+  try {
+    const url = new URL(a.href);
+    const is_external = url.host !== window.location.host;
+    if (is_external) return;
+    event.preventDefault();
+    go_to(url, false, false);
+  } catch {
+    return;
+  }
+});
+window.addEventListener('popstate', (e) => {
+  e.preventDefault();
+  const url = new URL(window.location.href);
+  go_to(url, false, true);
+});
+function find_a(target) {
+  if (!target || target.tagName === 'BODY') return null;
+  if (target.tagName === 'A') return target;
+  return find_a(target.parentElement);
+}</script></div></body></html>
