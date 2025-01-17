@@ -53,7 +53,7 @@ Unfortunately I really do mean "typically," and not "always:" there are many, ma
 
 ### Sequent Calculus
 
-Let's do some reasoning with Gentzen's notation! The left side of the turnstile \\(\\vdash\\) will be our assumptions, and the right side will be our conclusions. We'll interpret this as "if all the propositions on the right are true, then at least one of the propositions on the left is true." In other words, the left can be seen as a big conjunction ("and") and the right can be seen as a big disjunction ("or"). If the left side is empty then it should be impossible for everything on the right to be false (it's a tautological disjunction), and if the right side is empty then it should be impossible for everything on the left to be true (it's a contradictory conjunction). Here are some simple inference rules for reasoning around conjunctions:
+Let's do some reasoning with Gentzen's notation! The left side of the turnstile \\(\\vdash\\) will be our assumptions, and the right side will be our conclusions. We'll interpret this as "if all the propositions on the left are true, then at least one of the propositions on the right is true." In other words, the left can be seen as a big conjunction ("and") and the right can be seen as a big disjunction ("or"). If the left side is empty then it should be impossible for everything on the right to be false (it's a tautological disjunction), and if the right side is empty then it should be impossible for everything on the left to be true (it's a contradictory conjunction). Here are some simple inference rules for reasoning around conjunctions:
 
 @math
 \begin{prooftree}
