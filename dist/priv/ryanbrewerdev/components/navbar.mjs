@@ -23,7 +23,10 @@ export function navbar() {
         toList([
           $attribute.href("/"),
           $attribute.id("nav-home"),
-          attribute("onclick", "document.body.classList.remove('noscroll');"),
+          attribute(
+            "onclick",
+            "document.getElementById('nav').classList.remove('dropdown');document.body.classList.remove('noscroll');",
+          ),
         ]),
         toList([text("Ryan Brewer")]),
       ),
@@ -31,7 +34,10 @@ export function navbar() {
         toList([
           $attribute.href("/posts"),
           $attribute.id("nav-posts"),
-          attribute("onclick", "document.body.classList.remove('noscroll');"),
+          attribute(
+            "onclick",
+            "document.getElementById('nav').classList.toggle('dropdown');document.body.classList.remove('noscroll');",
+          ),
         ]),
         toList([text("Posts")]),
       ),
@@ -39,7 +45,10 @@ export function navbar() {
         toList([
           $attribute.href("/wiki"),
           $attribute.id("nav-wiki"),
-          attribute("onclick", "document.body.classList.remove('noscroll');"),
+          attribute(
+            "onclick",
+            "document.getElementById('nav').classList.toggle('dropdown');document.body.classList.remove('noscroll');",
+          ),
         ]),
         toList([text("Wiki")]),
       ),
@@ -47,7 +56,10 @@ export function navbar() {
         toList([
           $attribute.href("/contact"),
           $attribute.id("nav-contact"),
-          attribute("onclick", "document.body.classList.remove('noscroll');"),
+          attribute(
+            "onclick",
+            "document.getElementById('nav').classList.toggle('dropdown');document.body.classList.remove('noscroll');",
+          ),
         ]),
         toList([text("Contact")]),
       ),
@@ -55,7 +67,10 @@ export function navbar() {
         toList([
           $attribute.href("/demos"),
           $attribute.id("nav-demos"),
-          attribute("onclick", "document.body.classList.remove('noscroll');"),
+          attribute(
+            "onclick",
+            "document.getElementById('nav').classList.toggle('dropdown');document.body.classList.remove('noscroll');",
+          ),
         ]),
         toList([text("Demos")]),
       ),

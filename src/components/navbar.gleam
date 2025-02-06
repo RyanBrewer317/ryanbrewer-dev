@@ -22,7 +22,10 @@ pub fn navbar() -> Element(a) {
       [
         attribute.href("/"),
         attribute.id("nav-home"),
-        attribute("onclick", "document.body.classList.remove('noscroll');"),
+        attribute(
+          "onclick",
+          "document.getElementById('nav').classList.remove('dropdown');document.body.classList.remove('noscroll');",
+        ),
       ],
       [text("Ryan Brewer")],
     ),
@@ -30,7 +33,10 @@ pub fn navbar() -> Element(a) {
       [
         attribute.href("/posts"),
         attribute.id("nav-posts"),
-        attribute("onclick", "document.body.classList.remove('noscroll');"),
+        attribute(
+          "onclick",
+          "document.getElementById('nav').classList.toggle('dropdown');document.body.classList.remove('noscroll');",
+        ),
       ],
       [text("Posts")],
     ),
@@ -38,7 +44,10 @@ pub fn navbar() -> Element(a) {
       [
         attribute.href("/wiki"),
         attribute.id("nav-wiki"),
-        attribute("onclick", "document.body.classList.remove('noscroll');"),
+        attribute(
+          "onclick",
+          "document.getElementById('nav').classList.toggle('dropdown');document.body.classList.remove('noscroll');",
+        ),
       ],
       [text("Wiki")],
     ),
@@ -46,7 +55,10 @@ pub fn navbar() -> Element(a) {
       [
         attribute.href("/contact"),
         attribute.id("nav-contact"),
-        attribute("onclick", "document.body.classList.remove('noscroll');"),
+        attribute(
+          "onclick",
+          "document.getElementById('nav').classList.toggle('dropdown');document.body.classList.remove('noscroll');",
+        ),
       ],
       [text("Contact")],
     ),
@@ -54,7 +66,10 @@ pub fn navbar() -> Element(a) {
       [
         attribute.href("/demos"),
         attribute.id("nav-demos"),
-        attribute("onclick", "document.body.classList.remove('noscroll');"),
+        attribute(
+          "onclick",
+          "document.getElementById('nav').classList.toggle('dropdown');document.body.classList.remove('noscroll');",
+        ),
       ],
       [text("Demos")],
     ),
