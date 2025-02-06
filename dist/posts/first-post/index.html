@@ -3,7 +3,7 @@
 window.dataLayer = window.dataLayer || [];
 function gtag(){dataLayer.push(arguments);}
 gtag('js', new Date());
-        </script><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><link rel="icon" type="image/x-icon" href="/favicon.ico"><link rel="alternate" type="application/rss+xml" title="Ryan Brewer&#39;s Blog" href="https://ryanbrewer.dev/feed.rss"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="true"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto&amp;display=swap"><script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css"><script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script><link rel="stylesheet" href="/style.css"></head><body><div><script>
+        </script><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><link rel="icon" type="image/x-icon" href="/favicon.ico"><link rel="alternate" type="application/rss+xml" title="Ryan Brewer&#39;s Blog" href="https://ryanbrewer.dev/feed.rss"><script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css"><script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script><link rel="stylesheet" href="/style.css"></head><body><div><script>
 var _ARCTIC_C;
 if (typeof HTMLDocument === 'undefined') HTMLDocument = Document;
 let arctic_dom_content_loaded_listeners = [];
@@ -16,15 +16,16 @@ HTMLDocument.prototype.addEventListener = function(type, listener, options) {
 }
        </script><div id="arctic-app"><div><div><title>My First Blog Post - Ryan Brewer</title><meta name="description" content="A test post for the blog."><script type="text/javascript" async="true" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script><script>
 window.MathJax = {
-  loader: {load: ['[tex]/unicode']},
-  tex: {packages: {'[+]': ['unicode']}},
+  loader: {load: ['[tex]/unicode','[tex]/bussproofs']},
+  tex: {packages: {'[+]': ['unicode','bussproofs']}},
 };
         </script><script>hljs.highlightAll();</script></div><nav id="nav"><div id="nav-dropdown" onclick="document.getElementById(&#39;nav&#39;).classList.toggle(&#39;dropdown&#39;);document.body.classList.toggle(&#39;noscroll&#39;);">☰</div><a href="/" id="nav-home" onclick="document.body.classList.remove(&#39;noscroll&#39;);">Ryan Brewer</a><a href="/posts" id="nav-posts" onclick="document.body.classList.remove(&#39;noscroll&#39;);">Posts</a><a href="/wiki" id="nav-wiki" onclick="document.body.classList.remove(&#39;noscroll&#39;);">Wiki</a><a href="/contact" id="nav-contact" onclick="document.body.classList.remove(&#39;noscroll&#39;);">Contact</a><a href="/demos" id="nav-demos" onclick="document.body.classList.remove(&#39;noscroll&#39;);">Demos</a><a href="/feed.rss" id="nav-subscribe" onclick="window.location.href = &#39;/feed.rss&#39;"><img src="/rss-icon.png" id="rss-subscribe-icon">Subscribe</a></nav><div id="body"><h1>My First Blog Post</h1><div class="date">November 16, 2023</div><p><span>This is my first blog post! It&#39;s mostly to test out the codebase.
 </span></p><p><span>This project is using a few neat tools together. The code for the home page is written in gleam (compiled to javascript). Blog posts like these are written in text files in a custom format. A build step uses Lustre and Vite to parse the files, produce html files, and bundle the site for deployment. All the code can be found on <a href="https://github.com/RyanBrewer317/ryanbrewer-dev"><span>my github</span></a>. 
 </span></p><p><span>The styles on this site are a work in progress. <code><span>code</span></code>, <i><span>italics</span></i>, \*escaping, <a href="https://ryanbrewer.dev"><span>links</span></a>, \(math+2^2\).
-</span></p><div><div class="math-block">\[A^1 math_2 block^3!\]</div><div class="math-block">\[\]</div></div><div class="diagram"><img src="/image-0-first-post.svg" onload="this.width *= 2.25;"></div><pre><code>print(&quot;A code block!&quot;) 
+</span></p><div class="math-block">\[A^1 math_2 block^3!
+\]</div><div class="diagram"><img src="/image-0-first-post.svg" onload="this.width *= 2.25;"></div><pre><code>print(&quot;A code block!&quot;) 
 # language is auto-detected atm.
-</code></pre></div><div><div style="height:100pt;"></div><p id="copyright-notice" class="subtle-text">© 2024 Ryan Brewer.</p><script src="/__/firebase/8.10.1/firebase-app.js"></script><script src="/__/firebase/8.10.1/firebase-analytics.js"></script><script src="/__/firebase/init.js"></script><script>firebase.analytics();</script></div></div></div><script>
+</code></pre></div><div><p id="copyright-notice" class="subtle-text">© 2024 Ryan Brewer.</p><script src="/__/firebase/8.10.1/firebase-app.js"></script><script src="/__/firebase/8.10.1/firebase-analytics.js"></script><script src="/__/firebase/init.js"></script><script>firebase.analytics();</script></div></div></div><script>
 // SPA algorithm partially inspired by Hayleigh Thompson's wonderful Modem library
 async function go_to(url, loader, back) {
   if (!back && url.pathname === window.location.pathname) {

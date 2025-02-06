@@ -54,7 +54,7 @@ export function homepage(posts) {
                         toList([text("Arctic")]),
                       ),
                       text(
-                        ",\nA friendly web framework for easily building fast web applications in Gleam!\nArctic powers this website, as well as the one I just linked.\n",
+                        ",\nA friendly web framework for easily building fast web applications in Gleam!\nArctic powers this website, as well as the one I just linked.\nIf my projects seem cool or valuable in any way, consider supporting my work!\n",
                       ),
                     ]),
                   ),

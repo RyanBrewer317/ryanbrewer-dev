@@ -42,6 +42,7 @@ One of my bigger projects is ",
               ",
 A friendly web framework for easily building fast web applications in Gleam!
 Arctic powers this website, as well as the one I just linked.
+If my projects seem cool or valuable in any way, consider supporting my work!
 ",
             ),
           ]),

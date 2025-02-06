@@ -69,6 +69,7 @@ nav.dropdown {
   bottom: 0;
   left: 0;
   right: 0;
+  height: auto;
   background-color: var(--dark-background);
 }
 
@@ -92,8 +93,7 @@ code::-webkit-scrollbar { /* Chrome, Safari */
   padding: 12pt;
   max-width: 600pt;
   margin: 0 auto;
-  box-sizing: border-box;
-  min-height: calc(100vh - 75pt);
+  min-height: calc(100vh - 17pt - 10pt - 10pt - 12pt - 12pt - 30pt);
 }
 
 .code {
