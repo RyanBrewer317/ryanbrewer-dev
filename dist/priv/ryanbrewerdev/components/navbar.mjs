@@ -36,7 +36,7 @@ export function navbar() {
           $attribute.id("nav-posts"),
           attribute(
             "onclick",
-            "document.getElementById('nav').classList.toggle('dropdown');document.body.classList.remove('noscroll');",
+            "document.getElementById('nav').classList.remove('dropdown');document.body.classList.remove('noscroll');",
           ),
         ]),
         toList([text("Posts")]),
@@ -47,7 +47,7 @@ export function navbar() {
           $attribute.id("nav-wiki"),
           attribute(
             "onclick",
-            "document.getElementById('nav').classList.toggle('dropdown');document.body.classList.remove('noscroll');",
+            "document.getElementById('nav').classList.remove('dropdown');document.body.classList.remove('noscroll');",
           ),
         ]),
         toList([text("Wiki")]),
@@ -58,7 +58,7 @@ export function navbar() {
           $attribute.id("nav-contact"),
           attribute(
             "onclick",
-            "document.getElementById('nav').classList.toggle('dropdown');document.body.classList.remove('noscroll');",
+            "document.getElementById('nav').classList.remove('dropdown');document.body.classList.remove('noscroll');",
           ),
         ]),
         toList([text("Contact")]),
@@ -69,7 +69,7 @@ export function navbar() {
           $attribute.id("nav-demos"),
           attribute(
             "onclick",
-            "document.getElementById('nav').classList.toggle('dropdown');document.body.classList.remove('noscroll');",
+            "document.getElementById('nav').classList.remove('dropdown');document.body.classList.remove('noscroll');",
           ),
         ]),
         toList([text("Demos")]),

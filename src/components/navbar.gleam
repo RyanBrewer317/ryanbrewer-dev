@@ -35,7 +35,7 @@ pub fn navbar() -> Element(a) {
         attribute.id("nav-posts"),
         attribute(
           "onclick",
-          "document.getElementById('nav').classList.toggle('dropdown');document.body.classList.remove('noscroll');",
+          "document.getElementById('nav').classList.remove('dropdown');document.body.classList.remove('noscroll');",
         ),
       ],
       [text("Posts")],
@@ -46,7 +46,7 @@ pub fn navbar() -> Element(a) {
         attribute.id("nav-wiki"),
         attribute(
           "onclick",
-          "document.getElementById('nav').classList.toggle('dropdown');document.body.classList.remove('noscroll');",
+          "document.getElementById('nav').classList.remove('dropdown');document.body.classList.remove('noscroll');",
         ),
       ],
       [text("Wiki")],
@@ -57,7 +57,7 @@ pub fn navbar() -> Element(a) {
         attribute.id("nav-contact"),
         attribute(
           "onclick",
-          "document.getElementById('nav').classList.toggle('dropdown');document.body.classList.remove('noscroll');",
+          "document.getElementById('nav').classList.remove('dropdown');document.body.classList.remove('noscroll');",
         ),
       ],
       [text("Contact")],
@@ -68,7 +68,7 @@ pub fn navbar() -> Element(a) {
         attribute.id("nav-demos"),
         attribute(
           "onclick",
-          "document.getElementById('nav').classList.toggle('dropdown');document.body.classList.remove('noscroll');",
+          "document.getElementById('nav').classList.remove('dropdown');document.body.classList.remove('noscroll');",
         ),
       ],
       [text("Demos")],
