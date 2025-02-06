@@ -120,6 +120,17 @@ function view(model) {
         toList([]),
         toList([
           $html.div(
+            toList([$attribute.id("homepage-img")]),
+            toList([
+              $html.img(
+                toList([
+                  $attribute.src("/ryan-silly.jpg"),
+                  $attribute.width(340),
+                ]),
+              ),
+            ]),
+          ),
+          $html.div(
             toList([]),
             toList([
               $html.h3(toList([]), toList([text("Me.")])),
@@ -156,21 +167,14 @@ function view(model) {
                 toList([]),
                 toList([
                   text(
-                    "I'm Ryan Brewer.\nI'm a passionate software developer working on open-source software \nfor safe, reliable, and portable applications.\nI specialize in a formal methods approach to systems design, with a focus on ergonomics.\nOne of my big projects is ",
-                  ),
-                  $html.a(
-                    toList([href("https://github.com/RyanBrewer317/SaberVM")]),
-                    toList([text("SaberVM")]),
-                  ),
-                  text(
-                    ",\na lightweight abstract machine for functional languages that aims \nto be formally memory-safe, fault-tolerant, and very small. \nWith SaberVM, I'm hoping to broaden accessibility to safe computation, \nboth by taking it out of the ivory tower of academia and \nby removing the need for expensive hardware.\nAnother big project is ",
+                    "I'm Ryan Brewer.\nI'm a passionate software developer working on open-source software \nfor safe, reliable, and portable applications.\nI specialize in a formal methods approach to systems design, with a focus on ergonomics.\nIn general, my projects aim to be formally memory-safe, fault-tolerant, and very lightweight. \nVia minimality, I hope to make formal theory more accessible outside the ivory tower of academia,\nand easier to put into practice where it matters.\nOne of my bigger projects is ",
                   ),
                   $html.a(
                     toList([href("https://arctic-framework.org")]),
                     toList([text("Arctic")]),
                   ),
                   text(
-                    ",\nA friendly web framework for easily building fast web applications in Gleam!\nArctic powers this website, as well as the one I just linked.\nIf my projects seem cool or valuable, consider supporting my work!\n",
+                    ",\nA friendly web framework for easily building fast web applications in Gleam!\nArctic powers this website, as well as the one I just linked.\nIf my projects seem cool or valuable in any way, consider supporting my work!\n",
                   ),
                 ]),
               ),
@@ -218,7 +222,11 @@ function view(model) {
         toList([]),
         toList([
           text(
-            "This is my website.\nI use this as a space to store my ideas, advertise myself and my work, and write blog posts about topics that I love.\nGenerally I constrain my posts to be about programming language theory or implementations. \nLinks to my latest posts can be found below.\nThis website is hosted by Firebase and written in ",
+            "This is my website.\nI use this as a space to store my ideas, advertise myself and my work, and write blog posts about topics that I love.\nGenerally I constrain my posts to be about programming language theory or implementations. \nLinks to my latest posts can be found below. I also have a useful ",
+          ),
+          $html.a(toList([href("/wiki")]), toList([text("wiki")])),
+          text(
+            " of concepts I've studied, expressed accessibly.\nA good explanation is the best proof of my own understanding, and an exciting challenge. \nThis website is hosted by Firebase and written in ",
           ),
           $html.a(toList([href("https://gleam.run")]), toList([text("Gleam")])),
           text(", and the code is up on my "),

@@ -96,12 +96,9 @@ fn view(model: Model) -> Element(Msg) {
     ],
     [
       html.div([], [
-        // html.div([attribute.id("ryan-and-ivy-img")], [
-        //   html.img([attribute.src("/ryan-and-ivy.jpg"), attribute.width(300)]),
-        //   html.div([attribute.class("caption"), attribute.class("subtle-text")], [
-        //     text("Me and my lovely wife, Ivy!"),
-        //   ]),
-        // ]),
+        html.div([attribute.id("homepage-img")], [
+          html.img([attribute.src("/ryan-silly.jpg"), attribute.width(340)]),
+        ]),
         html.div([], [
           html.h3([], [text("Me.")]),
           html.div([attribute.id("sprites")], [
@@ -132,26 +129,17 @@ fn view(model: Model) -> Element(Msg) {
 I'm a passionate software developer working on open-source software 
 for safe, reliable, and portable applications.
 I specialize in a formal methods approach to systems design, with a focus on ergonomics.
-One of my big projects is ",
-            ),
-            html.a([href("https://github.com/RyanBrewer317/SaberVM")], [
-              text("SaberVM"),
-            ]),
-            text(
-              ",
-a lightweight abstract machine for functional languages that aims 
-to be formally memory-safe, fault-tolerant, and very small. 
-With SaberVM, I'm hoping to broaden accessibility to safe computation, 
-both by taking it out of the ivory tower of academia and 
-by removing the need for expensive hardware.
-Another big project is ",
+In general, my projects aim to be formally memory-safe, fault-tolerant, and very lightweight. 
+Via minimality, I hope to make formal theory more accessible outside the ivory tower of academia,
+and easier to put into practice where it matters.
+One of my bigger projects is ",
             ),
             html.a([href("https://arctic-framework.org")], [text("Arctic")]),
             text(
               ",
 A friendly web framework for easily building fast web applications in Gleam!
 Arctic powers this website, as well as the one I just linked.
-If my projects seem cool or valuable, consider supporting my work!
+If my projects seem cool or valuable in any way, consider supporting my work!
 ",
             ),
           ]),
@@ -187,7 +175,12 @@ If my projects seem cool or valuable, consider supporting my work!
           "This is my website.
 I use this as a space to store my ideas, advertise myself and my work, and write blog posts about topics that I love.
 Generally I constrain my posts to be about programming language theory or implementations. 
-Links to my latest posts can be found below.
+Links to my latest posts can be found below. I also have a useful ",
+        ),
+        html.a([href("/wiki")], [text("wiki")]),
+        text(
+          " of concepts I've studied, expressed accessibly.
+A good explanation is the best proof of my own understanding, and an exciting challenge. 
 This website is hosted by Firebase and written in ",
         ),
         html.a([href("https://gleam.run")], [text("Gleam")]),

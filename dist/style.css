@@ -42,6 +42,7 @@ nav {
   top: 0pt;
   background-color: var(--dark-background);
   z-index: 1;
+  height: 17pt;
 }
 
 #nav-posts, #nav-wiki, #nav-subscribe, #nav-contact, #nav-demos {
@@ -91,6 +92,8 @@ code::-webkit-scrollbar { /* Chrome, Safari */
   padding: 12pt;
   max-width: 600pt;
   margin: 0 auto;
+  box-sizing: border-box;
+  min-height: calc(100vh - 75pt);
 }
 
 .code {
@@ -154,7 +157,7 @@ textarea:focus, input:focus, #search-posts:focus, #search-wiki:focus {
   display: block
 }
 
-#kofi, #github {
+#kofi, #github, .contact-link {
   display: inline-block;
   font-size: 11pt;
   color: var(--secondary-color-dark);
@@ -175,6 +178,29 @@ textarea:focus, input:focus, #search-posts:focus, #search-wiki:focus {
   margin-bottom: -11pt;
 }
 
+.contact-link #kofi-logo {
+  margin-left: -5pt;
+}
+
+#mastodon-logo {
+  height: 18pt;
+  margin-right: 5pt;
+  margin-bottom: -5pt;
+  filter: invert(1);
+}
+
+#reddit-logo {
+  height: 19pt;
+  margin-right: 5pt;
+  margin-bottom: -5pt;
+}
+
+#linkedin-logo {
+  height: 18pt;
+  margin-right: 3pt;
+  margin-bottom: -5pt;
+} 
+
 #kofi {
   margin-left: 10pt;
 }
@@ -192,15 +218,16 @@ textarea:focus, input:focus, #search-posts:focus, #search-wiki:focus {
 
 #copyright-notice {
   text-align: center;
-  margin-bottom: 0;
+  margin: 0;
+  height: 30pt;
 }
 
-#ryan-and-ivy-img {
+#homepage-img {
   margin-right: 30pt;
 }
 
 @media (min-width: 400pt) {
-  #ryan-and-ivy-img {
+  #homepage-img {
     float: left;
   }
 }

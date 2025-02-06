@@ -17,7 +17,7 @@ export function homepage(posts) {
     toList([
       $head.local_head(
         "Ryan Brewer's Blog",
-        "The place Ryan writes his thoughts and shows off SaberVM and other cool projects.",
+        "The place Ryan writes his thoughts and shows off cool projects!",
       ),
       $html.script(
         toList([$attribute.attribute("type", "module")]),

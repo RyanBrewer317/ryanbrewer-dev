@@ -9,10 +9,6 @@ export function tail() {
   return $html.div(
     toList([]),
     toList([
-      $html.div(
-        toList([$attribute.style(toList([["height", "100pt"]]))]),
-        toList([]),
-      ),
       $html.p(
         toList([
           $attribute.id("copyright-notice"),

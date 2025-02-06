@@ -8,7 +8,6 @@ import lustre/element/html
 
 pub fn tail() -> Element(a) {
   html.div([], [
-    html.div([attribute.style([#("height", "100pt")])], []),
     html.p([attribute.id("copyright-notice"), attribute.class("subtle-text")], [
       text("© 2024 Ryan Brewer."),
     ]),
