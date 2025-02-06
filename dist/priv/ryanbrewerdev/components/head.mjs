@@ -10,7 +10,11 @@ export function local_head(title, description) {
     toList([]),
     toList([
       $html.link(
-        toList([$attribute.rel("preload"), $attribute.href("/ryan-silly.jpg")]),
+        toList([
+          $attribute.rel("preload"),
+          $attribute.attribute("as", "image"),
+          $attribute.href("/ryan-silly.jpg"),
+        ]),
       ),
       $html.link(
         toList([

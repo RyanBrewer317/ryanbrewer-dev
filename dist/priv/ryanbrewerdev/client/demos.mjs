@@ -90,7 +90,7 @@ function view(model) {
           ),
           $event.on_input((var0) => { return new NewUntypedCode(var0); }),
         ]),
-        "",
+        model.untyped_code,
       ),
       br(toList([])),
       (() => {
@@ -169,7 +169,7 @@ function view(model) {
           ),
           $event.on_input((var0) => { return new NewDepTypedCode(var0); }),
         ]),
-        "",
+        model.deptyped_code,
       ),
       br(toList([])),
       (() => {

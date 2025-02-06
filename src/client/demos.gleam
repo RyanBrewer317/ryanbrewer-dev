@@ -82,7 +82,7 @@ Lambda abstractions are written like
         ),
         event.on_input(NewUntypedCode),
       ],
-      "",
+      model.untyped_code,
     ),
     br([]),
     {
@@ -146,7 +146,7 @@ Type annotations are introduced by ",
         ),
         event.on_input(NewDepTypedCode),
       ],
-      "",
+      model.deptyped_code,
     ),
     br([]),
     {
