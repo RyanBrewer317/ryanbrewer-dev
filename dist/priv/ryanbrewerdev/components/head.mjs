@@ -9,6 +9,15 @@ export function local_head(title, description) {
   return $html.div(
     toList([]),
     toList([
+      $html.link(
+        toList([$attribute.rel("preload"), $attribute.href("/ryan-silly.jpg")]),
+      ),
+      $html.link(
+        toList([
+          $attribute.rel("prefetch"),
+          $attribute.href("/ryan-silly-2.png"),
+        ]),
+      ),
       $html.title(toList([]), title + " - Ryan Brewer"),
       $html.meta(
         toList([

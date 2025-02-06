@@ -9,6 +9,8 @@ import lustre/element/html
 
 pub fn local_head(title: String, description: String) -> Element(Nil) {
   html.div([], [
+    html.link([attribute.rel("preload"), attribute.href("/ryan-silly.jpg")]),
+    html.link([attribute.rel("prefetch"), attribute.href("/ryan-silly-2.png")]),
     html.title([], title <> " - Ryan Brewer"),
     html.meta([attribute.name("description"), attribute("content", description)]),
     html.script(

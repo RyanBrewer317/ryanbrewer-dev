@@ -224,12 +224,19 @@ textarea:focus, input:focus, #search-posts:focus, #search-wiki:focus {
 
 #homepage-img {
   margin-right: 30pt;
+  height: 454px;
+  background-color: var(--primary-color);
 }
 
 @media (min-width: 400pt) {
   #homepage-img {
     float: left;
   }
+}
+
+#contact-img {
+  height: 273px;
+  background-color: var(--primary-color);
 }
 
 #webring-links {
