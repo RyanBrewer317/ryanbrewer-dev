@@ -24,7 +24,7 @@ pub fn navbar() -> Element(a) {
         attribute.id("nav-home"),
         attribute(
           "onclick",
-          "document.getElementById('nav').classList.remove('dropdown');document.body.classList.remove('noscroll');",
+          "if (location.href == 'https://ryanbrewer.dev/') {document.getElementById('nav').classList.remove('dropdown');}document.body.classList.remove('noscroll');",
         ),
       ],
       [text("Ryan Brewer")],
@@ -35,7 +35,7 @@ pub fn navbar() -> Element(a) {
         attribute.id("nav-posts"),
         attribute(
           "onclick",
-          "document.getElementById('nav').classList.remove('dropdown');document.body.classList.remove('noscroll');",
+          "if (location.href == 'https://ryanbrewer.dev/posts') {document.getElementById('nav').classList.remove('dropdown');}document.body.classList.remove('noscroll');",
         ),
       ],
       [text("Posts")],
@@ -46,7 +46,7 @@ pub fn navbar() -> Element(a) {
         attribute.id("nav-wiki"),
         attribute(
           "onclick",
-          "document.getElementById('nav').classList.remove('dropdown');document.body.classList.remove('noscroll');",
+          "if (location.href == 'https://ryanbrewer.dev/wiki') {document.getElementById('nav').classList.remove('dropdown');}document.body.classList.remove('noscroll');",
         ),
       ],
       [text("Wiki")],
@@ -57,7 +57,7 @@ pub fn navbar() -> Element(a) {
         attribute.id("nav-contact"),
         attribute(
           "onclick",
-          "document.getElementById('nav').classList.remove('dropdown');document.body.classList.remove('noscroll');",
+          "if (location.href == 'https://ryanbrewer.dev/contact') {document.getElementById('nav').classList.remove('dropdown');}document.body.classList.remove('noscroll');",
         ),
       ],
       [text("Contact")],
@@ -68,7 +68,7 @@ pub fn navbar() -> Element(a) {
         attribute.id("nav-demos"),
         attribute(
           "onclick",
-          "document.getElementById('nav').classList.remove('dropdown');document.body.classList.remove('noscroll');",
+          "if (location.href == 'https://ryanbrewer.dev/demos') {document.getElementById('nav').classList.remove('dropdown');}document.body.classList.remove('noscroll');",
         ),
       ],
       [text("Demos")],
