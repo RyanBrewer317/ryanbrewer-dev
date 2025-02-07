@@ -9,6 +9,10 @@ export function navbar() {
   return $html.nav(
     toList([$attribute.id("nav")]),
     toList([
+      $html.script(
+        toList([]),
+        "\nfunction click_nav_home_link() {\n  let p=new URL(location.href).pathname;\n  if(p=='/'){\n    document.getElementById('nav').classList.remove('dropdown');\n  }\n  document.body.classList.remove('noscroll');\n}\nfunction click_nav_link(route) {\n  let p=new URL(location.href).pathname;\n  if(p==route||p==route+'/'){\n    document.getElementById('nav').classList.remove('dropdown');\n  }\n  document.body.classList.remove('noscroll');\n}\n    ",
+      ),
       $html.div(
         toList([
           $attribute.id("nav-dropdown"),
@@ -23,10 +27,7 @@ export function navbar() {
         toList([
           $attribute.href("/"),
           $attribute.id("nav-home"),
-          attribute(
-            "onclick",
-            "let p=new URL(location.href).pathname;if(p=='/'){document.getElementById('nav').classList.remove('dropdown')}document.body.classList.remove('noscroll');",
-          ),
+          attribute("onclick", "click_nav_home_link()"),
         ]),
         toList([text("Ryan Brewer")]),
       ),
@@ -34,10 +35,7 @@ export function navbar() {
         toList([
           $attribute.href("/posts"),
           $attribute.id("nav-posts"),
-          attribute(
-            "onclick",
-            "let p=new URL(location.href).pathname;if(p=='/posts'||p=='/posts/'){document.getElementById('nav').classList.remove('dropdown')}document.body.classList.remove('noscroll');",
-          ),
+          attribute("onclick", "click_nav_link('/posts')"),
         ]),
         toList([text("Posts")]),
       ),
@@ -45,10 +43,7 @@ export function navbar() {
         toList([
           $attribute.href("/wiki"),
           $attribute.id("nav-wiki"),
-          attribute(
-            "onclick",
-            "let p=new URL(location.href).pathname;if(p=='/wiki'||p=='/wiki/'){document.getElementById('nav').classList.remove('dropdown')}document.body.classList.remove('noscroll');",
-          ),
+          attribute("onclick", "click_nav_link('/wiki')"),
         ]),
         toList([text("Wiki")]),
       ),
@@ -56,10 +51,7 @@ export function navbar() {
         toList([
           $attribute.href("/contact"),
           $attribute.id("nav-contact"),
-          attribute(
-            "onclick",
-            "let p=new URL(location.href).pathname;if(p=='/contact'||p=='/contact/'){document.getElementById('nav').classList.remove('dropdown')}document.body.classList.remove('noscroll');",
-          ),
+          attribute("onclick", "click_nav_link('/contact')"),
         ]),
         toList([text("Contact")]),
       ),
@@ -67,10 +59,7 @@ export function navbar() {
         toList([
           $attribute.href("/demos"),
           $attribute.id("nav-demos"),
-          attribute(
-            "onclick",
-            "let p=new URL(location.href).pathname;if(p=='/demos'||p=='/demos/'){document.getElementById('nav').classList.remove('dropdown')}document.body.classList.remove('noscroll');",
-          ),
+          attribute("onclick", "click_nav_link('/demos')"),
         ]),
         toList([text("Demos")]),
       ),
