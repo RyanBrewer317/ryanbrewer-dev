@@ -1,0 +1,17 @@
+id: type-theory-forall
+title: Speaking on Type Theory Forall
+date: 2025-02-07
+tags: podcast,type,theory,abreu,plyukhin,for,all,self,teach,teaching,learn,learning,taught,how,to,paper,lustre,hayleigh,thompson
+blerb: 
+
+Today (Feb 7, 2025) I got the amazing chance to talk to the Pedro Abreu and Dan Plyukhin at the [Type Theory Forall](https://www.typetheoryforall.com/) podcast! It was an absolutely lovely experience, and I thought I'd take a moment to briefly write about it. I'll publish this post when the episode is released, a fair amount of time after writing this.
+
+First of all, I'm a long-time fan of the podcast. I started listening to it in early 2021, about four years ago, when there were less than ten episodes out. I was excited about the explanations of intuitionistic vs. classical logic. Then the first episode on Cedille came out, and I was hooked. I've listened to every episode since then, and I strongly recommend it to anyone trying to learn type theory. The episodes are at the detail-level of giving you an places to look next, but not necessarily teaching you the material, so they end up being quite accessible and digestible. Though some of my favorite episodes are more technical ones, because the discussions are super enlightening.
+
+I was invited to talk about my journey of self-teaching type theory and programming language theory over the years. They have a discord server for people to help each other learn type theory, and Pedro and I were helping someone out with semantics when he realized that I was self-taught, and invited me to talk about it on the show. Pedro and I are both very interested in making type theory more accessible, hence his podcast and my blog.
+
+To the surprise of no one at all, Pedro and Dan were just as nice and friendly in "real life" as they appear in the podcast. I've never done anything like this before, and TTfA is super meaningful to me, so let me tell you I was NERVOUS. *Extremely* nervous. But they were both very patient and kind, and made me feel very comfortable. There were some technical difficulties in the middle of the recording, so we just took a break to talk about movies and anime! I love the kind of people who look for things to talk about and don't even think of the superbowl happening in two days. I'm sure my increased confidence and reduced anxiety come through in the second half of the episode-- at that point it was just 100% a genuinely good time. I still had inevitable nerves throughout and after the show, because [I’m an awkward fellow after all](https://en.wikipedia.org/wiki/Dandadan), but I celebrated the event with milk tea afterwards. Such a good day! I couldn't feel luckier.
+
+The main errata I've realized so far since the recording is that I forgot to mention that [Arctic](https://arctic-framework.org) is built on top of the amazing [Lustre](https://lustre.build) web framework by [Hayleigh Thompson](https://github.com/hayleigh-dot-dev). It's very white-man of me to build on her work and not credit it, and I feel terrible. I'm taking the chance to mention it here, and I've asked Pedro to mention it in the show notes.
+
+I always dreamed of getting on the podcast, but I always thought it would be for discovering something, or building an important project, or something like that. So looking towards the future, I think my dream of getting on the podcast is very much still alive, and I feel super motivated to keep learning and working. I'm so grateful to Pedro and Dan for inviting me!
