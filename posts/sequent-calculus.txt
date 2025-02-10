@@ -109,7 +109,7 @@ This says that no matter what (empty top), if you assume something then you can 
 \begin{prooftree}
 \AxiomC{$\Gamma\vdash\Delta_1,p,q,\Delta_2$}
 \RightLabel{Exch-R}
-\UnaryInfC{$\Gamma\vdash\Delta_1,q,p,\Delta_1$}
+\UnaryInfC{$\Gamma\vdash\Delta_1,q,p,\Delta_2$}
 \end{prooftree}
 \quad\quad
 \begin{prooftree}
