@@ -340,3 +340,5 @@ In this setting, programs in a highly-parallel functional programming language a
 ### Conclusion
 
 Thus ends the crash course on linear logic! Next up is the final post, digging into the semantics of multiplicative disjunction (par) much more deeply.
+
+I have a wiki up for a much quicker reference to the ideas and operators of linear logic, [here](/wiki/linear-logic).
