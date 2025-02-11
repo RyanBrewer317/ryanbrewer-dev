@@ -1,8 +1,8 @@
 id: linear-logic
 title: Par Part 2: Linear Logic
-date: 2025-02-07
-tags: x
-blerb: shh, this post isn't really public yet! You came at a special time :)
+date: 2025-02-11
+tags: substructural,structural,weakening,contraction,weak,lollipop,monoidal,monoid,game,semantics
+blerb: Linear logic is a beautiful logical system taking advantage of the mechanisms of the sequent calculus. In this post we explore the various meanings of linear logic, and dig deep into the reasoning behind its peculiar development.
 
 This post is the second in a series on Logic. These ideas are very useful in understanding many important papers on programming language theory, especially papers on type theory and the lambda calculus. The first post was an explanation of sequents and Sequent Calculus as a system for doing logic, so I'll assume that you have an understanding of those concepts now. In this post I'll dive into linear logic, as the most amazing result of studying the sequent calculus. I'll finish the trilogy in the next post, where I discuss Par and computational interpretations of classical logic.
 
