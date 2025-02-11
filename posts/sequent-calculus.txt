@@ -286,7 +286,7 @@ Now, disjunction and negation is all you need to define the other logical consta
 \begin{prooftree}
 \AxiomC{$\vdash p\land q,\Delta$}
 \RightLabel{$\land$-Elim${}_2$}
-\UnaryInfC{$\vdash p,\Delta$}
+\UnaryInfC{$\vdash q,\Delta$}
 \end{prooftree}
 
 @math
