@@ -1,14 +1,31 @@
 <!doctype html>
-<div><div><title>Linear Logic - Ryan Brewer</title><meta name="description" content><script type="text/javascript" async="true" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script><script>
+<div><div><link rel="preload" as="image" href="/ryan-silly.jpg"><link rel="prefetch" href="/ryan-silly-2.png"><title>Linear Logic - Ryan Brewer</title><meta name="description" content><script type="text/javascript" async="true" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script><script>
 window.MathJax = {
   loader: {load: ['[tex]/unicode','[tex]/bussproofs']},
   tex: {packages: {'[+]': ['unicode','bussproofs']}},
 };
-        </script><script>hljs.highlightAll();</script></div><nav id="nav"><div id="nav-dropdown" onclick="document.getElementById(&#39;nav&#39;).classList.toggle(&#39;dropdown&#39;);document.body.classList.toggle(&#39;noscroll&#39;);">☰</div><a href="/" id="nav-home" onclick="document.body.classList.remove(&#39;noscroll&#39;);">Ryan Brewer</a><a href="/posts" id="nav-posts" onclick="document.body.classList.remove(&#39;noscroll&#39;);">Posts</a><a href="/wiki" id="nav-wiki" onclick="document.body.classList.remove(&#39;noscroll&#39;);">Wiki</a><a href="/contact" id="nav-contact" onclick="document.body.classList.remove(&#39;noscroll&#39;);">Contact</a><a href="/demos" id="nav-demos" onclick="document.body.classList.remove(&#39;noscroll&#39;);">Demos</a><a href="/feed.rss" id="nav-subscribe" onclick="window.location.href = &#39;/feed.rss&#39;"><img src="/rss-icon.png" id="rss-subscribe-icon">Subscribe</a></nav><div id="body"><h1>Linear Logic</h1><p><span>Linear logic, discovered by <a href="https://en.wikipedia.org/wiki/Jean-Yves_Girard"><span>Jean-Yves Girard</span></a>, is most commonly thought of as logic where facts must be used exactly once: they can&#39;t go unmentioned, and they are &quot;used up&quot; after their first use. This gives a powerful way to reason about resource usage, and is a theoretical inspiration for Rust&#39;s resource safety checks. This view of linear logic, when framed this way, is obviously very informal and missing important details. But it also gives a fairly limiting view of the possibilities linear logic offers. In its full definition, it&#39;s a <i><span>generalization</span></i> of &quot;normal, ordinary, every-day&quot; logic (sometimes called &quot;persistent&quot; or &quot;structural&quot; logic when talked about in comparison to linear logic). That is, linear logic puts restrictions on reasoning, but offers &quot;escape-hatches&quot; to do any ordinary reasoning. This has the powerful effect of annotating your proofs with the places that traditional rules are used. The end result is a clearer picture of what we&#39;re actually doing in our reasoning, and a fairly wide range of theoretical benefits arise from that clarity.
+        </script><script>hljs.highlightAll();</script></div><nav id="nav"><script>
+function click_nav_home_link() {
+  let p=new URL(location.href).pathname;
+  if(p=='/'){
+    document.getElementById('nav').classList.remove('dropdown');
+  }
+  document.body.classList.remove('noscroll');
+}
+function click_nav_link(route) {
+  let p=new URL(location.href).pathname;
+  if(p==route||p==route+'/'){
+    document.getElementById('nav').classList.remove('dropdown');
+  }
+  document.body.classList.remove('noscroll');
+}
+    </script><div id="nav-dropdown" onclick="document.getElementById(&#39;nav&#39;).classList.toggle(&#39;dropdown&#39;);document.body.classList.toggle(&#39;noscroll&#39;);">☰</div><a href="/" id="nav-home" onclick="click_nav_home_link()">Ryan Brewer</a><a href="/posts" id="nav-posts" onclick="click_nav_link(&#39;/posts&#39;)">Posts</a><a href="/wiki" id="nav-wiki" onclick="click_nav_link(&#39;/wiki&#39;)">Wiki</a><a href="/contact" id="nav-contact" onclick="click_nav_link(&#39;/contact&#39;)">Contact</a><a href="/demos" id="nav-demos" onclick="click_nav_link(&#39;/demos&#39;)">Demos</a><a href="/feed.rss" id="nav-subscribe" onclick="window.location.href = &#39;/feed.rss&#39;"><img src="/rss-icon.png" id="rss-subscribe-icon">Subscribe</a></nav><div id="body"><h1>Linear Logic</h1><p><span>Linear logic, discovered by <a href="https://en.wikipedia.org/wiki/Jean-Yves_Girard"><span>Jean-Yves Girard</span></a>, is most commonly thought of as logic where facts must be used exactly once: they can&#39;t go unmentioned, and they are &quot;used up&quot; after their first use. This gives a powerful way to reason about resource usage, and is a theoretical inspiration for Rust&#39;s resource safety checks. This view of linear logic, when framed this way, is obviously very informal and missing important details. But it also gives a fairly limiting view of the possibilities linear logic offers. In its full definition, it&#39;s a <i><span>generalization</span></i> of &quot;normal, ordinary, every-day&quot; logic (sometimes called &quot;persistent&quot; or &quot;structural&quot; logic when talked about in comparison to linear logic). That is, linear logic puts restrictions on reasoning, but offers &quot;escape-hatches&quot; to do any ordinary reasoning. This has the powerful effect of annotating your proofs with the places that traditional rules are used. The end result is a clearer picture of what we&#39;re actually doing in our reasoning, and a fairly wide range of theoretical benefits arise from that clarity.
+</span></p><p><span>Note that I have an extensive and friendly introduction to linear logic <a href="/posts/linear-logic"><span>here</span></a>. This wiki entry is instead intended as a reference for those with a little more familiarity and/or less time :)
 </span></p><p><span>I&#39;ll start by thinking about linear logic from a logic perspective, instead of a computer science perspective. When studying logic, we generally have this concept of a context, written \(\Gamma\), holding all the facts we have available to us in a step of a proof. If \(\Gamma\) holds some fact \(A\), then from the facts of \(\Gamma\) we can <i><span>deduce</span></i> \(A\), since it&#39;s already one of those facts. This is written \(\Gamma\vdash A\), and pronounced &quot;Gamma entails A.&quot; These statements are called &quot;sequents.&quot; In ordinary logic, if you have \(\Gamma\vdash A\) and \(\Gamma\vdash B\), then it&#39;s possible to use the facts in \(\Gamma\) to prove the conjunction \(A\land B\), so we write the sequent \(\Gamma\vdash A\land B\). We often use a comma notation for contexts, like \(\Gamma,P\), to say &quot;any context \(\Gamma\), including an empty one, extended with the additional proposition \(P\).&quot;
 </span></p><p><span>In ordinary logic, if we have some sequent \(\Gamma\vdash P\), we&#39;re allowed to add any facts we want to the context, if we prove them. Formally, if \(\Gamma\vdash A\) and \(\Gamma\vdash B\), we can use the &quot;weakening&quot; rule to conclude \(\Gamma,A\vdash B\), since we know \(A\) doesn&#39;t contradict \(\Gamma\). Weakening allows us to duplicate anything in the context as many times as we want, so the context doesn&#39;t lose any information as we progress through a proof. Facts can be used more than once.
 </span></p><p><span>In ordinary logic, if we have the same thing duplicated in the context, we can throw out duplicates. Formally, if \(\Gamma,A,A\vdash B\), then we can use the &quot;contraction&quot; rule to conclude that \(\Gamma,A\vdash B\). That means that if a fact isn&#39;t necessary to prove something, we can throw it away. Facts can be used less than once.
 </span></p><p><span>Linear logic can be described as the result of throwing away weakening and contraction. Then there&#39;s no way to duplicate or throw away statements in the context, so they have to get used or stay in the context til the end of the proof. This is what gives linear logic the &quot;use everything exactly once&quot; reputation: you can&#39;t use things more than once, and you can&#39;t use things less than once. Weakening and contraction are called &quot;structural&quot; rules, so linear logic is an example of a logic called &quot;substructural.&quot; Using a proposition in linear logic is called &quot;consuming&quot; it.
+</span></p><p><span>I give the rules at the bottom of this page.
 </span></p><p><span>Implication in linear logic is written \(A\unicode{8888} B\) and is pronounced &quot;lolli&quot; or &quot;the lollipop operator,&quot; which proves \(B\) in a way that uses \(A\) exactly once. Note that \(A\unicode{8888} B\) is <i><span>itself</span></i> a proposition that must be used exactly once.
 </span></p><p><span>There are a lot of details to making that a coherent logic, though. For example, when you&#39;ve proven a conjunction \(A\land B\), you could use it to prove \(A\), but then the \(B\) vanishes. But, in other situations, we use both components of a conjunction. With disjunction there&#39;s the same situation: you can turn \(A\lor B\) into \(C\) with two implications \(A\Rightarrow C\) and \(B\Rightarrow C\), but can the context be used once per proof-of-implication, or do they have to &quot;share resources,&quot; with a usage in one preventing a usage in the other? One might say that using the context once each is duplicating the context, but remember that only one of the implications actually gets &quot;used,&quot; so sharing facts might make some disappear without getting used.
 </span></p><p><span>The answer to these questions isn&#39;t to pick one way and stick with it, but instead of have <i><span>two different</span></i> conjunctions and <i><span>two different</span></i> disjunctions! I&#39;ll now go through them one by one.
@@ -16,4 +33,98 @@ window.MathJax = {
 </span></p><p><span>&quot;Additive disjunction,&quot; written \(A\oplus B\) and pronounced &quot;plus,&quot; allows you to prove two implications \(A\unicode{8888} C,B\unicode{8888} C\) in a way where they each have full access to the context, because we know we will use only one of the implications for our final \(A\oplus B\unicode{8888} C\), we just don&#39;t know which. The unit for additive disjunction is \(0\).
 </span></p><p><span>&quot;Multiplicative conjunction,&quot; written \(A\otimes B\) and pronounced &quot;tensor,&quot; allows you to prove <i><span>both</span></i> \(A\) and \(B\). Think of pattern-matching in a functional language, where this conjunction is a tuple. The unit of multiplicative conjunction is \(1\).
 </span></p><p><span>Finally, &quot;multiplicative disjunction,&quot; written \(A\unicode{8523}B\) and pronounced &quot;par,&quot; requires that the two implications \(A\unicode{8888}C,B\unicode{8888}C\) used to prove \(A\unicode{8523}B\unicode{8888}C\) share resources, meaning they may both happen. This is often used in contexts where you don&#39;t know which side of the disjunction is true and you want to just pick the first one, knowing that you&#39;ll change your mind and go pack if some new information reveals that it was actually the second one. For example, \(A\unicode{8523}(\neg A)\) is perfectly valid, even if \(A\) is &quot;this turing machine halts,&quot; because you can assume it doesn&#39;t halt and change your mind if it actually halts. For this kind of thing to be allowed, it has to be okay for both implications to &quot;happen,&quot; so they share resources. The unit of multiplicative disjunction is called &quot;bottom,&quot; written \(\bot\).
-</span></p></div><div><p id="copyright-notice" class="subtle-text">© 2024 Ryan Brewer.</p><script src="/__/firebase/8.10.1/firebase-app.js"></script><script src="/__/firebase/8.10.1/firebase-analytics.js"></script><script src="/__/firebase/init.js"></script><script>firebase.analytics();</script></div></div>
+</span></p><p><span>One very interesting feature of linear logic is that negation can be thought of as only being an operator on atomic sentences, and the rest can be defined as a function! Just like negation in classical logic. This comes from the fact that linear logic enjoys many more pleasant equations than intuitionistic logic. You can see in the rules below there isn&#39;t an inference rule for negation (except Axiom, I suppose) but instead an extensive function definition.
+</span></p><h3><span>Rules
+</span></h3><div class="math-block">\[\begin{prooftree}
+\AxiomC{}
+\RightLabel{Axiom}
+\UnaryInfC{$\vdash\neg p,p$}
+\end{prooftree}
+\quad\quad
+\begin{prooftree}
+\AxiomC{$\vdash p,\Gamma$}
+\AxiomC{$\vdash\neg p,\Delta$}
+\RightLabel{Cut}
+\BinaryInfC{$\vdash\Gamma,\Delta$}
+\end{prooftree}
+\]</div><div class="math-block">\[\begin{prooftree}
+\AxiomC{$\vdash p,\Delta$}
+\AxiomC{$\vdash q,\Delta$}
+\RightLabel{$\&amp;$-Intro}
+\BinaryInfC{$\vdash p\&amp;q,\Delta$}
+\end{prooftree}
+\quad\quad
+\begin{prooftree}
+\AxiomC{$\vdash p,\Gamma$}
+\AxiomC{$\vdash q,\Delta$}
+\RightLabel{$\otimes$-Intro}
+\BinaryInfC{$\vdash p\otimes q,\Gamma,\Delta$}
+\end{prooftree}
+\]</div><div class="math-block">\[\begin{prooftree}
+\AxiomC{$\vdash p,\Delta$}
+\RightLabel{$\oplus$-Intro${}_1$}
+\UnaryInfC{$\vdash p\oplus q,\Delta$}
+\end{prooftree}
+\quad\quad
+\begin{prooftree}
+\AxiomC{$\vdash q,\Delta$}
+\RightLabel{$\oplus$-Intro${}_2$}
+\UnaryInfC{$\vdash p\oplus q,\Delta$}
+\end{prooftree}
+\begin{prooftree}
+\AxiomC{$\vdash p,q,\Delta$}
+\RightLabel{$\unicode{8523}$-Intro}
+\UnaryInfC{$\vdash p\unicode{8523}q,\Delta$}
+\end{prooftree}
+\]</div><p><span>(\(p\unicode{8888}q\) is simply defined as \(\neg p\unicode{8523}q\).)
+</span></p><div class="math-block">\[\begin{prooftree}
+\AxiomC{}
+\RightLabel{$\top$-Intro}
+\UnaryInfC{$\vdash\top,\Delta$}
+\end{prooftree}
+\]</div><div class="math-block">\[\begin{prooftree}
+\AxiomC{}
+\RightLabel{$1$-Intro}
+\UnaryInfC{$\vdash 1$}
+\end{prooftree}
+\]</div><div class="math-block">\[\begin{prooftree}
+\AxiomC{$\vdash\Delta$}
+\RightLabel{$\bot$-Intro}
+\UnaryInfC{$\vdash\bot,\Delta$}
+\end{prooftree}
+\]</div><p><span>(there&#39;s no rule for introducing \(0\).)
+</span></p><div class="math-block">\[\begin{prooftree}
+\AxiomC{$\vdash p,\Delta$}
+\RightLabel{Dereliction}
+\UnaryInfC{$\vdash ?p,\Delta$}
+\end{prooftree}
+\quad\quad\quad
+\begin{prooftree}
+\AxiomC{$\vdash p,?\Delta$}
+\RightLabel{$!$-Intro}
+\UnaryInfC{$\vdash !p,?\Delta$}
+\end{prooftree}
+\]</div><p><span>(\(?\Delta\) means a collection of propositions which all have \(?\) applied to them, like \(?p_0,?p_1,...,?p_n\).)
+</span></p><div class="math-block">\[\begin{prooftree}
+\AxiomC{$\vdash\Delta$}
+\RightLabel{Weak}
+\UnaryInfC{$\vdash ?p,\Delta$}
+\end{prooftree}
+\quad\quad
+\begin{prooftree}
+\AxiomC{$\vdash ?p,?p,\Delta$}
+\RightLabel{Contr}
+\UnaryInfC{$\vdash ?p,\Delta$}
+\end{prooftree}
+\]</div><div class="math-block">\[\neg p = \neg p
+\]</div><div class="math-block">\[\neg(\neg p) = p
+\]</div><div class="math-block">\[\neg(p\otimes q) = (\neg p)\unicode{8523}(\neg q)
+\]</div><div class="math-block">\[\neg(p\unicode{8523}q) = (\neg p)\otimes(\neg q)
+\]</div><div class="math-block">\[\neg(p\&amp;q) = (\neg p)\oplus(\neg q)
+\]</div><div class="math-block">\[\neg(p\oplus q) = (\neg p)\&amp;(\neg q)
+\]</div><div class="math-block">\[\neg 1 = \bot
+\]</div><div class="math-block">\[\neg\bot = 1
+\]</div><div class="math-block">\[\neg\top = 0
+\]</div><div class="math-block">\[\neg 0 = \top
+\]</div><div class="math-block">\[\neg(!p) = ?(\neg p)
+\]</div><div class="math-block">\[\neg(?p) = !(\neg p)\]</div></div><div><p id="copyright-notice" class="subtle-text">© 2024 Ryan Brewer.</p><script src="/__/firebase/8.10.1/firebase-app.js"></script><script src="/__/firebase/8.10.1/firebase-analytics.js"></script><script src="/__/firebase/init.js"></script><script>firebase.analytics();</script></div></div>
