@@ -66,7 +66,7 @@ Lambda abstractions are written like
       a(
         [
           href(
-            "https://github.com/RyanBrewer317/ryanbrewer-dev/blob/main/src/tinylang.gleam",
+            "https://github.com/RyanBrewer317/ryanbrewer-dev/blob/main/src/client/tinylang.gleam",
           ),
         ],
         [text("here")],
@@ -129,7 +129,7 @@ Type annotations are introduced by ",
       a(
         [
           href(
-            "https://github.com/RyanBrewer317/ryanbrewer-dev/blob/main/src/tinytypedlang.gleam",
+            "https://github.com/RyanBrewer317/ryanbrewer-dev/blob/main/src/client/tinytypedlang.gleam",
           ),
         ],
         [text("here")],

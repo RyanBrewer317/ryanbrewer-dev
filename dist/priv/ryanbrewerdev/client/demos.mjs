@@ -73,7 +73,7 @@ function view(model) {
           a(
             toList([
               href(
-                "https://github.com/RyanBrewer317/ryanbrewer-dev/blob/main/src/tinylang.gleam",
+                "https://github.com/RyanBrewer317/ryanbrewer-dev/blob/main/src/client/tinylang.gleam",
               ),
             ]),
             toList([text("here")]),
@@ -151,7 +151,7 @@ function view(model) {
           a(
             toList([
               href(
-                "https://github.com/RyanBrewer317/ryanbrewer-dev/blob/main/src/tinytypedlang.gleam",
+                "https://github.com/RyanBrewer317/ryanbrewer-dev/blob/main/src/client/tinytypedlang.gleam",
               ),
             ]),
             toList([text("here")]),
