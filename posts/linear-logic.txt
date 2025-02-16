@@ -112,7 +112,7 @@ Linear logic simply decides to keep both! \\(\\land\\) ("and") disappears, repla
 
 So now \\(p\\Rightarrow p\\&p\\) is a theorem but \\(p\\Rightarrow p\\otimes p\\) is not. Meanwhile, because \\(\\&\\) *does* get rid of that extra \\(\\neg p\\), \\(p\\Rightarrow(p\\Rightarrow(p\\&p))\\) is *not* a theorem, but of course \\(p\\Rightarrow(p\\Rightarrow(p\\otimes p))\\) is.
 
-Intuitively, \\(p\\otimes q\\) means you've got both a \\(p\\) and a \\(q\\), since you can (and must) use both. Meanwhile \\(p\\&q\\) means you've got this kind of dual-purpose thing that you can (and must) use once as either a \\(p\\) or a \\(q\\), but it's not a disjunction because you get to choose which. So we have the nice expected theorem \\(p\\&q\\Rightarrow p\\), but we don't have \\(p\\otimes q\\Rightarrow p).
+Intuitively, \\(p\\otimes q\\) means you've got both a \\(p\\) and a \\(q\\), since you can (and must) use both. Meanwhile \\(p\\&q\\) means you've got this kind of dual-purpose thing that you can (and must) use once as either a \\(p\\) or a \\(q\\), but it's not a disjunction because you get to choose which. So we have the nice expected theorem \\(p\\&q\\Rightarrow p\\), but we don't have \\(p\\otimes q\\Rightarrow p\\).
 
 We do all this same stuff with disjunction, because we also have two possible translations of the classical and intuitionistic \\(\\lor\\) rules. Here's the direct translation:
 

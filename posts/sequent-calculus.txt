@@ -49,11 +49,19 @@ This notation is used in two ways: "inference rules" and "derivation trees." An 
 
 Notice how the \\(D\\vdash S\\) is acting as a point where the inference rules can be connected, because it's the bottom of one inference rule and part of the top of the other. Like legos, we can stack inference rules when the top of the bottom piece matches the bottom of the top piece. Since inference rules are descriptions of valid steps in a derivation tree, we often fill their top sequents with "metavariables," which are like wildcards that match anything. The way to specify if something is a metavariable or not will depend on what you're doing, but typically any Greek or Latin (English) letter will be a metavariable. 
 
-Unfortunately I really do mean "typically," and not "always:" there are many, many exceptions to this, and you'll often find yourself using context clues to decipher sequent notation. If the same metavariable appears multiple times on the top of a sequent, then those parts of the "input" sequent have to be equal to each other for it to be considered a valid match, because each metavariable can only match one thing, even if multiple times. Note that metavariables can stand in for some component of an expression, an entire expression, or even multiple adjacent expressions in a list, but generally not for the whole sequent (both lists). Understanding what a metavariable is supposed to stand in for unfortunately also requires context clues! But when you see enough of these you quickly develop trustworthy expectations and intuitions, and the examples in this post will help with that. Lastly, the bottom of an inference rule will often mention the metavariables on the top, which just means "whatever that metavariable matched in the input, fill that in here in the output." If there's a metavariable on the bottom that *isn't* mentioned on the top, then it could be filled with anything that the metavariable could match; it's up to you! You'll see clarifying examples in a moment.
+Unfortunately I really do mean "typically," and not "always:" there are many, many exceptions to this, and you'll often find yourself using context clues to decipher sequent notation. 
+
+If the same metavariable appears multiple times on the top of a sequent, then those parts of the "input" sequent have to be equal to each other for it to be considered a valid match, because each metavariable can only match one thing, even if multiple times. Note that metavariables can stand in for some component of an expression, an entire expression, or even multiple adjacent expressions in a list, but generally not for the whole sequent (both lists). Understanding what a metavariable is supposed to stand in for unfortunately also requires context clues! But when you see enough of these you quickly develop trustworthy expectations and intuitions, and the examples in this post will help with that. 
+
+Lastly, the bottom of an inference rule will often mention the metavariables on the top, which just means "whatever that metavariable matched in the input, fill that in here in the output." If there's a metavariable on the bottom that *isn't* mentioned on the top, then it could be filled with anything that the metavariable could match; it's up to you! You'll see clarifying examples in a moment.
 
 ### Sequent Calculus
 
-Let's do some reasoning with Gentzen's notation! The left side of the turnstile \\(\\vdash\\) will be our assumptions, and the right side will be our conclusions. We'll interpret this as "if all the propositions on the left are true, then at least one of the propositions on the right is true." In other words, the left can be seen as a big conjunction ("and") and the right can be seen as a big disjunction ("or"). If the left side is empty then it should be impossible for everything on the right to be false (it's a tautological disjunction), and if the right side is empty then it should be impossible for everything on the left to be true (it's a contradictory conjunction). Here are some simple inference rules for reasoning around conjunctions:
+Let's do some reasoning with Gentzen's notation! The left side of the turnstile \\(\\vdash\\) will be our assumptions, and the right side will be our conclusions. We'll interpret this as "if all the propositions on the left are true, then at least one of the propositions on the right is true." In other words, the left can be seen as a big conjunction ("and") and the right can be seen as a big disjunction ("or"). If the left side is empty then it should be impossible for everything on the right to be false (it's a tautological disjunction), and if the right side is empty then it should be impossible for everything on the left to be true (it's a contradictory conjunction). 
+
+Allow me to emphasize: we are now giving an *interpretation* to the sequent notation. This is not the inherent meaning of the notation. This meaning comes from our choice of inference rules, which we've carefully designed to simulate formal logic. The underlying system, the sequent notation, is still just a dumb symbol rewriter, which we configure by our choice of inference rules.
+
+Here are some simple inference rules for reasoning around conjunctions:
 
 @math
 \begin{prooftree}
@@ -261,7 +269,7 @@ Now we've got way too many rules, it appears. Each rule is duplicated because th
 \begin{prooftree}
 \AxiomC{$\vdash p,\Delta$}
 \AxiomC{$\vdash\neg p,\Delta$}
-\RightLabel{$\neg$-Elim or "Cut"}
+\RightLabel{$\neg$-Elim or “Cut"}
 \BinaryInfC{$\vdash\Delta$}
 \end{prooftree}
 
@@ -358,7 +366,7 @@ The connection between natural deduction and intuitionistic logic is fairly stro
 \UnaryInfC{$\vdash p\lor\neg p$}
 \end{prooftree}
 
-However, the useful thing about intuitionistic logic is that it can be given computational "proof terms." These are expressions in some typed lambda calculus which have a normal form (don't loop forever during computation) only if their type is equivalent to a true proposition of intuitionistic logic. Hence the name "proof terms:" the existence of a fully-evaluated expression of a type is itself a proof of the corresponding proposition. In general, the study of classical logic doesn't use proof terms, though in later posts I'll explore ways that you *can,* in fact, give proof terms for classical logic. But for now I'll focus the discussion on the simple case of intuitionistic logic. 
+However, the useful thing about intuitionistic logic is that it can be given computational "proof terms." These are expressions in some typed lambda calculus that have a normal form (don't loop forever during computation) only if their type is equivalent to a true proposition of intuitionistic logic. Hence the name "proof terms:" the existence of a fully-evaluated expression of a type is itself a proof of the corresponding proposition. In general, the study of classical logic doesn't use proof terms, though in later posts I'll explore ways that you *can,* in fact, give proof terms for classical logic. But for now I'll focus the discussion on the simple case of intuitionistic logic. 
 
 For simplicity we'll limit intuitionistic logic to only implication and \\(\\texttt{False}\\), which can express conjunction, disjunction, and negation. Then the correspondence between types and propositions is as follows: function types correspond to implication, and \\(\\texttt{False}\\) corresponds to \\(\\texttt{void}\\) (the type with no values). Then that simply-typed lambda calculus gives proof terms to this "implicational fragment" of propositional intuitionistic logic. We use slightly new notation for this:
 
@@ -395,7 +403,7 @@ p,q::=\texttt{False}\mid p\Rightarrow p
 @math
 \Gamma::=\cdot\mid\Gamma,x:p
 
-On the left of the \\(::=\\) are the metavariables, and on the right are the things they can be replaced with. The \\(\\mid\\) symbol means "or," so the above grammar says that \\(e\\) can be any of the following: a variable like \\(x\\) or \\(y\\), a lambda abstraction \\(\\lambda x.e\\), or an application \\(e\;e\\). The other two lines are similar. Notice how these definitions are recursive. The \\(\\cdot\\) symbol in the context is worth mentioning: it means the empty context, and technically a context like \\(x:p,y:q\\) is just a shorthand for \\(\\cdot,x:p,y:q\\). But we've been using this kind of shorthand for the whole post, as everyone does, instead of explicitly writing the empty context. In the wild it almost exclusively appears in formal grammars, not inference rules or derivation trees, so I've continued that tradition here. With all that in mind, we would write that our proof system for intuitionistic logic has the following "judgement form:"
+On the left of the \\(::=\\) are the metavariables, and on the right are the things they can be replaced with. The \\(\\mid\\) symbol means "or," so the above grammar says that \\(e\\) can be any of the following: a variable like \\(x\\) or \\(y\\), a lambda abstraction \\(\\lambda x.e\\), or an application \\(e\\;e\\). The other two lines are similar. Notice how these definitions are recursive. The \\(\\cdot\\) symbol in the context is worth mentioning: it means the empty context, and technically a context like \\(x:p,y:q\\) is just a shorthand for \\(\\cdot,x:p,y:q\\). But we've been using this kind of shorthand for the whole post, as everyone does, instead of explicitly writing the empty context. In the wild it almost exclusively appears in formal grammars, not inference rules or derivation trees, so I've continued that tradition here. With all that in mind, we would write that our proof system for intuitionistic logic has the following "judgement form:"
 
 @math
 \Gamma\vdash e:p
