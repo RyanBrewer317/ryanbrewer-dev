@@ -245,7 +245,7 @@ let excluded_middle<B>: (B -> Never) par B =
 
 Since we're introducing (but not eliminating) a `par`, there's no `catch` block. That will need to be provided by users of `excluded_middle`.
 
-So there you have it, Wadler's Demon is just specializing \\(p\\;\\unicode{8523}\\;q\\) to \\(p\\;\\unicode{8523}\\;\\neg p\\). The LEM is a multiplicative disjunction, not an additive one. The jumping around doesn't seem nearly so mysterious or unnatural now! Constructive classical logic is just a normal intuitionistic logic extended with `try`/`catch` exception-handling! (Technically it's actually a simple effect system, but close enough for this intuition-driven post).
+So there you have it, Wadler's Demon is just specializing \\(p\\;\\unicode{8523}\\;q\\) to \\(p\\;\\unicode{8523}\\;\\neg p\\). The LEM is a multiplicative disjunction, not an additive one. The jumping around doesn't seem nearly so mysterious or unnatural now! Remember that par is like the `throwing` keyword in Java. Constructive classical logic is just a normal intuitionistic logic extended with `try`/`catch` exception-handling! (Technically it's actually a simple effect system, but close enough for this intuition-driven post).
 
 I think all of this makes the computational LEM much more intuitive and friendly. All we're saying is that the LEM is constructively valid only for disjunctive syllogism (par), with proofs using `try`/`catch` statements that the vast majority of professional programmers are quite familiar with. In linear-logic terms, the LEM is a multiplicative disjunction, not an additive one.
 
