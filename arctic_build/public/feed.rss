@@ -97,7 +97,7 @@
       <pubDate>Mon, 13 Jan 2025 00:00:00 PST</pubDate>
       <link>https://ryanbrewer.dev/posts/sequent-calculus/</link>
       <guid>https://ryanbrewer.dev/posts/sequent-calculus/</guid>
-      <description><![CDATA[Sequent Calculus is a way of doing logic that's very explicit and mechanical. It's used as an important system and notation for type theory and logic related to programming languages.  Read more <a href="https://ryanbrewer.dev/posts/sequent-calculus/">here</a>!]]></description>
+      <description><![CDATA[Sequent Calculus is a way of doing logic that's very explicit and mechanical. It's used as an important system and notation for type theory and logic related to programming languages."posts/sequent-calculus.txt  Read more <a href="https://ryanbrewer.dev/posts/sequent-calculus/">here</a>!]]></description>
     </item>
     <item>
       <title>Par Part 2: Linear Logic</title>
@@ -105,6 +105,13 @@
       <link>https://ryanbrewer.dev/posts/linear-logic/</link>
       <guid>https://ryanbrewer.dev/posts/linear-logic/</guid>
       <description><![CDATA[Linear logic is a beautiful logical system taking advantage of the mechanisms of the sequent calculus. In this post we explore the various meanings of linear logic, and dig deep into the reasoning behind its peculiar development.  Read more <a href="https://ryanbrewer.dev/posts/linear-logic/">here</a>!]]></description>
+    </item>
+    <item>
+      <title>Par Part 3: Par, Continued</title>
+      <pubDate>Fri, 07 Mar 2025 00:00:00 PST</pubDate>
+      <link>https://ryanbrewer.dev/posts/par/</link>
+      <guid>https://ryanbrewer.dev/posts/par/</guid>
+      <description><![CDATA[Par is notoriously difficult to understand, but mostly due to a lack of resources. This post hopes to build on the prior posts on sequent calculus and linear logic to show how par is not such an alien concept after all, and make the theory much more accessible. We'll naturally stumble into constructive/computational classical logic along the way!  Read more <a href="https://ryanbrewer.dev/posts/par/">here</a>!]]></description>
     </item>
   </channel>
 </rss>

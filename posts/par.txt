@@ -1,0 +1,256 @@
+id: par
+title: Par Part 3: Par, Continued
+date: 2025-03-07
+tags: par,multiplicative,disjunction,linear,logic,classical,computational,disjunctive,lem,excluded,middle,syllogism,continuation,negation,constructive
+blerb: Par is notoriously difficult to understand, but mostly due to a lack of resources. This post hopes to build on the prior posts on sequent calculus and linear logic to show how par is not such an alien concept after all, and make the theory much more accessible. We'll naturally stumble into constructive/computational classical logic along the way!
+
+This is the third and final post in a series on Logic, though I'm likely to revisit some of these concepts later on. The ideas presented here are very useful in understanding many important papers on programming language theory, especially papers on type theory and the lambda calculus. [The first post](/posts/sequent-calculus) was an explanation of sequents and Sequent Calculus as a system for doing logic, so I'll assume that you have an understanding of those concepts now. The [second post](/posts/linear-logic) dove into linear logic, as the most amazing result of studying the sequent calculus. Now we'll finally pull everything together to dig deep into the meaning of the mysterious Par, and learn more about computational interpretations of classical logic along the way.
+
+Obviously we need to start by recalling what par even is. Par is the name of the operator; the actual phenomenon is technically called multiplicative disjunction. I will call it multiplicative disjunction occasionally in this post, but most people just informally refer to it as par. The rule for par is as follows:
+
+@math
+\begin{prooftree}
+\AxiomC{$\vdash p,q,\Delta$}
+\RightLabel{$\unicode{8523}$-Intro}
+\UnaryInfC{$\vdash p\;\unicode{8523}\;q,\Delta$}
+\end{prooftree}
+
+\\(\\unicode{8523}\\)-Intro says that whenever you have a list of propositions on the right of a sequent, you can take any pair of them, let's call them \\(p\\) and \\(q\\), and form a proposition \\(p\\;\\unicode{8523}\\;q\\) from them, pronounced "\\(p\\) par \\(q\\)."
+
+Really, the rule couldn't be simpler. We've just replaced a comma with par. The takeaway from this is that par represents something very fundamental about the sequent calculus. Any comma on the right side of the sequent is essentially just par, and we can switch between the two with this rule. Or, said another way, the collection of propositions on the right can be seen as one giant multiplicative disjunction.
+
+But that just punts the question, because now we need to explain what it means to have a collection of propositions on the right in the first place! This is actually not an easy question at all. In fact, it's *so* poorly-understood that most researchers use alternative logics that can't have more than one proposition on the right, thereby avoiding the whole question. Intuitionistic Linear Logic, or ILL, was designed with this purpose in mind. It's kind of an odd system because linear logic (in this context called Classical Linear Logic or CLL) is already constructive, so there's not much need for it to be made intuitionistic.
+
+Regardless, hopefully by the end of this post you will find that multiplicative disjunction is both intuitive and incredibly beautiful. Despite its simplicity, I will introduce a number of concepts in this post in order to properly explain it, just to make everything more gentle and friendly.
+
+### Disjunctive Syllogism
+
+Disjunctive syllogism is a ridiculous name for a very old and simple concept in the study of logic. It says that if I believe a disjunction "\\(p\\) or \\(q\\)", and then I come to believe that, say, \\(p\\) is false, then logically I can conclude that \\(q\\) is true. In formal notation (in this case, Natural Deduction) this might be written as follows:
+
+@math
+\begin{prooftree}
+\AxiomC{$p\lor q$}
+\AxiomC{$\neg p$}
+\BinaryInfC{$q$}
+\end{prooftree}
+
+In intuitionistic logic, \\(\\neg p\\) is generally defined to be \\(p\\Rightarrow\\bot\\). Computationally, this is a function whose existence proves that \\(p\\) has no proof, otherwise that proof could be combined with the function to form a proof of \\(\\bot\\), which *definitely* has no proof. The meaning of disjunctive syllogism, then, would be that a function of type `P -> Never` (where `Never` is the type with no values) can be combined with a value of a tagged union type `P | Q`, perhaps as in the following pseudocode:
+
+@code(plaintext)
+f: P -> Never
+d: P | Q\n
+let proof: Q = 
+  case d {
+    Left p -> 
+      // Never has no values, so the case is empty
+      case f(p) {} // this proves anything, including Q
+    Right q -> q
+  }
+
+Many proof assistants widely-used today use this interpretation. In the last post I mentioned a parallelism interpretation of linear logic where negation meant consuming a value instead of producing it; this \\(P\\Rightarrow\\bot\\) idea reflects that, because it's a function that consumes proofs of \\(P\\) instead of producing them. This will be a theme, and appears to be a very useful philosophy of negation in general.
+
+An important aside: one of the places this field has rubbed my brain the wrong way and slowed down my comprehension was values like `f(p)` above. This is an expression of type `Never`! We know those can't possibly exist, by definition! It's actually quite common to have access to both a proof of some proposition \\(P\\) in a program (like `p`) and also a proof of \\(\\neg P\\) (like `f`) at the same time, and this was very confusing to me. The eureka moment I personally needed was realizing that when we, as humans, decide that something is impossible, we do it with two ideas that contradict each other. So it's very common to have two contradictory pieces of evidence, so long as they're only in the "mental realm." We know that the "ground truth" only supports one of the two, but we need to be able to *consider* both in our internal reasoning in order to figure out the ground truth. Writing a proof is a process of reasoning to a conclusion about the ground truth, and therefore will also sometimes need to consider contradictory evidence, and make active use of contradictions. And of course, when I talk about programs in this context, [they're proofs](/posts/logic-in-types) :)
+
+How does any of this relate to par? This still isn't fundamental enough, we need to dig deeper. The next piece of the puzzle is the concept of "continuations."
+
+### Continuations
+
+Imagine you're a program, or proof, humming along doing your work. You move step by step, transforming things and inching towards the final goal. Now focus on a particular step in the middle. We can always imagine that there's a function, or side-proof, `do\_the\_rest(...)` that, from that step, runs the rest of the program, using the current state of affairs as its argument. This kind of function is appropriately called a "continuation." Obviously, *every* step has a theoretical continuation. We can then further imagine that at each step, we perform that step of computation and then call the corresponding continuation, rinse and repeat all the way to the end. Here's a simple piece of psuedocode to illustrate:
+
+@code(plaintext)
+fn main() {
+  foo(1)
+}\n
+fn foo(x) {
+  bar(x + 1)
+}\n
+fn bar(x) {
+  print(x)
+  exit
+}
+
+This code computes 1 + 1, but only doing one step at a time and then immediately calling the function that represents "the rest of the program" at that point, aka the continuation. It turns out that *any* program can be written in this form, although it's obviously a bit tedious. All we're doing is being (extremely) explicit about the order of steps in the program.
+
+What makes continuations interesting here is that they never return. The last one simply exits the program, because (by definition of "last continuation") there is no more work to do. None of the three functions above ever return a value: `main` calls `foo`, which calls `bar`, which ends the program before anything could get returned to `foo` or `main`. This means that the appropriate type for a continuation is `P -> Never` for some type `P`. We've seen this type before: continuations are just negation!
+
+Let's apply this idea to what we've just learned about disjunctive syllogism: if we have a disjunction "\\(p\\) or \\(q\\)" and a *continuation* \\(\\neg p\\), we should be able to produce a proof of \\(q\\). Note that this can't work at all for our typical tagged-union idea of disjunction. Recall the proof from earlier:
+
+@code(plaintext)
+f: P -> Never
+d: P | Q\n
+let proof: Q = 
+  case d {
+    Left p -> 
+      // Never has no values, so the case is empty
+      case f(p) {} // this proves anything, including Q
+    Right q -> q
+  }
+
+Here, unlike before, `f` is a continuation. So while it's true that `f(p)` is an impossible value (because `f` will ultimately exit the program before returning), the *behavior* of this proof is to either prove Q or to run some program with a proof of P and then exit. This is clearly not what we have in mind as a "proof of Q."
+
+What *is* the behavior we expect though, in this new world of continuations? How does a continuation \\(\\neg p\\), a program that uses a proof of \\(p\\), actually *feel* like a refutation of \\(p\\)? The key is the `Never` type I mentioned; that is, the fact that when you run that program proving \\(\\neg p\\), *you're never coming back.*
+
+Remember that important aside earlier? About how finding contradictions, thereby handling multiple pieces of evidence that contradict each other, is an important part of reaching true conclusions? Notice that when you disprove something this way, having found a contradiction, you then step out of that impossible world, no longer believing contradictory things, but having learned something from the contradiction. You don't return to that world ever again, because you've completely disproven one of its core hypotheses.
+
+In our continuations interpretation, when you have a proof of \\(p\\) and a continuation proving \\(\\neg p\\), these allow us to go to a world with a proof of \\(p\\) and never return, having disproven \\(\\neg p\\). So long as we don't produce a proof of \\(p\\), we still have our continuation lying around, acting as legitimate proof of \\(\\neg p\\) the whole while. Maybe it's not *really* disproving \\(p\\), but if we ever find anything to invalidate it (namely, a proof of \\(p\\)), then we switch from our world with a proof of \\(\\neg p\\) into a world with that proof of \\(p\\). It's a neat philosophical perspective on "figuring things out."
+
+So what then does that mean for disjunctive syllogism? Recall how disjunctive syllogism works. We have some disjunction \\(p\\lor q\\) and a continuation \\(\\neg p\\). We want to be able to deduce \\(q\\) from that, of course. And also, if we have a proof of \\(\\neg q\\), we'd hope we can use our disjunction to prove \\(p\\). 
+
+What we can do is, instead of the usual tagged-union notion of disjunction (henceforth referred to as "additive disjunction") we can have a new idea of disjunction (par!) that just does disjunctive syllogism. The way this will work is that, for some \\(p\\;\\unicode{8523}\\;q\\), it just immediately assumes its left side, \\(p\\) is true. In the face of counterevidence (\\(\\neg p\\)) it then scurries back and says "Oh, wait, nevermind, actually the right side (\\(q\\)) was the true one all along!" To drive home this behavior, we'll also call our syntax `try`/`catch` instead of `case`:
+
+@code(plaintext)
+f: P -> Never\n
+let proof: P = try {
+  // prove P or `throw`
+} catch (q: Q) {
+  // I've proven Q!
+  exit
+}\n
+// I've proven P!
+f(proof)
+
+Basically our `try`-block is a function that takes a `Q` continuation (the `catch` block) and returns a "proof" of `P`. You could imagine the type `(Q -> Never) -> P`. The parameter of this function is called `throw`. Let's look at some simple example programs to clarify.
+
+@code(plaintext)
+f : P -> Never
+proof_of_q : Q\n
+// this program immediately throws
+let proof : P = try {
+  throw(proof_of_q)
+} catch (q: Q) {
+  // we proved Q!
+  exit
+}\n
+// I've proven P!
+f(proof)
+
+If we imagine the `try`-block as a function proving \\((\\neg Q)\\Rightarrow P\\) then it might look like `fn(throw: Q -> Never) { throw(proof_of_q) }`. Here's another example program:
+
+@code(plaintext)
+f: P -> Never
+proof_of_p: P\n
+let proof: P = try {
+  proof_of_p
+} catch (q: Q) {
+  // we proved Q!
+  exit
+}\n
+// I've proven P!
+f(proof)
+
+This program is interesting because we actually never prove `Q`, despite the fact that we provide a proof of the negation of `P`, that is, the continuation of the `try`/`catch` itself! (In this case `f`, to make things explicit.) This is immediately refuted by "calling" it with `proof_of_p`, switching to the world where `P` is true (after the `try`/`catch`).
+
+Let's say `P` is `R -> S` (or, in logic, \\(R\\Rightarrow S\\)). Here's an even more devious example program, now for `(R -> S) | Q`:
+
+@code(plaintext)
+f: (R -> S) -> Never
+proof_of_q: Q\n
+let proof: R -> S = try {
+  fn(s: R): S {
+    throw(proof_of_q) // hehehe
+  }
+} catch (q: Q) {
+  // we proved Q!
+  exit
+}\n
+// I've proven that R implies S!
+f(proof)
+
+Here we constructed this "proof" of `R -> S` by constructing a function with that type. But later, God knows how much later, if you try to actually make use of this function, you will teleport waaay back in time to the `catch` block with `proof_of_q`.
+
+I've explained these code snippets with an emphasis on the logical interpretation, but if you're familiar with programming then the meaning of these snippets is already fairly clear and intuitive!
+
+Something to keep in mind is that `par` is giving a type to the `try`-block only. The `catch`-block is then immediately eliminating the par-type with a proof of the negation (continuation) of the right side, to extract a proof of the left side. So par is quite usefully thought of as the `throwing` keyword in Java: `T throwing E` is a value of type `T` once you wrap it in a `try`/`catch` to handle the possible exception of type `E`. Of course, Java code can have `throw` anywhere, so the `try` in Java is really still part of the extraction, not construction. Logically, in my syntax, you can think of the `try`-block as the introduction form that constructs a par-type, introducing the `throw` keyword, and the `catch` block as the elimination form that extracts an inner value.
+
+Note that `try` and `catch` are just the syntax I've chosen for par-types; some literature uses `handle` as the elimination form instead. I don't think it's worthwhile to focus on the syntax too much, because there's a shocking amount of literature on the scoping rules of these sorts of systems, and it really hides the core ideas.
+
+(Some of this might ring a loud bell for those of you who know about algebraic effect systems, which generalize `try`/`catch`. That's a good intuition to have, but if you don't know about effect systems that's perfectly okay for this post.)
+
+In summary, par, by giving a type to `try`-blocks, represents exceptions and exception-handling. This is the "continuation" semantics of linear logic, as opposed to the various semantics I offered in the last post. It's the most interesting semantics because it's actually a semantics of classical logic (recall that any linear logic proof is trivially a classical logic proof too). With that idea in mind, let's take a step back and look at a constructive interpretation of classical logic.
+
+### Wadler's Demon
+
+Some proof theorists believe that this believing-something-and-backtracking-when-finding-counterevidence is the core of classical logic; that is, the essence of the Law of Excluded Middle \\(p\\lor\\neg p\\). Another way of saying that is that the law of excluded middle is only valid for disjunctive syllogism. Philip Wadler has a famous story explaining the computational content of the LEM. The story can be found in section 4 of [this paper](https://homepages.inf.ed.ac.uk/wadler/papers/dual/dual.pdf) and it goes something like this:
+
+ *Once upon a time, a demon appeared to a man with a strange offer.* "I have a strange offer," *it said.* "I will either offer you any wish, for the *price* of a billion dollars, or I will give you a billion dollars."
+
+ *The man thought for a moment.* "What's the catch? What happens if you pick the first one and I don't give you a billion dollars?"
+
+ "Oh, nothing," *the demon said.* "You just wouldn't get your wish, of course."
+
+ "There are no other costs?" *The man was suspicious, neither option was bad and one was amazing. He couldn't find the downside.*
+
+ "None," *the demon assured.* "All you need to do is accept."
+
+ "Alright, I accept. What have you got for me?"
+
+ "I choose the first option. If you give me a billion dollars, I will grant any wish."
+
+ *The man felt disappointed. But this was the most reasonable option to expect, because it was the worse one. He didn't have a billion dollars, of course, so he just moved on with his life.*
+
+ *But as his life went on, the exchange stuck in the back of his head.* Any *wish? If ever money could buy happiness, it was now. The man started studying logic, and his money naturally started accumulating.*
+
+ *One day the man had finally achieved a billion dollars in cash. From building a cool programming language, of course. Anyway, with the billion dollars in hand (don't ask about physics), the man decided to go back to the demon. He found it, and declared:* "Here's a billion dollars! You'll grant me any wish?"
+
+ *The demon took the money.* "Thank you! That's very kind. But I only promised you'd get one of the two options, not that I had to be honest upfront about which one! You're actually getting the second option." *The demon handed the billion dollars right back.* "Here's a billion dollars!"
+
+In Wadler's version, the reason the demon does all of this is because you need to be a pretty terrible person to become a billionaire. Wadler obviously doesn't realize that there is one ethical way to become a billionaire (making my dream programming language).
+
+Jokes aside, Wadler's story does a decent job of convincing us that the computational behavior of the LEM isn't what we have in mind when trying to actually use the LEM. One might say, "it's not the same thing as what we mean when we say the LEM, even if the propositions match up." This is taken as a point for intuitionistic logic against constructive variations of classical logic (such as classical linear logic).
+
+The reason this happened is that constructive classical logic was discovered via the `call/cc` ("call with current continuation") operator in early functional languages. `call/cc` takes a function as its argument and calls it with the current continuation, as the name suggests. So you could write code like the following:
+
+@code(plaintext)
+// either print 7 or 4
+print(2 + callcc(
+  fn(k: int -> Never): Never { 
+    // k is the continuation, 
+    // `print(2 + _); exit`
+    if (random_number > 0.5) {
+      print(7)
+      exit
+    } else {
+      k(2) // print 4
+    }
+  }
+))
+
+This is generally used in dynamically typed languages, but if it were typed it would have the type `((T -> Never) -> Never) -> T`. Logically, this is double negation elimination! Which we know is only valid in classical logic, because it can be used to prove the LEM:
+
+@code(plaintext)
+// Wadler's Demon with call/cc
+// B is a billion dollars
+let excluded_middle<B>: (B -> Never) | B =
+  callcc(fn(k: ((B -> Never) | B) -> Never) {
+    k(Left(fn(b): Never {
+      k(Right(b))
+    }))
+  })
+
+Here you can hopefully see how we first continue with the `Left`, giving a "proof" of `B -> Never`, but as soon as this proof receives a billion dollars we go *back to the same earlier continuation* `k` but proving the `Right` side now, using the billion dollars we just received.
+
+This presentation of the LEM definitely makes it look alien and unintuitive, and for a while that was the best presentation of constructive classical logic around. Indeed, it was quite surprising to everyone that there was *any* constructive interpretation of classical logic! It seemed like a cute coincidence, but somewhat fake. Why would you immediately assume the left side, even if it's wrong? So the kind of flak it receives from things like Wadler's allegory is understandable. In addition (ha!), you can see that this was back at a time when only additive disjunction was well-known, which is why we use `Left` and `Right` constructors. A *fantastic* resource on all of this is this [paper](https://doi.org/10.1145/3704848) by Vikraman Choudhury. 
+
+However, at this point in the blog post we know what's really going on:
+
+@code(plaintext)
+// Wadler's Demon, using par
+// B: a billion dollars
+let excluded_middle<B>: (B -> Never) par B =
+  try {
+    fn(b: B): Never {
+      throw(b)
+    }
+  }
+
+Since we're introducing (but not eliminating) a `par`, there's no `catch` block. That will need to be provided by users of `excluded_middle`.
+
+So there you have it, Wadler's Demon is just specializing \\(p\\;\\unicode{8523}\\;q\\) to \\(p\\;\\unicode{8523}\\;\\neg p\\). The LEM is a multiplicative disjunction, not an additive one. The jumping around doesn't seem nearly so mysterious or unnatural now! Constructive classical logic is just a normal intuitionistic logic extended with `try`/`catch` exception-handling! (Technically it's actually a simple effect system, but close enough for this intuition-driven post).
+
+I think all of this makes the computational LEM much more intuitive and friendly. All we're saying is that the LEM is constructively valid only for disjunctive syllogism (par), with proofs using `try`/`catch` statements that the vast majority of professional programmers are quite familiar with. In linear-logic terms, the LEM is a multiplicative disjunction, not an additive one.
+
+### Conclusion
+
+Thus ends this series on sequent calculus, linear logic, and par. We even learned how to do classical logic constructively along the way! I hope it left you with a better understanding of par, and if not I'm always happy to chat about it, so don't be afraid to reach out :)
+
+One of my toots on mastodon has received a surprising amount of positive feedback as a very brief summary of the core ideas of this post, so I figured I'd link it here in case it proves useful to you as a quick reference: [https://mathstodon.xyz/@ryanbrewer/113997740674738592](https://mathstodon.xyz/@ryanbrewer/113997740674738592).
