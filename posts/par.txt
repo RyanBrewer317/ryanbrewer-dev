@@ -251,6 +251,8 @@ So there you have it, Wadler's Demon is just specializing \\(p\\;\\unicode{8523}
 
 I think all of this makes the computational LEM much more intuitive and friendly. All we're saying is that the LEM is constructively valid only for disjunctive syllogism (par), with proofs using `try`/`catch` statements that the vast majority of professional programmers are quite familiar with. In linear-logic terms, the LEM is a multiplicative disjunction, not an additive one.
 
+Note that, using call/cc, I *was* able to prove the additive LEM earlier. But doing so required mentioning the continuation twice! So while constructive classical logic can have both additive and multiplicative laws of the excluded middle (indeed, often *only* has the additive one!), the fact remains that classical *linear* logic only has the multiplicative LEM, and therefore generally feels more honest and philosophically coherent about what's going on. A tagged union doesn't really give the impression that it could jump somewhere else in the proof at any moment, but `throwing` absolutely gives that impression! So I see Wadler's Demon as a reasonable attack on the intuitive-ness of constructive classical logic, but notably one that classical linear logic elegantly dodges.
+
 ### Conclusion
 
 Thus ends this series on sequent calculus, linear logic, and par. We even learned how to do classical logic constructively along the way! I hope it left you with a better understanding of par, and if not I'm always happy to chat about it, so don't be afraid to reach out :)
