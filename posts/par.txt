@@ -138,7 +138,7 @@ let proof: P = try {
 // I've proven P!
 f(proof)
 
-This program is interesting because we actually never prove `Q`, despite the fact that we provide a proof of the negation of `P`, that is, the continuation of the `try`/`catch` itself! (In this case `f`, to make things explicit.) This is immediately refuted by "calling" it with `proof_of_p`, switching to the world where `P` is true (after the `try`/`catch`).
+This program is interesting because we actually never prove `Q`, despite the fact that we provide a proof of the negation of `P`, that is, the continuation of the `try`/`catch` itself! (In this case `f`, to make things explicit.) This negation is immediately refuted by "calling" it with `proof_of_p`, switching to the world where `P` is true (after the `try`/`catch`).
 
 Let's say `P` is `R -> S` (or, in logic, \\(R\\Rightarrow S\\)). Here's an even more devious example program, now for `(R -> S) | Q`:
 

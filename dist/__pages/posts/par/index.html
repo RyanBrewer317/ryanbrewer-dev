@@ -122,7 +122,7 @@ let proof: P = try {
 
 // I&#39;ve proven P!
 f(proof)
-</code></pre><p><span>This program is interesting because we actually never prove <code><span>Q</span></code>, despite the fact that we provide a proof of the negation of <code><span>P</span></code>, that is, the continuation of the <code><span>try</span></code>/<code><span>catch</span></code> itself! (In this case <code><span>f</span></code>, to make things explicit.) This is immediately refuted by &quot;calling&quot; it with <code><span>proof_of_p</span></code>, switching to the world where <code><span>P</span></code> is true (after the <code><span>try</span></code>/<code><span>catch</span></code>).
+</code></pre><p><span>This program is interesting because we actually never prove <code><span>Q</span></code>, despite the fact that we provide a proof of the negation of <code><span>P</span></code>, that is, the continuation of the <code><span>try</span></code>/<code><span>catch</span></code> itself! (In this case <code><span>f</span></code>, to make things explicit.) This negation is immediately refuted by &quot;calling&quot; it with <code><span>proof_of_p</span></code>, switching to the world where <code><span>P</span></code> is true (after the <code><span>try</span></code>/<code><span>catch</span></code>).
 </span></p><p><span>Let&#39;s say <code><span>P</span></code> is <code><span>R -&gt; S</span></code> (or, in logic, \(R\Rightarrow S\)). Here&#39;s an even more devious example program, now for <code><span>(R -&gt; S) | Q</span></code>:
 </span></p><pre><code class="language-plaintext">f: (R -&gt; S) -&gt; Never
 proof_of_q: Q
