@@ -1,6 +1,6 @@
 id: par
 title: Par Part 3: Par, Continued
-date: 2025-03-07
+date: 2025-03-08
 tags: par,multiplicative,disjunction,linear,logic,classical,computational,disjunctive,lem,excluded,middle,syllogism,continuation,negation,constructive
 blerb: Par is notoriously difficult to understand, but mostly due to a lack of resources. This post hopes to build on the prior posts on sequent calculus and linear logic to show how par is not such an alien concept after all, and make the theory much more accessible. We'll naturally stumble into constructive/computational classical logic along the way!
 

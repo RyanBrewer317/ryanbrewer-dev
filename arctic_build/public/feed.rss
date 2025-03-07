@@ -108,7 +108,7 @@
     </item>
     <item>
       <title>Par Part 3: Par, Continued</title>
-      <pubDate>Fri, 07 Mar 2025 00:00:00 PST</pubDate>
+      <pubDate>Sat, 08 Mar 2025 00:00:00 PST</pubDate>
       <link>https://ryanbrewer.dev/posts/par/</link>
       <guid>https://ryanbrewer.dev/posts/par/</guid>
       <description><![CDATA[Par is notoriously difficult to understand, but mostly due to a lack of resources. This post hopes to build on the prior posts on sequent calculus and linear logic to show how par is not such an alien concept after all, and make the theory much more accessible. We'll naturally stumble into constructive/computational classical logic along the way!  Read more <a href="https://ryanbrewer.dev/posts/par/">here</a>!]]></description>
