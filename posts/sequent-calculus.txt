@@ -4,7 +4,7 @@ date: 2025-01-13
 tags: logic,linear,sequent,calculi,par,symbol,type,theory,category,monoid,monoidal,exchange,weakening,contraction
 blerb: Sequent Calculus is a way of doing logic that's very explicit and mechanical. It's used as an important system and notation for type theory and logic related to programming languages.
 
-This post is the first in a series on Logic. These ideas are very useful in understanding many important papers on programming language theory, especially papers on type theory and the lambda calculus. I will start with an explanation of sequents and Sequent Calculus as a system for doing logic, then I'll dive into linear logic in [the next post](/posts/linear-logic). I'll finish the trilogy with a post on Par and computational interpretations of classical logic.
+This post is the first in a series on Logic. These ideas are very useful in understanding many important papers on programming language theory, especially papers on type theory and the lambda calculus. I will start with an explanation of sequents and Sequent Calculus as a system for doing logic, then I'll dive into linear logic in [the next post](/posts/linear-logic). I'll finish the trilogy with a [third post](/posts/par) on Par and computational interpretations of classical logic.
 
 I'm not going to present all the rules of any logical system, in this post. Instead I'll just give examples of rules in each system, to explain how they work and help you read and write such rules yourself in the future. This is also partly because different sources present the same systems with slightly different, but ultimately equivalent, rules.
 
