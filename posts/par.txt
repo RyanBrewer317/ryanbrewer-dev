@@ -4,6 +4,8 @@ date: 2025-03-08
 tags: par,multiplicative,disjunction,linear,logic,classical,computational,disjunctive,lem,excluded,middle,syllogism,continuation,negation,constructive
 blerb: Par is notoriously difficult to understand, but mostly due to a lack of resources. This post hopes to build on the prior posts on sequent calculus and linear logic to show how par is not such an alien concept after all, and make the theory much more accessible. We'll naturally stumble into constructive/computational classical logic along the way!
 
+[Happy International Women's Day!](https://youtube.com/playlist?list=PLvL2NEhYV4Zu3neotbUCQLskLVssS3pBs&si=S7p8g9JWcVgsgusq)
+
 This is the third and final post in a series on Logic, though I'm likely to revisit some of these concepts later on. The ideas presented here are very useful in understanding many important papers on programming language theory, especially papers on type theory and the lambda calculus. [The first post](/posts/sequent-calculus) was an explanation of sequents and Sequent Calculus as a system for doing logic, so I'll assume that you have an understanding of those concepts now. The [second post](/posts/linear-logic) dove into linear logic, as the most amazing result of studying the sequent calculus. Now we'll finally pull everything together to dig deep into the meaning of the mysterious Par, and learn more about computational interpretations of classical logic along the way.
 
 Obviously we need to start by recalling what par even is. Par is the name of the operator; the actual phenomenon is technically called multiplicative disjunction. I will call it multiplicative disjunction occasionally in this post, but most people just informally refer to it as par. The rule for par is as follows:
