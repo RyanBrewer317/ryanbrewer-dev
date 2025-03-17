@@ -20,7 +20,9 @@ fn parse_int() -> p.Parser(Expr, e) {
   p.many1(p.digit())
   |> p.map(string.concat)
   |> p.map(int.parse)
-  |> p.map(result.lazy_unwrap(_, or: fn() { panic as "parsed int isn't an int" }))
+  |> p.map(
+    result.lazy_unwrap(_, or: fn() { panic as "parsed int isn't an int" }),
+  )
   |> p.map(LInt)
 }
 

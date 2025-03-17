@@ -290,11 +290,11 @@ function escaped_char() {
                                 let $ = $int.base_parse(code_str, 16);
                                 if (!$.isOk()) {
                                   throw makeError(
-                                    "assignment_no_match",
+                                    "let_assert",
                                     "arctic/parse",
                                     402,
                                     "",
-                                    "Assignment pattern did not match",
+                                    "Pattern match failed, no pattern matched the value.",
                                     { value: $ }
                                   )
                                 }

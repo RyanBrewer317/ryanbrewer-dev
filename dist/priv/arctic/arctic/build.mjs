@@ -33,11 +33,11 @@ function get_id(p) {
     let $ = $dict.get(metadata, "id");
     if (!$.isOk()) {
       throw makeError(
-        "assignment_no_match",
+        "let_assert",
         "arctic/build",
         36,
         "get_id",
-        "Assignment pattern did not match",
+        "Pattern match failed, no pattern matched the value.",
         { value: $ }
       )
     }
@@ -405,11 +405,11 @@ function make_ssg_config(processed_collections, config, k) {
                 let $ = $string.split(path, ".txt");
                 if (!$.atLeastLength(1)) {
                   throw makeError(
-                    "assignment_no_match",
+                    "let_assert",
                     "arctic/build",
                     403,
                     "",
-                    "Assignment pattern did not match",
+                    "Pattern match failed, no pattern matched the value.",
                     { value: $ }
                   )
                 }

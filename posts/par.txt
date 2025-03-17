@@ -253,7 +253,29 @@ So there you have it, Wadler's Demon is just specializing \\(p\\;\\unicode{8523}
 
 I think all of this makes the computational LEM much more intuitive and friendly. All we're saying is that the LEM is constructively valid only for disjunctive syllogism (par), with proofs using `try`/`catch` statements that the vast majority of professional programmers are quite familiar with. In linear-logic terms, the LEM is a multiplicative disjunction, not an additive one.
 
+### Quirks of Linear Logic
+
 Note that, using call/cc, I *was* able to prove the additive LEM earlier. But doing so required mentioning the continuation twice! So, while constructive classical logic can potentially have both additive and multiplicative laws of the excluded middle, the fact remains that classical *linear* logic only has the multiplicative LEM, and therefore generally feels more honest and philosophically coherent about what's going on. A tagged union doesn't really give the impression that it could jump somewhere else in the proof at any moment, but the `throwing` keyword absolutely gives that impression! So I see Wadler's Demon as a reasonable argument that constructive classical logic is misleading, but an argument that classical linear logic handles elegantly.
+
+ *That said,* there is a way in which the exception-handling intuition breaks down a little bit for linear logic. Namely, because parameters in proofs are used exactly once, `try`-blocks *must* `throw`, because `throw` is theoretically a parameter! What's the point of a `try`/`catch` where the `try` is guaranteed to always `throw`? 
+ 
+Well the way par comes up the most in programming with linear logic is that linear implication \\(p\\unicode{8888}q\\) is defined as \\(\\neg p\\;\\unicode{8523}\\;q\\). In other words, *functions are given a par-type!* To understand this, our exception-handling intuition can actually still help us here.
+
+If you have a value of type `(not A) par B`, you can't do anything with it until you provide a value of type `not B`, aka a `B`-continuation, which finishes the proof/program with a value of type `B`. Once you've provided this, you get access to an `A`-continuation (the value of type `not A`). In linear logic, we know that this will consume a value of type `A`, compute a value of type `B`, and throw to the `B`-continuation we gave it! In other words, if we (the "caller") receive a value of type `(not A) par B` and provide it with an `A`-type value and a `B`-continuation, it will use the `A`-type value to compute a `B`-type value and hand that to our `B`-continuation, guaranteed. Linear logic cleanly splits the function into its input (`not A`) and its output (`B`).
+
+A fun side effect of all of this is that the LEM \\(\\neg p\\;\\unicode{8523}\\;q\\) is actually just the identity function! You can see it in our LEM proof from earlier:
+
+@code(plaintext)
+// Wadler's Demon, using par
+// B: a billion dollars
+let excluded_middle<B>: (B -> Never) par B =
+  try {
+    fn(b: B): Never {
+      throw(b)
+    }
+  }
+
+We give this a `B`-continuation (the `catch`-block) and a value of type `B`, and it just immediately redirects that value to the `B`-continuation. One might say that the reason the LEM can be constructively provable in classical linear logic is because it's equivalent to just \\(p\\Rightarrow p\\), which is effortlessly true in any constructive logic, even intuitionistic logic. 
 
 ### Conclusion
 

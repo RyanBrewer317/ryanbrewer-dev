@@ -60,15 +60,36 @@ export function new$(strategy) {
 }
 
 export function restart_tolerance(builder, intensity, period) {
-  return builder.withFields({ intensity: intensity, period: period });
+  let _record = builder;
+  return new Builder(
+    _record.strategy,
+    intensity,
+    period,
+    _record.auto_shutdown,
+    _record.children,
+  );
 }
 
 export function auto_shutdown(builder, value) {
-  return builder.withFields({ auto_shutdown: value });
+  let _record = builder;
+  return new Builder(
+    _record.strategy,
+    _record.intensity,
+    _record.period,
+    value,
+    _record.children,
+  );
 }
 
 export function add(builder, child) {
-  return builder.withFields({ children: listPrepend(child, builder.children) });
+  let _record = builder;
+  return new Builder(
+    _record.strategy,
+    _record.intensity,
+    _record.period,
+    _record.auto_shutdown,
+    listPrepend(child, builder.children),
+  );
 }
 
 export function worker_child(id, starter) {
@@ -98,20 +119,41 @@ export function supervisor_child(id, starter) {
 }
 
 export function significant(child, significant) {
-  return child.withFields({ significant: significant });
+  let _record = child;
+  return new ChildBuilder(
+    _record.id,
+    _record.starter,
+    _record.restart,
+    significant,
+    _record.child_type,
+  );
 }
 
 export function timeout(child, ms) {
   let $ = child.child_type;
   if ($ instanceof Worker) {
-    return child.withFields({ child_type: new Worker(ms) });
+    let _record = child;
+    return new ChildBuilder(
+      _record.id,
+      _record.starter,
+      _record.restart,
+      _record.significant,
+      new Worker(ms),
+    );
   } else {
     return child;
   }
 }
 
 export function restart(child, restart) {
-  return child.withFields({ restart: restart });
+  let _record = child;
+  return new ChildBuilder(
+    _record.id,
+    _record.starter,
+    restart,
+    _record.significant,
+    _record.child_type,
+  );
 }
 
 export function init(start_data) {

@@ -77,26 +77,41 @@ function do_attribute(diff, key, old, new$) {
     let new$1 = new$[0];
     let name = new$[0][0];
     let handler = new$[0][1];
-    return diff.withFields({
-      handlers: $dict.insert(diff.handlers, name, handler)
-    });
+    let _record = diff;
+    return new AttributeDiff(
+      _record.created,
+      _record.removed,
+      $dict.insert(diff.handlers, name, handler),
+    );
   } else if (old.isOk() && new$.isOk() && (isEqual(old[0], new$[0]))) {
     let old$1 = old[0];
     let new$1 = new$[0];
     return diff;
   } else if (old.isOk() && !new$.isOk()) {
-    return diff.withFields({ removed: $set.insert(diff.removed, key) });
+    let _record = diff;
+    return new AttributeDiff(
+      _record.created,
+      $set.insert(diff.removed, key),
+      _record.handlers,
+    );
   } else if (new$.isOk() && new$[0] instanceof Event) {
     let new$1 = new$[0];
     let name = new$[0][0];
     let handler = new$[0][1];
-    return diff.withFields({
-      created: $set.insert(diff.created, new$1),
-      handlers: $dict.insert(diff.handlers, name, handler)
-    });
+    let _record = diff;
+    return new AttributeDiff(
+      $set.insert(diff.created, new$1),
+      _record.removed,
+      $dict.insert(diff.handlers, name, handler),
+    );
   } else {
     let new$1 = new$[0];
-    return diff.withFields({ created: $set.insert(diff.created, new$1) });
+    let _record = diff;
+    return new AttributeDiff(
+      $set.insert(diff.created, new$1),
+      _record.removed,
+      _record.handlers,
+    );
   }
 }
 
@@ -126,11 +141,11 @@ function do_key_sort(loop$xs, loop$ys) {
       let $ = $int.parse(x);
       if (!$.isOk()) {
         throw makeError(
-          "assignment_no_match",
+          "let_assert",
           "lustre/internals/patch",
           289,
           "do_key_sort",
-          "Assignment pattern did not match",
+          "Pattern match failed, no pattern matched the value.",
           { value: $ }
         )
       }
@@ -138,11 +153,11 @@ function do_key_sort(loop$xs, loop$ys) {
       let $1 = $int.parse(y);
       if (!$1.isOk()) {
         throw makeError(
-          "assignment_no_match",
+          "let_assert",
           "lustre/internals/patch",
           290,
           "do_key_sort",
-          "Assignment pattern did not match",
+          "Pattern match failed, no pattern matched the value.",
           { value: $1 }
         )
       }
@@ -434,13 +449,22 @@ function do_elements(loop$diff, loop$old, loop$new, loop$key) {
     if (old instanceof None && new$ instanceof None) {
       return diff;
     } else if (old instanceof Some && new$ instanceof None) {
-      return diff.withFields({ removed: $set.insert(diff.removed, key) });
+      let _record = diff;
+      return new ElementDiff(
+        _record.created,
+        $set.insert(diff.removed, key),
+        _record.updated,
+        _record.handlers,
+      );
     } else if (old instanceof None && new$ instanceof Some) {
       let new$1 = new$[0];
-      return diff.withFields({
-        created: $dict.insert(diff.created, key, new$1),
-        handlers: fold_event_handlers(diff.handlers, new$1, key)
-      });
+      let _record = diff;
+      return new ElementDiff(
+        $dict.insert(diff.created, key, new$1),
+        _record.removed,
+        _record.updated,
+        fold_event_handlers(diff.handlers, new$1, key),
+      );
     } else {
       let old$1 = old[0];
       let new$1 = new$[0];
@@ -470,18 +494,29 @@ function do_elements(loop$diff, loop$old, loop$new, loop$key) {
         let new$2 = new$1.content;
         return diff;
       } else if (old$1 instanceof Text && new$1 instanceof Text) {
-        return diff.withFields({
-          created: $dict.insert(diff.created, key, new$1)
-        });
+        let _record = diff;
+        return new ElementDiff(
+          $dict.insert(diff.created, key, new$1),
+          _record.removed,
+          _record.updated,
+          _record.handlers,
+        );
       } else if (old$1 instanceof Element && new$1 instanceof Text) {
-        return diff.withFields({
-          created: $dict.insert(diff.created, key, new$1)
-        });
+        let _record = diff;
+        return new ElementDiff(
+          $dict.insert(diff.created, key, new$1),
+          _record.removed,
+          _record.updated,
+          _record.handlers,
+        );
       } else if (old$1 instanceof Text && new$1 instanceof Element) {
-        return diff.withFields({
-          created: $dict.insert(diff.created, key, new$1),
-          handlers: fold_event_handlers(diff.handlers, new$1, key)
-        });
+        let _record = diff;
+        return new ElementDiff(
+          $dict.insert(diff.created, key, new$1),
+          _record.removed,
+          _record.updated,
+          fold_event_handlers(diff.handlers, new$1, key),
+        );
       } else if (old$1 instanceof Element &&
       new$1 instanceof Element &&
       ((old$1.namespace === new$1.namespace) && (old$1.tag === new$1.tag))) {
@@ -502,23 +537,31 @@ function do_elements(loop$diff, loop$old, loop$new, loop$key) {
             return $dict.insert(handlers, (key + "-") + name$1, handler);
           },
         );
-        let diff$1 = diff.withFields({
-          updated: (() => {
-            let $ = is_empty_attribute_diff(attribute_diff);
-            if ($) {
-              return diff.updated;
-            } else {
-              return $dict.insert(diff.updated, key, attribute_diff);
-            }
-          })(),
-          handlers: handlers
-        });
+        let diff$1 = (() => {
+          let _record = diff;
+          return new ElementDiff(
+            _record.created,
+            _record.removed,
+            (() => {
+              let $ = is_empty_attribute_diff(attribute_diff);
+              if ($) {
+                return diff.updated;
+              } else {
+                return $dict.insert(diff.updated, key, attribute_diff);
+              }
+            })(),
+            handlers,
+          );
+        })();
         return do_element_list(diff$1, old_children, new_children, key);
       } else {
-        return diff.withFields({
-          created: $dict.insert(diff.created, key, new$1),
-          handlers: fold_event_handlers(diff.handlers, new$1, key)
-        });
+        let _record = diff;
+        return new ElementDiff(
+          $dict.insert(diff.created, key, new$1),
+          _record.removed,
+          _record.updated,
+          fold_event_handlers(diff.handlers, new$1, key),
+        );
       }
     }
   }

@@ -96,7 +96,7 @@ function parse_int() {
           throw makeError(
             "panic",
             "client/tinylang",
-            23,
+            24,
             "",
             "parsed int isn't an int",
             {}

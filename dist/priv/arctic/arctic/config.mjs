@@ -28,25 +28,51 @@ export function new$() {
 }
 
 export function home_renderer(config, renderer) {
-  return config.withFields({ render_home: renderer });
+  let _record = config;
+  return new Config(
+    renderer,
+    _record.main_pages,
+    _record.collections,
+    _record.render_spa,
+  );
 }
 
 export function add_main_page(config, id, body) {
-  return config.withFields({
-    main_pages: listPrepend(new RawPage(id, body), config.main_pages)
-  });
+  let _record = config;
+  return new Config(
+    _record.render_home,
+    listPrepend(new RawPage(id, body), config.main_pages),
+    _record.collections,
+    _record.render_spa,
+  );
 }
 
 export function add_collection(config, collection) {
-  return config.withFields({
-    collections: listPrepend(collection, config.collections)
-  });
+  let _record = config;
+  return new Config(
+    _record.render_home,
+    _record.main_pages,
+    listPrepend(collection, config.collections),
+    _record.render_spa,
+  );
 }
 
 export function add_spa_frame(config, frame) {
-  return config.withFields({ render_spa: new Some(frame) });
+  let _record = config;
+  return new Config(
+    _record.render_home,
+    _record.main_pages,
+    _record.collections,
+    new Some(frame),
+  );
 }
 
 export function turn_off_spa(config) {
-  return config.withFields({ render_spa: new None() });
+  let _record = config;
+  return new Config(
+    _record.render_home,
+    _record.main_pages,
+    _record.collections,
+    new None(),
+  );
 }

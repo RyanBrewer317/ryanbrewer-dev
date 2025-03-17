@@ -21,11 +21,11 @@ export function before(p1, p2) {
   let $ = p1.date;
   if (!($ instanceof Some)) {
     throw makeError(
-      "assignment_no_match",
+      "let_assert",
       "helpers",
       27,
       "before",
-      "Assignment pattern did not match",
+      "Pattern match failed, no pattern matched the value.",
       { value: $ }
     )
   }
@@ -33,11 +33,11 @@ export function before(p1, p2) {
   let $1 = p2.date;
   if (!($1 instanceof Some)) {
     throw makeError(
-      "assignment_no_match",
+      "let_assert",
       "helpers",
       28,
       "before",
-      "Assignment pattern did not match",
+      "Pattern match failed, no pattern matched the value.",
       { value: $1 }
     )
   }

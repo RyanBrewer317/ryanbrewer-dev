@@ -9,6 +9,7 @@ import {
   CustomType as $CustomType,
   isEqual,
   toBitArray,
+  bitArraySlice,
   stringBits,
 } from "../gleam.mjs";
 import {
@@ -44,11 +45,12 @@ function do_secure_compare(loop$left, loop$right, loop$accumulator) {
     let left = loop$left;
     let right = loop$right;
     let accumulator = loop$accumulator;
-    if (left.length >= 1 && right.length >= 1) {
+    if ((left.bitSize >= 8 && (left.bitSize - 8) % 8 === 0) &&
+    (right.bitSize >= 8 && (right.bitSize - 8) % 8 === 0)) {
       let x = left.byteAt(0);
-      let left$1 = left.sliceAfter(1);
+      let left$1 = bitArraySlice(left, 8);
       let y = right.byteAt(0);
-      let right$1 = right.sliceAfter(1);
+      let right$1 = bitArraySlice(right, 8);
       let accumulator$1 = $int.bitwise_or(
         accumulator,
         $int.bitwise_exclusive_or(x, y),
@@ -138,39 +140,39 @@ export function verify_signed_message(message, secret) {
                       protected$.byteAt(2) === 50 &&
                       protected$.byteAt(3) === 50 &&
                       protected$.byteAt(4) === 52 &&
-                      protected$.length == 5) {
+                      protected$.bitSize == 40) {
                         return new Ok(new Sha224());
                       } else if (protected$.byteAt(0) === 72 &&
                       protected$.byteAt(1) === 83 &&
                       protected$.byteAt(2) === 50 &&
                       protected$.byteAt(3) === 53 &&
                       protected$.byteAt(4) === 54 &&
-                      protected$.length == 5) {
+                      protected$.bitSize == 40) {
                         return new Ok(new Sha256());
                       } else if (protected$.byteAt(0) === 72 &&
                       protected$.byteAt(1) === 83 &&
                       protected$.byteAt(2) === 51 &&
                       protected$.byteAt(3) === 56 &&
                       protected$.byteAt(4) === 52 &&
-                      protected$.length == 5) {
+                      protected$.bitSize == 40) {
                         return new Ok(new Sha384());
                       } else if (protected$.byteAt(0) === 72 &&
                       protected$.byteAt(1) === 83 &&
                       protected$.byteAt(2) === 53 &&
                       protected$.byteAt(3) === 49 &&
                       protected$.byteAt(4) === 50 &&
-                      protected$.length == 5) {
+                      protected$.bitSize == 40) {
                         return new Ok(new Sha512());
                       } else if (protected$.byteAt(0) === 72 &&
                       protected$.byteAt(1) === 83 &&
                       protected$.byteAt(2) === 49 &&
-                      protected$.length == 3) {
+                      protected$.bitSize == 24) {
                         return new Ok(new Sha1());
                       } else if (protected$.byteAt(0) === 72 &&
                       protected$.byteAt(1) === 77 &&
                       protected$.byteAt(2) === 68 &&
                       protected$.byteAt(3) === 53 &&
-                      protected$.length == 4) {
+                      protected$.bitSize == 32) {
                         return new Ok(new Md5());
                       } else {
                         return new Error(undefined);

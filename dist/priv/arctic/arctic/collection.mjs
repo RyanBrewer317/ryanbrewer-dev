@@ -15,7 +15,16 @@ import * as $parse from "../arctic/parse.mjs";
 import { Ok, toList, prepend as listPrepend } from "../gleam.mjs";
 
 export function with_parser(c, parser) {
-  return c.withFields({ parse: parser });
+  let _record = c;
+  return new Collection(
+    _record.directory,
+    parser,
+    _record.index,
+    _record.feed,
+    _record.ordering,
+    _record.render,
+    _record.raw_pages,
+  );
 }
 
 export function default_parser() {
@@ -86,23 +95,66 @@ export function new$(dir) {
 }
 
 export function with_index(c, index) {
-  return c.withFields({ index: new Some(index) });
+  let _record = c;
+  return new Collection(
+    _record.directory,
+    _record.parse,
+    new Some(index),
+    _record.feed,
+    _record.ordering,
+    _record.render,
+    _record.raw_pages,
+  );
 }
 
 export function with_feed(c, filename, render) {
-  return c.withFields({ feed: new Some([filename, render]) });
+  let _record = c;
+  return new Collection(
+    _record.directory,
+    _record.parse,
+    _record.index,
+    new Some([filename, render]),
+    _record.ordering,
+    _record.render,
+    _record.raw_pages,
+  );
 }
 
 export function with_ordering(c, ordering) {
-  return c.withFields({ ordering: ordering });
+  let _record = c;
+  return new Collection(
+    _record.directory,
+    _record.parse,
+    _record.index,
+    _record.feed,
+    ordering,
+    _record.render,
+    _record.raw_pages,
+  );
 }
 
 export function with_renderer(c, renderer) {
-  return c.withFields({ render: renderer });
+  let _record = c;
+  return new Collection(
+    _record.directory,
+    _record.parse,
+    _record.index,
+    _record.feed,
+    _record.ordering,
+    renderer,
+    _record.raw_pages,
+  );
 }
 
 export function with_raw_page(c, id, body) {
-  return c.withFields({
-    raw_pages: listPrepend(new RawPage(id, body), c.raw_pages)
-  });
+  let _record = c;
+  return new Collection(
+    _record.directory,
+    _record.parse,
+    _record.index,
+    _record.feed,
+    _record.ordering,
+    _record.render,
+    listPrepend(new RawPage(id, body), c.raw_pages),
+  );
 }

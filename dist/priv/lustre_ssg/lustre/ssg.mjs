@@ -120,11 +120,11 @@ function routify(path) {
   let $ = $regex.from_string("\\s+");
   if (!$.isOk()) {
     throw makeError(
-      "assignment_no_match",
+      "let_assert",
       "lustre/ssg",
       459,
       "routify",
-      "Assignment pattern did not match",
+      "Pattern match failed, no pattern matched the value.",
       { value: $ }
     )
   }
@@ -183,12 +183,26 @@ export function add_dynamic_route(config, path, data, page) {
     );
     return new Dynamic(path$1, pages);
   })();
-  return config.withFields({ routes: listPrepend(route, config.routes) });
+  let _record = config;
+  return new Config(
+    _record.out_dir,
+    _record.static_dir,
+    _record.static_assets,
+    listPrepend(route, config.routes),
+    _record.use_index_routes,
+  );
 }
 
 export function add_static_asset(config, path, content) {
   let static_assets = $dict.insert(config.static_assets, routify(path), content);
-  return config.withFields({ static_assets: static_assets });
+  let _record = config;
+  return new Config(
+    _record.out_dir,
+    _record.static_dir,
+    static_assets,
+    _record.routes,
+    _record.use_index_routes,
+  );
 }
 
 function trim_slash(path) {
@@ -204,11 +218,11 @@ function last_segment(path) {
   let $ = $regex.from_string("(.*/)+?(.+)");
   if (!$.isOk()) {
     throw makeError(
-      "assignment_no_match",
+      "let_assert",
       "lustre/ssg",
       474,
       "last_segment",
-      "Assignment pattern did not match",
+      "Pattern match failed, no pattern matched the value.",
       { value: $ }
     )
   }
@@ -222,11 +236,11 @@ function last_segment(path) {
     !($1.head.submatches.tail.head instanceof Some)
   ) {
     throw makeError(
-      "assignment_no_match",
+      "let_assert",
       "lustre/ssg",
       475,
       "last_segment",
-      "Assignment pattern did not match",
+      "Pattern match failed, no pattern matched the value.",
       { value: $1 }
     )
   }

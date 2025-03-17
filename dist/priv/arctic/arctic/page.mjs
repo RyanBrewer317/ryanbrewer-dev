@@ -12,29 +12,92 @@ export function new$(id) {
 }
 
 export function with_body(p, body) {
-  return p.withFields({ body: body });
+  let _record = p;
+  return new Page(
+    _record.id,
+    body,
+    _record.metadata,
+    _record.title,
+    _record.blerb,
+    _record.tags,
+    _record.date,
+  );
 }
 
 export function with_metadata(p, key, val) {
-  return p.withFields({ metadata: $dict.insert(p.metadata, key, val) });
+  let _record = p;
+  return new Page(
+    _record.id,
+    _record.body,
+    $dict.insert(p.metadata, key, val),
+    _record.title,
+    _record.blerb,
+    _record.tags,
+    _record.date,
+  );
 }
 
 export function replace_metadata(p, metadata) {
-  return p.withFields({ metadata: metadata });
+  let _record = p;
+  return new Page(
+    _record.id,
+    _record.body,
+    metadata,
+    _record.title,
+    _record.blerb,
+    _record.tags,
+    _record.date,
+  );
 }
 
 export function with_title(p, title) {
-  return p.withFields({ title: title });
+  let _record = p;
+  return new Page(
+    _record.id,
+    _record.body,
+    _record.metadata,
+    title,
+    _record.blerb,
+    _record.tags,
+    _record.date,
+  );
 }
 
 export function with_blerb(p, blerb) {
-  return p.withFields({ blerb: blerb });
+  let _record = p;
+  return new Page(
+    _record.id,
+    _record.body,
+    _record.metadata,
+    _record.title,
+    blerb,
+    _record.tags,
+    _record.date,
+  );
 }
 
 export function with_tags(p, tags) {
-  return p.withFields({ tags: tags });
+  let _record = p;
+  return new Page(
+    _record.id,
+    _record.body,
+    _record.metadata,
+    _record.title,
+    _record.blerb,
+    tags,
+    _record.date,
+  );
 }
 
 export function with_date(p, date) {
-  return p.withFields({ date: new Some(date) });
+  let _record = p;
+  return new Page(
+    _record.id,
+    _record.body,
+    _record.metadata,
+    _record.title,
+    _record.blerb,
+    _record.tags,
+    new Some(date),
+  );
 }

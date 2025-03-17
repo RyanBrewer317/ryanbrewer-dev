@@ -77,11 +77,11 @@ export function main() {
         );
         if (!$.isOk()) {
           throw makeError(
-            "assignment_no_match",
+            "let_assert",
             "ryanbrewerdev",
             56,
             "",
-            "Assignment pattern did not match",
+            "Pattern match failed, no pattern matched the value.",
             { value: $ }
           )
         }

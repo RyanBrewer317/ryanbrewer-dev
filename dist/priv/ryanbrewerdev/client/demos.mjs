@@ -202,11 +202,11 @@ export function main() {
   let $ = $lustre.start(app, "[data-lustre-app]", undefined);
   if (!$.isOk()) {
     throw makeError(
-      "assignment_no_match",
+      "let_assert",
       "client/demos",
       37,
       "main",
-      "Assignment pattern did not match",
+      "Pattern match failed, no pattern matched the value.",
       { value: $ }
     )
   }

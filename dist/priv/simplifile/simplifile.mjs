@@ -574,7 +574,7 @@ function integer_to_permissions(integer) {
       "simplifile",
       650,
       "integer_to_permissions",
-      "panic expression evaluated",
+      "`panic` expression evaluated.",
       {}
     )
   }

@@ -1,7 +1,6 @@
 import * as $bool from "../gleam_stdlib/gleam/bool.mjs";
 import * as $function from "../gleam_stdlib/gleam/function.mjs";
 import * as $int from "../gleam_stdlib/gleam/int.mjs";
-import * as $io from "../gleam_stdlib/gleam/io.mjs";
 import * as $iterator from "../gleam_stdlib/gleam/iterator.mjs";
 import * as $list from "../gleam_stdlib/gleam/list.mjs";
 import * as $option from "../gleam_stdlib/gleam/option.mjs";
@@ -293,11 +292,11 @@ export function range(a, b, s) {
   })();
   if (!$.isOk()) {
     throw makeError(
-      "assignment_no_match",
+      "let_assert",
       "birl",
-      1147,
+      1145,
       "range",
-      "Assignment pattern did not match",
+      "Pattern match failed, no pattern matched the value.",
       { value: $ }
     )
   }
@@ -338,11 +337,11 @@ function parse_offset(offset) {
       let $ = $regex.from_string("([+-])");
       if (!$.isOk()) {
         throw makeError(
-          "assignment_no_match",
+          "let_assert",
           "birl",
-          1328,
+          1326,
           "",
-          "Assignment pattern did not match",
+          "Pattern match failed, no pattern matched the value.",
           { value: $ }
         )
       }
@@ -409,11 +408,11 @@ function parse_offset(offset) {
               let $3 = $string.first(offset$2);
               if (!$3.isOk()) {
                 throw makeError(
-                  "assignment_no_match",
+                  "let_assert",
                   "birl",
-                  1358,
+                  1356,
                   "",
-                  "Assignment pattern did not match",
+                  "Pattern match failed, no pattern matched the value.",
                   { value: $3 }
                 )
               }
@@ -573,11 +572,11 @@ export function get_offset(value) {
   let $ = generate_offset(offset);
   if (!$.isOk()) {
     throw makeError(
-      "assignment_no_match",
+      "let_assert",
       "birl",
-      1204,
+      1202,
       "get_offset",
-      "Assignment pattern did not match",
+      "Pattern match failed, no pattern matched the value.",
       { value: $ }
     )
   }
@@ -623,11 +622,11 @@ function parse_section(section, pattern_string, default$) {
   let $ = $regex.from_string(pattern_string);
   if (!$.isOk()) {
     throw makeError(
-      "assignment_no_match",
+      "let_assert",
       "birl",
-      1522,
+      1521,
       "parse_section",
-      "Assignment pattern did not match",
+      "Pattern match failed, no pattern matched the value.",
       { value: $ }
     )
   }
@@ -675,11 +674,11 @@ function parse_date_section(date) {
           );
           if (!$1.isOk()) {
             throw makeError(
-              "assignment_no_match",
+              "let_assert",
               "birl",
-              1443,
+              1441,
               "",
-              "Assignment pattern did not match",
+              "Pattern match failed, no pattern matched the value.",
               { value: $1 }
             )
           }
@@ -748,11 +747,11 @@ export function parse_time_of_day(value) {
   let $ = $regex.from_string("(.*)([+|\\-].*)");
   if (!$.isOk()) {
     throw makeError(
-      "assignment_no_match",
+      "let_assert",
       "birl",
-      399,
+      398,
       "parse_time_of_day",
-      "Assignment pattern did not match",
+      "Pattern match failed, no pattern matched the value.",
       { value: $ }
     )
   }
@@ -843,11 +842,11 @@ export function parse_time_of_day(value) {
               (time_of_day) => {
                 if (!time_of_day.hasLength(3)) {
                   throw makeError(
-                    "assignment_no_match",
+                    "let_assert",
                     "birl",
-                    448,
+                    447,
                     "",
-                    "Assignment pattern did not match",
+                    "Pattern match failed, no pattern matched the value.",
                     { value: time_of_day }
                   )
                 }
@@ -942,11 +941,11 @@ export function parse_naive_time_of_day(value) {
           (time_of_day) => {
             if (!time_of_day.hasLength(3)) {
               throw makeError(
-                "assignment_no_match",
+                "let_assert",
                 "birl",
-                497,
+                496,
                 "",
-                "Assignment pattern did not match",
+                "Pattern match failed, no pattern matched the value.",
                 { value: time_of_day }
               )
             }
@@ -1075,11 +1074,11 @@ function to_parts(value) {
     let $1 = generate_offset(o);
     if (!$1.isOk()) {
       throw makeError(
-        "assignment_no_match",
+        "let_assert",
         "birl",
-        1320,
+        1318,
         "to_parts",
-        "Assignment pattern did not match",
+        "Pattern match failed, no pattern matched the value.",
         { value: $1 }
       )
     }
@@ -1251,11 +1250,11 @@ export function month(value) {
   let $1 = month_from_int(month$1);
   if (!$1.isOk()) {
     throw makeError(
-      "assignment_no_match",
+      "let_assert",
       "birl",
-      1101,
+      1099,
       "month",
-      "Assignment pattern did not match",
+      "Pattern match failed, no pattern matched the value.",
       { value: $1 }
     )
   }
@@ -1358,17 +1357,16 @@ export function parse(value) {
   let $ = $regex.from_string("(.*)([+|\\-].*)");
   if (!$.isOk()) {
     throw makeError(
-      "assignment_no_match",
+      "let_assert",
       "birl",
-      296,
+      295,
       "parse",
-      "Assignment pattern did not match",
+      "Pattern match failed, no pattern matched the value.",
       { value: $ }
     )
   }
   let offset_pattern = $[0];
   let value$1 = $string.trim(value);
-  $io.debug([298, value$1]);
   return $result.then$(
     (() => {
       let $1 = $string.split(value$1, "T");
@@ -1395,10 +1393,8 @@ export function parse(value) {
     (_use0) => {
       let day_string = _use0[0];
       let offsetted_time_string = _use0[1];
-      $io.debug([311, day_string]);
       let day_string$1 = $string.trim(day_string);
       let offsetted_time_string$1 = $string.trim(offsetted_time_string);
-      $io.debug([314, day_string$1]);
       return $result.then$(
         (() => {
           let $1 = $string.ends_with(offsetted_time_string$1, "Z") || $string.ends_with(
@@ -1430,8 +1426,9 @@ export function parse(value) {
               $3.head.submatches.hasLength(2) &&
               $3.head.submatches.head instanceof $option.Some &&
               $3.head.submatches.tail.head instanceof $option.Some) {
+                let day_string$2 = $3.head.submatches.head[0];
                 let offset_string = $3.head.submatches.tail.head[0];
-                return new Ok([day_string$1, "00", offset_string]);
+                return new Ok([day_string$2, "00", offset_string]);
               } else {
                 return new Error(undefined);
               }
@@ -1442,7 +1439,6 @@ export function parse(value) {
           let day_string$2 = _use0[0];
           let time_string = _use0[1];
           let offset_string = _use0[2];
-          $io.debug([337, day_string$2]);
           let time_string$1 = $string.replace(time_string, ":", "");
           return $result.then$(
             (() => {
@@ -1492,11 +1488,11 @@ export function parse(value) {
                   (day) => {
                     if (!day.hasLength(3)) {
                       throw makeError(
-                        "assignment_no_match",
+                        "let_assert",
                         "birl",
-                        364,
+                        363,
                         "",
-                        "Assignment pattern did not match",
+                        "Pattern match failed, no pattern matched the value.",
                         { value: day }
                       )
                     }
@@ -1508,11 +1504,11 @@ export function parse(value) {
                       (time_of_day) => {
                         if (!time_of_day.hasLength(3)) {
                           throw makeError(
-                            "assignment_no_match",
+                            "let_assert",
                             "birl",
-                            367,
+                            366,
                             "",
-                            "Assignment pattern did not match",
+                            "Pattern match failed, no pattern matched the value.",
                             { value: time_of_day }
                           )
                         }
@@ -1541,7 +1537,6 @@ export function parse(value) {
 
 export function from_naive(value) {
   let value$1 = $string.trim(value);
-  $io.debug([572, value$1]);
   return $result.then$(
     (() => {
       let $ = $string.split(value$1, "T");
@@ -1568,9 +1563,7 @@ export function from_naive(value) {
     (_use0) => {
       let day_string = _use0[0];
       let time_string = _use0[1];
-      $io.debug([585, day_string]);
       let day_string$1 = $string.trim(day_string);
-      $io.debug([587, day_string$1]);
       let time_string$1 = $string.trim(time_string);
       let time_string$2 = $string.replace(time_string$1, ":", "");
       return $result.then$(
@@ -1621,11 +1614,11 @@ export function from_naive(value) {
               (day) => {
                 if (!day.hasLength(3)) {
                   throw makeError(
-                    "assignment_no_match",
+                    "let_assert",
                     "birl",
-                    614,
+                    612,
                     "",
-                    "Assignment pattern did not match",
+                    "Pattern match failed, no pattern matched the value.",
                     { value: day }
                   )
                 }
@@ -1637,11 +1630,11 @@ export function from_naive(value) {
                   (time_of_day) => {
                     if (!time_of_day.hasLength(3)) {
                       throw makeError(
-                        "assignment_no_match",
+                        "let_assert",
                         "birl",
-                        617,
+                        615,
                         "",
-                        "Assignment pattern did not match",
+                        "Pattern match failed, no pattern matched the value.",
                         { value: time_of_day }
                       )
                     }
@@ -1676,11 +1669,11 @@ export function set_day(value, day) {
   let $1 = from_parts([year, month$1, date], time, offset);
   if (!$1.isOk()) {
     throw makeError(
-      "assignment_no_match",
+      "let_assert",
       "birl",
-      1211,
+      1209,
       "set_day",
-      "Assignment pattern did not match",
+      "Pattern match failed, no pattern matched the value.",
       { value: $1 }
     )
   }
@@ -1704,11 +1697,11 @@ export function set_time_of_day(value, time) {
   let $1 = from_parts(date, [hour, minute, second, milli_second], offset);
   if (!$1.isOk()) {
     throw makeError(
-      "assignment_no_match",
+      "let_assert",
       "birl",
-      1229,
+      1227,
       "set_time_of_day",
-      "Assignment pattern did not match",
+      "Pattern match failed, no pattern matched the value.",
       { value: $1 }
     )
   }
@@ -1728,11 +1721,11 @@ export function weekday(value) {
     let $ = weekday_from_int(ffi_weekday(t, o));
     if (!$.isOk()) {
       throw makeError(
-        "assignment_no_match",
+        "let_assert",
         "birl",
-        1035,
+        1033,
         "weekday",
-        "Assignment pattern did not match",
+        "Pattern match failed, no pattern matched the value.",
         { value: $ }
       )
     }
@@ -1755,11 +1748,11 @@ export function to_http(value) {
   let $ = set_offset(value, "Z");
   if (!$.isOk()) {
     throw makeError(
-      "assignment_no_match",
+      "let_assert",
       "birl",
-      632,
+      630,
       "to_http",
-      "Assignment pattern did not match",
+      "Pattern match failed, no pattern matched the value.",
       { value: $ }
     )
   }
@@ -2154,11 +2147,11 @@ export function legible_difference(a, b) {
     let $1 = $list.key_find(units_to_string, unit);
     if (!$1.isOk()) {
       throw makeError(
-        "assignment_no_match",
+        "let_assert",
         "birl",
-        965,
+        963,
         "legible_difference",
-        "Assignment pattern did not match",
+        "Pattern match failed, no pattern matched the value.",
         { value: $1 }
       )
     }
@@ -2246,11 +2239,11 @@ export function from_http(value) {
           let $ = $regex.from_string("\\s+");
           if (!$.isOk()) {
             throw makeError(
-              "assignment_no_match",
+              "let_assert",
               "birl",
-              739,
+              737,
               "",
-              "Assignment pattern did not match",
+              "Pattern match failed, no pattern matched the value.",
               { value: $ }
             )
           }

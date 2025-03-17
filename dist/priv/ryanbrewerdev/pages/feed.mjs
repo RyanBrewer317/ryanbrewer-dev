@@ -73,11 +73,11 @@ export function feed(posts) {
       let $ = post.date;
       if (!($ instanceof Some)) {
         throw makeError(
-          "assignment_no_match",
+          "let_assert",
           "pages/feed",
           16,
           "",
-          "Assignment pattern did not match",
+          "Pattern match failed, no pattern matched the value.",
           { value: $ }
         )
       }

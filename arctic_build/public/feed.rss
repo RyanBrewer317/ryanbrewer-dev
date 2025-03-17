@@ -10,105 +10,105 @@
     <language>en-us</language>
     <item>
       <title>My First Blog Post</title>
-      <pubDate>Thu, 16 Nov 2023 00:00:00 PST</pubDate>
+      <pubDate>Wed, 01 Nov 2023 00:00:00 PST</pubDate>
       <link>https://ryanbrewer.dev/posts/first-post/</link>
       <guid>https://ryanbrewer.dev/posts/first-post/</guid>
       <description><![CDATA[A test post for the blog.  Read more <a href="https://ryanbrewer.dev/posts/first-post/">here</a>!]]></description>
     </item>
     <item>
+      <title>Security and Crashing with Modal Logic</title>
+      <pubDate>Fri, 01 Dec 2023 00:00:00 PST</pubDate>
+      <link>https://ryanbrewer.dev/posts/security-crashing-modal-logic/</link>
+      <guid>https://ryanbrewer.dev/posts/security-crashing-modal-logic/</guid>
+      <description><![CDATA[Modal logic is a beautiful field of logic that can be applied to computer science in a few ways, one of which we explore in this post. It can elucidate security concepts and how and why to crash software.  Read more <a href="https://ryanbrewer.dev/posts/security-crashing-modal-logic/">here</a>!]]></description>
+    </item>
+    <item>
       <title>An Introduction to Proofs with Dependent Types</title>
-      <pubDate>Sun, 03 Dec 2023 00:00:00 PST</pubDate>
+      <pubDate>Fri, 01 Dec 2023 00:00:00 PST</pubDate>
       <link>https://ryanbrewer.dev/posts/logic-in-types/</link>
       <guid>https://ryanbrewer.dev/posts/logic-in-types/</guid>
       <description><![CDATA[This post introduces the basic ideas behind dependent-type-based proof assistants, and expressing logic with types and values.  Read more <a href="https://ryanbrewer.dev/posts/logic-in-types/">here</a>!]]></description>
     </item>
     <item>
       <title>Implicit Products: A Better Type-Theoretic "Forall"</title>
-      <pubDate>Sun, 10 Dec 2023 00:00:00 PST</pubDate>
+      <pubDate>Fri, 01 Dec 2023 00:00:00 PST</pubDate>
       <link>https://ryanbrewer.dev/posts/implicit-products-better-forall/</link>
       <guid>https://ryanbrewer.dev/posts/implicit-products-better-forall/</guid>
       <description><![CDATA[Implicit products are a fascinating approach to universal quantification in dependent type theory, as well as proof irrelevance/erasure in compiler implementation.  Read more <a href="https://ryanbrewer.dev/posts/implicit-products-better-forall/">here</a>!]]></description>
     </item>
     <item>
-      <title>Security and Crashing with Modal Logic</title>
-      <pubDate>Sun, 17 Dec 2023 00:00:00 PST</pubDate>
-      <link>https://ryanbrewer.dev/posts/security-crashing-modal-logic/</link>
-      <guid>https://ryanbrewer.dev/posts/security-crashing-modal-logic/</guid>
-      <description><![CDATA[Modal logic is a beautiful field of logic that can be applied to computer science in a few ways, one of which we explore in this post. It can elucidate security concepts and how and why to crash software.  Read more <a href="https://ryanbrewer.dev/posts/security-crashing-modal-logic/">here</a>!]]></description>
-    </item>
-    <item>
       <title>Announcing the Saber Virtual Machine</title>
-      <pubDate>Thu, 18 Jan 2024 00:00:00 PST</pubDate>
+      <pubDate>Mon, 01 Jan 2024 00:00:00 PST</pubDate>
       <link>https://ryanbrewer.dev/posts/announcing-sabervm/</link>
       <guid>https://ryanbrewer.dev/posts/announcing-sabervm/</guid>
       <description><![CDATA[This post announces SaberVM, an abstract machine for functional programs that guarantees safety, reliability, and portability.  Read more <a href="https://ryanbrewer.dev/posts/announcing-sabervm/">here</a>!]]></description>
     </item>
     <item>
       <title>Safe Manual Memory Management with Coeffects</title>
-      <pubDate>Thu, 25 Jan 2024 00:00:00 PST</pubDate>
+      <pubDate>Mon, 01 Jan 2024 00:00:00 PST</pubDate>
       <link>https://ryanbrewer.dev/posts/safe-mmm-with-coeffects/</link>
       <guid>https://ryanbrewer.dev/posts/safe-mmm-with-coeffects/</guid>
       <description><![CDATA[Using ideas from Crary et al.'s Calculus of Capabilities, I discuss the coeffectful memory management used in SaberVM.  Read more <a href="https://ryanbrewer.dev/posts/safe-mmm-with-coeffects/">here</a>!]]></description>
     </item>
     <item>
       <title>A Beginner's Guide to Programming Language Academia</title>
-      <pubDate>Sun, 28 Jan 2024 00:00:00 PST</pubDate>
+      <pubDate>Mon, 01 Jan 2024 00:00:00 PST</pubDate>
       <link>https://ryanbrewer.dev/posts/beginners-guide-pl-academia/</link>
       <guid>https://ryanbrewer.dev/posts/beginners-guide-pl-academia/</guid>
       <description><![CDATA[This post briefly maps out many different subfields of programming language theory, in an effort to make it more accessible to those outside academia.  Read more <a href="https://ryanbrewer.dev/posts/beginners-guide-pl-academia/">here</a>!]]></description>
     </item>
     <item>
       <title>Advanced Typechecking for Stack-Based Languages</title>
-      <pubDate>Sun, 18 Feb 2024 00:00:00 PST</pubDate>
+      <pubDate>Thu, 01 Feb 2024 00:00:00 PST</pubDate>
       <link>https://ryanbrewer.dev/posts/typechecking-svm/</link>
       <guid>https://ryanbrewer.dev/posts/typechecking-svm/</guid>
       <description><![CDATA[This post discusses the interesting typechecker of SaberVM, which uses a stack-based bytecode language with a powerful type system.  Read more <a href="https://ryanbrewer.dev/posts/typechecking-svm/">here</a>!]]></description>
     </item>
     <item>
       <title>Simple Programming Languages</title>
-      <pubDate>Wed, 20 Mar 2024 00:00:00 PST</pubDate>
+      <pubDate>Fri, 01 Mar 2024 00:00:00 PST</pubDate>
       <link>https://ryanbrewer.dev/posts/simple-programming-languages/</link>
       <guid>https://ryanbrewer.dev/posts/simple-programming-languages/</guid>
       <description><![CDATA[Simple programming languages are wonderful to work in. But what is it about them that actually makes them simple? And why do we like that so much?  Read more <a href="https://ryanbrewer.dev/posts/simple-programming-languages/">here</a>!]]></description>
     </item>
     <item>
       <title>The Type of Sprintf</title>
-      <pubDate>Tue, 14 May 2024 00:00:00 PST</pubDate>
+      <pubDate>Wed, 01 May 2024 00:00:00 PST</pubDate>
       <link>https://ryanbrewer.dev/posts/type-of-sprintf/</link>
       <guid>https://ryanbrewer.dev/posts/type-of-sprintf/</guid>
       <description><![CDATA[Most static type systems wouldn't let you make something like sprintf, whose type is determined by a format string. Dependent types can save the day!  Read more <a href="https://ryanbrewer.dev/posts/type-of-sprintf/">here</a>!]]></description>
     </item>
     <item>
       <title>Getting Started with Category Theory</title>
-      <pubDate>Mon, 29 Jul 2024 00:00:00 PST</pubDate>
+      <pubDate>Mon, 01 Jul 2024 00:00:00 PST</pubDate>
       <link>https://ryanbrewer.dev/posts/getting-started-category-theory/</link>
       <guid>https://ryanbrewer.dev/posts/getting-started-category-theory/</guid>
       <description><![CDATA[Category theory is a beautiful and powerful field but it can feel impenetrable without the right entry point. This post hopes to serve as a sort of beginner's guide and reference.  Read more <a href="https://ryanbrewer.dev/posts/getting-started-category-theory/">here</a>!]]></description>
     </item>
     <item>
       <title>The Cricket Language</title>
-      <pubDate>Thu, 12 Sep 2024 00:00:00 PST</pubDate>
+      <pubDate>Sun, 01 Sep 2024 00:00:00 PST</pubDate>
       <link>https://ryanbrewer.dev/posts/cricket/</link>
       <guid>https://ryanbrewer.dev/posts/cricket/</guid>
       <description><![CDATA[Cricket is a lazy gradually-typed functional language with objects. It's very tiny but very expressive; anyone can implement it themselves!  Read more <a href="https://ryanbrewer.dev/posts/cricket/">here</a>!]]></description>
     </item>
     <item>
       <title>Par Part 1: Sequent Calculus</title>
-      <pubDate>Mon, 13 Jan 2025 00:00:00 PST</pubDate>
+      <pubDate>Wed, 01 Jan 2025 00:00:00 PST</pubDate>
       <link>https://ryanbrewer.dev/posts/sequent-calculus/</link>
       <guid>https://ryanbrewer.dev/posts/sequent-calculus/</guid>
       <description><![CDATA[Sequent Calculus is a way of doing logic that's very explicit and mechanical. It's used as an important system and notation for type theory and logic related to programming languages.  Read more <a href="https://ryanbrewer.dev/posts/sequent-calculus/">here</a>!]]></description>
     </item>
     <item>
       <title>Par Part 2: Linear Logic</title>
-      <pubDate>Tue, 11 Feb 2025 00:00:00 PST</pubDate>
+      <pubDate>Sat, 01 Feb 2025 00:00:00 PST</pubDate>
       <link>https://ryanbrewer.dev/posts/linear-logic/</link>
       <guid>https://ryanbrewer.dev/posts/linear-logic/</guid>
       <description><![CDATA[Linear logic is a beautiful logical system taking advantage of the mechanisms of the sequent calculus. In this post we explore the various meanings of linear logic, and dig deep into the reasoning behind its peculiar development.  Read more <a href="https://ryanbrewer.dev/posts/linear-logic/">here</a>!]]></description>
     </item>
     <item>
       <title>Par Part 3: Par, Continued</title>
-      <pubDate>Sat, 08 Mar 2025 00:00:00 PST</pubDate>
+      <pubDate>Sat, 01 Mar 2025 00:00:00 PST</pubDate>
       <link>https://ryanbrewer.dev/posts/par/</link>
       <guid>https://ryanbrewer.dev/posts/par/</guid>
       <description><![CDATA[Par is notoriously difficult to understand, but mostly due to a lack of resources. This post hopes to build on the prior posts on sequent calculus and linear logic to show how par is not such an alien concept after all, and make the theory much more accessible. We'll naturally stumble into constructive/computational classical logic along the way!  Read more <a href="https://ryanbrewer.dev/posts/par/">here</a>!]]></description>

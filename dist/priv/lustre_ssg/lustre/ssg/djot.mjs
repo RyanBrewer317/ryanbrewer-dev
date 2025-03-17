@@ -47,11 +47,11 @@ export function frontmatter(document) {
       let $ = $regex.compile("^---\\n[\\s\\S]*?\\n---", options);
       if (!$.isOk()) {
         throw makeError(
-          "assignment_no_match",
+          "let_assert",
           "lustre/ssg/djot",
           135,
           "",
-          "Assignment pattern did not match",
+          "Pattern match failed, no pattern matched the value.",
           { value: $ }
         )
       }
@@ -97,11 +97,11 @@ function linkify(text) {
   let $ = $regex.from_string(" +");
   if (!$.isOk()) {
     throw makeError(
-      "assignment_no_match",
+      "let_assert",
       "lustre/ssg/djot",
       284,
       "linkify",
-      "Assignment pattern did not match",
+      "Pattern match failed, no pattern matched the value.",
       { value: $ }
     )
   }

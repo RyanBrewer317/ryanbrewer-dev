@@ -81,11 +81,11 @@ export function get_id(p) {
     let $ = $dict.get(metadata, "id");
     if (!$.isOk()) {
       throw makeError(
-        "assignment_no_match",
+        "let_assert",
         "arctic",
         80,
         "get_id",
-        "Assignment pattern did not match",
+        "Pattern match failed, no pattern matched the value.",
         { value: $ }
       )
     }
@@ -136,11 +136,11 @@ export function output_path(input_path) {
   let $ = $string.split(input_path, ".txt");
   if (!$.hasLength(2) || $.tail.head !== "") {
     throw makeError(
-      "assignment_no_match",
+      "let_assert",
       "arctic",
       88,
       "output_path",
-      "Assignment pattern did not match",
+      "Pattern match failed, no pattern matched the value.",
       { value: $ }
     )
   }

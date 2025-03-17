@@ -2,7 +2,6 @@ import * as $parse from "../../../arctic/arctic/parse.mjs";
 import * as $bool from "../../../gleam_stdlib/gleam/bool.mjs";
 import * as $dict from "../../../gleam_stdlib/gleam/dict.mjs";
 import * as $int from "../../../gleam_stdlib/gleam/int.mjs";
-import * as $io from "../../../gleam_stdlib/gleam/io.mjs";
 import * as $result from "../../../gleam_stdlib/gleam/result.mjs";
 import { map_error } from "../../../gleam_stdlib/gleam/result.mjs";
 import * as $attribute from "../../../lustre/lustre/attribute.mjs";
@@ -18,11 +17,11 @@ export function parse(dir, get_id, to_state) {
     let $ = $dict.get($parse.get_metadata(data), "id");
     if (!$.isOk()) {
       throw makeError(
-        "assignment_no_match",
+        "let_assert",
         "arctic/plugin/diagram",
-        17,
+        16,
         "",
-        "Assignment pattern did not match",
+        "Pattern match failed, no pattern matched the value.",
         { value: $ }
       )
     }
@@ -57,7 +56,6 @@ export function parse(dir, get_id, to_state) {
         );
       })(),
       (exists) => {
-        $io.debug(img_filename);
         return $bool.guard(
           exists,
           new Ok(out),

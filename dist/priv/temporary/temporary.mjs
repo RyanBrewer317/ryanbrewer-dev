@@ -33,15 +33,33 @@ export function directory() {
 }
 
 export function in_directory(temp_file, directory) {
-  return temp_file.withFields({ temp_directory: new Some(directory) });
+  let _record = temp_file;
+  return new TempFile(
+    _record.kind,
+    new Some(directory),
+    _record.name_prefix,
+    _record.name_suffix,
+  );
 }
 
 export function with_prefix(temp_file, name_prefix) {
-  return temp_file.withFields({ name_prefix: new Some(name_prefix) });
+  let _record = temp_file;
+  return new TempFile(
+    _record.kind,
+    _record.temp_directory,
+    new Some(name_prefix),
+    _record.name_suffix,
+  );
 }
 
 export function with_suffix(temp_file, name_suffix) {
-  return temp_file.withFields({ name_suffix: new Some(name_suffix) });
+  let _record = temp_file;
+  return new TempFile(
+    _record.kind,
+    _record.temp_directory,
+    _record.name_prefix,
+    new Some(name_suffix),
+  );
 }
 
 function get_random_name() {

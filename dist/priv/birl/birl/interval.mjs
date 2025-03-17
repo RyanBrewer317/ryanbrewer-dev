@@ -49,11 +49,11 @@ export function scale_up(interval, factor) {
     })();
     if (!$.isOk()) {
       throw makeError(
-        "assignment_no_match",
+        "let_assert",
         "birl/interval",
         34,
         "scale_up",
-        "Assignment pattern did not match",
+        "Pattern match failed, no pattern matched the value.",
         { value: $ }
       )
     }
@@ -75,11 +75,11 @@ export function scale_down(interval, factor) {
     })();
     if (!$.isOk()) {
       throw makeError(
-        "assignment_no_match",
+        "let_assert",
         "birl/interval",
         46,
         "scale_down",
-        "Assignment pattern did not match",
+        "Pattern match failed, no pattern matched the value.",
         { value: $ }
       )
     }

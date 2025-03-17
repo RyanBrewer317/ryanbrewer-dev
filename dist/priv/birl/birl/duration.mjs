@@ -335,11 +335,11 @@ export function blur_to(duration, unit) {
   let $ = $list.key_find(unit_values, unit);
   if (!$.isOk()) {
     throw makeError(
-      "assignment_no_match",
+      "let_assert",
       "birl/duration",
       207,
       "blur_to",
-      "Assignment pattern did not match",
+      "Pattern match failed, no pattern matched the value.",
       { value: $ }
     )
   }
@@ -361,11 +361,11 @@ function inner_blur(loop$values) {
     let values = loop$values;
     if (!values.atLeastLength(2)) {
       throw makeError(
-        "assignment_no_match",
+        "let_assert",
         "birl/duration",
         254,
         "inner_blur",
-        "Assignment pattern did not match",
+        "Pattern match failed, no pattern matched the value.",
         { value: values }
       )
     }
@@ -374,11 +374,11 @@ function inner_blur(loop$values) {
     let $ = $list.key_find(unit_values, leading[1]);
     if (!$.isOk()) {
       throw makeError(
-        "assignment_no_match",
+        "let_assert",
         "birl/duration",
         255,
         "inner_blur",
-        "Assignment pattern did not match",
+        "Pattern match failed, no pattern matched the value.",
         { value: $ }
       )
     }
@@ -386,11 +386,11 @@ function inner_blur(loop$values) {
     let $1 = $list.key_find(unit_values, second$1[1]);
     if (!$1.isOk()) {
       throw makeError(
-        "assignment_no_match",
+        "let_assert",
         "birl/duration",
         256,
         "inner_blur",
-        "Assignment pattern did not match",
+        "Pattern match failed, no pattern matched the value.",
         { value: $1 }
       )
     }
@@ -472,11 +472,11 @@ export function parse(expression) {
   let $ = $regex.from_string("([+|\\-])?\\s*(\\d+)\\s*(\\w+)?");
   if (!$.isOk()) {
     throw makeError(
-      "assignment_no_match",
+      "let_assert",
       "birl/duration",
       319,
       "parse",
-      "Assignment pattern did not match",
+      "Pattern match failed, no pattern matched the value.",
       { value: $ }
     )
   }
@@ -487,11 +487,11 @@ export function parse(expression) {
       let $3 = $string.split(expression, ":");
       if (!$3.hasLength(2)) {
         throw makeError(
-          "assignment_no_match",
+          "let_assert",
           "birl/duration",
           325,
           "parse",
-          "Assignment pattern did not match",
+          "Pattern match failed, no pattern matched the value.",
           { value: $3 }
         )
       }

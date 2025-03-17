@@ -127,11 +127,11 @@ function do_style(lookup, strings, flag) {
           (_, code) => {
             if (!code.hasLength(1)) {
               throw makeError(
-                "assignment_no_match",
+                "let_assert",
                 "shellout",
                 235,
                 "",
-                "Assignment pattern did not match",
+                "Pattern match failed, no pattern matched the value.",
                 { value: code }
               )
             }
@@ -139,11 +139,11 @@ function do_style(lookup, strings, flag) {
             let $ = $int.parse(code$1);
             if (!$.isOk()) {
               throw makeError(
-                "assignment_no_match",
+                "let_assert",
                 "shellout",
                 236,
                 "",
-                "Assignment pattern did not match",
+                "Pattern match failed, no pattern matched the value.",
                 { value: $ }
               )
             }
@@ -185,11 +185,11 @@ function do_style(lookup, strings, flag) {
             let $2 = acc.styles;
             if (!$2.atLeastLength(1) || !($2.head instanceof Rgb)) {
               throw makeError(
-                "assignment_no_match",
+                "let_assert",
                 "shellout",
                 256,
                 "",
-                "Assignment pattern did not match",
+                "Pattern match failed, no pattern matched the value.",
                 { value: $2 }
               )
             }
