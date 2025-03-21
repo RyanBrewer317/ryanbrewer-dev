@@ -1,8 +1,10 @@
 id: type-theory-forall
 title: Speaking on Type Theory Forall
-date: 2025-02-07
+date: 2025-03-21
 tags: podcast,type,theory,abreu,plyukhin,for,all,self,teach,teaching,learn,learning,taught,how,to,paper,lustre,hayleigh,thompson
-blerb: 
+blerb: I had the absolute honor to be invited as a guest on the Type Theory Forall podcast! We talked about how to learn programming language theory when you're outside of academia, as well as some political notes on the practice of science and engineering, and some updates on my personal work around the time of the recording.
+
+ *This was written directly after the recording of [this podcast episode](https://www.typetheoryforall.com/episodes/self-education-in-pl), and intended to be published when the episode was released. For personal reasons, this post ended up being a week late, as the episode was released on March 14th.*
 
 Today (Feb 7, 2025) I got the amazing chance to talk to the Pedro Abreu and Dan Plyukhin at the [Type Theory Forall](https://www.typetheoryforall.com/) podcast! It was an absolutely lovely experience, and I thought I'd take a moment to briefly write about it. I'll publish this post when the episode is released, a fair amount of time after writing this.
 

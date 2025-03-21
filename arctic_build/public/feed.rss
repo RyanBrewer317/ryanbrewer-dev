@@ -113,5 +113,12 @@
       <guid>https://ryanbrewer.dev/posts/par/</guid>
       <description><![CDATA[Par is notoriously difficult to understand, but mostly due to a lack of resources. This post hopes to build on the prior posts on sequent calculus and linear logic to show how par is not such an alien concept after all, and make the theory much more accessible. We'll naturally stumble into constructive/computational classical logic along the way!  Read more <a href="https://ryanbrewer.dev/posts/par/">here</a>!]]></description>
     </item>
+    <item>
+      <title>Speaking on Type Theory Forall</title>
+      <pubDate>Sat, 01 Mar 2025 00:00:00 PST</pubDate>
+      <link>https://ryanbrewer.dev/posts/type-theory-forall/</link>
+      <guid>https://ryanbrewer.dev/posts/type-theory-forall/</guid>
+      <description><![CDATA[I had the absolute honor to be invited as a guest on the Type Theory Forall podcast! We talked about how to learn programming language theory when you're outside of academia, as well as some political notes on the practice of science and engineering, and some updates on my personal work around the time of the recording.  Read more <a href="https://ryanbrewer.dev/posts/type-theory-forall/">here</a>!]]></description>
+    </item>
   </channel>
 </rss>
