@@ -134,6 +134,74 @@ export function homepage(posts) {
               ),
             ]),
           ),
+          $html.p(
+            toList([]),
+            toList([
+              text("Other sites I recommend include "),
+              $html.a(
+                toList([href("https://blueberrywren.dev/")]),
+                toList([text("Wren's blog")]),
+              ),
+              text(", "),
+              $html.a(
+                toList([
+                  href("https://ehatti.github.io/forest/output/index.xml"),
+                ]),
+                toList([text("Eashan's notes")]),
+              ),
+              text(", "),
+              $html.a(
+                toList([href("https://www.haskellforall.com/")]),
+                toList([text("Haskell For All")]),
+              ),
+              text(", the "),
+              $html.a(
+                toList([href("https://wiki.xxiivv.com/site/computation.html")]),
+                toList([text("XXIIVV wiki")]),
+              ),
+              text(", and the "),
+              $html.a(
+                toList([href("https://cybercat.institute/")]),
+                toList([text("Cybercat Institute")]),
+              ),
+              text(". Podcasts I would recommend include "),
+              $html.a(
+                toList([href("https://www.typetheoryforall.com/")]),
+                toList([text("Type Theory Forall")]),
+              ),
+              text(", the "),
+              $html.a(
+                toList([href("https://www.kleene.church/#h.k6fig1tqap9i")]),
+                toList([text("Church of Logic")]),
+              ),
+              text(", and the "),
+              $html.a(
+                toList([href("https://homepage.cs.uiowa.edu/~astump/ittc.html")]),
+                toList([text("Iowa Type Theory Commute")]),
+              ),
+              text(". Youtubers I recommend include "),
+              $html.a(
+                toList([href("https://www.youtube.com/@RichardSouthwell")]),
+                toList([text("Richard Southwell")]),
+              ),
+              text(", "),
+              $html.a(
+                toList([href("https://www.youtube.com/@AtticPhilosophy")]),
+                toList([text("Mark Jago")]),
+              ),
+              text(", "),
+              $html.a(
+                toList([href("https://www.youtube.com/@DrBartosz")]),
+                toList([text("Bartosz Milewski")]),
+              ),
+              text(", and the "),
+              $html.a(
+                toList([href("https://www.youtube.com/@TheCatsters")]),
+                toList([text("Catsters")]),
+              ),
+              text("."),
+            ]),
+          ),
           $html.h3(
             toList([$attribute.style(toList([["padding-top", "50pt"]]))]),
             toList([$element.text("Blog Posts")]),

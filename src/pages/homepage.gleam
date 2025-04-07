@@ -101,6 +101,55 @@ This website is hosted by Firebase and written in ",
           ". Scripting, markup, styles, etc. for this site are all done by me :)",
         ),
       ]),
+      html.p([], [
+        text("Other sites I recommend include "),
+        html.a([href("https://blueberrywren.dev/")], [text("Wren's blog")]),
+        text(", "),
+        html.a([href("https://ehatti.github.io/forest/output/index.xml")], [
+          text("Eashan's notes"),
+        ]),
+        text(", "),
+        html.a([href("https://www.haskellforall.com/")], [
+          text("Haskell For All"),
+        ]),
+        text(", the "),
+        html.a([href("https://wiki.xxiivv.com/site/computation.html")], [
+          text("XXIIVV wiki"),
+        ]),
+        text(", and the "),
+        html.a([href("https://cybercat.institute/")], [
+          text("Cybercat Institute"),
+        ]),
+        text(". Podcasts I would recommend include "),
+        html.a([href("https://www.typetheoryforall.com/")], [
+          text("Type Theory Forall"),
+        ]),
+        text(", the "),
+        html.a([href("https://www.kleene.church/#h.k6fig1tqap9i")], [
+          text("Church of Logic"),
+        ]),
+        text(", and the "),
+        html.a([href("https://homepage.cs.uiowa.edu/~astump/ittc.html")], [
+          text("Iowa Type Theory Commute"),
+        ]),
+        text(". Youtubers I recommend include "),
+        html.a([href("https://www.youtube.com/@RichardSouthwell")], [
+          text("Richard Southwell"),
+        ]),
+        text(", "),
+        html.a([href("https://www.youtube.com/@AtticPhilosophy")], [
+          text("Mark Jago"),
+        ]),
+        text(", "),
+        html.a([href("https://www.youtube.com/@DrBartosz")], [
+          text("Bartosz Milewski"),
+        ]),
+        text(", and the "),
+        html.a([href("https://www.youtube.com/@TheCatsters")], [
+          text("Catsters"),
+        ]),
+        text("."),
+      ]),
       html.h3([attribute.style([#("padding-top", "50pt")])], [
         element.text("Blog Posts"),
       ]),
