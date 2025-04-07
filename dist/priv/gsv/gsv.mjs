@@ -2,7 +2,7 @@ import * as $int from "../gleam_stdlib/gleam/int.mjs";
 import * as $list from "../gleam_stdlib/gleam/list.mjs";
 import * as $result from "../gleam_stdlib/gleam/result.mjs";
 import * as $string from "../gleam_stdlib/gleam/string.mjs";
-import { toList, CustomType as $CustomType, makeError } from "./gleam.mjs";
+import { CustomType as $CustomType, makeError } from "./gleam.mjs";
 import * as $ast from "./gsv/internal/ast.mjs";
 import { ParseError } from "./gsv/internal/ast.mjs";
 import * as $token from "./gsv/internal/token.mjs";
@@ -17,7 +17,7 @@ export function to_lists(input) {
   let _pipe$1 = $token.scan(_pipe);
   let _pipe$2 = $token.with_location(_pipe$1);
   let _pipe$3 = $ast.parse(_pipe$2);
-  return $result.nil_error(_pipe$3);
+  return $result.map_error(_pipe$3, (_) => { return undefined; });
 }
 
 export function to_lists_or_panic(input) {
@@ -44,7 +44,6 @@ export function to_lists_or_panic(input) {
       )) + "] of csv: ") + msg),
       {}
     )
-    return toList([toList([])]);
   }
 }
 

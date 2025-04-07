@@ -6,6 +6,7 @@
 
 -opaque interval() :: {interval, birl:time(), birl:time()}.
 
+-file("/home/runner/work/birl/birl/src/birl/interval.gleam", 12).
 -spec from_start_and_end(birl:time(), birl:time()) -> {ok, interval()} |
     {error, nil}.
 from_start_and_end(Start, End) ->
@@ -20,12 +21,14 @@ from_start_and_end(Start, End) ->
             {ok, {interval, End, Start}}
     end.
 
+-file("/home/runner/work/birl/birl/src/birl/interval.gleam", 20).
 -spec from_start_and_duration(birl:time(), birl@duration:duration()) -> {ok,
         interval()} |
     {error, nil}.
 from_start_and_duration(Start, Duration) ->
     from_start_and_end(Start, birl:add(Start, Duration)).
 
+-file("/home/runner/work/birl/birl/src/birl/interval.gleam", 24).
 -spec shift(interval(), birl@duration:duration()) -> interval().
 shift(Interval, Duration) ->
     case Interval of
@@ -33,6 +36,7 @@ shift(Interval, Duration) ->
             {interval, birl:add(Start, Duration), birl:add(End, Duration)}
     end.
 
+-file("/home/runner/work/birl/birl/src/birl/interval.gleam", 31).
 -spec scale_up(interval(), integer()) -> interval().
 scale_up(Interval, Factor) ->
     case Interval of
@@ -46,7 +50,7 @@ scale_up(Interval, Factor) ->
                 {ok, _} -> _assert_subject;
                 _assert_fail ->
                     erlang:error(#{gleam_error => let_assert,
-                                message => <<"Assertion pattern match failed"/utf8>>,
+                                message => <<"Pattern match failed, no pattern matched the value."/utf8>>,
                                 value => _assert_fail,
                                 module => <<"birl/interval"/utf8>>,
                                 function => <<"scale_up"/utf8>>,
@@ -55,6 +59,7 @@ scale_up(Interval, Factor) ->
             Interval@1
     end.
 
+-file("/home/runner/work/birl/birl/src/birl/interval.gleam", 43).
 -spec scale_down(interval(), integer()) -> interval().
 scale_down(Interval, Factor) ->
     case Interval of
@@ -68,7 +73,7 @@ scale_down(Interval, Factor) ->
                 {ok, _} -> _assert_subject;
                 _assert_fail ->
                     erlang:error(#{gleam_error => let_assert,
-                                message => <<"Assertion pattern match failed"/utf8>>,
+                                message => <<"Pattern match failed, no pattern matched the value."/utf8>>,
                                 value => _assert_fail,
                                 module => <<"birl/interval"/utf8>>,
                                 function => <<"scale_down"/utf8>>,
@@ -77,6 +82,7 @@ scale_down(Interval, Factor) ->
             Interval@1
     end.
 
+-file("/home/runner/work/birl/birl/src/birl/interval.gleam", 72).
 -spec includes(interval(), birl:time()) -> boolean().
 includes(Interval, Time) ->
     case Interval of
@@ -87,6 +93,7 @@ includes(Interval, Time) ->
             )
     end.
 
+-file("/home/runner/work/birl/birl/src/birl/interval.gleam", 80).
 -spec contains(interval(), interval()) -> boolean().
 contains(A, B) ->
     case B of
@@ -94,6 +101,7 @@ contains(A, B) ->
             includes(A, Start) andalso includes(A, End)
     end.
 
+-file("/home/runner/work/birl/birl/src/birl/interval.gleam", 55).
 -spec intersection(interval(), interval()) -> gleam@option:option(interval()).
 intersection(A, B) ->
     case {contains(A, B), contains(B, A)} of
@@ -118,6 +126,7 @@ intersection(A, B) ->
             end
     end.
 
+-file("/home/runner/work/birl/birl/src/birl/interval.gleam", 86).
 -spec get_bounds(interval()) -> {birl:time(), birl:time()}.
 get_bounds(Interval) ->
     case Interval of

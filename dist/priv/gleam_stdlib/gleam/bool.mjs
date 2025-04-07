@@ -1,5 +1,3 @@
-import * as $order from "../gleam/order.mjs";
-
 export function and(a, b) {
   return a && b;
 }
@@ -26,26 +24,6 @@ export function exclusive_or(a, b) {
 
 export function exclusive_nor(a, b) {
   return a === b;
-}
-
-export function compare(a, b) {
-  if (a && b) {
-    return new $order.Eq();
-  } else if (a && !b) {
-    return new $order.Gt();
-  } else if (!a && !b) {
-    return new $order.Eq();
-  } else {
-    return new $order.Lt();
-  }
-}
-
-export function to_int(bool) {
-  if (!bool) {
-    return 0;
-  } else {
-    return 1;
-  }
 }
 
 export function to_string(bool) {

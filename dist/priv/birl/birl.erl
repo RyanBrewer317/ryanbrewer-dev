@@ -1,7 +1,7 @@
 -module(birl).
 -compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch]).
 
--export([time_of_day_to_string/1, time_of_day_to_short_string/1, to_unix/1, from_unix/1, to_unix_milli/1, from_unix_milli/1, to_unix_micro/1, from_unix_micro/1, compare/2, difference/2, add/2, subtract/2, weekday_to_string/1, weekday_to_short_string/1, range/3, set_timezone/2, get_timezone/1, set_offset/2, get_offset/1, parse_time_of_day/1, parse_naive_time_of_day/1, utc_now/0, now_with_offset/1, now_with_timezone/1, monotonic_now/0, to_date_string/1, to_naive_date_string/1, to_time_string/1, to_naive_time_string/1, to_iso8601/1, to_naive/1, month/1, string_month/1, short_string_month/1, get_day/1, get_time_of_day/1, to_erlang_datetime/1, to_erlang_universal_datetime/1, parse/1, from_naive/1, set_day/2, set_time_of_day/2, weekday/1, string_weekday/1, short_string_weekday/1, to_http/1, to_http_with_offset/1, now/0, from_erlang_local_datetime/1, from_erlang_universal_datetime/1, parse_relative/2, legible_difference/2, parse_weekday/1, from_http/1, parse_month/1]).
+-export([time_of_day_to_string/1, time_of_day_to_short_string/1, to_unix/1, from_unix/1, to_unix_milli/1, from_unix_milli/1, to_unix_micro/1, from_unix_micro/1, compare/2, difference/2, add/2, subtract/2, weekday_to_string/1, weekday_to_short_string/1, range/3, set_timezone/2, get_timezone/1, set_offset/2, get_offset/1, parse_time_of_day/1, parse_naive_time_of_day/1, utc_now/0, now_with_offset/1, now_with_timezone/1, monotonic_now/0, to_date_string/1, to_naive_date_string/1, to_time_string/1, to_naive_time_string/1, to_iso8601/1, to_naive/1, month/1, string_month/1, short_string_month/1, get_day/1, get_time_of_day/1, to_erlang_datetime/1, to_erlang_universal_datetime/1, parse/1, from_naive/1, set_day/2, set_time_of_day/2, weekday/1, string_weekday/1, short_string_weekday/1, to_http/1, to_http_with_offset/1, now/0, has_occured/1, from_erlang_local_datetime/1, from_erlang_universal_datetime/1, parse_relative/2, legible_difference/2, parse_weekday/1, from_http/1, parse_month/1]).
 -export_type([time/0, day/0, time_of_day/0, weekday/0, month/0]).
 
 -opaque time() :: {time,
@@ -29,35 +29,38 @@
     nov |
     dec.
 
+-file("/home/runner/work/birl/birl/src/birl.gleam", 514).
 -spec time_of_day_to_string(time_of_day()) -> binary().
 time_of_day_to_string(Value) ->
-    <<<<<<<<<<<<(gleam@int:to_string(erlang:element(2, Value)))/binary,
+    <<<<<<<<<<<<(erlang:integer_to_binary(erlang:element(2, Value)))/binary,
                             ":"/utf8>>/binary,
                         (begin
-                            _pipe = gleam@int:to_string(
+                            _pipe = erlang:integer_to_binary(
                                 erlang:element(3, Value)
                             ),
-                            gleam@string:pad_left(_pipe, 2, <<"0"/utf8>>)
+                            gleam@string:pad_start(_pipe, 2, <<"0"/utf8>>)
                         end)/binary>>/binary,
                     ":"/utf8>>/binary,
                 (begin
-                    _pipe@1 = gleam@int:to_string(erlang:element(4, Value)),
-                    gleam@string:pad_left(_pipe@1, 2, <<"0"/utf8>>)
+                    _pipe@1 = erlang:integer_to_binary(erlang:element(4, Value)),
+                    gleam@string:pad_start(_pipe@1, 2, <<"0"/utf8>>)
                 end)/binary>>/binary,
             "."/utf8>>/binary,
         (begin
-            _pipe@2 = gleam@int:to_string(erlang:element(5, Value)),
-            gleam@string:pad_left(_pipe@2, 3, <<"0"/utf8>>)
+            _pipe@2 = erlang:integer_to_binary(erlang:element(5, Value)),
+            gleam@string:pad_start(_pipe@2, 3, <<"0"/utf8>>)
         end)/binary>>.
 
+-file("/home/runner/work/birl/birl/src/birl.gleam", 527).
 -spec time_of_day_to_short_string(time_of_day()) -> binary().
 time_of_day_to_short_string(Value) ->
-    <<<<(gleam@int:to_string(erlang:element(2, Value)))/binary, ":"/utf8>>/binary,
+    <<<<(erlang:integer_to_binary(erlang:element(2, Value)))/binary, ":"/utf8>>/binary,
         (begin
-            _pipe = gleam@int:to_string(erlang:element(3, Value)),
-            gleam@string:pad_left(_pipe, 2, <<"0"/utf8>>)
+            _pipe = erlang:integer_to_binary(erlang:element(3, Value)),
+            gleam@string:pad_start(_pipe, 2, <<"0"/utf8>>)
         end)/binary>>.
 
+-file("/home/runner/work/birl/birl/src/birl.gleam", 848).
 -spec to_unix(time()) -> integer().
 to_unix(Value) ->
     case Value of
@@ -65,10 +68,12 @@ to_unix(Value) ->
             T div 1000000
     end.
 
+-file("/home/runner/work/birl/birl/src/birl.gleam", 855).
 -spec from_unix(integer()) -> time().
 from_unix(Value) ->
     {time, Value * 1000000, 0, none, none}.
 
+-file("/home/runner/work/birl/birl/src/birl.gleam", 860).
 -spec to_unix_milli(time()) -> integer().
 to_unix_milli(Value) ->
     case Value of
@@ -76,10 +81,12 @@ to_unix_milli(Value) ->
             T div 1000
     end.
 
+-file("/home/runner/work/birl/birl/src/birl.gleam", 867).
 -spec from_unix_milli(integer()) -> time().
 from_unix_milli(Value) ->
     {time, Value * 1000, 0, none, none}.
 
+-file("/home/runner/work/birl/birl/src/birl.gleam", 872).
 -spec to_unix_micro(time()) -> integer().
 to_unix_micro(Value) ->
     case Value of
@@ -87,10 +94,12 @@ to_unix_micro(Value) ->
             T
     end.
 
+-file("/home/runner/work/birl/birl/src/birl.gleam", 879).
 -spec from_unix_micro(integer()) -> time().
 from_unix_micro(Value) ->
     {time, Value, 0, none, none}.
 
+-file("/home/runner/work/birl/birl/src/birl.gleam", 883).
 -spec compare(time(), time()) -> gleam@order:order().
 compare(A, B) ->
     {time, Wta, _, _, Mta} = A,
@@ -113,6 +122,7 @@ compare(A, B) ->
             gt
     end.
 
+-file("/home/runner/work/birl/birl/src/birl.gleam", 899).
 -spec difference(time(), time()) -> birl@duration:duration().
 difference(A, B) ->
     {time, Wta, _, _, Mta} = A,
@@ -126,6 +136,7 @@ difference(A, B) ->
     end,
     {duration, Ta@1 - Tb@1}.
 
+-file("/home/runner/work/birl/birl/src/birl.gleam", 996).
 -spec add(time(), birl@duration:duration()) -> time().
 add(Value, Duration) ->
     {time, Wt, O, Timezone, Mt} = Value,
@@ -138,6 +149,7 @@ add(Value, Duration) ->
             {time, Wt + Duration@1, O, Timezone, none}
     end.
 
+-file("/home/runner/work/birl/birl/src/birl.gleam", 1018).
 -spec subtract(time(), birl@duration:duration()) -> time().
 subtract(Value, Duration) ->
     {time, Wt, O, Timezone, Mt} = Value,
@@ -150,6 +162,7 @@ subtract(Value, Duration) ->
             {time, Wt - Duration@1, O, Timezone, none}
     end.
 
+-file("/home/runner/work/birl/birl/src/birl.gleam", 1059).
 -spec weekday_to_string(weekday()) -> binary().
 weekday_to_string(Value) ->
     case Value of
@@ -175,6 +188,7 @@ weekday_to_string(Value) ->
             <<"Sunday"/utf8>>
     end.
 
+-file("/home/runner/work/birl/birl/src/birl.gleam", 1071).
 -spec weekday_to_short_string(weekday()) -> binary().
 weekday_to_short_string(Value) ->
     case Value of
@@ -200,7 +214,8 @@ weekday_to_short_string(Value) ->
             <<"Sun"/utf8>>
     end.
 
--spec range(time(), gleam@option:option(time()), birl@duration:duration()) -> gleam@iterator:iterator(time()).
+-file("/home/runner/work/birl/birl/src/birl.gleam", 1150).
+-spec range(time(), gleam@option:option(time()), birl@duration:duration()) -> gleam@yielder:yielder(time()).
 range(A, B, S) ->
     _assert_subject = case B of
         {some, B@1} ->
@@ -225,14 +240,15 @@ range(A, B, S) ->
         {ok, _} -> _assert_subject;
         _assert_fail ->
             erlang:error(#{gleam_error => let_assert,
-                        message => <<"Assertion pattern match failed"/utf8>>,
+                        message => <<"Pattern match failed, no pattern matched the value."/utf8>>,
                         value => _assert_fail,
                         module => <<"birl"/utf8>>,
                         function => <<"range"/utf8>>,
-                        line => 1145})
+                        line => 1151})
     end,
     Range.
 
+-file("/home/runner/work/birl/birl/src/birl.gleam", 1173).
 -spec set_timezone(time(), binary()) -> {ok, time()} | {error, nil}.
 set_timezone(Value, New_timezone) ->
     case gleam@list:key_find(
@@ -397,7 +413,6 @@ set_timezone(Value, New_timezone) ->
             {<<"Asia/Beirut"/utf8>>, 7200},
             {<<"Asia/Bishkek"/utf8>>, 21600},
             {<<"Asia/Chita"/utf8>>, 32400},
-            {<<"Asia/Choibalsan"/utf8>>, 28800},
             {<<"Asia/Colombo"/utf8>>, 19800},
             {<<"Asia/Damascus"/utf8>>, 10800},
             {<<"Asia/Dhaka"/utf8>>, 21600},
@@ -477,11 +492,6 @@ set_timezone(Value, New_timezone) ->
             {<<"Australia/Melbourne"/utf8>>, 36000},
             {<<"Australia/Perth"/utf8>>, 28800},
             {<<"Australia/Sydney"/utf8>>, 36000},
-            {<<"CET"/utf8>>, 3600},
-            {<<"CST6CDT"/utf8>>, -21600},
-            {<<"EET"/utf8>>, 7200},
-            {<<"EST"/utf8>>, -18000},
-            {<<"EST5EDT"/utf8>>, -18000},
             {<<"Etc/GMT"/utf8>>, 0},
             {<<"Etc/GMT+1"/utf8>>, -3600},
             {<<"Etc/GMT+10"/utf8>>, -36000},
@@ -548,14 +558,9 @@ set_timezone(Value, New_timezone) ->
             {<<"Europe/Volgograd"/utf8>>, 10800},
             {<<"Europe/Warsaw"/utf8>>, 3600},
             {<<"Europe/Zurich"/utf8>>, 3600},
-            {<<"HST"/utf8>>, -36000},
             {<<"Indian/Chagos"/utf8>>, 21600},
             {<<"Indian/Maldives"/utf8>>, 18000},
             {<<"Indian/Mauritius"/utf8>>, 14400},
-            {<<"MET"/utf8>>, 3600},
-            {<<"MST"/utf8>>, -25200},
-            {<<"MST7MDT"/utf8>>, -25200},
-            {<<"PST8PDT"/utf8>>, -28800},
             {<<"Pacific/Apia"/utf8>>, 46800},
             {<<"Pacific/Auckland"/utf8>>, 43200},
             {<<"Pacific/Bougainville"/utf8>>, 39600},
@@ -585,8 +590,7 @@ set_timezone(Value, New_timezone) ->
             {<<"Pacific/Rarotonga"/utf8>>, -36000},
             {<<"Pacific/Tahiti"/utf8>>, -36000},
             {<<"Pacific/Tarawa"/utf8>>, 43200},
-            {<<"Pacific/Tongatapu"/utf8>>, 46800},
-            {<<"WET"/utf8>>, 0}],
+            {<<"Pacific/Tongatapu"/utf8>>, 46800}],
         New_timezone
     ) of
         {ok, New_offset_number} ->
@@ -604,29 +608,31 @@ set_timezone(Value, New_timezone) ->
             {error, nil}
     end.
 
+-file("/home/runner/work/birl/birl/src/birl.gleam", 1187).
 -spec get_timezone(time()) -> gleam@option:option(binary()).
 get_timezone(Value) ->
     {time, _, _, Timezone, _} = Value,
     Timezone.
 
+-file("/home/runner/work/birl/birl/src/birl.gleam", 1330).
 -spec parse_offset(binary()) -> {ok, integer()} | {error, nil}.
 parse_offset(Offset) ->
     gleam@bool:guard(
         gleam@list:contains([<<"Z"/utf8>>, <<"z"/utf8>>], Offset),
         {ok, 0},
         fun() ->
-            _assert_subject = gleam@regex:from_string(<<"([+-])"/utf8>>),
+            _assert_subject = gleam@regexp:from_string(<<"([+-])"/utf8>>),
             {ok, Re} = case _assert_subject of
                 {ok, _} -> _assert_subject;
                 _assert_fail ->
                     erlang:error(#{gleam_error => let_assert,
-                                message => <<"Assertion pattern match failed"/utf8>>,
+                                message => <<"Pattern match failed, no pattern matched the value."/utf8>>,
                                 value => _assert_fail,
                                 module => <<"birl"/utf8>>,
                                 function => <<"parse_offset"/utf8>>,
-                                line => 1326})
+                                line => 1332})
             end,
-            gleam@result:then(case gleam@regex:split(Re, Offset) of
+            gleam@result:then(case gleam@regexp:split(Re, Offset) of
                     [<<""/utf8>>, <<"+"/utf8>>, Offset@1] ->
                         {ok, {1, Offset@1}};
 
@@ -643,10 +649,10 @@ parse_offset(Offset) ->
                     case gleam@string:split(Offset@3, <<":"/utf8>>) of
                         [Hour_str, Minute_str] ->
                             gleam@result:then(
-                                gleam@int:parse(Hour_str),
+                                gleam_stdlib:parse_int(Hour_str),
                                 fun(Hour) ->
                                     gleam@result:then(
-                                        gleam@int:parse(Minute_str),
+                                        gleam_stdlib:parse_int(Minute_str),
                                         fun(Minute) ->
                                             {ok,
                                                 ((Sign * ((Hour * 60) + Minute))
@@ -658,10 +664,10 @@ parse_offset(Offset) ->
                             );
 
                         [Offset@4] ->
-                            case gleam@string:length(Offset@4) of
+                            case string:length(Offset@4) of
                                 1 ->
                                     gleam@result:then(
-                                        gleam@int:parse(Offset@4),
+                                        gleam_stdlib:parse_int(Offset@4),
                                         fun(Hour@1) ->
                                             {ok,
                                                 ((Sign * Hour@1) * 3600) * 1000000}
@@ -670,7 +676,7 @@ parse_offset(Offset) ->
 
                                 2 ->
                                     gleam@result:then(
-                                        gleam@int:parse(Offset@4),
+                                        gleam_stdlib:parse_int(Offset@4),
                                         fun(Number) -> case Number < 14 of
                                                 true ->
                                                     {ok,
@@ -696,11 +702,11 @@ parse_offset(Offset) ->
                                         _assert_fail@1 ->
                                             erlang:error(
                                                     #{gleam_error => let_assert,
-                                                        message => <<"Assertion pattern match failed"/utf8>>,
+                                                        message => <<"Pattern match failed, no pattern matched the value."/utf8>>,
                                                         value => _assert_fail@1,
                                                         module => <<"birl"/utf8>>,
                                                         function => <<"parse_offset"/utf8>>,
-                                                        line => 1356}
+                                                        line => 1362}
                                                 )
                                     end,
                                     Minute_str@1 = gleam@string:slice(
@@ -709,10 +715,12 @@ parse_offset(Offset) ->
                                         2
                                     ),
                                     gleam@result:then(
-                                        gleam@int:parse(Hour_str@1),
+                                        gleam_stdlib:parse_int(Hour_str@1),
                                         fun(Hour@2) ->
                                             gleam@result:then(
-                                                gleam@int:parse(Minute_str@1),
+                                                gleam_stdlib:parse_int(
+                                                    Minute_str@1
+                                                ),
                                                 fun(Minute@1) ->
                                                     {ok,
                                                         ((Sign * ((Hour@2 * 60)
@@ -736,10 +744,12 @@ parse_offset(Offset) ->
                                         2
                                     ),
                                     gleam@result:then(
-                                        gleam@int:parse(Hour_str@2),
+                                        gleam_stdlib:parse_int(Hour_str@2),
                                         fun(Hour@3) ->
                                             gleam@result:then(
-                                                gleam@int:parse(Minute_str@2),
+                                                gleam_stdlib:parse_int(
+                                                    Minute_str@2
+                                                ),
                                                 fun(Minute@2) ->
                                                     {ok,
                                                         ((Sign * ((Hour@3 * 60)
@@ -762,6 +772,7 @@ parse_offset(Offset) ->
         end
     ).
 
+-file("/home/runner/work/birl/birl/src/birl.gleam", 1197).
 -spec set_offset(time(), binary()) -> {ok, time()} | {error, nil}.
 set_offset(Value, New_offset) ->
     gleam@result:then(
@@ -773,6 +784,7 @@ set_offset(Value, New_offset) ->
             end end
     ).
 
+-file("/home/runner/work/birl/birl/src/birl.gleam", 1381).
 -spec generate_offset(integer()) -> {ok, binary()} | {error, nil}.
 generate_offset(Offset) ->
     gleam@bool:guard(
@@ -791,10 +803,10 @@ generate_offset(Offset) ->
                                     [<<"+"/utf8>>,
                                         begin
                                             _pipe@2 = Hour,
-                                            _pipe@3 = gleam@int:to_string(
+                                            _pipe@3 = erlang:integer_to_binary(
                                                 _pipe@2
                                             ),
-                                            gleam@string:pad_left(
+                                            gleam@string:pad_start(
                                                 _pipe@3,
                                                 2,
                                                 <<"0"/utf8>>
@@ -810,10 +822,10 @@ generate_offset(Offset) ->
                                             _pipe@5 = gleam@int:absolute_value(
                                                 _pipe@4
                                             ),
-                                            _pipe@6 = gleam@int:to_string(
+                                            _pipe@6 = erlang:integer_to_binary(
                                                 _pipe@5
                                             ),
-                                            gleam@string:pad_left(
+                                            gleam@string:pad_start(
                                                 _pipe@6,
                                                 2,
                                                 <<"0"/utf8>>
@@ -823,8 +835,8 @@ generate_offset(Offset) ->
                         end, begin
                             _pipe@7 = Minute,
                             _pipe@8 = gleam@int:absolute_value(_pipe@7),
-                            _pipe@9 = gleam@int:to_string(_pipe@8),
-                            gleam@string:pad_left(_pipe@9, 2, <<"0"/utf8>>)
+                            _pipe@9 = erlang:integer_to_binary(_pipe@8),
+                            gleam@string:pad_start(_pipe@9, 2, <<"0"/utf8>>)
                         end],
                     _pipe@11 = gleam@string:join(_pipe@10, <<":"/utf8>>),
                     {ok, _pipe@11};
@@ -836,10 +848,10 @@ generate_offset(Offset) ->
                                     [<<"+"/utf8>>,
                                         begin
                                             _pipe@12 = Hour@1,
-                                            _pipe@13 = gleam@int:to_string(
+                                            _pipe@13 = erlang:integer_to_binary(
                                                 _pipe@12
                                             ),
-                                            gleam@string:pad_left(
+                                            gleam@string:pad_start(
                                                 _pipe@13,
                                                 2,
                                                 <<"0"/utf8>>
@@ -855,10 +867,10 @@ generate_offset(Offset) ->
                                             _pipe@15 = gleam@int:absolute_value(
                                                 _pipe@14
                                             ),
-                                            _pipe@16 = gleam@int:to_string(
+                                            _pipe@16 = erlang:integer_to_binary(
                                                 _pipe@15
                                             ),
-                                            gleam@string:pad_left(
+                                            gleam@string:pad_start(
                                                 _pipe@16,
                                                 2,
                                                 <<"0"/utf8>>
@@ -875,6 +887,7 @@ generate_offset(Offset) ->
         end
     ).
 
+-file("/home/runner/work/birl/birl/src/birl.gleam", 1206).
 -spec get_offset(time()) -> binary().
 get_offset(Value) ->
     {time, _, Offset, _, _} = Value,
@@ -883,19 +896,20 @@ get_offset(Value) ->
         {ok, _} -> _assert_subject;
         _assert_fail ->
             erlang:error(#{gleam_error => let_assert,
-                        message => <<"Assertion pattern match failed"/utf8>>,
+                        message => <<"Pattern match failed, no pattern matched the value."/utf8>>,
                         value => _assert_fail,
                         module => <<"birl"/utf8>>,
                         function => <<"get_offset"/utf8>>,
-                        line => 1202})
+                        line => 1208})
     end,
     Offset@1.
 
+-file("/home/runner/work/birl/birl/src/birl.gleam", 1497).
 -spec is_invalid_date(binary()) -> boolean().
 is_invalid_date(Date) ->
     _pipe = Date,
     _pipe@1 = gleam@string:to_utf_codepoints(_pipe),
-    _pipe@2 = gleam@list:map(_pipe@1, fun gleam@string:utf_codepoint_to_int/1),
+    _pipe@2 = gleam@list:map(_pipe@1, fun gleam_stdlib:identity/1),
     gleam@list:any(_pipe@2, fun(Code) -> case Code of
                 _ when Code =:= 45 ->
                     false;
@@ -907,11 +921,12 @@ is_invalid_date(Date) ->
                     true
             end end).
 
+-file("/home/runner/work/birl/birl/src/birl.gleam", 1510).
 -spec is_invalid_time(binary()) -> boolean().
 is_invalid_time(Time) ->
     _pipe = Time,
     _pipe@1 = gleam@string:to_utf_codepoints(_pipe),
-    _pipe@2 = gleam@list:map(_pipe@1, fun gleam@string:utf_codepoint_to_int/1),
+    _pipe@2 = gleam@list:map(_pipe@1, fun gleam_stdlib:identity/1),
     gleam@list:any(_pipe@2, fun(Code) -> case Code of
                 _ when (Code >= 48) andalso (Code =< 58) ->
                     false;
@@ -920,36 +935,40 @@ is_invalid_time(Time) ->
                     true
             end end).
 
+-file("/home/runner/work/birl/birl/src/birl.gleam", 1522).
 -spec parse_section(binary(), binary(), integer()) -> list({ok, integer()} |
     {error, nil}).
 parse_section(Section, Pattern_string, Default) ->
-    _assert_subject = gleam@regex:from_string(Pattern_string),
+    _assert_subject = gleam@regexp:from_string(Pattern_string),
     {ok, Pattern} = case _assert_subject of
         {ok, _} -> _assert_subject;
         _assert_fail ->
             erlang:error(#{gleam_error => let_assert,
-                        message => <<"Assertion pattern match failed"/utf8>>,
+                        message => <<"Pattern match failed, no pattern matched the value."/utf8>>,
                         value => _assert_fail,
                         module => <<"birl"/utf8>>,
                         function => <<"parse_section"/utf8>>,
-                        line => 1521})
+                        line => 1527})
     end,
-    case gleam@regex:scan(Pattern, Section) of
+    case gleam@regexp:scan(Pattern, Section) of
         [{match, _, [{some, Major}]}] ->
-            [gleam@int:parse(Major), {ok, Default}, {ok, Default}];
+            [gleam_stdlib:parse_int(Major), {ok, Default}, {ok, Default}];
 
         [{match, _, [{some, Major@1}, {some, Middle}]}] ->
-            [gleam@int:parse(Major@1), gleam@int:parse(Middle), {ok, Default}];
+            [gleam_stdlib:parse_int(Major@1),
+                gleam_stdlib:parse_int(Middle),
+                {ok, Default}];
 
         [{match, _, [{some, Major@2}, {some, Middle@1}, {some, Minor}]}] ->
-            [gleam@int:parse(Major@2),
-                gleam@int:parse(Middle@1),
-                gleam@int:parse(Minor)];
+            [gleam_stdlib:parse_int(Major@2),
+                gleam_stdlib:parse_int(Middle@1),
+                gleam_stdlib:parse_int(Minor)];
 
         _ ->
             [{error, nil}]
     end.
 
+-file("/home/runner/work/birl/birl/src/birl.gleam", 1442).
 -spec parse_date_section(binary()) -> {ok, list(integer())} | {error, nil}.
 parse_date_section(Date) ->
     gleam@bool:guard(
@@ -958,26 +977,26 @@ parse_date_section(Date) ->
         fun() ->
             _pipe = case gleam_stdlib:contains_string(Date, <<"-"/utf8>>) of
                 true ->
-                    _assert_subject = gleam@regex:from_string(
+                    _assert_subject = gleam@regexp:from_string(
                         <<"(\\d{4})(?:-(1[0-2]|0?[0-9]))?(?:-(3[0-1]|[1-2][0-9]|0?[0-9]))?"/utf8>>
                     ),
                     {ok, Dash_pattern} = case _assert_subject of
                         {ok, _} -> _assert_subject;
                         _assert_fail ->
                             erlang:error(#{gleam_error => let_assert,
-                                        message => <<"Assertion pattern match failed"/utf8>>,
+                                        message => <<"Pattern match failed, no pattern matched the value."/utf8>>,
                                         value => _assert_fail,
                                         module => <<"birl"/utf8>>,
                                         function => <<"parse_date_section"/utf8>>,
-                                        line => 1441})
+                                        line => 1447})
                     end,
-                    case gleam@regex:scan(Dash_pattern, Date) of
+                    case gleam@regexp:scan(Dash_pattern, Date) of
                         [{match, _, [{some, Major}]}] ->
-                            [gleam@int:parse(Major), {ok, 1}, {ok, 1}];
+                            [gleam_stdlib:parse_int(Major), {ok, 1}, {ok, 1}];
 
                         [{match, _, [{some, Major@1}, {some, Middle}]}] ->
-                            [gleam@int:parse(Major@1),
-                                gleam@int:parse(Middle),
+                            [gleam_stdlib:parse_int(Major@1),
+                                gleam_stdlib:parse_int(Middle),
                                 {ok, 1}];
 
                         [{match,
@@ -985,9 +1004,9 @@ parse_date_section(Date) ->
                                 [{some, Major@2},
                                     {some, Middle@1},
                                     {some, Minor}]}] ->
-                            [gleam@int:parse(Major@2),
-                                gleam@int:parse(Middle@1),
-                                gleam@int:parse(Minor)];
+                            [gleam_stdlib:parse_int(Major@2),
+                                gleam_stdlib:parse_int(Middle@1),
+                                gleam_stdlib:parse_int(Minor)];
 
                         _ ->
                             [{error, nil}]
@@ -1004,6 +1023,7 @@ parse_date_section(Date) ->
         end
     ).
 
+-file("/home/runner/work/birl/birl/src/birl.gleam", 1486).
 -spec parse_time_section(binary()) -> {ok, list(integer())} | {error, nil}.
 parse_time_section(Time) ->
     gleam@bool:guard(
@@ -1019,41 +1039,42 @@ parse_time_section(Time) ->
         end
     ).
 
+-file("/home/runner/work/birl/birl/src/birl.gleam", 404).
 -spec parse_time_of_day(binary()) -> {ok, {time_of_day(), binary()}} |
     {error, nil}.
 parse_time_of_day(Value) ->
-    _assert_subject = gleam@regex:from_string(<<"(.*)([+|\\-].*)"/utf8>>),
+    _assert_subject = gleam@regexp:from_string(<<"(.*)([+|\\-].*)"/utf8>>),
     {ok, Offset_pattern} = case _assert_subject of
         {ok, _} -> _assert_subject;
         _assert_fail ->
             erlang:error(#{gleam_error => let_assert,
-                        message => <<"Assertion pattern match failed"/utf8>>,
+                        message => <<"Pattern match failed, no pattern matched the value."/utf8>>,
                         value => _assert_fail,
                         module => <<"birl"/utf8>>,
                         function => <<"parse_time_of_day"/utf8>>,
-                        line => 398})
+                        line => 405})
     end,
-    Time_string = case {gleam@string:starts_with(Value, <<"T"/utf8>>),
-        gleam@string:starts_with(Value, <<"t"/utf8>>)} of
+    Time_string = case {gleam_stdlib:string_starts_with(Value, <<"T"/utf8>>),
+        gleam_stdlib:string_starts_with(Value, <<"t"/utf8>>)} of
         {true, _} ->
-            gleam@string:drop_left(Value, 1);
+            gleam@string:drop_start(Value, 1);
 
         {_, true} ->
-            gleam@string:drop_left(Value, 1);
+            gleam@string:drop_start(Value, 1);
 
         {_, _} ->
             Value
     end,
     gleam@result:then(
-        case gleam@string:ends_with(Time_string, <<"Z"/utf8>>) orelse gleam@string:ends_with(
+        case gleam_stdlib:string_ends_with(Time_string, <<"Z"/utf8>>) orelse gleam_stdlib:string_ends_with(
             Time_string,
             <<"z"/utf8>>
         ) of
             true ->
-                {ok, {gleam@string:drop_right(Value, 1), <<"+00:00"/utf8>>}};
+                {ok, {gleam@string:drop_end(Value, 1), <<"+00:00"/utf8>>}};
 
             false ->
-                case gleam@regex:scan(Offset_pattern, Value) of
+                case gleam@regexp:scan(Offset_pattern, Value) of
                     [{match, _, [{some, Time_string@1}, {some, Offset_string}]}] ->
                         {ok, {Time_string@1, Offset_string}};
 
@@ -1080,12 +1101,12 @@ parse_time_of_day(Value) ->
                                 begin
                                     _pipe = Milli_seconds_string,
                                     _pipe@1 = gleam@string:slice(_pipe, 0, 3),
-                                    _pipe@2 = gleam@string:pad_right(
+                                    _pipe@2 = gleam@string:pad_end(
                                         _pipe@1,
                                         3,
                                         <<"0"/utf8>>
                                     ),
-                                    gleam@int:parse(_pipe@2)
+                                    gleam_stdlib:parse_int(_pipe@2)
                                 end}};
 
                     {[_], [Time_string@4, Milli_seconds_string]} ->
@@ -1094,12 +1115,12 @@ parse_time_of_day(Value) ->
                                 begin
                                     _pipe = Milli_seconds_string,
                                     _pipe@1 = gleam@string:slice(_pipe, 0, 3),
-                                    _pipe@2 = gleam@string:pad_right(
+                                    _pipe@2 = gleam@string:pad_end(
                                         _pipe@1,
                                         3,
                                         <<"0"/utf8>>
                                     ),
-                                    gleam@int:parse(_pipe@2)
+                                    gleam_stdlib:parse_int(_pipe@2)
                                 end}};
 
                     {_, _} ->
@@ -1117,11 +1138,11 @@ parse_time_of_day(Value) ->
                                         _assert_fail@1 ->
                                             erlang:error(
                                                     #{gleam_error => let_assert,
-                                                        message => <<"Assertion pattern match failed"/utf8>>,
+                                                        message => <<"Pattern match failed, no pattern matched the value."/utf8>>,
                                                         value => _assert_fail@1,
                                                         module => <<"birl"/utf8>>,
                                                         function => <<"parse_time_of_day"/utf8>>,
-                                                        line => 447}
+                                                        line => 457}
                                                 )
                                     end,
                                     gleam@result:then(
@@ -1152,16 +1173,17 @@ parse_time_of_day(Value) ->
         end
     ).
 
+-file("/home/runner/work/birl/birl/src/birl.gleam", 469).
 -spec parse_naive_time_of_day(binary()) -> {ok, {time_of_day(), binary()}} |
     {error, nil}.
 parse_naive_time_of_day(Value) ->
-    Time_string = case {gleam@string:starts_with(Value, <<"T"/utf8>>),
-        gleam@string:starts_with(Value, <<"t"/utf8>>)} of
+    Time_string = case {gleam_stdlib:string_starts_with(Value, <<"T"/utf8>>),
+        gleam_stdlib:string_starts_with(Value, <<"t"/utf8>>)} of
         {true, _} ->
-            gleam@string:drop_left(Value, 1);
+            gleam@string:drop_start(Value, 1);
 
         {_, true} ->
-            gleam@string:drop_left(Value, 1);
+            gleam@string:drop_start(Value, 1);
 
         {_, _} ->
             Value
@@ -1179,12 +1201,12 @@ parse_naive_time_of_day(Value) ->
                         begin
                             _pipe = Milli_seconds_string,
                             _pipe@1 = gleam@string:slice(_pipe, 0, 3),
-                            _pipe@2 = gleam@string:pad_right(
+                            _pipe@2 = gleam@string:pad_end(
                                 _pipe@1,
                                 3,
                                 <<"0"/utf8>>
                             ),
-                            gleam@int:parse(_pipe@2)
+                            gleam_stdlib:parse_int(_pipe@2)
                         end}};
 
             {[_], [Time_string@2, Milli_seconds_string]} ->
@@ -1193,12 +1215,12 @@ parse_naive_time_of_day(Value) ->
                         begin
                             _pipe = Milli_seconds_string,
                             _pipe@1 = gleam@string:slice(_pipe, 0, 3),
-                            _pipe@2 = gleam@string:pad_right(
+                            _pipe@2 = gleam@string:pad_end(
                                 _pipe@1,
                                 3,
                                 <<"0"/utf8>>
                             ),
-                            gleam@int:parse(_pipe@2)
+                            gleam_stdlib:parse_int(_pipe@2)
                         end}};
 
             {_, _} ->
@@ -1215,11 +1237,11 @@ parse_naive_time_of_day(Value) ->
                                 [_, _, _] -> Time_of_day;
                                 _assert_fail ->
                                     erlang:error(#{gleam_error => let_assert,
-                                                message => <<"Assertion pattern match failed"/utf8>>,
+                                                message => <<"Pattern match failed, no pattern matched the value."/utf8>>,
                                                 value => _assert_fail,
                                                 module => <<"birl"/utf8>>,
                                                 function => <<"parse_naive_time_of_day"/utf8>>,
-                                                line => 496})
+                                                line => 506})
                             end,
                             {ok,
                                 {{time_of_day,
@@ -1237,6 +1259,7 @@ parse_naive_time_of_day(Value) ->
         end
     ).
 
+-file("/home/runner/work/birl/birl/src/birl.gleam", 1553).
 -spec weekday_from_int(integer()) -> {ok, weekday()} | {error, nil}.
 weekday_from_int(Weekday) ->
     case Weekday of
@@ -1265,6 +1288,7 @@ weekday_from_int(Weekday) ->
             {error, nil}
     end.
 
+-file("/home/runner/work/birl/birl/src/birl.gleam", 1580).
 -spec month_from_int(integer()) -> {ok, month()} | {error, nil}.
 month_from_int(Month) ->
     case Month of
@@ -1308,12 +1332,14 @@ month_from_int(Month) ->
             {error, nil}
     end.
 
+-file("/home/runner/work/birl/birl/src/birl.gleam", 82).
 -spec utc_now() -> time().
 utc_now() ->
     Now = birl_ffi:now(),
     Monotonic_now = birl_ffi:monotonic_now(),
     {time, Now, 0, {some, <<"Etc/UTC"/utf8>>}, {some, Monotonic_now}}.
 
+-file("/home/runner/work/birl/birl/src/birl.gleam", 93).
 -spec now_with_offset(binary()) -> {ok, time()} | {error, nil}.
 now_with_offset(Offset) ->
     gleam@result:then(
@@ -1326,6 +1352,7 @@ now_with_offset(Offset) ->
         end
     ).
 
+-file("/home/runner/work/birl/birl/src/birl.gleam", 101).
 -spec now_with_timezone(binary()) -> {ok, time()} | {error, nil}.
 now_with_timezone(Timezone) ->
     case gleam@list:key_find(
@@ -1490,7 +1517,6 @@ now_with_timezone(Timezone) ->
             {<<"Asia/Beirut"/utf8>>, 7200},
             {<<"Asia/Bishkek"/utf8>>, 21600},
             {<<"Asia/Chita"/utf8>>, 32400},
-            {<<"Asia/Choibalsan"/utf8>>, 28800},
             {<<"Asia/Colombo"/utf8>>, 19800},
             {<<"Asia/Damascus"/utf8>>, 10800},
             {<<"Asia/Dhaka"/utf8>>, 21600},
@@ -1570,11 +1596,6 @@ now_with_timezone(Timezone) ->
             {<<"Australia/Melbourne"/utf8>>, 36000},
             {<<"Australia/Perth"/utf8>>, 28800},
             {<<"Australia/Sydney"/utf8>>, 36000},
-            {<<"CET"/utf8>>, 3600},
-            {<<"CST6CDT"/utf8>>, -21600},
-            {<<"EET"/utf8>>, 7200},
-            {<<"EST"/utf8>>, -18000},
-            {<<"EST5EDT"/utf8>>, -18000},
             {<<"Etc/GMT"/utf8>>, 0},
             {<<"Etc/GMT+1"/utf8>>, -3600},
             {<<"Etc/GMT+10"/utf8>>, -36000},
@@ -1641,14 +1662,9 @@ now_with_timezone(Timezone) ->
             {<<"Europe/Volgograd"/utf8>>, 10800},
             {<<"Europe/Warsaw"/utf8>>, 3600},
             {<<"Europe/Zurich"/utf8>>, 3600},
-            {<<"HST"/utf8>>, -36000},
             {<<"Indian/Chagos"/utf8>>, 21600},
             {<<"Indian/Maldives"/utf8>>, 18000},
             {<<"Indian/Mauritius"/utf8>>, 14400},
-            {<<"MET"/utf8>>, 3600},
-            {<<"MST"/utf8>>, -25200},
-            {<<"MST7MDT"/utf8>>, -25200},
-            {<<"PST8PDT"/utf8>>, -28800},
             {<<"Pacific/Apia"/utf8>>, 46800},
             {<<"Pacific/Auckland"/utf8>>, 43200},
             {<<"Pacific/Bougainville"/utf8>>, 39600},
@@ -1678,8 +1694,7 @@ now_with_timezone(Timezone) ->
             {<<"Pacific/Rarotonga"/utf8>>, -36000},
             {<<"Pacific/Tahiti"/utf8>>, -36000},
             {<<"Pacific/Tarawa"/utf8>>, 43200},
-            {<<"Pacific/Tongatapu"/utf8>>, 46800},
-            {<<"WET"/utf8>>, 0}],
+            {<<"Pacific/Tongatapu"/utf8>>, 46800}],
         Timezone
     ) of
         {ok, Offset} ->
@@ -1696,10 +1711,12 @@ now_with_timezone(Timezone) ->
             {error, nil}
     end.
 
+-file("/home/runner/work/birl/birl/src/birl.gleam", 119).
 -spec monotonic_now() -> integer().
 monotonic_now() ->
     birl_ffi:monotonic_now().
 
+-file("/home/runner/work/birl/birl/src/birl.gleam", 1320).
 -spec to_parts(time()) -> {{integer(), integer(), integer()},
     {integer(), integer(), integer(), integer()},
     binary()}.
@@ -1712,55 +1729,58 @@ to_parts(Value) ->
                 {ok, _} -> _assert_subject;
                 _assert_fail ->
                     erlang:error(#{gleam_error => let_assert,
-                                message => <<"Assertion pattern match failed"/utf8>>,
+                                message => <<"Pattern match failed, no pattern matched the value."/utf8>>,
                                 value => _assert_fail,
                                 module => <<"birl"/utf8>>,
                                 function => <<"to_parts"/utf8>>,
-                                line => 1318})
+                                line => 1324})
             end,
             {Date, Time, Offset}
     end.
 
+-file("/home/runner/work/birl/birl/src/birl.gleam", 129).
 -spec to_date_string(time()) -> binary().
 to_date_string(Value) ->
     {{Year, Month, Day}, _, Offset} = to_parts(Value),
-    <<<<<<<<<<(gleam@int:to_string(Year))/binary, "-"/utf8>>/binary,
+    <<<<<<<<<<(erlang:integer_to_binary(Year))/binary, "-"/utf8>>/binary,
                     (begin
                         _pipe = Month,
-                        _pipe@1 = gleam@int:to_string(_pipe),
-                        gleam@string:pad_left(_pipe@1, 2, <<"0"/utf8>>)
+                        _pipe@1 = erlang:integer_to_binary(_pipe),
+                        gleam@string:pad_start(_pipe@1, 2, <<"0"/utf8>>)
                     end)/binary>>/binary,
                 "-"/utf8>>/binary,
             (begin
                 _pipe@2 = Day,
-                _pipe@3 = gleam@int:to_string(_pipe@2),
-                gleam@string:pad_left(_pipe@3, 2, <<"0"/utf8>>)
+                _pipe@3 = erlang:integer_to_binary(_pipe@2),
+                gleam@string:pad_start(_pipe@3, 2, <<"0"/utf8>>)
             end)/binary>>/binary,
         Offset/binary>>.
 
+-file("/home/runner/work/birl/birl/src/birl.gleam", 149).
 -spec to_naive_date_string(time()) -> binary().
 to_naive_date_string(Value) ->
     {{Year, Month, Day}, _, _} = to_parts(Value),
-    <<<<<<<<(gleam@int:to_string(Year))/binary, "-"/utf8>>/binary,
+    <<<<<<<<(erlang:integer_to_binary(Year))/binary, "-"/utf8>>/binary,
                 (begin
                     _pipe = Month,
-                    _pipe@1 = gleam@int:to_string(_pipe),
-                    gleam@string:pad_left(_pipe@1, 2, <<"0"/utf8>>)
+                    _pipe@1 = erlang:integer_to_binary(_pipe),
+                    gleam@string:pad_start(_pipe@1, 2, <<"0"/utf8>>)
                 end)/binary>>/binary,
             "-"/utf8>>/binary,
         (begin
             _pipe@2 = Day,
-            _pipe@3 = gleam@int:to_string(_pipe@2),
-            gleam@string:pad_left(_pipe@3, 2, <<"0"/utf8>>)
+            _pipe@3 = erlang:integer_to_binary(_pipe@2),
+            gleam@string:pad_start(_pipe@3, 2, <<"0"/utf8>>)
         end)/binary>>.
 
+-file("/home/runner/work/birl/birl/src/birl.gleam", 168).
 -spec to_time_string(time()) -> binary().
 to_time_string(Value) ->
     {_, {Hour, Minute, Second, Milli_second}, Offset} = to_parts(Value),
     <<<<<<<<<<<<<<(begin
                                     _pipe = Hour,
-                                    _pipe@1 = gleam@int:to_string(_pipe),
-                                    gleam@string:pad_left(
+                                    _pipe@1 = erlang:integer_to_binary(_pipe),
+                                    gleam@string:pad_start(
                                         _pipe@1,
                                         2,
                                         <<"0"/utf8>>
@@ -1769,62 +1789,65 @@ to_time_string(Value) ->
                                 ":"/utf8>>/binary,
                             (begin
                                 _pipe@2 = Minute,
-                                _pipe@3 = gleam@int:to_string(_pipe@2),
-                                gleam@string:pad_left(_pipe@3, 2, <<"0"/utf8>>)
+                                _pipe@3 = erlang:integer_to_binary(_pipe@2),
+                                gleam@string:pad_start(_pipe@3, 2, <<"0"/utf8>>)
                             end)/binary>>/binary,
                         ":"/utf8>>/binary,
                     (begin
                         _pipe@4 = Second,
-                        _pipe@5 = gleam@int:to_string(_pipe@4),
-                        gleam@string:pad_left(_pipe@5, 2, <<"0"/utf8>>)
+                        _pipe@5 = erlang:integer_to_binary(_pipe@4),
+                        gleam@string:pad_start(_pipe@5, 2, <<"0"/utf8>>)
                     end)/binary>>/binary,
                 "."/utf8>>/binary,
             (begin
                 _pipe@6 = Milli_second,
-                _pipe@7 = gleam@int:to_string(_pipe@6),
-                gleam@string:pad_left(_pipe@7, 3, <<"0"/utf8>>)
+                _pipe@7 = erlang:integer_to_binary(_pipe@6),
+                gleam@string:pad_start(_pipe@7, 3, <<"0"/utf8>>)
             end)/binary>>/binary,
         Offset/binary>>.
 
+-file("/home/runner/work/birl/birl/src/birl.gleam", 198).
 -spec to_naive_time_string(time()) -> binary().
 to_naive_time_string(Value) ->
     {_, {Hour, Minute, Second, Milli_second}, _} = to_parts(Value),
     <<<<<<<<<<<<(begin
                                 _pipe = Hour,
-                                _pipe@1 = gleam@int:to_string(_pipe),
-                                gleam@string:pad_left(_pipe@1, 2, <<"0"/utf8>>)
+                                _pipe@1 = erlang:integer_to_binary(_pipe),
+                                gleam@string:pad_start(_pipe@1, 2, <<"0"/utf8>>)
                             end)/binary,
                             ":"/utf8>>/binary,
                         (begin
                             _pipe@2 = Minute,
-                            _pipe@3 = gleam@int:to_string(_pipe@2),
-                            gleam@string:pad_left(_pipe@3, 2, <<"0"/utf8>>)
+                            _pipe@3 = erlang:integer_to_binary(_pipe@2),
+                            gleam@string:pad_start(_pipe@3, 2, <<"0"/utf8>>)
                         end)/binary>>/binary,
                     ":"/utf8>>/binary,
                 (begin
                     _pipe@4 = Second,
-                    _pipe@5 = gleam@int:to_string(_pipe@4),
-                    gleam@string:pad_left(_pipe@5, 2, <<"0"/utf8>>)
+                    _pipe@5 = erlang:integer_to_binary(_pipe@4),
+                    gleam@string:pad_start(_pipe@5, 2, <<"0"/utf8>>)
                 end)/binary>>/binary,
             "."/utf8>>/binary,
         (begin
             _pipe@6 = Milli_second,
-            _pipe@7 = gleam@int:to_string(_pipe@6),
-            gleam@string:pad_left(_pipe@7, 3, <<"0"/utf8>>)
+            _pipe@7 = erlang:integer_to_binary(_pipe@6),
+            gleam@string:pad_start(_pipe@7, 3, <<"0"/utf8>>)
         end)/binary>>.
 
+-file("/home/runner/work/birl/birl/src/birl.gleam", 226).
 -spec to_iso8601(time()) -> binary().
 to_iso8601(Value) ->
     {{Year, Month, Day}, {Hour, Minute, Second, Milli_second}, Offset} = to_parts(
         Value
     ),
-    <<<<<<<<<<<<<<<<<<<<<<<<<<(gleam@int:to_string(Year))/binary, "-"/utf8>>/binary,
+    <<<<<<<<<<<<<<<<<<<<<<<<<<(erlang:integer_to_binary(Year))/binary,
+                                                        "-"/utf8>>/binary,
                                                     (begin
                                                         _pipe = Month,
-                                                        _pipe@1 = gleam@int:to_string(
+                                                        _pipe@1 = erlang:integer_to_binary(
                                                             _pipe
                                                         ),
-                                                        gleam@string:pad_left(
+                                                        gleam@string:pad_start(
                                                             _pipe@1,
                                                             2,
                                                             <<"0"/utf8>>
@@ -1833,10 +1856,10 @@ to_iso8601(Value) ->
                                                 "-"/utf8>>/binary,
                                             (begin
                                                 _pipe@2 = Day,
-                                                _pipe@3 = gleam@int:to_string(
+                                                _pipe@3 = erlang:integer_to_binary(
                                                     _pipe@2
                                                 ),
-                                                gleam@string:pad_left(
+                                                gleam@string:pad_start(
                                                     _pipe@3,
                                                     2,
                                                     <<"0"/utf8>>
@@ -1845,8 +1868,10 @@ to_iso8601(Value) ->
                                         "T"/utf8>>/binary,
                                     (begin
                                         _pipe@4 = Hour,
-                                        _pipe@5 = gleam@int:to_string(_pipe@4),
-                                        gleam@string:pad_left(
+                                        _pipe@5 = erlang:integer_to_binary(
+                                            _pipe@4
+                                        ),
+                                        gleam@string:pad_start(
                                             _pipe@5,
                                             2,
                                             <<"0"/utf8>>
@@ -1855,35 +1880,36 @@ to_iso8601(Value) ->
                                 ":"/utf8>>/binary,
                             (begin
                                 _pipe@6 = Minute,
-                                _pipe@7 = gleam@int:to_string(_pipe@6),
-                                gleam@string:pad_left(_pipe@7, 2, <<"0"/utf8>>)
+                                _pipe@7 = erlang:integer_to_binary(_pipe@6),
+                                gleam@string:pad_start(_pipe@7, 2, <<"0"/utf8>>)
                             end)/binary>>/binary,
                         ":"/utf8>>/binary,
                     (begin
                         _pipe@8 = Second,
-                        _pipe@9 = gleam@int:to_string(_pipe@8),
-                        gleam@string:pad_left(_pipe@9, 2, <<"0"/utf8>>)
+                        _pipe@9 = erlang:integer_to_binary(_pipe@8),
+                        gleam@string:pad_start(_pipe@9, 2, <<"0"/utf8>>)
                     end)/binary>>/binary,
                 "."/utf8>>/binary,
             (begin
                 _pipe@10 = Milli_second,
-                _pipe@11 = gleam@int:to_string(_pipe@10),
-                gleam@string:pad_left(_pipe@11, 3, <<"0"/utf8>>)
+                _pipe@11 = erlang:integer_to_binary(_pipe@10),
+                gleam@string:pad_start(_pipe@11, 3, <<"0"/utf8>>)
             end)/binary>>/binary,
         Offset/binary>>.
 
+-file("/home/runner/work/birl/birl/src/birl.gleam", 535).
 -spec to_naive(time()) -> binary().
 to_naive(Value) ->
     {{Year, Month, Day}, {Hour, Minute, Second, Milli_second}, _} = to_parts(
         Value
     ),
-    <<<<<<<<<<<<<<<<<<<<<<<<(gleam@int:to_string(Year))/binary, "-"/utf8>>/binary,
+    <<<<<<<<<<<<<<<<<<<<<<<<(erlang:integer_to_binary(Year))/binary, "-"/utf8>>/binary,
                                                 (begin
                                                     _pipe = Month,
-                                                    _pipe@1 = gleam@int:to_string(
+                                                    _pipe@1 = erlang:integer_to_binary(
                                                         _pipe
                                                     ),
-                                                    gleam@string:pad_left(
+                                                    gleam@string:pad_start(
                                                         _pipe@1,
                                                         2,
                                                         <<"0"/utf8>>
@@ -1892,10 +1918,10 @@ to_naive(Value) ->
                                             "-"/utf8>>/binary,
                                         (begin
                                             _pipe@2 = Day,
-                                            _pipe@3 = gleam@int:to_string(
+                                            _pipe@3 = erlang:integer_to_binary(
                                                 _pipe@2
                                             ),
-                                            gleam@string:pad_left(
+                                            gleam@string:pad_start(
                                                 _pipe@3,
                                                 2,
                                                 <<"0"/utf8>>
@@ -1904,8 +1930,8 @@ to_naive(Value) ->
                                     "T"/utf8>>/binary,
                                 (begin
                                     _pipe@4 = Hour,
-                                    _pipe@5 = gleam@int:to_string(_pipe@4),
-                                    gleam@string:pad_left(
+                                    _pipe@5 = erlang:integer_to_binary(_pipe@4),
+                                    gleam@string:pad_start(
                                         _pipe@5,
                                         2,
                                         <<"0"/utf8>>
@@ -1914,22 +1940,23 @@ to_naive(Value) ->
                             ":"/utf8>>/binary,
                         (begin
                             _pipe@6 = Minute,
-                            _pipe@7 = gleam@int:to_string(_pipe@6),
-                            gleam@string:pad_left(_pipe@7, 2, <<"0"/utf8>>)
+                            _pipe@7 = erlang:integer_to_binary(_pipe@6),
+                            gleam@string:pad_start(_pipe@7, 2, <<"0"/utf8>>)
                         end)/binary>>/binary,
                     ":"/utf8>>/binary,
                 (begin
                     _pipe@8 = Second,
-                    _pipe@9 = gleam@int:to_string(_pipe@8),
-                    gleam@string:pad_left(_pipe@9, 2, <<"0"/utf8>>)
+                    _pipe@9 = erlang:integer_to_binary(_pipe@8),
+                    gleam@string:pad_start(_pipe@9, 2, <<"0"/utf8>>)
                 end)/binary>>/binary,
             "."/utf8>>/binary,
         (begin
             _pipe@10 = Milli_second,
-            _pipe@11 = gleam@int:to_string(_pipe@10),
-            gleam@string:pad_left(_pipe@11, 3, <<"0"/utf8>>)
+            _pipe@11 = erlang:integer_to_binary(_pipe@10),
+            gleam@string:pad_start(_pipe@11, 3, <<"0"/utf8>>)
         end)/binary>>.
 
+-file("/home/runner/work/birl/birl/src/birl.gleam", 1107).
 -spec month(time()) -> month().
 month(Value) ->
     {{_, Month, _}, _, _} = to_parts(Value),
@@ -1938,14 +1965,15 @@ month(Value) ->
         {ok, _} -> _assert_subject;
         _assert_fail ->
             erlang:error(#{gleam_error => let_assert,
-                        message => <<"Assertion pattern match failed"/utf8>>,
+                        message => <<"Pattern match failed, no pattern matched the value."/utf8>>,
                         value => _assert_fail,
                         module => <<"birl"/utf8>>,
                         function => <<"month"/utf8>>,
-                        line => 1099})
+                        line => 1109})
     end,
     Month@1.
 
+-file("/home/runner/work/birl/birl/src/birl.gleam", 1113).
 -spec string_month(time()) -> binary().
 string_month(Value) ->
     case month(Value) of
@@ -1986,6 +2014,7 @@ string_month(Value) ->
             <<"December"/utf8>>
     end.
 
+-file("/home/runner/work/birl/birl/src/birl.gleam", 1130).
 -spec short_string_month(time()) -> binary().
 short_string_month(Value) ->
     case month(Value) of
@@ -2026,22 +2055,26 @@ short_string_month(Value) ->
             <<"Dec"/utf8>>
     end.
 
+-file("/home/runner/work/birl/birl/src/birl.gleam", 1225).
 -spec get_day(time()) -> day().
 get_day(Value) ->
     {{Year, Month, Day}, _, _} = to_parts(Value),
     {day, Year, Month, Day}.
 
+-file("/home/runner/work/birl/birl/src/birl.gleam", 1244).
 -spec get_time_of_day(time()) -> time_of_day().
 get_time_of_day(Value) ->
     {_, {Hour, Minute, Second, Milli_second}, _} = to_parts(Value),
     {time_of_day, Hour, Minute, Second, Milli_second}.
 
+-file("/home/runner/work/birl/birl/src/birl.gleam", 1251).
 -spec to_erlang_datetime(time()) -> {{integer(), integer(), integer()},
     {integer(), integer(), integer()}}.
 to_erlang_datetime(Value) ->
     {Date, {Hour, Minute, Second, _}, _} = to_parts(Value),
     {Date, {Hour, Minute, Second}}.
 
+-file("/home/runner/work/birl/birl/src/birl.gleam", 1258).
 -spec to_erlang_universal_datetime(time()) -> {{integer(), integer(), integer()},
     {integer(), integer(), integer()}}.
 to_erlang_universal_datetime(Value) ->
@@ -2050,15 +2083,16 @@ to_erlang_universal_datetime(Value) ->
         {ok, _} -> _assert_subject;
         _assert_fail ->
             erlang:error(#{gleam_error => let_assert,
-                        message => <<"Assertion pattern match failed"/utf8>>,
+                        message => <<"Pattern match failed, no pattern matched the value."/utf8>>,
                         value => _assert_fail,
                         module => <<"birl"/utf8>>,
                         function => <<"to_erlang_universal_datetime"/utf8>>,
-                        line => 1255})
+                        line => 1261})
     end,
     {Date, {Hour, Minute, Second, _}, _} = to_parts(Value@1),
     {Date, {Hour, Minute, Second}}.
 
+-file("/home/runner/work/birl/birl/src/birl.gleam", 1309).
 -spec from_parts(
     {integer(), integer(), integer()},
     {integer(), integer(), integer(), integer()},
@@ -2074,18 +2108,19 @@ from_parts(Date, Time, Offset) ->
         end
     ).
 
+-file("/home/runner/work/birl/birl/src/birl.gleam", 297).
 -spec parse(binary()) -> {ok, time()} | {error, nil}.
 parse(Value) ->
-    _assert_subject = gleam@regex:from_string(<<"(.*)([+|\\-].*)"/utf8>>),
+    _assert_subject = gleam@regexp:from_string(<<"(.*)([+|\\-].*)"/utf8>>),
     {ok, Offset_pattern} = case _assert_subject of
         {ok, _} -> _assert_subject;
         _assert_fail ->
             erlang:error(#{gleam_error => let_assert,
-                        message => <<"Assertion pattern match failed"/utf8>>,
+                        message => <<"Pattern match failed, no pattern matched the value."/utf8>>,
                         value => _assert_fail,
                         module => <<"birl"/utf8>>,
                         function => <<"parse"/utf8>>,
-                        line => 295})
+                        line => 298})
     end,
     Value@1 = gleam@string:trim(Value),
     gleam@result:then(
@@ -2112,25 +2147,25 @@ parse(Value) ->
             Day_string@2 = gleam@string:trim(Day_string@1),
             Offsetted_time_string@1 = gleam@string:trim(Offsetted_time_string),
             gleam@result:then(
-                case gleam@string:ends_with(
+                case gleam_stdlib:string_ends_with(
                     Offsetted_time_string@1,
                     <<"Z"/utf8>>
                 )
-                orelse gleam@string:ends_with(
+                orelse gleam_stdlib:string_ends_with(
                     Offsetted_time_string@1,
                     <<"z"/utf8>>
                 ) of
                     true ->
                         {ok,
                             {Day_string@2,
-                                gleam@string:drop_right(
+                                gleam@string:drop_end(
                                     Offsetted_time_string@1,
                                     1
                                 ),
                                 <<"+00:00"/utf8>>}};
 
                     false ->
-                        case gleam@regex:scan(
+                        case gleam@regexp:scan(
                             Offset_pattern,
                             Offsetted_time_string@1
                         ) of
@@ -2142,7 +2177,7 @@ parse(Value) ->
                                     {Day_string@2, Time_string@1, Offset_string}};
 
                             _ ->
-                                case gleam@regex:scan(
+                                case gleam@regexp:scan(
                                     Offset_pattern,
                                     Day_string@2
                                 ) of
@@ -2183,12 +2218,12 @@ parse(Value) ->
                                                 0,
                                                 3
                                             ),
-                                            _pipe@2 = gleam@string:pad_right(
+                                            _pipe@2 = gleam@string:pad_end(
                                                 _pipe@1,
                                                 3,
                                                 <<"0"/utf8>>
                                             ),
-                                            gleam@int:parse(_pipe@2)
+                                            gleam_stdlib:parse_int(_pipe@2)
                                         end}};
 
                             {[_], [Time_string@4, Milli_seconds_string]} ->
@@ -2201,12 +2236,12 @@ parse(Value) ->
                                                 0,
                                                 3
                                             ),
-                                            _pipe@2 = gleam@string:pad_right(
+                                            _pipe@2 = gleam@string:pad_end(
                                                 _pipe@1,
                                                 3,
                                                 <<"0"/utf8>>
                                             ),
-                                            gleam@int:parse(_pipe@2)
+                                            gleam_stdlib:parse_int(_pipe@2)
                                         end}};
 
                             {_, _} ->
@@ -2224,11 +2259,11 @@ parse(Value) ->
                                                 _assert_fail@1 ->
                                                     erlang:error(
                                                             #{gleam_error => let_assert,
-                                                                message => <<"Assertion pattern match failed"/utf8>>,
+                                                                message => <<"Pattern match failed, no pattern matched the value."/utf8>>,
                                                                 value => _assert_fail@1,
                                                                 module => <<"birl"/utf8>>,
                                                                 function => <<"parse"/utf8>>,
-                                                                line => 363}
+                                                                line => 370}
                                                         )
                                             end,
                                             gleam@result:then(
@@ -2241,11 +2276,11 @@ parse(Value) ->
                                                         _assert_fail@2 ->
                                                             erlang:error(
                                                                     #{gleam_error => let_assert,
-                                                                        message => <<"Assertion pattern match failed"/utf8>>,
+                                                                        message => <<"Pattern match failed, no pattern matched the value."/utf8>>,
                                                                         value => _assert_fail@2,
                                                                         module => <<"birl"/utf8>>,
                                                                         function => <<"parse"/utf8>>,
-                                                                        line => 366}
+                                                                        line => 373}
                                                                 )
                                                     end,
                                                     from_parts(
@@ -2271,6 +2306,7 @@ parse(Value) ->
         end
     ).
 
+-file("/home/runner/work/birl/birl/src/birl.gleam", 579).
 -spec from_naive(binary()) -> {ok, time()} | {error, nil}.
 from_naive(Value) ->
     Value@1 = gleam@string:trim(Value),
@@ -2314,12 +2350,12 @@ from_naive(Value) ->
                                 begin
                                     _pipe = Milli_seconds_string,
                                     _pipe@1 = gleam@string:slice(_pipe, 0, 3),
-                                    _pipe@2 = gleam@string:pad_right(
+                                    _pipe@2 = gleam@string:pad_end(
                                         _pipe@1,
                                         3,
                                         <<"0"/utf8>>
                                     ),
-                                    gleam@int:parse(_pipe@2)
+                                    gleam_stdlib:parse_int(_pipe@2)
                                 end}};
 
                     {[_], [Time_string@4, Milli_seconds_string]} ->
@@ -2328,12 +2364,12 @@ from_naive(Value) ->
                                 begin
                                     _pipe = Milli_seconds_string,
                                     _pipe@1 = gleam@string:slice(_pipe, 0, 3),
-                                    _pipe@2 = gleam@string:pad_right(
+                                    _pipe@2 = gleam@string:pad_end(
                                         _pipe@1,
                                         3,
                                         <<"0"/utf8>>
                                     ),
-                                    gleam@int:parse(_pipe@2)
+                                    gleam_stdlib:parse_int(_pipe@2)
                                 end}};
 
                     {_, _} ->
@@ -2351,11 +2387,11 @@ from_naive(Value) ->
                                         _assert_fail ->
                                             erlang:error(
                                                     #{gleam_error => let_assert,
-                                                        message => <<"Assertion pattern match failed"/utf8>>,
+                                                        message => <<"Pattern match failed, no pattern matched the value."/utf8>>,
                                                         value => _assert_fail,
                                                         module => <<"birl"/utf8>>,
                                                         function => <<"from_naive"/utf8>>,
-                                                        line => 612}
+                                                        line => 622}
                                                 )
                                     end,
                                     gleam@result:then(
@@ -2366,11 +2402,11 @@ from_naive(Value) ->
                                                 _assert_fail@1 ->
                                                     erlang:error(
                                                             #{gleam_error => let_assert,
-                                                                message => <<"Assertion pattern match failed"/utf8>>,
+                                                                message => <<"Pattern match failed, no pattern matched the value."/utf8>>,
                                                                 value => _assert_fail@1,
                                                                 module => <<"birl"/utf8>>,
                                                                 function => <<"from_naive"/utf8>>,
-                                                                line => 615}
+                                                                line => 625}
                                                         )
                                             end,
                                             from_parts(
@@ -2394,6 +2430,7 @@ from_naive(Value) ->
         end
     ).
 
+-file("/home/runner/work/birl/birl/src/birl.gleam", 1212).
 -spec set_day(time(), day()) -> time().
 set_day(Value, Day) ->
     {_, Time, Offset} = to_parts(Value),
@@ -2403,11 +2440,11 @@ set_day(Value, Day) ->
         {ok, _} -> _assert_subject;
         _assert_fail ->
             erlang:error(#{gleam_error => let_assert,
-                        message => <<"Assertion pattern match failed"/utf8>>,
+                        message => <<"Pattern match failed, no pattern matched the value."/utf8>>,
                         value => _assert_fail,
                         module => <<"birl"/utf8>>,
                         function => <<"set_day"/utf8>>,
-                        line => 1209})
+                        line => 1215})
     end,
     {time,
         erlang:element(2, New_value),
@@ -2415,6 +2452,7 @@ set_day(Value, Day) ->
         erlang:element(4, Value),
         erlang:element(5, Value)}.
 
+-file("/home/runner/work/birl/birl/src/birl.gleam", 1230).
 -spec set_time_of_day(time(), time_of_day()) -> time().
 set_time_of_day(Value, Time) ->
     {Date, _, Offset} = to_parts(Value),
@@ -2428,11 +2466,11 @@ set_time_of_day(Value, Time) ->
         {ok, _} -> _assert_subject;
         _assert_fail ->
             erlang:error(#{gleam_error => let_assert,
-                        message => <<"Assertion pattern match failed"/utf8>>,
+                        message => <<"Pattern match failed, no pattern matched the value."/utf8>>,
                         value => _assert_fail,
                         module => <<"birl"/utf8>>,
                         function => <<"set_time_of_day"/utf8>>,
-                        line => 1227})
+                        line => 1233})
     end,
     {time,
         erlang:element(2, New_value),
@@ -2440,6 +2478,7 @@ set_time_of_day(Value, Time) ->
         erlang:element(4, Value),
         erlang:element(5, Value)}.
 
+-file("/home/runner/work/birl/birl/src/birl.gleam", 1040).
 -spec weekday(time()) -> weekday().
 weekday(Value) ->
     case Value of
@@ -2449,25 +2488,28 @@ weekday(Value) ->
                 {ok, _} -> _assert_subject;
                 _assert_fail ->
                     erlang:error(#{gleam_error => let_assert,
-                                message => <<"Assertion pattern match failed"/utf8>>,
+                                message => <<"Pattern match failed, no pattern matched the value."/utf8>>,
                                 value => _assert_fail,
                                 module => <<"birl"/utf8>>,
                                 function => <<"weekday"/utf8>>,
-                                line => 1033})
+                                line => 1043})
             end,
             Weekday
     end.
 
+-file("/home/runner/work/birl/birl/src/birl.gleam", 1049).
 -spec string_weekday(time()) -> binary().
 string_weekday(Value) ->
     _pipe = weekday(Value),
     weekday_to_string(_pipe).
 
+-file("/home/runner/work/birl/birl/src/birl.gleam", 1054).
 -spec short_string_weekday(time()) -> binary().
 short_string_weekday(Value) ->
     _pipe = weekday(Value),
     weekday_to_short_string(_pipe).
 
+-file("/home/runner/work/birl/birl/src/birl.gleam", 639).
 -spec to_http(time()) -> binary().
 to_http(Value) ->
     _assert_subject = set_offset(Value, <<"Z"/utf8>>),
@@ -2475,11 +2517,11 @@ to_http(Value) ->
         {ok, _} -> _assert_subject;
         _assert_fail ->
             erlang:error(#{gleam_error => let_assert,
-                        message => <<"Assertion pattern match failed"/utf8>>,
+                        message => <<"Pattern match failed, no pattern matched the value."/utf8>>,
                         value => _assert_fail,
                         module => <<"birl"/utf8>>,
                         function => <<"to_http"/utf8>>,
-                        line => 630})
+                        line => 640})
     end,
     {{Year, _, Day}, {Hour, Minute, Second, _}, _} = to_parts(Value@1),
     Short_weekday = short_string_weekday(Value@1),
@@ -2487,10 +2529,10 @@ to_http(Value) ->
     <<<<<<<<<<<<<<<<<<<<<<<<<<Short_weekday/binary, ", "/utf8>>/binary,
                                                     (begin
                                                         _pipe = Day,
-                                                        _pipe@1 = gleam@int:to_string(
+                                                        _pipe@1 = erlang:integer_to_binary(
                                                             _pipe
                                                         ),
-                                                        gleam@string:pad_left(
+                                                        gleam@string:pad_start(
                                                             _pipe@1,
                                                             2,
                                                             <<"0"/utf8>>
@@ -2499,27 +2541,28 @@ to_http(Value) ->
                                                 " "/utf8>>/binary,
                                             Short_month/binary>>/binary,
                                         " "/utf8>>/binary,
-                                    (gleam@int:to_string(Year))/binary>>/binary,
+                                    (erlang:integer_to_binary(Year))/binary>>/binary,
                                 " "/utf8>>/binary,
                             (begin
                                 _pipe@2 = Hour,
-                                _pipe@3 = gleam@int:to_string(_pipe@2),
-                                gleam@string:pad_left(_pipe@3, 2, <<"0"/utf8>>)
+                                _pipe@3 = erlang:integer_to_binary(_pipe@2),
+                                gleam@string:pad_start(_pipe@3, 2, <<"0"/utf8>>)
                             end)/binary>>/binary,
                         ":"/utf8>>/binary,
                     (begin
                         _pipe@4 = Minute,
-                        _pipe@5 = gleam@int:to_string(_pipe@4),
-                        gleam@string:pad_left(_pipe@5, 2, <<"0"/utf8>>)
+                        _pipe@5 = erlang:integer_to_binary(_pipe@4),
+                        gleam@string:pad_start(_pipe@5, 2, <<"0"/utf8>>)
                     end)/binary>>/binary,
                 ":"/utf8>>/binary,
             (begin
                 _pipe@6 = Second,
-                _pipe@7 = gleam@int:to_string(_pipe@6),
-                gleam@string:pad_left(_pipe@7, 2, <<"0"/utf8>>)
+                _pipe@7 = erlang:integer_to_binary(_pipe@6),
+                gleam@string:pad_start(_pipe@7, 2, <<"0"/utf8>>)
             end)/binary>>/binary,
         " GMT"/utf8>>.
 
+-file("/home/runner/work/birl/birl/src/birl.gleam", 678).
 -spec to_http_with_offset(time()) -> binary().
 to_http_with_offset(Value) ->
     {{Year, _, Day}, {Hour, Minute, Second, _}, Offset} = to_parts(Value),
@@ -2535,10 +2578,10 @@ to_http_with_offset(Value) ->
     <<<<<<<<<<<<<<<<<<<<<<<<<<<<Short_weekday/binary, ", "/utf8>>/binary,
                                                         (begin
                                                             _pipe = Day,
-                                                            _pipe@1 = gleam@int:to_string(
+                                                            _pipe@1 = erlang:integer_to_binary(
                                                                 _pipe
                                                             ),
-                                                            gleam@string:pad_left(
+                                                            gleam@string:pad_start(
                                                                 _pipe@1,
                                                                 2,
                                                                 <<"0"/utf8>>
@@ -2547,12 +2590,12 @@ to_http_with_offset(Value) ->
                                                     " "/utf8>>/binary,
                                                 Short_month/binary>>/binary,
                                             " "/utf8>>/binary,
-                                        (gleam@int:to_string(Year))/binary>>/binary,
+                                        (erlang:integer_to_binary(Year))/binary>>/binary,
                                     " "/utf8>>/binary,
                                 (begin
                                     _pipe@2 = Hour,
-                                    _pipe@3 = gleam@int:to_string(_pipe@2),
-                                    gleam@string:pad_left(
+                                    _pipe@3 = erlang:integer_to_binary(_pipe@2),
+                                    gleam@string:pad_start(
                                         _pipe@3,
                                         2,
                                         <<"0"/utf8>>
@@ -2561,18 +2604,19 @@ to_http_with_offset(Value) ->
                             ":"/utf8>>/binary,
                         (begin
                             _pipe@4 = Minute,
-                            _pipe@5 = gleam@int:to_string(_pipe@4),
-                            gleam@string:pad_left(_pipe@5, 2, <<"0"/utf8>>)
+                            _pipe@5 = erlang:integer_to_binary(_pipe@4),
+                            gleam@string:pad_start(_pipe@5, 2, <<"0"/utf8>>)
                         end)/binary>>/binary,
                     ":"/utf8>>/binary,
                 (begin
                     _pipe@6 = Second,
-                    _pipe@7 = gleam@int:to_string(_pipe@6),
-                    gleam@string:pad_left(_pipe@7, 2, <<"0"/utf8>>)
+                    _pipe@7 = erlang:integer_to_binary(_pipe@6),
+                    gleam@string:pad_start(_pipe@7, 2, <<"0"/utf8>>)
                 end)/binary>>/binary,
             " "/utf8>>/binary,
         Offset@1/binary>>.
 
+-file("/home/runner/work/birl/birl/src/birl.gleam", 61).
 -spec now() -> time().
 now() ->
     Now = birl_ffi:now(),
@@ -2748,7 +2792,6 @@ now() ->
                             {<<"Asia/Beirut"/utf8>>, 7200},
                             {<<"Asia/Bishkek"/utf8>>, 21600},
                             {<<"Asia/Chita"/utf8>>, 32400},
-                            {<<"Asia/Choibalsan"/utf8>>, 28800},
                             {<<"Asia/Colombo"/utf8>>, 19800},
                             {<<"Asia/Damascus"/utf8>>, 10800},
                             {<<"Asia/Dhaka"/utf8>>, 21600},
@@ -2828,11 +2871,6 @@ now() ->
                             {<<"Australia/Melbourne"/utf8>>, 36000},
                             {<<"Australia/Perth"/utf8>>, 28800},
                             {<<"Australia/Sydney"/utf8>>, 36000},
-                            {<<"CET"/utf8>>, 3600},
-                            {<<"CST6CDT"/utf8>>, -21600},
-                            {<<"EET"/utf8>>, 7200},
-                            {<<"EST"/utf8>>, -18000},
-                            {<<"EST5EDT"/utf8>>, -18000},
                             {<<"Etc/GMT"/utf8>>, 0},
                             {<<"Etc/GMT+1"/utf8>>, -3600},
                             {<<"Etc/GMT+10"/utf8>>, -36000},
@@ -2899,14 +2937,9 @@ now() ->
                             {<<"Europe/Volgograd"/utf8>>, 10800},
                             {<<"Europe/Warsaw"/utf8>>, 3600},
                             {<<"Europe/Zurich"/utf8>>, 3600},
-                            {<<"HST"/utf8>>, -36000},
                             {<<"Indian/Chagos"/utf8>>, 21600},
                             {<<"Indian/Maldives"/utf8>>, 18000},
                             {<<"Indian/Mauritius"/utf8>>, 14400},
-                            {<<"MET"/utf8>>, 3600},
-                            {<<"MST"/utf8>>, -25200},
-                            {<<"MST7MDT"/utf8>>, -25200},
-                            {<<"PST8PDT"/utf8>>, -28800},
                             {<<"Pacific/Apia"/utf8>>, 46800},
                             {<<"Pacific/Auckland"/utf8>>, 43200},
                             {<<"Pacific/Bougainville"/utf8>>, 39600},
@@ -2936,8 +2969,7 @@ now() ->
                             {<<"Pacific/Rarotonga"/utf8>>, -36000},
                             {<<"Pacific/Tahiti"/utf8>>, -36000},
                             {<<"Pacific/Tarawa"/utf8>>, 43200},
-                            {<<"Pacific/Tongatapu"/utf8>>, 46800},
-                            {<<"WET"/utf8>>, 0}],
+                            {<<"Pacific/Tongatapu"/utf8>>, 46800}],
                         fun(Item) -> erlang:element(1, Item) =:= Tz end
                     ) of
                         true ->
@@ -2952,6 +2984,12 @@ now() ->
         end,
         {some, Monotonic_now}}.
 
+-file("/home/runner/work/birl/birl/src/birl.gleam", 124).
+-spec has_occured(time()) -> boolean().
+has_occured(Value) ->
+    compare(now(), Value) =:= gt.
+
+-file("/home/runner/work/birl/birl/src/birl.gleam", 1268).
 -spec from_erlang_local_datetime(
     {{integer(), integer(), integer()}, {integer(), integer(), integer()}}
 ) -> time().
@@ -2980,11 +3018,11 @@ from_erlang_local_datetime(Erlang_datetime) ->
         {time, _, _, none, none} -> _assert_subject;
         _assert_fail ->
             erlang:error(#{gleam_error => let_assert,
-                        message => <<"Assertion pattern match failed"/utf8>>,
+                        message => <<"Pattern match failed, no pattern matched the value."/utf8>>,
                         value => _assert_fail,
                         module => <<"birl"/utf8>>,
                         function => <<"from_erlang_local_datetime"/utf8>>,
-                        line => 1268})
+                        line => 1274})
     end,
     Timezone = birl_ffi:local_timezone(),
     {time,
@@ -3156,7 +3194,6 @@ from_erlang_local_datetime(Erlang_datetime) ->
                             {<<"Asia/Beirut"/utf8>>, 7200},
                             {<<"Asia/Bishkek"/utf8>>, 21600},
                             {<<"Asia/Chita"/utf8>>, 32400},
-                            {<<"Asia/Choibalsan"/utf8>>, 28800},
                             {<<"Asia/Colombo"/utf8>>, 19800},
                             {<<"Asia/Damascus"/utf8>>, 10800},
                             {<<"Asia/Dhaka"/utf8>>, 21600},
@@ -3236,11 +3273,6 @@ from_erlang_local_datetime(Erlang_datetime) ->
                             {<<"Australia/Melbourne"/utf8>>, 36000},
                             {<<"Australia/Perth"/utf8>>, 28800},
                             {<<"Australia/Sydney"/utf8>>, 36000},
-                            {<<"CET"/utf8>>, 3600},
-                            {<<"CST6CDT"/utf8>>, -21600},
-                            {<<"EET"/utf8>>, 7200},
-                            {<<"EST"/utf8>>, -18000},
-                            {<<"EST5EDT"/utf8>>, -18000},
                             {<<"Etc/GMT"/utf8>>, 0},
                             {<<"Etc/GMT+1"/utf8>>, -3600},
                             {<<"Etc/GMT+10"/utf8>>, -36000},
@@ -3307,14 +3339,9 @@ from_erlang_local_datetime(Erlang_datetime) ->
                             {<<"Europe/Volgograd"/utf8>>, 10800},
                             {<<"Europe/Warsaw"/utf8>>, 3600},
                             {<<"Europe/Zurich"/utf8>>, 3600},
-                            {<<"HST"/utf8>>, -36000},
                             {<<"Indian/Chagos"/utf8>>, 21600},
                             {<<"Indian/Maldives"/utf8>>, 18000},
                             {<<"Indian/Mauritius"/utf8>>, 14400},
-                            {<<"MET"/utf8>>, 3600},
-                            {<<"MST"/utf8>>, -25200},
-                            {<<"MST7MDT"/utf8>>, -25200},
-                            {<<"PST8PDT"/utf8>>, -28800},
                             {<<"Pacific/Apia"/utf8>>, 46800},
                             {<<"Pacific/Auckland"/utf8>>, 43200},
                             {<<"Pacific/Bougainville"/utf8>>, 39600},
@@ -3344,8 +3371,7 @@ from_erlang_local_datetime(Erlang_datetime) ->
                             {<<"Pacific/Rarotonga"/utf8>>, -36000},
                             {<<"Pacific/Tahiti"/utf8>>, -36000},
                             {<<"Pacific/Tarawa"/utf8>>, 43200},
-                            {<<"Pacific/Tongatapu"/utf8>>, 46800},
-                            {<<"WET"/utf8>>, 0}],
+                            {<<"Pacific/Tongatapu"/utf8>>, 46800}],
                         fun(Item) -> erlang:element(1, Item) =:= Tz end
                     ) of
                         true ->
@@ -3360,6 +3386,7 @@ from_erlang_local_datetime(Erlang_datetime) ->
         end,
         none}.
 
+-file("/home/runner/work/birl/birl/src/birl.gleam", 1297).
 -spec from_erlang_universal_datetime(
     {{integer(), integer(), integer()}, {integer(), integer(), integer()}}
 ) -> time().
@@ -3388,27 +3415,28 @@ from_erlang_universal_datetime(Erlang_datetime) ->
         {ok, _} -> _assert_subject;
         _assert_fail ->
             erlang:error(#{gleam_error => let_assert,
-                        message => <<"Assertion pattern match failed"/utf8>>,
+                        message => <<"Pattern match failed, no pattern matched the value."/utf8>>,
                         value => _assert_fail,
                         module => <<"birl"/utf8>>,
                         function => <<"from_erlang_universal_datetime"/utf8>>,
-                        line => 1295})
+                        line => 1301})
     end,
     New_value.
 
+-file("/home/runner/work/birl/birl/src/birl.gleam", 922).
 -spec parse_relative(time(), binary()) -> {ok, time()} | {error, nil}.
 parse_relative(Origin, Legible_difference) ->
     case gleam@string:split(Legible_difference, <<" "/utf8>>) of
         [<<"in"/utf8>>, Amount_string, Unit] ->
-            Unit@1 = case gleam@string:ends_with(Unit, <<"s"/utf8>>) of
+            Unit@1 = case gleam_stdlib:string_ends_with(Unit, <<"s"/utf8>>) of
                 false ->
                     Unit;
 
                 true ->
-                    gleam@string:drop_right(Unit, 1)
+                    gleam@string:drop_end(Unit, 1)
             end,
             gleam@result:then(
-                gleam@int:parse(Amount_string),
+                gleam_stdlib:parse_int(Amount_string),
                 fun(Amount) ->
                     gleam@result:then(
                         gleam@list:key_find(
@@ -3433,15 +3461,15 @@ parse_relative(Origin, Legible_difference) ->
             );
 
         [Amount_string, Unit, <<"from now"/utf8>>] ->
-            Unit@1 = case gleam@string:ends_with(Unit, <<"s"/utf8>>) of
+            Unit@1 = case gleam_stdlib:string_ends_with(Unit, <<"s"/utf8>>) of
                 false ->
                     Unit;
 
                 true ->
-                    gleam@string:drop_right(Unit, 1)
+                    gleam@string:drop_end(Unit, 1)
             end,
             gleam@result:then(
-                gleam@int:parse(Amount_string),
+                gleam_stdlib:parse_int(Amount_string),
                 fun(Amount) ->
                     gleam@result:then(
                         gleam@list:key_find(
@@ -3466,15 +3494,15 @@ parse_relative(Origin, Legible_difference) ->
             );
 
         [Amount_string, Unit, <<"later"/utf8>>] ->
-            Unit@1 = case gleam@string:ends_with(Unit, <<"s"/utf8>>) of
+            Unit@1 = case gleam_stdlib:string_ends_with(Unit, <<"s"/utf8>>) of
                 false ->
                     Unit;
 
                 true ->
-                    gleam@string:drop_right(Unit, 1)
+                    gleam@string:drop_end(Unit, 1)
             end,
             gleam@result:then(
-                gleam@int:parse(Amount_string),
+                gleam_stdlib:parse_int(Amount_string),
                 fun(Amount) ->
                     gleam@result:then(
                         gleam@list:key_find(
@@ -3499,15 +3527,15 @@ parse_relative(Origin, Legible_difference) ->
             );
 
         [Amount_string, Unit, <<"ahead"/utf8>>] ->
-            Unit@1 = case gleam@string:ends_with(Unit, <<"s"/utf8>>) of
+            Unit@1 = case gleam_stdlib:string_ends_with(Unit, <<"s"/utf8>>) of
                 false ->
                     Unit;
 
                 true ->
-                    gleam@string:drop_right(Unit, 1)
+                    gleam@string:drop_end(Unit, 1)
             end,
             gleam@result:then(
-                gleam@int:parse(Amount_string),
+                gleam_stdlib:parse_int(Amount_string),
                 fun(Amount) ->
                     gleam@result:then(
                         gleam@list:key_find(
@@ -3532,15 +3560,15 @@ parse_relative(Origin, Legible_difference) ->
             );
 
         [Amount_string, Unit, <<"in the future"/utf8>>] ->
-            Unit@1 = case gleam@string:ends_with(Unit, <<"s"/utf8>>) of
+            Unit@1 = case gleam_stdlib:string_ends_with(Unit, <<"s"/utf8>>) of
                 false ->
                     Unit;
 
                 true ->
-                    gleam@string:drop_right(Unit, 1)
+                    gleam@string:drop_end(Unit, 1)
             end,
             gleam@result:then(
-                gleam@int:parse(Amount_string),
+                gleam_stdlib:parse_int(Amount_string),
                 fun(Amount) ->
                     gleam@result:then(
                         gleam@list:key_find(
@@ -3565,15 +3593,15 @@ parse_relative(Origin, Legible_difference) ->
             );
 
         [Amount_string, Unit, <<"hence"/utf8>>] ->
-            Unit@1 = case gleam@string:ends_with(Unit, <<"s"/utf8>>) of
+            Unit@1 = case gleam_stdlib:string_ends_with(Unit, <<"s"/utf8>>) of
                 false ->
                     Unit;
 
                 true ->
-                    gleam@string:drop_right(Unit, 1)
+                    gleam@string:drop_end(Unit, 1)
             end,
             gleam@result:then(
-                gleam@int:parse(Amount_string),
+                gleam_stdlib:parse_int(Amount_string),
                 fun(Amount) ->
                     gleam@result:then(
                         gleam@list:key_find(
@@ -3598,15 +3626,15 @@ parse_relative(Origin, Legible_difference) ->
             );
 
         [Amount_string@1, Unit@3, <<"ago"/utf8>>] ->
-            Unit@4 = case gleam@string:ends_with(Unit@3, <<"s"/utf8>>) of
+            Unit@4 = case gleam_stdlib:string_ends_with(Unit@3, <<"s"/utf8>>) of
                 false ->
                     Unit@3;
 
                 true ->
-                    gleam@string:drop_right(Unit@3, 1)
+                    gleam@string:drop_end(Unit@3, 1)
             end,
             gleam@result:then(
-                gleam@int:parse(Amount_string@1),
+                gleam_stdlib:parse_int(Amount_string@1),
                 fun(Amount@1) ->
                     gleam@result:then(
                         gleam@list:key_find(
@@ -3631,15 +3659,15 @@ parse_relative(Origin, Legible_difference) ->
             );
 
         [Amount_string@1, Unit@3, <<"before"/utf8>>] ->
-            Unit@4 = case gleam@string:ends_with(Unit@3, <<"s"/utf8>>) of
+            Unit@4 = case gleam_stdlib:string_ends_with(Unit@3, <<"s"/utf8>>) of
                 false ->
                     Unit@3;
 
                 true ->
-                    gleam@string:drop_right(Unit@3, 1)
+                    gleam@string:drop_end(Unit@3, 1)
             end,
             gleam@result:then(
-                gleam@int:parse(Amount_string@1),
+                gleam_stdlib:parse_int(Amount_string@1),
                 fun(Amount@1) ->
                     gleam@result:then(
                         gleam@list:key_find(
@@ -3664,15 +3692,15 @@ parse_relative(Origin, Legible_difference) ->
             );
 
         [Amount_string@1, Unit@3, <<"earlier"/utf8>>] ->
-            Unit@4 = case gleam@string:ends_with(Unit@3, <<"s"/utf8>>) of
+            Unit@4 = case gleam_stdlib:string_ends_with(Unit@3, <<"s"/utf8>>) of
                 false ->
                     Unit@3;
 
                 true ->
-                    gleam@string:drop_right(Unit@3, 1)
+                    gleam@string:drop_end(Unit@3, 1)
             end,
             gleam@result:then(
-                gleam@int:parse(Amount_string@1),
+                gleam_stdlib:parse_int(Amount_string@1),
                 fun(Amount@1) ->
                     gleam@result:then(
                         gleam@list:key_find(
@@ -3697,15 +3725,15 @@ parse_relative(Origin, Legible_difference) ->
             );
 
         [Amount_string@1, Unit@3, <<"since"/utf8>>] ->
-            Unit@4 = case gleam@string:ends_with(Unit@3, <<"s"/utf8>>) of
+            Unit@4 = case gleam_stdlib:string_ends_with(Unit@3, <<"s"/utf8>>) of
                 false ->
                     Unit@3;
 
                 true ->
-                    gleam@string:drop_right(Unit@3, 1)
+                    gleam@string:drop_end(Unit@3, 1)
             end,
             gleam@result:then(
-                gleam@int:parse(Amount_string@1),
+                gleam_stdlib:parse_int(Amount_string@1),
                 fun(Amount@1) ->
                     gleam@result:then(
                         gleam@list:key_find(
@@ -3730,15 +3758,15 @@ parse_relative(Origin, Legible_difference) ->
             );
 
         [Amount_string@1, Unit@3, <<"in the past"/utf8>>] ->
-            Unit@4 = case gleam@string:ends_with(Unit@3, <<"s"/utf8>>) of
+            Unit@4 = case gleam_stdlib:string_ends_with(Unit@3, <<"s"/utf8>>) of
                 false ->
                     Unit@3;
 
                 true ->
-                    gleam@string:drop_right(Unit@3, 1)
+                    gleam@string:drop_end(Unit@3, 1)
             end,
             gleam@result:then(
-                gleam@int:parse(Amount_string@1),
+                gleam_stdlib:parse_int(Amount_string@1),
                 fun(Amount@1) ->
                     gleam@result:then(
                         gleam@list:key_find(
@@ -3766,6 +3794,7 @@ parse_relative(Origin, Legible_difference) ->
             {error, nil}
     end.
 
+-file("/home/runner/work/birl/birl/src/birl.gleam", 965).
 -spec legible_difference(time(), time()) -> binary().
 legible_difference(A, B) ->
     case begin
@@ -3793,11 +3822,11 @@ legible_difference(A, B) ->
                 {ok, _} -> _assert_subject;
                 _assert_fail ->
                     erlang:error(#{gleam_error => let_assert,
-                                message => <<"Assertion pattern match failed"/utf8>>,
+                                message => <<"Pattern match failed, no pattern matched the value."/utf8>>,
                                 value => _assert_fail,
                                 module => <<"birl"/utf8>>,
                                 function => <<"legible_difference"/utf8>>,
-                                line => 963})
+                                line => 973})
             end,
             Is_negative = Amount < 0,
             Amount@1 = gleam@int:absolute_value(Amount),
@@ -3810,7 +3839,8 @@ legible_difference(A, B) ->
             end,
             case Is_negative of
                 true ->
-                    <<<<<<"in "/utf8, (gleam@int:to_string(Amount@1))/binary>>/binary,
+                    <<<<<<"in "/utf8,
+                                (erlang:integer_to_binary(Amount@1))/binary>>/binary,
                             " "/utf8>>/binary,
                         Unit@2/binary>>;
 
@@ -3818,7 +3848,7 @@ legible_difference(A, B) ->
                     <<<<<<(begin
                                     _pipe@1 = Amount@1,
                                     _pipe@2 = gleam@int:absolute_value(_pipe@1),
-                                    gleam@int:to_string(_pipe@2)
+                                    erlang:integer_to_binary(_pipe@2)
                                 end)/binary,
                                 " "/utf8>>/binary,
                             Unit@2/binary>>/binary,
@@ -3826,9 +3856,10 @@ legible_difference(A, B) ->
             end
     end.
 
+-file("/home/runner/work/birl/birl/src/birl.gleam", 1083).
 -spec parse_weekday(binary()) -> {ok, weekday()} | {error, nil}.
 parse_weekday(Value) ->
-    Lowercase = gleam@string:lowercase(Value),
+    Lowercase = string:lowercase(Value),
     Weekday = gleam@list:find(
         [{mon, {<<"Monday"/utf8>>, <<"Mon"/utf8>>}},
             {tue, {<<"Tuesday"/utf8>>, <<"Tue"/utf8>>}},
@@ -3839,7 +3870,7 @@ parse_weekday(Value) ->
             {sun, {<<"Sunday"/utf8>>, <<"Sun"/utf8>>}}],
         fun(Weekday_string) ->
             {_, {Long, Short}} = Weekday_string,
-            (Lowercase =:= gleam@string:lowercase(Short)) orelse (Lowercase =:= gleam@string:lowercase(
+            (Lowercase =:= string:lowercase(Short)) orelse (Lowercase =:= string:lowercase(
                 Long
             ))
         end
@@ -3847,6 +3878,7 @@ parse_weekday(Value) ->
     _pipe = Weekday,
     gleam@result:map(_pipe, fun(Weekday@1) -> erlang:element(1, Weekday@1) end).
 
+-file("/home/runner/work/birl/birl/src/birl.gleam", 734).
 -spec from_http(binary()) -> {ok, time()} | {error, nil}.
 from_http(Value) ->
     Value@1 = gleam@string:trim(Value),
@@ -3875,18 +3907,18 @@ from_http(Value) ->
                 {error, nil},
                 fun() ->
                     Rest@1 = gleam@string:trim(Rest),
-                    _assert_subject = gleam@regex:from_string(<<"\\s+"/utf8>>),
+                    _assert_subject = gleam@regexp:from_string(<<"\\s+"/utf8>>),
                     {ok, Whitespace_pattern} = case _assert_subject of
                         {ok, _} -> _assert_subject;
                         _assert_fail ->
                             erlang:error(#{gleam_error => let_assert,
-                                        message => <<"Assertion pattern match failed"/utf8>>,
+                                        message => <<"Pattern match failed, no pattern matched the value."/utf8>>,
                                         value => _assert_fail,
                                         module => <<"birl"/utf8>>,
                                         function => <<"from_http"/utf8>>,
-                                        line => 737})
+                                        line => 747})
                     end,
-                    case gleam@regex:split(Whitespace_pattern, Rest@1) of
+                    case gleam@regexp:split(Whitespace_pattern, Rest@1) of
                         [Day_string,
                             Month_string,
                             Year_string,
@@ -3897,7 +3929,7 @@ from_http(Value) ->
                                 <<":"/utf8>>,
                                 <<""/utf8>>
                             ),
-                            case {gleam@int:parse(Day_string),
+                            case {gleam_stdlib:parse_int(Day_string),
                                 begin
                                     _pipe = gleam@list:index_map(
                                         [{jan,
@@ -3951,7 +3983,7 @@ from_http(Value) ->
                                         end
                                     )
                                 end,
-                                gleam@int:parse(Year_string),
+                                gleam_stdlib:parse_int(Year_string),
                                 parse_time_section(Time_string@1)} of
                                 {{ok, Day},
                                     {ok, {Month_index, _, _}},
@@ -4003,7 +4035,7 @@ from_http(Value) ->
                                         <<":"/utf8>>,
                                         <<""/utf8>>
                                     ),
-                                    case {gleam@int:parse(Day_string@2),
+                                    case {gleam_stdlib:parse_int(Day_string@2),
                                         begin
                                             _pipe@1 = gleam@list:index_map(
                                                 [{jan,
@@ -4071,7 +4103,7 @@ from_http(Value) ->
                                                 end
                                             )
                                         end,
-                                        gleam@int:parse(Year_string@1),
+                                        gleam_stdlib:parse_int(Year_string@1),
                                         parse_time_section(Time_string@3)} of
                                         {{ok, Day@1},
                                             {ok, {Month_index@1, _, _}},
@@ -4129,9 +4161,10 @@ from_http(Value) ->
         end
     ).
 
+-file("/home/runner/work/birl/birl/src/birl.gleam", 1095).
 -spec parse_month(binary()) -> {ok, month()} | {error, nil}.
 parse_month(Value) ->
-    Lowercase = gleam@string:lowercase(Value),
+    Lowercase = string:lowercase(Value),
     Month = gleam@list:find(
         [{jan, {<<"January"/utf8>>, <<"Jan"/utf8>>}},
             {feb, {<<"February"/utf8>>, <<"Feb"/utf8>>}},
@@ -4147,7 +4180,7 @@ parse_month(Value) ->
             {dec, {<<"December"/utf8>>, <<"Dec"/utf8>>}}],
         fun(Month_string) ->
             {_, {Long, Short}} = Month_string,
-            (Lowercase =:= gleam@string:lowercase(Short)) orelse (Lowercase =:= gleam@string:lowercase(
+            (Lowercase =:= string:lowercase(Short)) orelse (Lowercase =:= string:lowercase(
                 Long
             ))
         end

@@ -6,9 +6,8 @@ import arctic.{type CacheablePage}
 import gleam/list
 import gleam/option.{Some}
 import gleam/string
-import gleam/string_builder.{
-  type StringBuilder, append, append_builder, concat, from_string, join,
-  to_string,
+import gleam/string_tree.{
+  type StringTree, append, append_tree, concat, from_string, join, to_string,
 }
 import helpers.{pretty_date}
 import lustre/element.{type Element}
@@ -16,11 +15,11 @@ import lustre/element/html
 
 pub fn script_posts(posts: List(CacheablePage)) -> Element(a) {
   use <-
-    fn(k: fn() -> List(StringBuilder)) {
+    fn(k: fn() -> List(StringTree)) {
       html.script(
         [],
         from_string("const POSTS = {")
-          |> append_builder(concat(k()))
+          |> append_tree(concat(k()))
           |> append("};")
           |> to_string(),
       )
@@ -39,7 +38,7 @@ pub fn script_posts(posts: List(CacheablePage)) -> Element(a) {
   |> append("\", \"date\": \"")
   |> append(pretty_date(date))
   |> append("\", \"tags\": [")
-  |> append_builder(join(
+  |> append_tree(join(
     list.map(p.tags, fn(tag) {
       from_string("\"")
       |> append(tag)

@@ -1,7 +1,7 @@
 import * as $dynamic from "../../gleam_stdlib/gleam/dynamic.mjs";
 import * as $list from "../../gleam_stdlib/gleam/list.mjs";
 import * as $string from "../../gleam_stdlib/gleam/string.mjs";
-import * as $string_builder from "../../gleam_stdlib/gleam/string_builder.mjs";
+import * as $string_tree from "../../gleam_stdlib/gleam/string_tree.mjs";
 import { toList } from "../gleam.mjs";
 import * as $attribute from "../lustre/attribute.mjs";
 import { attribute } from "../lustre/attribute.mjs";
@@ -200,7 +200,7 @@ export function to_document_string_builder(el) {
       }
     })(),
   );
-  return $string_builder.prepend(_pipe, "<!doctype html>\n");
+  return $string_tree.prepend(_pipe, "<!doctype html>\n");
 }
 
 export function to_readable_string(el) {

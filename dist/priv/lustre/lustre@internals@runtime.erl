@@ -4,48 +4,60 @@
 -export([start/4]).
 -export_type([state/3, action/2, debug_action/0]).
 
--type state(PNJ, PNK, PNL) :: {state,
-        gleam@erlang@process:subject(action(PNK, PNL)),
-        gleam@erlang@process:selector(action(PNK, PNL)),
-        PNJ,
-        fun((PNJ, PNK) -> {PNJ, lustre@effect:effect(PNK)}),
-        fun((PNJ) -> lustre@internals@vdom:element(PNK)),
-        lustre@internals@vdom:element(PNK),
-        gleam@dict:dict(binary(), fun((lustre@internals@patch:patch(PNK)) -> nil)),
-        gleam@dict:dict(binary(), fun((gleam@dynamic:dynamic_()) -> {ok, PNK} |
+-if(?OTP_RELEASE >= 27).
+-define(MODULEDOC(Str), -moduledoc(Str)).
+-define(DOC(Str), -doc(Str)).
+-else.
+-define(MODULEDOC(Str), -compile([])).
+-define(DOC(Str), -compile([])).
+-endif.
+
+?MODULEDOC(false).
+
+-type state(PWM, PWN, PWO) :: {state,
+        gleam@erlang@process:subject(action(PWN, PWO)),
+        gleam@erlang@process:selector(action(PWN, PWO)),
+        PWM,
+        fun((PWM, PWN) -> {PWM, lustre@effect:effect(PWN)}),
+        fun((PWM) -> lustre@internals@vdom:element(PWN)),
+        lustre@internals@vdom:element(PWN),
+        gleam@dict:dict(binary(), fun((lustre@internals@patch:patch(PWN)) -> nil)),
+        gleam@dict:dict(binary(), fun((gleam@dynamic:dynamic_()) -> {ok, PWN} |
             {error, list(gleam@dynamic:decode_error())})),
-        gleam@dict:dict(binary(), fun((gleam@dynamic:dynamic_()) -> {ok, PNK} |
+        gleam@dict:dict(binary(), fun((gleam@dynamic:dynamic_()) -> {ok, PWN} |
             {error, list(gleam@dynamic:decode_error())}))}.
 
--type action(PNM, PNN) :: {attrs, list({binary(), gleam@dynamic:dynamic_()})} |
-    {batch, list(PNM), lustre@effect:effect(PNM)} |
+-type action(PWP, PWQ) :: {attrs, list({binary(), gleam@dynamic:dynamic_()})} |
+    {batch, list(PWP), lustre@effect:effect(PWP)} |
     {debug, debug_action()} |
-    {dispatch, PNM} |
+    {dispatch, PWP} |
     {emit, binary(), gleam@json:json()} |
     {event, binary(), gleam@dynamic:dynamic_()} |
-    {set_selector, gleam@erlang@process:selector(PNM)} |
+    {set_selector, gleam@erlang@process:selector(PWP)} |
     shutdown |
-    {subscribe, binary(), fun((lustre@internals@patch:patch(PNM)) -> nil)} |
+    {subscribe, binary(), fun((lustre@internals@patch:patch(PWP)) -> nil)} |
     {unsubscribe, binary()} |
-    {gleam_phantom, PNN}.
+    {gleam_phantom, PWQ}.
 
 -type debug_action() :: {force_model, gleam@dynamic:dynamic_()} |
     {model, fun((gleam@dynamic:dynamic_()) -> nil)} |
     {view,
         fun((lustre@internals@vdom:element(gleam@dynamic:dynamic_())) -> nil)}.
 
--file("/Users/hayleigh/work/lustre-labs/lustre/src/lustre/internals/runtime.gleam", 234).
+-file("src/lustre/internals/runtime.gleam", 234).
+?DOC(false).
 -spec run_renderers(
-    gleam@dict:dict(any(), fun((lustre@internals@patch:patch(POS)) -> nil)),
-    lustre@internals@patch:patch(POS)
+    gleam@dict:dict(any(), fun((lustre@internals@patch:patch(PXV)) -> nil)),
+    lustre@internals@patch:patch(PXV)
 ) -> nil.
 run_renderers(Renderers, Patch) ->
     gleam@dict:fold(Renderers, nil, fun(_, _, Renderer) -> Renderer(Patch) end).
 
--file("/Users/hayleigh/work/lustre-labs/lustre/src/lustre/internals/runtime.gleam", 243).
+-file("src/lustre/internals/runtime.gleam", 243).
+?DOC(false).
 -spec run_effects(
-    lustre@effect:effect(POX),
-    gleam@erlang@process:subject(action(POX, any()))
+    lustre@effect:effect(PYA),
+    gleam@erlang@process:subject(action(PYA, any()))
 ) -> nil.
 run_effects(Effects, Self) ->
     Dispatch = fun(Msg) -> gleam@otp@actor:send(Self, {dispatch, Msg}) end,
@@ -58,15 +70,16 @@ run_effects(Effects, Self) ->
     Root = lustre_escape_ffi:coerce(nil),
     lustre@effect:perform(Effects, Dispatch, Emit, Select, Root).
 
--file("/Users/hayleigh/work/lustre-labs/lustre/src/lustre/internals/runtime.gleam", 94).
--spec loop(action(POC, POD), state(POG, POC, POD)) -> gleam@otp@actor:next(action(POC, POD), state(POG, POC, POD)).
+-file("src/lustre/internals/runtime.gleam", 94).
+?DOC(false).
+-spec loop(action(PXF, PXG), state(PXJ, PXF, PXG)) -> gleam@otp@actor:next(action(PXF, PXG), state(PXJ, PXF, PXG)).
 loop(Message, State) ->
     case Message of
         {attrs, Attrs} ->
             _pipe@1 = gleam@list:filter_map(
                 Attrs,
                 fun(Attr) ->
-                    case gleam@dict:get(
+                    case gleam_stdlib:map_get(
                         erlang:element(10, State),
                         erlang:element(1, Attr)
                     ) of
@@ -95,11 +108,19 @@ loop(Message, State) ->
                 erlang:element(7, State),
                 Html
             ),
-            Next = erlang:setelement(
-                9,
-                erlang:setelement(7, erlang:setelement(4, State, Model), Html),
-                erlang:element(5, Diff)
-            ),
+            Next = begin
+                _record = State,
+                {state,
+                    erlang:element(2, _record),
+                    erlang:element(3, _record),
+                    Model,
+                    erlang:element(5, _record),
+                    erlang:element(6, _record),
+                    Html,
+                    erlang:element(8, _record),
+                    erlang:element(5, Diff),
+                    erlang:element(10, _record)}
+            end,
             run_effects(
                 lustre@effect:batch([Effects, Other_effects]),
                 erlang:element(2, State)
@@ -123,15 +144,19 @@ loop(Message, State) ->
                 erlang:element(7, State),
                 Html@1
             ),
-            Next@1 = erlang:setelement(
-                9,
-                erlang:setelement(
-                    7,
-                    erlang:setelement(4, State, Model@1),
-                    Html@1
-                ),
-                erlang:element(5, Diff@1)
-            ),
+            Next@1 = begin
+                _record@1 = State,
+                {state,
+                    erlang:element(2, _record@1),
+                    erlang:element(3, _record@1),
+                    Model@1,
+                    erlang:element(5, _record@1),
+                    erlang:element(6, _record@1),
+                    Html@1,
+                    erlang:element(8, _record@1),
+                    erlang:element(5, Diff@1),
+                    erlang:element(10, _record@1)}
+            end,
             loop(
                 {batch, Rest, lustre@effect:batch([Effects@1, Other_effects@1])},
                 Next@1
@@ -144,15 +169,19 @@ loop(Message, State) ->
                 erlang:element(7, State),
                 Html@2
             ),
-            Next@2 = erlang:setelement(
-                9,
-                erlang:setelement(
-                    7,
-                    erlang:setelement(4, State, Model@3),
-                    Html@2
-                ),
-                erlang:element(5, Diff@2)
-            ),
+            Next@2 = begin
+                _record@2 = State,
+                {state,
+                    erlang:element(2, _record@2),
+                    erlang:element(3, _record@2),
+                    Model@3,
+                    erlang:element(5, _record@2),
+                    erlang:element(6, _record@2),
+                    Html@2,
+                    erlang:element(8, _record@2),
+                    erlang:element(5, Diff@2),
+                    erlang:element(10, _record@2)}
+            end,
             case lustre@internals@patch:is_empty_element_diff(Diff@2) of
                 true ->
                     nil;
@@ -185,15 +214,19 @@ loop(Message, State) ->
                 erlang:element(7, State),
                 Html@3
             ),
-            Next@3 = erlang:setelement(
-                9,
-                erlang:setelement(
-                    7,
-                    erlang:setelement(4, State, Model@4),
-                    Html@3
-                ),
-                erlang:element(5, Diff@3)
-            ),
+            Next@3 = begin
+                _record@3 = State,
+                {state,
+                    erlang:element(2, _record@3),
+                    erlang:element(3, _record@3),
+                    Model@4,
+                    erlang:element(5, _record@3),
+                    erlang:element(6, _record@3),
+                    Html@3,
+                    erlang:element(8, _record@3),
+                    erlang:element(5, Diff@3),
+                    erlang:element(10, _record@3)}
+            end,
             run_effects(Effects@2, erlang:element(2, State)),
             case lustre@internals@patch:is_empty_element_diff(Diff@3) of
                 true ->
@@ -210,7 +243,7 @@ loop(Message, State) ->
             gleam@otp@actor:continue(State);
 
         {event, Name@1, Event@1} ->
-            case gleam@dict:get(erlang:element(9, State), Name@1) of
+            case gleam_stdlib:map_get(erlang:element(9, State), Name@1) of
                 {error, _} ->
                     gleam@otp@actor:continue(State);
 
@@ -239,17 +272,41 @@ loop(Message, State) ->
                 Id,
                 Renderer
             ),
-            Next@4 = erlang:setelement(8, State, Renderers),
+            Next@4 = begin
+                _record@4 = State,
+                {state,
+                    erlang:element(2, _record@4),
+                    erlang:element(3, _record@4),
+                    erlang:element(4, _record@4),
+                    erlang:element(5, _record@4),
+                    erlang:element(6, _record@4),
+                    erlang:element(7, _record@4),
+                    Renderers,
+                    erlang:element(9, _record@4),
+                    erlang:element(10, _record@4)}
+            end,
             Renderer(
                 {init,
-                    gleam@dict:keys(erlang:element(10, State)),
+                    maps:keys(erlang:element(10, State)),
                     erlang:element(7, State)}
             ),
             gleam@otp@actor:continue(Next@4);
 
         {unsubscribe, Id@1} ->
             Renderers@1 = gleam@dict:delete(erlang:element(8, State), Id@1),
-            Next@5 = erlang:setelement(8, State, Renderers@1),
+            Next@5 = begin
+                _record@5 = State,
+                {state,
+                    erlang:element(2, _record@5),
+                    erlang:element(3, _record@5),
+                    erlang:element(4, _record@5),
+                    erlang:element(5, _record@5),
+                    erlang:element(6, _record@5),
+                    erlang:element(7, _record@5),
+                    Renderers@1,
+                    erlang:element(9, _record@5),
+                    erlang:element(10, _record@5)}
+            end,
             gleam@otp@actor:continue(Next@5);
 
         {set_selector, Selector} ->
@@ -261,21 +318,34 @@ loop(Message, State) ->
                 )
             ),
             {continue,
-                erlang:setelement(3, State, New_selector),
+                begin
+                    _record@6 = State,
+                    {state,
+                        erlang:element(2, _record@6),
+                        New_selector,
+                        erlang:element(4, _record@6),
+                        erlang:element(5, _record@6),
+                        erlang:element(6, _record@6),
+                        erlang:element(7, _record@6),
+                        erlang:element(8, _record@6),
+                        erlang:element(9, _record@6),
+                        erlang:element(10, _record@6)}
+                end,
                 {some, New_selector}};
 
         shutdown ->
             {stop, killed}
     end.
 
--file("/Users/hayleigh/work/lustre-labs/lustre/src/lustre/internals/runtime.gleam", 60).
+-file("src/lustre/internals/runtime.gleam", 60).
+?DOC(false).
 -spec start(
-    {PNO, lustre@effect:effect(PNP)},
-    fun((PNO, PNP) -> {PNO, lustre@effect:effect(PNP)}),
-    fun((PNO) -> lustre@internals@vdom:element(PNP)),
-    gleam@dict:dict(binary(), fun((gleam@dynamic:dynamic_()) -> {ok, PNP} |
+    {PWR, lustre@effect:effect(PWS)},
+    fun((PWR, PWS) -> {PWR, lustre@effect:effect(PWS)}),
+    fun((PWR) -> lustre@internals@vdom:element(PWS)),
+    gleam@dict:dict(binary(), fun((gleam@dynamic:dynamic_()) -> {ok, PWS} |
         {error, list(gleam@dynamic:decode_error())}))
-) -> {ok, gleam@erlang@process:subject(action(PNP, any()))} |
+) -> {ok, gleam@erlang@process:subject(action(PWS, any()))} |
     {error, gleam@otp@actor:start_error()}.
 start(Init, Update, View, On_attribute_change) ->
     Timeout = 1000,
@@ -295,7 +365,7 @@ start(Init, Update, View, On_attribute_change) ->
             Update,
             View,
             Html,
-            gleam@dict:new(),
+            maps:new(),
             Handlers,
             On_attribute_change},
         run_effects(erlang:element(2, Init), Self),

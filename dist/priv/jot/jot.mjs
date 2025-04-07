@@ -1,18 +1,30 @@
+import * as $bool from "../gleam_stdlib/gleam/bool.mjs";
 import * as $dict from "../gleam_stdlib/gleam/dict.mjs";
 import * as $int from "../gleam_stdlib/gleam/int.mjs";
 import * as $list from "../gleam_stdlib/gleam/list.mjs";
 import * as $option from "../gleam_stdlib/gleam/option.mjs";
 import { None, Some } from "../gleam_stdlib/gleam/option.mjs";
+import * as $result from "../gleam_stdlib/gleam/result.mjs";
 import * as $string from "../gleam_stdlib/gleam/string.mjs";
-import { toList, prepend as listPrepend, CustomType as $CustomType, isEqual } from "./gleam.mjs";
+import {
+  Ok,
+  Error,
+  toList,
+  prepend as listPrepend,
+  CustomType as $CustomType,
+  isEqual,
+} from "./gleam.mjs";
 
 export class Document extends $CustomType {
-  constructor(content, references) {
+  constructor(content, references, footnotes) {
     super();
     this.content = content;
     this.references = references;
+    this.footnotes = footnotes;
   }
 }
+
+export class ThematicBreak extends $CustomType {}
 
 export class Paragraph extends $CustomType {
   constructor(attributes, x1) {
@@ -79,6 +91,13 @@ export class Strong extends $CustomType {
   }
 }
 
+export class Footnote extends $CustomType {
+  constructor(reference) {
+    super();
+    this.reference = reference;
+  }
+}
+
 export class Code extends $CustomType {
   constructor(content) {
     super();
@@ -97,6 +116,22 @@ export class Url extends $CustomType {
   constructor(x0) {
     super();
     this[0] = x0;
+  }
+}
+
+class Refs extends $CustomType {
+  constructor(urls, footnotes) {
+    super();
+    this.urls = urls;
+    this.footnotes = footnotes;
+  }
+}
+
+class GeneratedHtml extends $CustomType {
+  constructor(html, used_footnotes) {
+    super();
+    this.html = html;
+    this.used_footnotes = used_footnotes;
   }
 }
 
@@ -151,12 +186,76 @@ function drop_spaces(loop$in) {
   }
 }
 
-function slurp_verbatim_line(loop$in, loop$acc) {
+function count_drop_spaces(loop$in, loop$count) {
   while (true) {
     let in$ = loop$in;
+    let count = loop$count;
+    if (in$.hasLength(0)) {
+      return [toList([]), count];
+    } else if (in$.atLeastLength(1) && in$.head === " ") {
+      let rest = in$.tail;
+      loop$in = rest;
+      loop$count = count + 1;
+    } else {
+      let c = in$.head;
+      let rest = in$.tail;
+      return [listPrepend(c, rest), count];
+    }
+  }
+}
+
+function parse_thematic_break(loop$count, loop$in) {
+  while (true) {
+    let count = loop$count;
+    let in$ = loop$in;
+    if (in$.hasLength(0)) {
+      let $ = count >= 3;
+      if ($) {
+        return new Some([new ThematicBreak(), in$]);
+      } else {
+        return new None();
+      }
+    } else if (in$.atLeastLength(1) && in$.head === "\n") {
+      let $ = count >= 3;
+      if ($) {
+        return new Some([new ThematicBreak(), in$]);
+      } else {
+        return new None();
+      }
+    } else if (in$.atLeastLength(1) && in$.head === " ") {
+      let rest = in$.tail;
+      loop$count = count;
+      loop$in = rest;
+    } else if (in$.atLeastLength(1) && in$.head === "\t") {
+      let rest = in$.tail;
+      loop$count = count;
+      loop$in = rest;
+    } else if (in$.atLeastLength(1) && in$.head === "-") {
+      let rest = in$.tail;
+      loop$count = count + 1;
+      loop$in = rest;
+    } else if (in$.atLeastLength(1) && in$.head === "*") {
+      let rest = in$.tail;
+      loop$count = count + 1;
+      loop$in = rest;
+    } else {
+      return new None();
+    }
+  }
+}
+
+function slurp_verbatim_line(loop$in, loop$indentation, loop$acc) {
+  while (true) {
+    let in$ = loop$in;
+    let indentation = loop$indentation;
     let acc = loop$acc;
     if (in$.hasLength(0)) {
       return [acc, toList([])];
+    } else if (in$.atLeastLength(1) && in$.head === " " && (indentation > 0)) {
+      let in$1 = in$.tail;
+      loop$in = in$1;
+      loop$indentation = indentation - 1;
+      loop$acc = acc;
     } else if (in$.atLeastLength(1) && in$.head === "\n") {
       let in$1 = in$.tail;
       return [acc + "\n", in$1];
@@ -164,6 +263,7 @@ function slurp_verbatim_line(loop$in, loop$acc) {
       let c = in$.head;
       let in$1 = in$.tail;
       loop$in = in$1;
+      loop$indentation = 0;
       loop$acc = acc + c;
     }
   }
@@ -179,6 +279,11 @@ function parse_codeblock_end(loop$in, loop$delim, loop$count) {
       return new Some([in$1]);
     } else if (count === 0) {
       return new Some([in$]);
+    } else if (in$.atLeastLength(1) && in$.head === " ") {
+      let in$1 = in$.tail;
+      loop$in = in$1;
+      loop$delim = delim;
+      loop$count = count;
     } else if (in$.atLeastLength(1) && (in$.head === delim)) {
       let c = in$.head;
       let in$1 = in$.tail;
@@ -193,20 +298,28 @@ function parse_codeblock_end(loop$in, loop$delim, loop$count) {
   }
 }
 
-function parse_codeblock_content(loop$in, loop$delim, loop$count, loop$acc) {
+function parse_codeblock_content(
+  loop$in,
+  loop$delim,
+  loop$count,
+  loop$indentation,
+  loop$acc
+) {
   while (true) {
     let in$ = loop$in;
     let delim = loop$delim;
     let count = loop$count;
+    let indentation = loop$indentation;
     let acc = loop$acc;
     let $ = parse_codeblock_end(in$, delim, count);
     if ($ instanceof None) {
-      let $1 = slurp_verbatim_line(in$, acc);
+      let $1 = slurp_verbatim_line(in$, indentation, acc);
       let acc$1 = $1[0];
       let in$1 = $1[1];
       loop$in = in$1;
       loop$delim = delim;
       loop$count = count;
+      loop$indentation = indentation;
       loop$acc = acc$1;
     } else {
       let in$1 = $[0][0];
@@ -268,14 +381,14 @@ function parse_codeblock_start(loop$in, loop$delim, loop$count) {
   }
 }
 
-function parse_codeblock(in$, attrs, delim) {
+function parse_codeblock(in$, attrs, delim, indentation) {
   return $option.then$(
     parse_codeblock_start(in$, delim, 1),
     (_use0) => {
       let language = _use0[0];
       let count = _use0[1];
       let in$1 = _use0[2];
-      let $ = parse_codeblock_content(in$1, delim, count, "");
+      let $ = parse_codeblock_content(in$1, delim, count, indentation, "");
       let content = $[0];
       let in$2 = $[1];
       return new Some([new Codeblock(attrs, language, content), in$2]);
@@ -688,7 +801,7 @@ function parse_code(loop$in, loop$count) {
       let content$1 = (() => {
         let $1 = $string.starts_with(content, " `");
         if ($1) {
-          return $string.trim_left(content);
+          return $string.trim_start(content);
         } else {
           return content;
         }
@@ -696,7 +809,7 @@ function parse_code(loop$in, loop$count) {
       let content$2 = (() => {
         let $1 = $string.ends_with(content$1, "` ");
         if ($1) {
-          return $string.trim_right(content$1);
+          return $string.trim_end(content$1);
         } else {
           return content$1;
         }
@@ -824,6 +937,24 @@ function take_link_chars(loop$in, loop$inline_in) {
   }
 }
 
+function parse_footnote(loop$in, loop$acc) {
+  while (true) {
+    let in$ = loop$in;
+    let acc = loop$acc;
+    if (in$.hasLength(0)) {
+      return new None();
+    } else if (in$.atLeastLength(1) && in$.head === "]") {
+      let rest = in$.tail;
+      return new Some([new Footnote(acc), rest]);
+    } else {
+      let c = in$.head;
+      let rest = in$.tail;
+      loop$in = rest;
+      loop$acc = acc + c;
+    }
+  }
+}
+
 function heading_level(loop$in, loop$level) {
   while (true) {
     let in$ = loop$in;
@@ -881,6 +1012,9 @@ function take_inline_text(loop$inlines, loop$acc) {
         let acc$1 = take_inline_text(nested, acc);
         loop$inlines = rest;
         loop$acc = acc$1;
+      } else if (first instanceof Linebreak) {
+        loop$inlines = rest;
+        loop$acc = acc;
       } else {
         loop$inlines = rest;
         loop$acc = acc;
@@ -911,8 +1045,77 @@ function take_paragraph_chars(loop$in, loop$acc) {
   }
 }
 
-function close_tag(html, tag) {
-  return ((html + "</") + tag) + ">";
+function get_new_footnotes(loop$original_html, loop$new_html, loop$acc) {
+  while (true) {
+    let original_html = loop$original_html;
+    let new_html = loop$new_html;
+    let acc = loop$acc;
+    let $ = original_html.used_footnotes;
+    let $1 = new_html.used_footnotes;
+    if ($.atLeastLength(1) && $1.atLeastLength(1) && (isEqual($.head, $1.head))) {
+      let original = $.head;
+      let new$ = $1.head;
+      return acc;
+    } else if ($1.atLeastLength(1)) {
+      let new$ = $1.head;
+      let rest = $1.tail;
+      loop$original_html = original_html;
+      loop$new_html = (() => {
+        let _record = new_html;
+        return new GeneratedHtml(_record.html, rest);
+      })();
+      loop$acc = listPrepend(new$, acc);
+    } else {
+      return acc;
+    }
+  }
+}
+
+function append_to_html(original_html, str) {
+  let _record = original_html;
+  return new GeneratedHtml(original_html.html + str, _record.used_footnotes);
+}
+
+function close_tag(initial_html, tag) {
+  let _record = initial_html;
+  return new GeneratedHtml(
+    ((initial_html.html + "</") + tag) + ">",
+    _record.used_footnotes,
+  );
+}
+
+function find_footnote_number(
+  loop$footnotes_to_check,
+  loop$reference,
+  loop$used_footnotes
+) {
+  while (true) {
+    let footnotes_to_check = loop$footnotes_to_check;
+    let reference = loop$reference;
+    let used_footnotes = loop$used_footnotes;
+    if (footnotes_to_check.hasLength(0)) {
+      let next_number = (() => {
+        let _pipe = used_footnotes;
+        let _pipe$1 = $list.first(_pipe);
+        let _pipe$2 = $result.map(_pipe$1, (f) => { return f[0]; });
+        return $result.unwrap(_pipe$2, 0);
+      })() + 1;
+      return [
+        $int.to_string(next_number),
+        listPrepend([next_number, reference], used_footnotes),
+      ];
+    } else if (footnotes_to_check.atLeastLength(1) &&
+    (reference === footnotes_to_check.head[1])) {
+      let index = footnotes_to_check.head[0];
+      let ref = footnotes_to_check.head[1];
+      return [$int.to_string(index), used_footnotes];
+    } else {
+      let rest = footnotes_to_check.tail;
+      loop$footnotes_to_check = rest;
+      loop$reference = reference;
+      loop$used_footnotes = used_footnotes;
+    }
+  }
 }
 
 function destination_attribute(key, destination, refs) {
@@ -922,7 +1125,7 @@ function destination_attribute(key, destination, refs) {
     return $dict.insert(dict, key, url);
   } else {
     let id = destination[0];
-    let $ = $dict.get(refs, id);
+    let $ = $dict.get(refs.urls, id);
     if ($.isOk()) {
       let url = $[0];
       return $dict.insert(dict, key, url);
@@ -932,15 +1135,9 @@ function destination_attribute(key, destination, refs) {
   }
 }
 
-function attributes_to_html(html, attributes) {
-  let _pipe = attributes;
-  let _pipe$1 = $dict.to_list(_pipe);
-  let _pipe$2 = $list.sort(
-    _pipe$1,
-    (a, b) => { return $string.compare(a[0], b[0]); },
-  );
+function ordered_attributes_to_html(attributes, html) {
   return $list.fold(
-    _pipe$2,
+    attributes,
     html,
     (html, pair) => {
       return ((((html + " ") + pair[0]) + "=\"") + pair[1]) + "\"";
@@ -948,19 +1145,53 @@ function attributes_to_html(html, attributes) {
   );
 }
 
-function open_tag(html, tag, attributes) {
-  let html$1 = (html + "<") + tag;
-  return attributes_to_html(html$1, attributes) + ">";
+function open_tag_ordered_attributes(initial_html, tag, attributes) {
+  let html = (initial_html.html + "<") + tag;
+  let _record = initial_html;
+  return new GeneratedHtml(
+    ordered_attributes_to_html(attributes, html) + ">",
+    _record.used_footnotes,
+  );
+}
+
+function add_footnote_link(html, footnote_number) {
+  let _pipe = html;
+  let _pipe$1 = open_tag_ordered_attributes(
+    _pipe,
+    "a",
+    toList([["href", "#fnref" + footnote_number], ["role", "doc-backlink"]]),
+  );
+  let _pipe$2 = append_to_html(_pipe$1, "↩︎");
+  return close_tag(_pipe$2, "a");
+}
+
+function attributes_to_html(html, attributes) {
+  let _pipe = attributes;
+  let _pipe$1 = $dict.to_list(_pipe);
+  let _pipe$2 = $list.sort(
+    _pipe$1,
+    (a, b) => { return $string.compare(a[0], b[0]); },
+  );
+  return ordered_attributes_to_html(_pipe$2, html);
+}
+
+function open_tag(initial_html, tag, attributes) {
+  let html = (initial_html.html + "<") + tag;
+  let _record = initial_html;
+  return new GeneratedHtml(
+    attributes_to_html(html, attributes) + ">",
+    _record.used_footnotes,
+  );
 }
 
 function inline_to_html(html, inline, refs) {
   if (inline instanceof Linebreak) {
     let _pipe = html;
     let _pipe$1 = open_tag(_pipe, "br", $dict.new$());
-    return $string.append(_pipe$1, "\n");
+    return append_to_html(_pipe$1, "\n");
   } else if (inline instanceof Text) {
     let text = inline[0];
-    return html + text;
+    return append_to_html(html, text);
   } else if (inline instanceof Strong) {
     let inlines = inline.content;
     let _pipe = html;
@@ -996,12 +1227,37 @@ function inline_to_html(html, inline, refs) {
         return $dict.insert(_pipe$1, "alt", take_inline_text(text, ""));
       })(),
     );
-  } else {
+  } else if (inline instanceof Code) {
     let content = inline.content;
     let _pipe = html;
     let _pipe$1 = open_tag(_pipe, "code", $dict.new$());
-    let _pipe$2 = $string.append(_pipe$1, content);
+    let _pipe$2 = append_to_html(_pipe$1, content);
     return close_tag(_pipe$2, "code");
+  } else {
+    let reference = inline.reference;
+    let $ = find_footnote_number(
+      html.used_footnotes,
+      reference,
+      html.used_footnotes,
+    );
+    let footnote_number = $[0];
+    let new_used_footnotes = $[1];
+    let footnote_attrs = toList([
+      ["id", "fnref" + footnote_number],
+      ["href", "#fn" + footnote_number],
+      ["role", "doc-noteref"],
+    ]);
+    let updated_html = (() => {
+      let _pipe = html;
+      let _pipe$1 = open_tag_ordered_attributes(_pipe, "a", footnote_attrs);
+      let _pipe$2 = append_to_html(
+        _pipe$1,
+        ("<sup>" + footnote_number) + "</sup>",
+      );
+      return close_tag(_pipe$2, "a");
+    })();
+    let _record = updated_html;
+    return new GeneratedHtml(_record.html, new_used_footnotes);
   }
 }
 
@@ -1011,16 +1267,25 @@ function inlines_to_html(html, inlines, refs) {
   } else {
     let inline = inlines.head;
     let rest = inlines.tail;
-    let _pipe = html;
-    let _pipe$1 = inline_to_html(_pipe, inline, refs);
-    let _pipe$2 = inlines_to_html(_pipe$1, rest, refs);
-    return $string.trim_right(_pipe$2);
+    let html$1 = (() => {
+      let _pipe = html;
+      let _pipe$1 = inline_to_html(_pipe, inline, refs);
+      return inlines_to_html(_pipe$1, rest, refs);
+    })();
+    let _record = html$1;
+    return new GeneratedHtml(
+      $string.trim_end(html$1.html),
+      _record.used_footnotes,
+    );
   }
 }
 
 function container_to_html(html, container, refs) {
-  return (() => {
-    if (container instanceof Paragraph) {
+  let new_html = (() => {
+    if (container instanceof ThematicBreak) {
+      let _pipe = html;
+      return open_tag(_pipe, "hr", $dict.new$());
+    } else if (container instanceof Paragraph) {
       let attrs = container.attributes;
       let inlines = container[1];
       let _pipe = html;
@@ -1042,7 +1307,7 @@ function container_to_html(html, container, refs) {
       let _pipe = html;
       let _pipe$1 = open_tag(_pipe, "pre", $dict.new$());
       let _pipe$2 = open_tag(_pipe$1, "code", code_attrs);
-      let _pipe$3 = $string.append(_pipe$2, content);
+      let _pipe$3 = append_to_html(_pipe$2, content);
       let _pipe$4 = close_tag(_pipe$3, "code");
       return close_tag(_pipe$4, "pre");
     } else {
@@ -1055,7 +1320,49 @@ function container_to_html(html, container, refs) {
       let _pipe$2 = inlines_to_html(_pipe$1, inlines, refs);
       return close_tag(_pipe$2, tag);
     }
-  })() + "\n";
+  })();
+  return append_to_html(new_html, "\n");
+}
+
+function containers_to_html_with_last_paragraph(
+  loop$containers,
+  loop$refs,
+  loop$html,
+  loop$apply
+) {
+  while (true) {
+    let containers = loop$containers;
+    let refs = loop$refs;
+    let html = loop$html;
+    let apply = loop$apply;
+    if (containers.hasLength(0)) {
+      return html;
+    } else if (containers.hasLength(1)) {
+      let container = containers.head;
+      if (container instanceof Paragraph) {
+        let attrs = container.attributes;
+        let inlines = container[1];
+        let _pipe = html;
+        let _pipe$1 = open_tag(_pipe, "p", attrs);
+        let _pipe$2 = inlines_to_html(_pipe$1, inlines, refs);
+        let _pipe$3 = apply(_pipe$2);
+        return close_tag(_pipe$3, "p");
+      } else {
+        let _pipe = container_to_html(html, container, refs);
+        let _pipe$1 = open_tag(_pipe, "p", $dict.new$());
+        let _pipe$2 = apply(_pipe$1);
+        return close_tag(_pipe$2, "p");
+      }
+    } else {
+      let container = containers.head;
+      let rest = containers.tail;
+      let html$1 = container_to_html(html, container, refs);
+      loop$containers = rest;
+      loop$refs = refs;
+      loop$html = html$1;
+      loop$apply = apply;
+    }
+  }
 }
 
 function containers_to_html(loop$containers, loop$refs, loop$html) {
@@ -1076,8 +1383,203 @@ function containers_to_html(loop$containers, loop$refs, loop$html) {
   }
 }
 
+function create_footnotes(loop$document, loop$used_footnotes, loop$html_acc) {
+  while (true) {
+    let document = loop$document;
+    let used_footnotes = loop$used_footnotes;
+    let html_acc = loop$html_acc;
+    let footnote_to_html = (html, footnote, footnote_number) => {
+      let _pipe = $dict.get(document.footnotes, footnote);
+      let _pipe$1 = $result.then$(
+        _pipe,
+        (footnote) => {
+          let $ = $list.is_empty(footnote);
+          if ($) {
+            return new Error(undefined);
+          } else {
+            return new Ok(footnote);
+          }
+        },
+      );
+      let _pipe$2 = $result.map(
+        _pipe$1,
+        (footnote) => {
+          return containers_to_html_with_last_paragraph(
+            footnote,
+            new Refs(document.references, document.footnotes),
+            html,
+            (_capture) => {
+              return add_footnote_link(_capture, footnote_number);
+            },
+          );
+        },
+      );
+      return $result.lazy_unwrap(
+        _pipe$2,
+        () => {
+          let _pipe$3 = html;
+          let _pipe$4 = open_tag_ordered_attributes(_pipe$3, "p", toList([]));
+          let _pipe$5 = add_footnote_link(_pipe$4, footnote_number);
+          return close_tag(_pipe$5, "p");
+        },
+      );
+    };
+    if (used_footnotes.hasLength(0)) {
+      return html_acc;
+    } else {
+      let footnote_number = used_footnotes.head[0];
+      let footnote = used_footnotes.head[1];
+      let other_footnotes = used_footnotes.tail;
+      let footnote_number$1 = $int.to_string(footnote_number);
+      let html = (() => {
+        let _pipe = html_acc;
+        let _pipe$1 = open_tag(
+          _pipe,
+          "li",
+          $dict.from_list(toList([["id", "fn" + footnote_number$1]])),
+        );
+        let _pipe$2 = append_to_html(_pipe$1, "\n");
+        let _pipe$3 = footnote_to_html(_pipe$2, footnote, footnote_number$1);
+        let _pipe$4 = append_to_html(_pipe$3, "\n");
+        let _pipe$5 = close_tag(_pipe$4, "li");
+        return append_to_html(_pipe$5, "\n");
+      })();
+      let new_used_footnotes = $list.append(
+        get_new_footnotes(html_acc, html, toList([])),
+        other_footnotes,
+      );
+      loop$document = document;
+      loop$used_footnotes = new_used_footnotes;
+      loop$html_acc = html;
+    }
+  }
+}
+
 export function document_to_html(document) {
-  return containers_to_html(document.content, document.references, "");
+  let generated_html = containers_to_html(
+    document.content,
+    new Refs(document.references, document.footnotes),
+    new GeneratedHtml("", toList([])),
+  );
+  return $bool.guard(
+    $list.is_empty(generated_html.used_footnotes),
+    generated_html.html,
+    () => {
+      let footnotes_section_html = (() => {
+        let _pipe = generated_html;
+        let _pipe$1 = open_tag(
+          _pipe,
+          "section",
+          $dict.from_list(toList([["role", "doc-endnotes"]])),
+        );
+        let _pipe$2 = append_to_html(_pipe$1, "\n");
+        let _pipe$3 = open_tag(_pipe$2, "hr", $dict.new$());
+        let _pipe$4 = append_to_html(_pipe$3, "\n");
+        let _pipe$5 = open_tag(_pipe$4, "ol", $dict.new$());
+        return append_to_html(_pipe$5, "\n");
+      })();
+      let html_with_footnotes = create_footnotes(
+        document,
+        $list.reverse(footnotes_section_html.used_footnotes),
+        footnotes_section_html,
+      );
+      return (() => {
+        let _pipe = html_with_footnotes;
+        let _pipe$1 = close_tag(_pipe, "ol");
+        let _pipe$2 = append_to_html(_pipe$1, "\n");
+        let _pipe$3 = close_tag(_pipe$2, "section");
+        return append_to_html(_pipe$3, "\n");
+      })().html;
+    },
+  );
+}
+
+function parse_block_after_indent_checked(
+  in$,
+  refs,
+  ast,
+  attrs,
+  required_spaces,
+  indentation
+) {
+  return parse_containers(
+    in$,
+    refs,
+    ast,
+    attrs,
+    indentation,
+    (in$, refs, ast, attrs) => {
+      return parse_block(in$, refs, ast, attrs, required_spaces);
+    },
+  );
+}
+
+function parse_block(in$, refs, ast, attrs, required_spaces) {
+  let in$1 = drop_lines(in$);
+  let $ = count_drop_spaces(in$1, 0);
+  let in$2 = $[0];
+  let spaces_count = $[1];
+  return $bool.lazy_guard(
+    spaces_count < required_spaces,
+    () => { return [$list.reverse(ast), refs, in$2]; },
+    () => {
+      return parse_block_after_indent_checked(
+        in$2,
+        refs,
+        ast,
+        attrs,
+        required_spaces,
+        spaces_count,
+      );
+    },
+  );
+}
+
+function parse_footnote_def(loop$in, loop$refs, loop$id) {
+  while (true) {
+    let in$ = loop$in;
+    let refs = loop$refs;
+    let id = loop$id;
+    if (in$.atLeastLength(2) && in$.head === "]" && in$.tail.head === ":") {
+      let in$1 = in$.tail.tail;
+      let $ = count_drop_spaces(in$1, 0);
+      let in$2 = $[0];
+      let spaces_count = $[1];
+      let block_parser = (() => {
+        if (in$2.atLeastLength(1) && in$2.head === "\n") {
+          return parse_block;
+        } else {
+          return (in$, refs, ast, attrs, required_spaces) => {
+            return parse_block_after_indent_checked(
+              in$,
+              refs,
+              ast,
+              attrs,
+              required_spaces,
+              (4 + $string.length(id)) + spaces_count,
+            );
+          };
+        }
+      })();
+      let $1 = block_parser(in$2, refs, toList([]), $dict.new$(), 1);
+      let block = $1[0];
+      let refs$1 = $1[1];
+      let rest = $1[2];
+      return new Some([id, block, refs$1, rest]);
+    } else if (in$.hasLength(0)) {
+      return new None();
+    } else if (in$.atLeastLength(1) && in$.head === "]") {
+      return new None();
+    } else if (in$.atLeastLength(1) && in$.head === "\n") {
+      return new None();
+    } else {
+      let c = in$.head;
+      let in$1 = in$.tail;
+      loop$in = in$1;
+      loop$refs = refs;
+      loop$id = id + c;
+    }
+  }
 }
 
 function parse_emphasis(in$, close) {
@@ -1087,8 +1589,10 @@ function parse_emphasis(in$, close) {
   } else {
     let inline_in = $[0][0];
     let in$1 = $[0][1];
-    let inline = parse_inline(inline_in, "", toList([]));
-    return new Some([inline, in$1]);
+    let $1 = parse_inline(inline_in, "", toList([]));
+    let inline = $1[0];
+    let inline_in_remaining = $1[1];
+    return new Some([inline, $list.append(inline_in_remaining, in$1)]);
   }
 }
 
@@ -1098,7 +1602,7 @@ function parse_inline(loop$in, loop$text, loop$acc) {
     let text = loop$text;
     let acc = loop$acc;
     if (in$.hasLength(0) && (text === "")) {
-      return $list.reverse(acc);
+      return [$list.reverse(acc), toList([])];
     } else if (in$.hasLength(0)) {
       loop$in = toList([]);
       loop$text = "";
@@ -1106,9 +1610,13 @@ function parse_inline(loop$in, loop$text, loop$acc) {
     } else if (in$.atLeastLength(2) && in$.head === "\\") {
       let c = in$.tail.head;
       let rest = in$.tail.tail;
-      let aft = parse_inline(rest, "", acc);
       if (c === "\n") {
-        return $list.append(toList([new Text(text), new Linebreak()]), aft);
+        loop$in = rest;
+        loop$text = "";
+        loop$acc = listPrepend(
+          new Linebreak(),
+          listPrepend(new Text(text), acc),
+        );
       } else if (c === " ") {
         loop$in = rest;
         loop$text = text + "&nbsp;";
@@ -1288,6 +1796,29 @@ function parse_inline(loop$in, loop$text, loop$acc) {
           listPrepend(new Text(text), acc),
         );
       }
+    } else if (in$.atLeastLength(2) && in$.head === "[" && in$.tail.head === "^") {
+      let rest = in$.tail.tail;
+      let $ = parse_footnote(rest, "^");
+      if ($ instanceof None) {
+        loop$in = rest;
+        loop$text = text + "[^";
+        loop$acc = acc;
+      } else if ($ instanceof Some &&
+      $[0][1].atLeastLength(1) &&
+      $[0][1].head === ":" &&
+      (text !== "")) {
+        return [$list.reverse(listPrepend(new Text(text), acc)), in$];
+      } else if ($ instanceof Some &&
+      $[0][1].atLeastLength(1) &&
+      $[0][1].head === ":") {
+        return [$list.reverse(acc), in$];
+      } else {
+        let footnote = $[0][0];
+        let in$1 = $[0][1];
+        loop$in = in$1;
+        loop$text = "";
+        loop$acc = listPrepend(footnote, listPrepend(new Text(text), acc));
+      }
     } else if (in$.atLeastLength(1) && in$.head === "[") {
       let rest = in$.tail;
       let $ = parse_link(rest, (var0, var1) => { return new Link(var0, var1); });
@@ -1327,6 +1858,12 @@ function parse_inline(loop$in, loop$text, loop$acc) {
       loop$in = in$1;
       loop$text = "";
       loop$acc = listPrepend(code, listPrepend(new Text(text), acc));
+    } else if (in$.atLeastLength(1) && in$.head === "\n") {
+      let rest = in$.tail;
+      let _pipe = drop_spaces(rest);
+      loop$in = _pipe;
+      loop$text = text + "\n";
+      loop$acc = acc;
     } else {
       let c = in$.head;
       let rest = in$.tail;
@@ -1345,7 +1882,9 @@ function parse_link(in$, to_inline) {
     let inline_in = $[0][0];
     let ref = $[0][1];
     let in$1 = $[0][2];
-    let inline = parse_inline(inline_in, "", toList([]));
+    let $1 = parse_inline(inline_in, "", toList([]));
+    let inline = $1[0];
+    let inline_in_remaining = $1[1];
     let ref$1 = (() => {
       if (ref instanceof Reference && ref[0] === "") {
         return new Reference(take_inline_text(inline, ""));
@@ -1354,7 +1893,9 @@ function parse_link(in$, to_inline) {
         return ref$1;
       }
     })();
-    return new Some([to_inline(inline, ref$1), in$1]);
+    return new Some(
+      [to_inline(inline, ref$1), $list.append(inline_in_remaining, in$1)],
+    );
   }
 }
 
@@ -1362,8 +1903,10 @@ function parse_paragraph(in$, attrs) {
   let $ = take_paragraph_chars(in$, toList([]));
   let inline_in = $[0];
   let in$1 = $[1];
-  let inline = parse_inline(inline_in, "", toList([]));
-  return [new Paragraph(attrs, inline), in$1];
+  let $1 = parse_inline(inline_in, "", toList([]));
+  let inline = $1[0];
+  let inline_in_remaining = $1[1];
+  return [new Paragraph(attrs, inline), $list.append(inline_in_remaining, in$1)];
 }
 
 function parse_heading(in$, refs, attrs) {
@@ -1375,28 +1918,36 @@ function parse_heading(in$, refs, attrs) {
     let $1 = take_heading_chars(in$2, level, toList([]));
     let inline_in = $1[0];
     let in$3 = $1[1];
-    let inline = parse_inline(inline_in, "", toList([]));
+    let $2 = parse_inline(inline_in, "", toList([]));
+    let inline = $2[0];
+    let inline_in_remaining = $2[1];
     let text = take_inline_text(inline, "");
-    let $2 = (() => {
-      let $3 = id_sanitise(text);
-      if ($3 === "") {
+    let $3 = (() => {
+      let $4 = id_sanitise(text);
+      if ($4 === "") {
         return [refs, attrs];
       } else {
-        let id = $3;
-        let $4 = $dict.get(refs, id);
-        if ($4.isOk()) {
+        let id = $4;
+        let $5 = $dict.get(refs.urls, id);
+        if ($5.isOk()) {
           return [refs, attrs];
         } else {
-          let refs$1 = $dict.insert(refs, id, "#" + id);
+          let refs$1 = (() => {
+            let _record = refs;
+            return new Refs(
+              $dict.insert(refs.urls, id, "#" + id),
+              _record.footnotes,
+            );
+          })();
           let attrs$1 = add_attribute(attrs, "id", id);
           return [refs$1, attrs$1];
         }
       }
     })();
-    let refs$1 = $2[0];
-    let attrs$1 = $2[1];
+    let refs$1 = $3[0];
+    let attrs$1 = $3[1];
     let heading = new Heading(attrs$1, level, inline);
-    return [heading, refs$1, in$3];
+    return [heading, refs$1, $list.append(inline_in_remaining, in$3)];
   } else {
     let $1 = parse_paragraph(listPrepend("#", in$), attrs);
     let p = $1[0];
@@ -1405,123 +1956,162 @@ function parse_heading(in$, refs, attrs) {
   }
 }
 
-function parse_document(loop$in, loop$refs, loop$ast, loop$attrs) {
-  while (true) {
-    let in$ = loop$in;
-    let refs = loop$refs;
-    let ast = loop$ast;
-    let attrs = loop$attrs;
-    let in$1 = drop_lines(in$);
-    let in$2 = drop_spaces(in$1);
-    if (in$2.hasLength(0)) {
-      return new Document($list.reverse(ast), refs);
-    } else if (in$2.atLeastLength(1) && in$2.head === "{") {
-      let in2 = in$2.tail;
-      let $ = parse_attributes(in2, attrs);
-      if ($ instanceof None) {
-        let $1 = parse_paragraph(in$2, attrs);
-        let paragraph = $1[0];
-        let in$3 = $1[1];
-        loop$in = in$3;
-        loop$refs = refs;
-        loop$ast = listPrepend(paragraph, ast);
-        loop$attrs = $dict.new$();
-      } else {
-        let attrs$1 = $[0][0];
-        let in$3 = $[0][1];
-        loop$in = in$3;
-        loop$refs = refs;
-        loop$ast = ast;
-        loop$attrs = attrs$1;
-      }
-    } else if (in$2.atLeastLength(1) && in$2.head === "#") {
-      let in$3 = in$2.tail;
-      let $ = parse_heading(in$3, refs, attrs);
-      let heading = $[0];
-      let refs$1 = $[1];
-      let in$4 = $[2];
-      loop$in = in$4;
-      loop$refs = refs$1;
-      loop$ast = listPrepend(heading, ast);
-      loop$attrs = $dict.new$();
-    } else if (in$2.atLeastLength(1) && in$2.head === "~") {
-      let delim = in$2.head;
-      let in2 = in$2.tail;
-      let $ = parse_codeblock(in2, attrs, delim);
-      if ($ instanceof None) {
-        let $1 = parse_paragraph(in$2, attrs);
-        let paragraph = $1[0];
-        let in$3 = $1[1];
-        loop$in = in$3;
-        loop$refs = refs;
-        loop$ast = listPrepend(paragraph, ast);
-        loop$attrs = $dict.new$();
-      } else {
-        let codeblock = $[0][0];
-        let in$3 = $[0][1];
-        loop$in = in$3;
-        loop$refs = refs;
-        loop$ast = listPrepend(codeblock, ast);
-        loop$attrs = $dict.new$();
-      }
-    } else if (in$2.atLeastLength(1) && in$2.head === "`") {
-      let delim = in$2.head;
-      let in2 = in$2.tail;
-      let $ = parse_codeblock(in2, attrs, delim);
-      if ($ instanceof None) {
-        let $1 = parse_paragraph(in$2, attrs);
-        let paragraph = $1[0];
-        let in$3 = $1[1];
-        loop$in = in$3;
-        loop$refs = refs;
-        loop$ast = listPrepend(paragraph, ast);
-        loop$attrs = $dict.new$();
-      } else {
-        let codeblock = $[0][0];
-        let in$3 = $[0][1];
-        loop$in = in$3;
-        loop$refs = refs;
-        loop$ast = listPrepend(codeblock, ast);
-        loop$attrs = $dict.new$();
-      }
-    } else if (in$2.atLeastLength(1) && in$2.head === "[") {
-      let in2 = in$2.tail;
-      let $ = parse_ref_def(in2, "");
-      if ($ instanceof None) {
-        let $1 = parse_paragraph(in$2, attrs);
-        let paragraph = $1[0];
-        let in$3 = $1[1];
-        loop$in = in$3;
-        loop$refs = refs;
-        loop$ast = listPrepend(paragraph, ast);
-        loop$attrs = $dict.new$();
-      } else {
-        let id = $[0][0];
-        let url = $[0][1];
-        let in$3 = $[0][2];
-        let refs$1 = $dict.insert(refs, id, url);
-        loop$in = in$3;
-        loop$refs = refs$1;
-        loop$ast = ast;
-        loop$attrs = $dict.new$();
-      }
+function parse_containers(in$, refs, ast, attrs, indentation, parser) {
+  if (in$.hasLength(0)) {
+    return [$list.reverse(ast), refs, toList([])];
+  } else if (in$.atLeastLength(1) && in$.head === "{") {
+    let in2 = in$.tail;
+    let $ = parse_attributes(in2, attrs);
+    if ($ instanceof None) {
+      let $1 = parse_paragraph(in$, attrs);
+      let paragraph = $1[0];
+      let in$1 = $1[1];
+      return parser(in$1, refs, listPrepend(paragraph, ast), $dict.new$());
     } else {
-      let $ = parse_paragraph(in$2, attrs);
-      let paragraph = $[0];
-      let in$3 = $[1];
-      loop$in = in$3;
-      loop$refs = refs;
-      loop$ast = listPrepend(paragraph, ast);
-      loop$attrs = $dict.new$();
+      let attrs$1 = $[0][0];
+      let in$1 = $[0][1];
+      return parser(in$1, refs, ast, attrs$1);
     }
+  } else if (in$.atLeastLength(1) && in$.head === "#") {
+    let in$1 = in$.tail;
+    let $ = parse_heading(in$1, refs, attrs);
+    let heading = $[0];
+    let refs$1 = $[1];
+    let in$2 = $[2];
+    return parser(in$2, refs$1, listPrepend(heading, ast), $dict.new$());
+  } else if (in$.atLeastLength(1) && in$.head === "~") {
+    let delim = in$.head;
+    let in2 = in$.tail;
+    let $ = parse_codeblock(in2, attrs, delim, indentation);
+    if ($ instanceof None) {
+      let $1 = parse_paragraph(in$, attrs);
+      let paragraph = $1[0];
+      let in$1 = $1[1];
+      return parser(in$1, refs, listPrepend(paragraph, ast), $dict.new$());
+    } else {
+      let codeblock = $[0][0];
+      let in$1 = $[0][1];
+      return parser(in$1, refs, listPrepend(codeblock, ast), $dict.new$());
+    }
+  } else if (in$.atLeastLength(1) && in$.head === "`") {
+    let delim = in$.head;
+    let in2 = in$.tail;
+    let $ = parse_codeblock(in2, attrs, delim, indentation);
+    if ($ instanceof None) {
+      let $1 = parse_paragraph(in$, attrs);
+      let paragraph = $1[0];
+      let in$1 = $1[1];
+      return parser(in$1, refs, listPrepend(paragraph, ast), $dict.new$());
+    } else {
+      let codeblock = $[0][0];
+      let in$1 = $[0][1];
+      return parser(in$1, refs, listPrepend(codeblock, ast), $dict.new$());
+    }
+  } else if (in$.atLeastLength(1) && in$.head === "-") {
+    let in2 = in$.tail;
+    let $ = parse_thematic_break(1, in2);
+    if ($ instanceof None) {
+      let $1 = parse_paragraph(in$, attrs);
+      let paragraph = $1[0];
+      let in$1 = $1[1];
+      return parser(in$1, refs, listPrepend(paragraph, ast), $dict.new$());
+    } else {
+      let thematic_break = $[0][0];
+      let in$1 = $[0][1];
+      return parser(in$1, refs, listPrepend(thematic_break, ast), $dict.new$());
+    }
+  } else if (in$.atLeastLength(1) && in$.head === "*") {
+    let in2 = in$.tail;
+    let $ = parse_thematic_break(1, in2);
+    if ($ instanceof None) {
+      let $1 = parse_paragraph(in$, attrs);
+      let paragraph = $1[0];
+      let in$1 = $1[1];
+      return parser(in$1, refs, listPrepend(paragraph, ast), $dict.new$());
+    } else {
+      let thematic_break = $[0][0];
+      let in$1 = $[0][1];
+      return parser(in$1, refs, listPrepend(thematic_break, ast), $dict.new$());
+    }
+  } else if (in$.atLeastLength(2) && in$.head === "[" && in$.tail.head === "^") {
+    let in2 = in$.tail.tail;
+    let $ = parse_footnote_def(in2, refs, "^");
+    if ($ instanceof None) {
+      let $1 = parse_paragraph(in$, attrs);
+      let paragraph = $1[0];
+      let in$1 = $1[1];
+      return parser(in$1, refs, listPrepend(paragraph, ast), $dict.new$());
+    } else {
+      let id = $[0][0];
+      let footnote = $[0][1];
+      let refs$1 = $[0][2];
+      let in$1 = $[0][3];
+      let refs$2 = (() => {
+        let _record = refs$1;
+        return new Refs(
+          _record.urls,
+          $dict.insert(refs$1.footnotes, id, footnote),
+        );
+      })();
+      return parser(in$1, refs$2, ast, $dict.new$());
+    }
+  } else if (in$.atLeastLength(1) && in$.head === "[") {
+    let in2 = in$.tail;
+    let $ = parse_ref_def(in2, "");
+    if ($ instanceof None) {
+      let $1 = parse_paragraph(in$, attrs);
+      let paragraph = $1[0];
+      let in$1 = $1[1];
+      return parser(in$1, refs, listPrepend(paragraph, ast), $dict.new$());
+    } else {
+      let id = $[0][0];
+      let url = $[0][1];
+      let in$1 = $[0][2];
+      let refs$1 = (() => {
+        let _record = refs;
+        return new Refs($dict.insert(refs.urls, id, url), _record.footnotes);
+      })();
+      return parser(in$1, refs$1, ast, $dict.new$());
+    }
+  } else {
+    let $ = parse_paragraph(in$, attrs);
+    let paragraph = $[0];
+    let in$1 = $[1];
+    return parser(in$1, refs, listPrepend(paragraph, ast), $dict.new$());
   }
 }
 
+function parse_document_content(in$, refs, ast, attrs) {
+  let in$1 = drop_lines(in$);
+  let $ = count_drop_spaces(in$1, 0);
+  let in$2 = $[0];
+  let spaces_count = $[1];
+  return parse_containers(
+    in$2,
+    refs,
+    ast,
+    attrs,
+    spaces_count,
+    parse_document_content,
+  );
+}
+
 export function parse(djot) {
-  let _pipe = djot;
-  let _pipe$1 = $string.replace(_pipe, "\r\n", "\n");
-  let _pipe$2 = $string.to_graphemes(_pipe$1);
-  return parse_document(_pipe$2, $dict.new$(), toList([]), $dict.new$());
+  let $ = (() => {
+    let _pipe = djot;
+    let _pipe$1 = $string.replace(_pipe, "\r\n", "\n");
+    let _pipe$2 = $string.to_graphemes(_pipe$1);
+    return parse_document_content(
+      _pipe$2,
+      new Refs($dict.new$(), $dict.new$()),
+      toList([]),
+      $dict.new$(),
+    );
+  })();
+  let ast = $[0];
+  let urls = $[1].urls;
+  let footnotes = $[1].footnotes;
+  return new Document(ast, urls, footnotes);
 }
 
 export function to_html(djot) {

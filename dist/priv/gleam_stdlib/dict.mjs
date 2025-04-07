@@ -5,8 +5,10 @@
 
 import { isEqual } from "./gleam.mjs";
 
-const referenceMap = new WeakMap();
-const tempDataView = new DataView(new ArrayBuffer(8));
+const referenceMap = /* @__PURE__ */ new WeakMap();
+const tempDataView = /* @__PURE__ */ new DataView(
+  /* @__PURE__ */ new ArrayBuffer(8),
+);
 let referenceUID = 0;
 /**
  * hash the object by reference using a weak map and incrementing uid
@@ -25,6 +27,7 @@ function hashByReference(o) {
   referenceMap.set(o, hash);
   return hash;
 }
+
 /**
  * merge two hashes in an order sensitive way
  * @param {number} a
@@ -34,6 +37,7 @@ function hashByReference(o) {
 function hashMerge(a, b) {
   return (a ^ (b + 0x9e3779b9 + (a << 6) + (a >> 2))) | 0;
 }
+
 /**
  * standard string hash popularised by java
  * @param {string} s
@@ -47,6 +51,7 @@ function hashString(s) {
   }
   return hash;
 }
+
 /**
  * hash a number by converting to two integers and do some jumbling
  * @param {number} n
@@ -58,6 +63,7 @@ function hashNumber(n) {
   const j = tempDataView.getInt32(4);
   return Math.imul(0x45d9f3b, (i >> 16) ^ i) ^ j;
 }
+
 /**
  * hash a BigInt by converting it to a string and hashing that
  * @param {BigInt} n
@@ -66,6 +72,7 @@ function hashNumber(n) {
 function hashBigInt(n) {
   return hashString(n.toString());
 }
+
 /**
  * hash any js object
  * @param {any} o
@@ -113,6 +120,7 @@ function hashObject(o) {
   }
   return h;
 }
+
 /**
  * hash any js value
  * @param {any} u
@@ -140,6 +148,7 @@ export function getHash(u) {
       return 0; // should be unreachable
   }
 }
+
 /**
  * @template K,V
  * @typedef {ArrayNode<K,V> | IndexNode<K,V> | CollisionNode<K,V>} Node
@@ -172,6 +181,7 @@ const ENTRY = 0;
 const ARRAY_NODE = 1;
 const INDEX_NODE = 2;
 const COLLISION_NODE = 3;
+
 /** @type {IndexNode<any,any>} */
 const EMPTY = {
   type: INDEX_NODE,
@@ -187,6 +197,7 @@ const EMPTY = {
 function mask(hash, shift) {
   return (hash >>> shift) & MASK;
 }
+
 /**
  * Set only the Nth bit where N is the masked hash
  * @param {number} hash
@@ -196,6 +207,7 @@ function mask(hash, shift) {
 function bitpos(hash, shift) {
   return 1 << mask(hash, shift);
 }
+
 /**
  * Count the number of 1 bits in a number
  * @param {number} x
@@ -209,6 +221,7 @@ function bitcount(x) {
   x += x >> 16;
   return x & 0x7f;
 }
+
 /**
  * Calculate the array index of an item in a bitmap index node
  * @param {number} bitmap
@@ -218,6 +231,7 @@ function bitcount(x) {
 function index(bitmap, bit) {
   return bitcount(bitmap & (bit - 1));
 }
+
 /**
  * Efficiently copy an array and set one value at an index
  * @template T
@@ -235,6 +249,7 @@ function cloneAndSet(arr, at, val) {
   out[at] = val;
   return out;
 }
+
 /**
  * Efficiently copy an array and insert one value at an index
  * @template T
@@ -257,6 +272,7 @@ function spliceIn(arr, at, val) {
   }
   return out;
 }
+
 /**
  * Efficiently copy an array and remove one value at an index
  * @template T
@@ -278,6 +294,7 @@ function spliceOut(arr, at) {
   }
   return out;
 }
+
 /**
  * Create a new node containing two entries
  * @template K,V
@@ -308,9 +325,10 @@ function createNode(shift, key1, val1, key2hash, key2, val2) {
     key2hash,
     key2,
     val2,
-    addedLeaf
+    addedLeaf,
   );
 }
+
 /**
  * @template T,K,V
  * @callback AssocFunction
@@ -377,7 +395,7 @@ function assocArray(root, shift, hash, key, val, addedLeaf) {
       array: cloneAndSet(
         root.array,
         idx,
-        createNode(shift + SHIFT, node.k, node.v, hash, key, val)
+        createNode(shift + SHIFT, node.k, node.v, hash, key, val),
       ),
     };
   }
@@ -441,7 +459,7 @@ function assocIndex(root, shift, hash, key, val, addedLeaf) {
       array: cloneAndSet(
         root.array,
         idx,
-        createNode(shift + SHIFT, nodeKey, node.v, hash, key, val)
+        createNode(shift + SHIFT, nodeKey, node.v, hash, key, val),
       ),
     };
   } else {
@@ -528,7 +546,7 @@ function assocCollision(root, shift, hash, key, val, addedLeaf) {
     hash,
     key,
     val,
-    addedLeaf
+    addedLeaf,
   );
 }
 /**
@@ -813,6 +831,7 @@ function forEach(root, fn) {
     forEach(item, fn);
   }
 }
+
 /**
  * Extra wrapper to keep track of Dict size and clean up the API
  * @template K,V
@@ -833,6 +852,7 @@ export default class Dict {
     }
     return m;
   }
+
   /**
    * @template K,V
    * @param {Map<K,V>} o
@@ -846,9 +866,11 @@ export default class Dict {
     });
     return m;
   }
+
   static new() {
     return new Dict(undefined, 0);
   }
+
   /**
    * @param {undefined | Node<K,V>} root
    * @param {number} size
@@ -948,10 +970,24 @@ export default class Dict {
     if (!(o instanceof Dict) || this.size !== o.size) {
       return false;
     }
-    let equal = true;
-    this.forEach((v, k) => {
-      equal = equal && isEqual(o.get(k, !v), v);
-    });
-    return equal;
+
+    try {
+      this.forEach((v, k) => {
+        if (!isEqual(o.get(k, !v), v)) {
+          throw unequalDictSymbol;
+        }
+      });
+      return true;
+    } catch (e) {
+      if (e === unequalDictSymbol) {
+        return false;
+      }
+
+      throw e;
+    }
   }
 }
+
+// This is thrown internally in Dict.equals() so that it returns false as soon
+// as a non-matching key is found
+const unequalDictSymbol = /* @__PURE__ */ Symbol();

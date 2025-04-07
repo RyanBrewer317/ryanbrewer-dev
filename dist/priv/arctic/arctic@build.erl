@@ -3,24 +3,34 @@
 
 -export([build/1]).
 
+-if(?OTP_RELEASE >= 27).
+-define(MODULEDOC(Str), -moduledoc(Str)).
+-define(DOC(Str), -doc(Str)).
+-else.
+-define(MODULEDOC(Str), -compile([])).
+-define(DOC(Str), -compile([])).
+-endif.
+
+-file("src/arctic/build.gleam", 26).
 -spec lift_ordering(fun((arctic:page(), arctic:page()) -> gleam@order:order())) -> fun((arctic:cacheable_page(), arctic:cacheable_page()) -> gleam@order:order()).
 lift_ordering(Ordering) ->
     fun(A, B) -> Ordering(arctic:to_dummy_page(A), arctic:to_dummy_page(B)) end.
 
+-file("src/arctic/build.gleam", 32).
 -spec get_id(arctic:cacheable_page()) -> binary().
 get_id(P) ->
     case P of
         {cached_page, _, Metadata} ->
-            _assert_subject = gleam@dict:get(Metadata, <<"id"/utf8>>),
+            _assert_subject = gleam_stdlib:map_get(Metadata, <<"id"/utf8>>),
             {ok, Id} = case _assert_subject of
                 {ok, _} -> _assert_subject;
                 _assert_fail ->
                     erlang:error(#{gleam_error => let_assert,
-                                message => <<"Assertion pattern match failed"/utf8>>,
+                                message => <<"Pattern match failed, no pattern matched the value."/utf8>>,
                                 value => _assert_fail,
                                 module => <<"arctic/build"/utf8>>,
                                 function => <<"get_id"/utf8>>,
-                                line => 36})
+                                line => 35})
             end,
             Id;
 
@@ -28,12 +38,13 @@ get_id(P) ->
             erlang:element(2, Page)
     end.
 
+-file("src/arctic/build.gleam", 42).
 -spec to_metadata(list(binary())) -> {ok, gleam@dict:dict(binary(), binary())} |
     {error, snag:snag()}.
 to_metadata(Csv) ->
     case Csv of
         [] ->
-            {ok, gleam@dict:new()};
+            {ok, maps:new()};
 
         [Pair_str | Rest] ->
             case gleam@string:split(Pair_str, <<":"/utf8>>) of
@@ -57,6 +68,7 @@ to_metadata(Csv) ->
             end
     end.
 
+-file("src/arctic/build.gleam", 56).
 -spec to_cache(list(list(binary()))) -> {ok,
         gleam@dict:dict(binary(), {bitstring(),
             gleam@dict:dict(binary(), binary())})} |
@@ -64,7 +76,7 @@ to_metadata(Csv) ->
 to_cache(Csv) ->
     case Csv of
         [] ->
-            {ok, gleam@dict:new()};
+            {ok, maps:new()};
 
         [[Id, Hash | Metadata] | Rest] ->
             gleam@result:'try'(
@@ -109,32 +121,37 @@ to_cache(Csv) ->
             )
     end.
 
+-file("src/arctic/build.gleam", 79).
 -spec parse_csv(binary()) -> {ok, list(list(binary()))} | {error, snag:snag()}.
 parse_csv(Csv) ->
     Res = party:go(
         begin
-            _pipe = (party:do(
-                party:char(<<"\""/utf8>>),
-                fun(_) ->
-                    party:do(
-                        party:many_concat(
-                            party:either(
-                                party:map(
-                                    party:string(<<"\"\""/utf8>>),
-                                    fun(_) -> <<"\""/utf8>> end
-                                ),
-                                party:satisfy(fun(C) -> C /= <<"\""/utf8>> end)
-                            )
-                        ),
-                        fun(Val) ->
-                            party:do(
-                                party:char(<<"\""/utf8>>),
-                                fun(_) -> party:return(Val) end
-                            )
-                        end
-                    )
-                end
-            )),
+            _pipe = begin
+                party:do(
+                    party:char(<<"\""/utf8>>),
+                    fun(_) ->
+                        party:do(
+                            party:many_concat(
+                                party:either(
+                                    party:map(
+                                        party:string(<<"\"\""/utf8>>),
+                                        fun(_) -> <<"\""/utf8>> end
+                                    ),
+                                    party:satisfy(
+                                        fun(C) -> C /= <<"\""/utf8>> end
+                                    )
+                                )
+                            ),
+                            fun(Val) ->
+                                party:do(
+                                    party:char(<<"\""/utf8>>),
+                                    fun(_) -> party:return(Val) end
+                                )
+                            end
+                        )
+                    end
+                )
+            end,
             _pipe@1 = party:sep(_pipe, party:char(<<","/utf8>>)),
             _pipe@2 = (fun(P) ->
                 party:do(
@@ -152,20 +169,25 @@ parse_csv(Csv) ->
                 {unexpected, P@1, S} ->
                     snag:new(
                         <<<<<<<<S/binary, " at "/utf8>>/binary,
-                                    (gleam@int:to_string(erlang:element(2, P@1)))/binary>>/binary,
+                                    (erlang:integer_to_binary(
+                                        erlang:element(2, P@1)
+                                    ))/binary>>/binary,
                                 ":"/utf8>>/binary,
-                            (gleam@int:to_string(erlang:element(3, P@1)))/binary>>
+                            (erlang:integer_to_binary(erlang:element(3, P@1)))/binary>>
                     );
 
                 {user_error, P@2, nil} ->
                     snag:new(
                         <<<<<<"internal Arctic error at "/utf8,
-                                    (gleam@int:to_string(erlang:element(2, P@2)))/binary>>/binary,
+                                    (erlang:integer_to_binary(
+                                        erlang:element(2, P@2)
+                                    ))/binary>>/binary,
                                 ":"/utf8>>/binary,
-                            (gleam@int:to_string(erlang:element(3, P@2)))/binary>>
+                            (erlang:integer_to_binary(erlang:element(3, P@2)))/binary>>
                     )
             end end).
 
+-file("src/arctic/build.gleam", 117).
 -spec read_collection(
     arctic:collection(),
     gleam@dict:dict(binary(), {bitstring(), gleam@dict:dict(binary(), binary())})
@@ -210,7 +232,7 @@ read_collection(Collection, Cache) ->
                                 sha256,
                                 gleam_stdlib:identity(Content)
                             ),
-                            case gleam@dict:get(Cache, Path) of
+                            case gleam_stdlib:map_get(Cache, Path) of
                                 {ok, {Current_hash, Metadata}} when Current_hash =:= New_hash ->
                                     {ok,
                                         [{cached_page, Path, Metadata} | So_far]};
@@ -266,7 +288,7 @@ read_collection(Collection, Cache) ->
                                                                                                     D
                                                                                                 ) ->
                                                                                                     <<<<",\"date:"/utf8,
-                                                                                                            (birl:to_naive_date_string(
+                                                                                                            (arctic:date_to_string(
                                                                                                                 D
                                                                                                             ))/binary>>/binary,
                                                                                                         "\""/utf8>>
@@ -357,6 +379,7 @@ read_collection(Collection, Cache) ->
         end
     ).
 
+-file("src/arctic/build.gleam", 203).
 -spec process(
     list(arctic:collection()),
     gleam@dict:dict(binary(), {bitstring(), gleam@dict:dict(binary(), binary())})
@@ -379,6 +402,7 @@ process(Collections, Cache) ->
         end
     ).
 
+-file("src/arctic/build.gleam", 241).
 -spec spa(
     fun((lustre@internals@vdom:element(nil)) -> lustre@internals@vdom:element(nil)),
     lustre@internals@vdom:element(nil)
@@ -493,12 +517,13 @@ function find_a(target) {
         )
     ).
 
+-file("src/arctic/build.gleam", 438).
 -spec add_route(
-    lustre@ssg:config(any(), UGV, UGW),
+    lustre@ssg:config(any(), WPW, WPX),
     arctic:config(),
     binary(),
     lustre@internals@vdom:element(nil)
-) -> lustre@ssg:config(lustre@ssg:has_static_routes(), UGV, UGW).
+) -> lustre@ssg:config(lustre@ssg:has_static_routes(), WPW, WPX).
 add_route(Ssg_config, Config, Path, Content) ->
     case erlang:element(5, Config) of
         {some, Frame} ->
@@ -523,6 +548,7 @@ add_route(Ssg_config, Config, Path, Content) ->
             )
     end.
 
+-file("src/arctic/build.gleam", 351).
 -spec make_ssg_config(
     list(arctic:processed_collection()),
     arctic:config(),
@@ -614,11 +640,11 @@ make_ssg_config(Processed_collections, Config, K) ->
                                         _assert_fail ->
                                             erlang:error(
                                                     #{gleam_error => let_assert,
-                                                        message => <<"Assertion pattern match failed"/utf8>>,
+                                                        message => <<"Pattern match failed, no pattern matched the value."/utf8>>,
                                                         value => _assert_fail,
                                                         module => <<"arctic/build"/utf8>>,
                                                         function => <<"make_ssg_config"/utf8>>,
-                                                        line => 403}
+                                                        line => 402}
                                                 )
                                     end,
                                     Cached_path = <<<<"arctic_build/"/utf8,
@@ -634,7 +660,7 @@ make_ssg_config(Processed_collections, Config, K) ->
                                                     message => Cached_path,
                                                     module => <<"arctic/build"/utf8>>,
                                                     function => <<"make_ssg_config"/utf8>>,
-                                                    line => 408})
+                                                    line => 407})
                                     end,
                                     case erlang:element(5, Config) of
                                         {some, _} ->
@@ -654,7 +680,7 @@ make_ssg_config(Processed_collections, Config, K) ->
                                                             message => Cached_path,
                                                             module => <<"arctic/build"/utf8>>,
                                                             function => <<"make_ssg_config"/utf8>>,
-                                                            line => 420}
+                                                            line => 419}
                                                     )
                                             end,
                                             _pipe@5 = S@1,
@@ -689,6 +715,7 @@ make_ssg_config(Processed_collections, Config, K) ->
         fun(Ssg_config@2) -> K(Ssg_config@2) end
     ).
 
+-file("src/arctic/build.gleam", 450).
 -spec ssg_build(
     lustre@ssg:config(lustre@ssg:has_static_routes(), any(), any()),
     fun(() -> {ok, nil} | {error, snag:snag()})
@@ -741,6 +768,7 @@ ssg_build(Ssg_config, K) ->
         fun(_) -> K() end
     ).
 
+-file("src/arctic/build.gleam", 495).
 -spec add_public(fun(() -> {ok, nil} | {error, snag:snag()})) -> {ok, nil} |
     {error, snag:snag()}.
 add_public(K) ->
@@ -783,9 +811,10 @@ add_public(K) ->
         end
     ).
 
+-file("src/arctic/build.gleam", 519).
 -spec option_to_result_nil(
-    gleam@option:option(TZA),
-    fun((TZA) -> {ok, nil} | {error, snag:snag()})
+    gleam@option:option(WIC),
+    fun((WIC) -> {ok, nil} | {error, snag:snag()})
 ) -> {ok, nil} | {error, snag:snag()}.
 option_to_result_nil(Opt, F) ->
     case Opt of
@@ -796,6 +825,7 @@ option_to_result_nil(Opt, F) ->
             {ok, nil}
     end.
 
+-file("src/arctic/build.gleam", 526).
 -spec add_feed(
     list(arctic:processed_collection()),
     fun(() -> {ok, nil} | {error, snag:snag()})
@@ -853,6 +883,7 @@ add_feed(Processed_collections, K) ->
         end
     ).
 
+-file("src/arctic/build.gleam", 560).
 -spec add_vite_config(
     arctic:config(),
     list(arctic:processed_collection()),
@@ -927,6 +958,8 @@ add_vite_config(Config, Processed_collections, K) ->
         fun(_) -> K() end
     ).
 
+-file("src/arctic/build.gleam", 214).
+?DOC(" Fill out an `arctic_build` directory from an Arctic configuration.\n").
 -spec build(arctic:config()) -> {ok, nil} | {error, snag:snag()}.
 build(Config) ->
     _ = simplifile:create_file(<<".arctic_cache.csv"/utf8>>),

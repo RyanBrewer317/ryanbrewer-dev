@@ -1,9 +1,11 @@
 import * as $process from "../../../gleam_erlang/gleam/erlang/process.mjs";
+import * as $dict from "../../../gleam_stdlib/gleam/dict.mjs";
 import * as $dynamic from "../../../gleam_stdlib/gleam/dynamic.mjs";
 import * as $function from "../../../gleam_stdlib/gleam/function.mjs";
+import * as $list from "../../../gleam_stdlib/gleam/list.mjs";
 import * as $option from "../../../gleam_stdlib/gleam/option.mjs";
 import { None, Some } from "../../../gleam_stdlib/gleam/option.mjs";
-import { CustomType as $CustomType } from "../../gleam.mjs";
+import { toList, prepend as listPrepend, CustomType as $CustomType } from "../../gleam.mjs";
 
 class Task extends $CustomType {
   constructor(owner, pid, subject) {
@@ -92,6 +94,47 @@ class M4FromSubject4 extends $CustomType {
 
 class M4Timeout extends $CustomType {}
 
+class Message extends $CustomType {
+  constructor(from, value) {
+    super();
+    this.from = from;
+    this.value = value;
+  }
+}
+
+class MessageTimeout extends $CustomType {}
+
 export function pid(task) {
   return task.pid;
+}
+
+function dict_to_list_loop(loop$dict, loop$default, loop$index, loop$list) {
+  while (true) {
+    let dict = loop$dict;
+    let default$ = loop$default;
+    let index = loop$index;
+    let list = loop$list;
+    let $ = index < 0;
+    if ($) {
+      return list;
+    } else {
+      let value = (() => {
+        let $1 = $dict.get(dict, index);
+        if (!$1.isOk()) {
+          return default$;
+        } else {
+          let value = $1[0];
+          return value;
+        }
+      })();
+      loop$dict = dict;
+      loop$default = default$;
+      loop$index = index - 1;
+      loop$list = listPrepend(value, list);
+    }
+  }
+}
+
+function dict_to_list(dict, sized, default$) {
+  return dict_to_list_loop(dict, default$, sized - 1, toList([]));
 }

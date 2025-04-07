@@ -1,8 +1,27 @@
 -module(gleam@uri).
 -compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch]).
 
--export([parse/1, parse_query/1, percent_encode/1, query_to_string/1, percent_decode/1, path_segments/1, to_string/1, origin/1, merge/2]).
+-export([parse_query/1, percent_encode/1, query_to_string/1, percent_decode/1, path_segments/1, to_string/1, origin/1, merge/2, parse/1]).
 -export_type([uri/0]).
+
+-if(?OTP_RELEASE >= 27).
+-define(MODULEDOC(Str), -moduledoc(Str)).
+-define(DOC(Str), -doc(Str)).
+-else.
+-define(MODULEDOC(Str), -compile([])).
+-define(DOC(Str), -compile([])).
+-endif.
+
+?MODULEDOC(
+    " Utilities for working with URIs\n"
+    "\n"
+    " This module provides functions for working with URIs (for example, parsing\n"
+    " URIs or encoding query strings). The functions in this module are implemented\n"
+    " according to [RFC 3986](https://tools.ietf.org/html/rfc3986).\n"
+    "\n"
+    " Query encoding (Form encoding) is defined in the\n"
+    " [W3C specification](https://www.w3.org/TR/html52/sec-forms.html#urlencoded-form-data).\n"
+).
 
 -type uri() :: {uri,
         gleam@option:option(binary()),
@@ -13,150 +32,794 @@
         gleam@option:option(binary()),
         gleam@option:option(binary())}.
 
--file("/Users/louis/src/gleam/stdlib/src/gleam/uri.gleam", 116).
--spec regex_submatches(binary(), binary()) -> list(gleam@option:option(binary())).
-regex_submatches(Pattern, String) ->
-    _pipe = Pattern,
-    _pipe@1 = gleam@regex:compile(_pipe, {options, true, false}),
-    _pipe@2 = gleam@result:nil_error(_pipe@1),
-    _pipe@3 = gleam@result:map(
-        _pipe@2,
-        fun(_capture) -> gleam@regex:scan(_capture, String) end
-    ),
-    _pipe@4 = gleam@result:'try'(_pipe@3, fun gleam@list:first/1),
-    _pipe@5 = gleam@result:map(_pipe@4, fun(M) -> erlang:element(3, M) end),
-    gleam@result:unwrap(_pipe@5, []).
+-file("src/gleam/uri.gleam", 289).
+-spec is_valid_host_within_brackets_char(integer()) -> boolean().
+is_valid_host_within_brackets_char(Char) ->
+    (((((48 >= Char) andalso (Char =< 57)) orelse ((65 >= Char) andalso (Char =< 90)))
+    orelse ((97 >= Char) andalso (Char =< 122)))
+    orelse (Char =:= 58))
+    orelse (Char =:= 46).
 
--file("/Users/louis/src/gleam/stdlib/src/gleam/uri.gleam", 126).
--spec noneify_query(gleam@option:option(binary())) -> gleam@option:option(binary()).
-noneify_query(X) ->
-    case X of
-        none ->
-            none;
+-file("src/gleam/uri.gleam", 503).
+-spec parse_fragment(binary(), uri()) -> {ok, uri()} | {error, nil}.
+parse_fragment(Rest, Pieces) ->
+    {ok,
+        begin
+            _record = Pieces,
+            {uri,
+                erlang:element(2, _record),
+                erlang:element(3, _record),
+                erlang:element(4, _record),
+                erlang:element(5, _record),
+                erlang:element(6, _record),
+                erlang:element(7, _record),
+                {some, Rest}}
+        end}.
 
-        {some, X@1} ->
-            case gleam@string:pop_grapheme(X@1) of
-                {ok, {<<"?"/utf8>>, Query}} ->
-                    {some, Query};
+-file("src/gleam/uri.gleam", 475).
+-spec parse_query_with_question_mark_loop(binary(), binary(), uri(), integer()) -> {ok,
+        uri()} |
+    {error, nil}.
+parse_query_with_question_mark_loop(Original, Uri_string, Pieces, Size) ->
+    case Uri_string of
+        <<"#"/utf8, Rest/binary>> when Size =:= 0 ->
+            parse_fragment(Rest, Pieces);
 
-                _ ->
-                    none
-            end
-    end.
-
--file("/Users/louis/src/gleam/stdlib/src/gleam/uri.gleam", 137).
--spec noneify_empty_string(gleam@option:option(binary())) -> gleam@option:option(binary()).
-noneify_empty_string(X) ->
-    case X of
-        {some, <<""/utf8>>} ->
-            none;
-
-        none ->
-            none;
-
-        {some, _} ->
-            X
-    end.
-
--file("/Users/louis/src/gleam/stdlib/src/gleam/uri.gleam", 178).
--spec extra_required(list(any()), integer()) -> integer().
-extra_required(List, Remaining) ->
-    case List of
-        _ when Remaining =:= 0 ->
-            0;
-
-        [] ->
-            Remaining;
-
-        [_ | Rest] ->
-            extra_required(Rest, Remaining - 1)
-    end.
-
--file("/Users/louis/src/gleam/stdlib/src/gleam/uri.gleam", 173).
--spec pad_list(list(gleam@option:option(FJT)), integer()) -> list(gleam@option:option(FJT)).
-pad_list(List, Size) ->
-    _pipe = List,
-    lists:append(_pipe, gleam@list:repeat(none, extra_required(List, Size))).
-
--file("/Users/louis/src/gleam/stdlib/src/gleam/uri.gleam", 145).
--spec split_authority(gleam@option:option(binary())) -> {gleam@option:option(binary()),
-    gleam@option:option(binary()),
-    gleam@option:option(integer())}.
-split_authority(Authority) ->
-    case gleam@option:unwrap(Authority, <<""/utf8>>) of
-        <<""/utf8>> ->
-            {none, none, none};
-
-        <<"//"/utf8>> ->
-            {none, {some, <<""/utf8>>}, none};
-
-        Authority@1 ->
-            Matches = begin
-                _pipe = <<"^(//)?((.*)@)?(\\[[a-zA-Z0-9:.]*\\]|[^:]*)(:(\\d*))?"/utf8>>,
-                _pipe@1 = regex_submatches(_pipe, Authority@1),
-                pad_list(_pipe@1, 6)
+        <<"#"/utf8, Rest@1/binary>> ->
+            Query = binary:part(Original, 0, Size),
+            Pieces@1 = begin
+                _record = Pieces,
+                {uri,
+                    erlang:element(2, _record),
+                    erlang:element(3, _record),
+                    erlang:element(4, _record),
+                    erlang:element(5, _record),
+                    erlang:element(6, _record),
+                    {some, Query},
+                    erlang:element(8, _record)}
             end,
-            case Matches of
-                [_, _, Userinfo, Host, _, Port] ->
-                    Userinfo@1 = noneify_empty_string(Userinfo),
-                    Host@1 = noneify_empty_string(Host),
-                    Port@1 = begin
-                        _pipe@2 = Port,
-                        _pipe@3 = gleam@option:unwrap(_pipe@2, <<""/utf8>>),
-                        _pipe@4 = gleam@int:parse(_pipe@3),
-                        gleam@option:from_result(_pipe@4)
-                    end,
-                    {Userinfo@1, Host@1, Port@1};
+            parse_fragment(Rest@1, Pieces@1);
 
-                _ ->
-                    {none, none, none}
+        <<""/utf8>> ->
+            {ok,
+                begin
+                    _record@1 = Pieces,
+                    {uri,
+                        erlang:element(2, _record@1),
+                        erlang:element(3, _record@1),
+                        erlang:element(4, _record@1),
+                        erlang:element(5, _record@1),
+                        erlang:element(6, _record@1),
+                        {some, Original},
+                        erlang:element(8, _record@1)}
+                end};
+
+        _ ->
+            {_, Rest@2} = gleam_stdlib:string_pop_codeunit(Uri_string),
+            parse_query_with_question_mark_loop(
+                Original,
+                Rest@2,
+                Pieces,
+                Size + 1
+            )
+    end.
+
+-file("src/gleam/uri.gleam", 468).
+-spec parse_query_with_question_mark(binary(), uri()) -> {ok, uri()} |
+    {error, nil}.
+parse_query_with_question_mark(Uri_string, Pieces) ->
+    parse_query_with_question_mark_loop(Uri_string, Uri_string, Pieces, 0).
+
+-file("src/gleam/uri.gleam", 434).
+-spec parse_path_loop(binary(), binary(), uri(), integer()) -> {ok, uri()} |
+    {error, nil}.
+parse_path_loop(Original, Uri_string, Pieces, Size) ->
+    case Uri_string of
+        <<"?"/utf8, Rest/binary>> ->
+            Path = binary:part(Original, 0, Size),
+            Pieces@1 = begin
+                _record = Pieces,
+                {uri,
+                    erlang:element(2, _record),
+                    erlang:element(3, _record),
+                    erlang:element(4, _record),
+                    erlang:element(5, _record),
+                    Path,
+                    erlang:element(7, _record),
+                    erlang:element(8, _record)}
+            end,
+            parse_query_with_question_mark(Rest, Pieces@1);
+
+        <<"#"/utf8, Rest@1/binary>> ->
+            Path@1 = binary:part(Original, 0, Size),
+            Pieces@2 = begin
+                _record@1 = Pieces,
+                {uri,
+                    erlang:element(2, _record@1),
+                    erlang:element(3, _record@1),
+                    erlang:element(4, _record@1),
+                    erlang:element(5, _record@1),
+                    Path@1,
+                    erlang:element(7, _record@1),
+                    erlang:element(8, _record@1)}
+            end,
+            parse_fragment(Rest@1, Pieces@2);
+
+        <<""/utf8>> ->
+            {ok,
+                begin
+                    _record@2 = Pieces,
+                    {uri,
+                        erlang:element(2, _record@2),
+                        erlang:element(3, _record@2),
+                        erlang:element(4, _record@2),
+                        erlang:element(5, _record@2),
+                        Original,
+                        erlang:element(7, _record@2),
+                        erlang:element(8, _record@2)}
+                end};
+
+        _ ->
+            {_, Rest@2} = gleam_stdlib:string_pop_codeunit(Uri_string),
+            parse_path_loop(Original, Rest@2, Pieces, Size + 1)
+    end.
+
+-file("src/gleam/uri.gleam", 430).
+-spec parse_path(binary(), uri()) -> {ok, uri()} | {error, nil}.
+parse_path(Uri_string, Pieces) ->
+    parse_path_loop(Uri_string, Uri_string, Pieces, 0).
+
+-file("src/gleam/uri.gleam", 385).
+-spec parse_port_loop(binary(), uri(), integer()) -> {ok, uri()} | {error, nil}.
+parse_port_loop(Uri_string, Pieces, Port) ->
+    case Uri_string of
+        <<"0"/utf8, Rest/binary>> ->
+            parse_port_loop(Rest, Pieces, Port * 10);
+
+        <<"1"/utf8, Rest@1/binary>> ->
+            parse_port_loop(Rest@1, Pieces, (Port * 10) + 1);
+
+        <<"2"/utf8, Rest@2/binary>> ->
+            parse_port_loop(Rest@2, Pieces, (Port * 10) + 2);
+
+        <<"3"/utf8, Rest@3/binary>> ->
+            parse_port_loop(Rest@3, Pieces, (Port * 10) + 3);
+
+        <<"4"/utf8, Rest@4/binary>> ->
+            parse_port_loop(Rest@4, Pieces, (Port * 10) + 4);
+
+        <<"5"/utf8, Rest@5/binary>> ->
+            parse_port_loop(Rest@5, Pieces, (Port * 10) + 5);
+
+        <<"6"/utf8, Rest@6/binary>> ->
+            parse_port_loop(Rest@6, Pieces, (Port * 10) + 6);
+
+        <<"7"/utf8, Rest@7/binary>> ->
+            parse_port_loop(Rest@7, Pieces, (Port * 10) + 7);
+
+        <<"8"/utf8, Rest@8/binary>> ->
+            parse_port_loop(Rest@8, Pieces, (Port * 10) + 8);
+
+        <<"9"/utf8, Rest@9/binary>> ->
+            parse_port_loop(Rest@9, Pieces, (Port * 10) + 9);
+
+        <<"?"/utf8, Rest@10/binary>> ->
+            Pieces@1 = begin
+                _record = Pieces,
+                {uri,
+                    erlang:element(2, _record),
+                    erlang:element(3, _record),
+                    erlang:element(4, _record),
+                    {some, Port},
+                    erlang:element(6, _record),
+                    erlang:element(7, _record),
+                    erlang:element(8, _record)}
+            end,
+            parse_query_with_question_mark(Rest@10, Pieces@1);
+
+        <<"#"/utf8, Rest@11/binary>> ->
+            Pieces@2 = begin
+                _record@1 = Pieces,
+                {uri,
+                    erlang:element(2, _record@1),
+                    erlang:element(3, _record@1),
+                    erlang:element(4, _record@1),
+                    {some, Port},
+                    erlang:element(6, _record@1),
+                    erlang:element(7, _record@1),
+                    erlang:element(8, _record@1)}
+            end,
+            parse_fragment(Rest@11, Pieces@2);
+
+        <<"/"/utf8, _/binary>> ->
+            Pieces@3 = begin
+                _record@2 = Pieces,
+                {uri,
+                    erlang:element(2, _record@2),
+                    erlang:element(3, _record@2),
+                    erlang:element(4, _record@2),
+                    {some, Port},
+                    erlang:element(6, _record@2),
+                    erlang:element(7, _record@2),
+                    erlang:element(8, _record@2)}
+            end,
+            parse_path(Uri_string, Pieces@3);
+
+        <<""/utf8>> ->
+            {ok,
+                begin
+                    _record@3 = Pieces,
+                    {uri,
+                        erlang:element(2, _record@3),
+                        erlang:element(3, _record@3),
+                        erlang:element(4, _record@3),
+                        {some, Port},
+                        erlang:element(6, _record@3),
+                        erlang:element(7, _record@3),
+                        erlang:element(8, _record@3)}
+                end};
+
+        _ ->
+            {error, nil}
+    end.
+
+-file("src/gleam/uri.gleam", 353).
+-spec parse_port(binary(), uri()) -> {ok, uri()} | {error, nil}.
+parse_port(Uri_string, Pieces) ->
+    case Uri_string of
+        <<":0"/utf8, Rest/binary>> ->
+            parse_port_loop(Rest, Pieces, 0);
+
+        <<":1"/utf8, Rest@1/binary>> ->
+            parse_port_loop(Rest@1, Pieces, 1);
+
+        <<":2"/utf8, Rest@2/binary>> ->
+            parse_port_loop(Rest@2, Pieces, 2);
+
+        <<":3"/utf8, Rest@3/binary>> ->
+            parse_port_loop(Rest@3, Pieces, 3);
+
+        <<":4"/utf8, Rest@4/binary>> ->
+            parse_port_loop(Rest@4, Pieces, 4);
+
+        <<":5"/utf8, Rest@5/binary>> ->
+            parse_port_loop(Rest@5, Pieces, 5);
+
+        <<":6"/utf8, Rest@6/binary>> ->
+            parse_port_loop(Rest@6, Pieces, 6);
+
+        <<":7"/utf8, Rest@7/binary>> ->
+            parse_port_loop(Rest@7, Pieces, 7);
+
+        <<":8"/utf8, Rest@8/binary>> ->
+            parse_port_loop(Rest@8, Pieces, 8);
+
+        <<":9"/utf8, Rest@9/binary>> ->
+            parse_port_loop(Rest@9, Pieces, 9);
+
+        <<":"/utf8, _/binary>> ->
+            {error, nil};
+
+        <<"?"/utf8, Rest@10/binary>> ->
+            parse_query_with_question_mark(Rest@10, Pieces);
+
+        <<"#"/utf8, Rest@11/binary>> ->
+            parse_fragment(Rest@11, Pieces);
+
+        <<"/"/utf8, _/binary>> ->
+            parse_path(Uri_string, Pieces);
+
+        <<""/utf8>> ->
+            {ok, Pieces};
+
+        _ ->
+            {error, nil}
+    end.
+
+-file("src/gleam/uri.gleam", 309).
+-spec parse_host_outside_of_brackets_loop(binary(), binary(), uri(), integer()) -> {ok,
+        uri()} |
+    {error, nil}.
+parse_host_outside_of_brackets_loop(Original, Uri_string, Pieces, Size) ->
+    case Uri_string of
+        <<""/utf8>> ->
+            {ok,
+                begin
+                    _record = Pieces,
+                    {uri,
+                        erlang:element(2, _record),
+                        erlang:element(3, _record),
+                        {some, Original},
+                        erlang:element(5, _record),
+                        erlang:element(6, _record),
+                        erlang:element(7, _record),
+                        erlang:element(8, _record)}
+                end};
+
+        <<":"/utf8, _/binary>> ->
+            Host = binary:part(Original, 0, Size),
+            Pieces@1 = begin
+                _record@1 = Pieces,
+                {uri,
+                    erlang:element(2, _record@1),
+                    erlang:element(3, _record@1),
+                    {some, Host},
+                    erlang:element(5, _record@1),
+                    erlang:element(6, _record@1),
+                    erlang:element(7, _record@1),
+                    erlang:element(8, _record@1)}
+            end,
+            parse_port(Uri_string, Pieces@1);
+
+        <<"/"/utf8, _/binary>> ->
+            Host@1 = binary:part(Original, 0, Size),
+            Pieces@2 = begin
+                _record@2 = Pieces,
+                {uri,
+                    erlang:element(2, _record@2),
+                    erlang:element(3, _record@2),
+                    {some, Host@1},
+                    erlang:element(5, _record@2),
+                    erlang:element(6, _record@2),
+                    erlang:element(7, _record@2),
+                    erlang:element(8, _record@2)}
+            end,
+            parse_path(Uri_string, Pieces@2);
+
+        <<"?"/utf8, Rest/binary>> ->
+            Host@2 = binary:part(Original, 0, Size),
+            Pieces@3 = begin
+                _record@3 = Pieces,
+                {uri,
+                    erlang:element(2, _record@3),
+                    erlang:element(3, _record@3),
+                    {some, Host@2},
+                    erlang:element(5, _record@3),
+                    erlang:element(6, _record@3),
+                    erlang:element(7, _record@3),
+                    erlang:element(8, _record@3)}
+            end,
+            parse_query_with_question_mark(Rest, Pieces@3);
+
+        <<"#"/utf8, Rest@1/binary>> ->
+            Host@3 = binary:part(Original, 0, Size),
+            Pieces@4 = begin
+                _record@4 = Pieces,
+                {uri,
+                    erlang:element(2, _record@4),
+                    erlang:element(3, _record@4),
+                    {some, Host@3},
+                    erlang:element(5, _record@4),
+                    erlang:element(6, _record@4),
+                    erlang:element(7, _record@4),
+                    erlang:element(8, _record@4)}
+            end,
+            parse_fragment(Rest@1, Pieces@4);
+
+        _ ->
+            {_, Rest@2} = gleam_stdlib:string_pop_codeunit(Uri_string),
+            parse_host_outside_of_brackets_loop(
+                Original,
+                Rest@2,
+                Pieces,
+                Size + 1
+            )
+    end.
+
+-file("src/gleam/uri.gleam", 229).
+-spec parse_host_within_brackets_loop(binary(), binary(), uri(), integer()) -> {ok,
+        uri()} |
+    {error, nil}.
+parse_host_within_brackets_loop(Original, Uri_string, Pieces, Size) ->
+    case Uri_string of
+        <<""/utf8>> ->
+            {ok,
+                begin
+                    _record = Pieces,
+                    {uri,
+                        erlang:element(2, _record),
+                        erlang:element(3, _record),
+                        {some, Uri_string},
+                        erlang:element(5, _record),
+                        erlang:element(6, _record),
+                        erlang:element(7, _record),
+                        erlang:element(8, _record)}
+                end};
+
+        <<"]"/utf8, Rest/binary>> when Size =:= 0 ->
+            parse_port(Rest, Pieces);
+
+        <<"]"/utf8, Rest@1/binary>> ->
+            Host = binary:part(Original, 0, Size + 1),
+            Pieces@1 = begin
+                _record@1 = Pieces,
+                {uri,
+                    erlang:element(2, _record@1),
+                    erlang:element(3, _record@1),
+                    {some, Host},
+                    erlang:element(5, _record@1),
+                    erlang:element(6, _record@1),
+                    erlang:element(7, _record@1),
+                    erlang:element(8, _record@1)}
+            end,
+            parse_port(Rest@1, Pieces@1);
+
+        <<"/"/utf8, _/binary>> when Size =:= 0 ->
+            parse_path(Uri_string, Pieces);
+
+        <<"/"/utf8, _/binary>> ->
+            Host@1 = binary:part(Original, 0, Size),
+            Pieces@2 = begin
+                _record@2 = Pieces,
+                {uri,
+                    erlang:element(2, _record@2),
+                    erlang:element(3, _record@2),
+                    {some, Host@1},
+                    erlang:element(5, _record@2),
+                    erlang:element(6, _record@2),
+                    erlang:element(7, _record@2),
+                    erlang:element(8, _record@2)}
+            end,
+            parse_path(Uri_string, Pieces@2);
+
+        <<"?"/utf8, Rest@2/binary>> when Size =:= 0 ->
+            parse_query_with_question_mark(Rest@2, Pieces);
+
+        <<"?"/utf8, Rest@3/binary>> ->
+            Host@2 = binary:part(Original, 0, Size),
+            Pieces@3 = begin
+                _record@3 = Pieces,
+                {uri,
+                    erlang:element(2, _record@3),
+                    erlang:element(3, _record@3),
+                    {some, Host@2},
+                    erlang:element(5, _record@3),
+                    erlang:element(6, _record@3),
+                    erlang:element(7, _record@3),
+                    erlang:element(8, _record@3)}
+            end,
+            parse_query_with_question_mark(Rest@3, Pieces@3);
+
+        <<"#"/utf8, Rest@4/binary>> when Size =:= 0 ->
+            parse_fragment(Rest@4, Pieces);
+
+        <<"#"/utf8, Rest@5/binary>> ->
+            Host@3 = binary:part(Original, 0, Size),
+            Pieces@4 = begin
+                _record@4 = Pieces,
+                {uri,
+                    erlang:element(2, _record@4),
+                    erlang:element(3, _record@4),
+                    {some, Host@3},
+                    erlang:element(5, _record@4),
+                    erlang:element(6, _record@4),
+                    erlang:element(7, _record@4),
+                    erlang:element(8, _record@4)}
+            end,
+            parse_fragment(Rest@5, Pieces@4);
+
+        _ ->
+            {Char, Rest@6} = gleam_stdlib:string_pop_codeunit(Uri_string),
+            case is_valid_host_within_brackets_char(Char) of
+                true ->
+                    parse_host_within_brackets_loop(
+                        Original,
+                        Rest@6,
+                        Pieces,
+                        Size + 1
+                    );
+
+                false ->
+                    parse_host_outside_of_brackets_loop(
+                        Original,
+                        Original,
+                        Pieces,
+                        0
+                    )
             end
     end.
 
--file("/Users/louis/src/gleam/stdlib/src/gleam/uri.gleam", 56).
--spec parse(binary()) -> {ok, uri()} | {error, nil}.
-parse(Uri_string) ->
-    gleam_stdlib:uri_parse(Uri_string).
+-file("src/gleam/uri.gleam", 222).
+-spec parse_host_within_brackets(binary(), uri()) -> {ok, uri()} | {error, nil}.
+parse_host_within_brackets(Uri_string, Pieces) ->
+    parse_host_within_brackets_loop(Uri_string, Uri_string, Pieces, 0).
 
--file("/Users/louis/src/gleam/stdlib/src/gleam/uri.gleam", 198).
+-file("src/gleam/uri.gleam", 302).
+-spec parse_host_outside_of_brackets(binary(), uri()) -> {ok, uri()} |
+    {error, nil}.
+parse_host_outside_of_brackets(Uri_string, Pieces) ->
+    parse_host_outside_of_brackets_loop(Uri_string, Uri_string, Pieces, 0).
+
+-file("src/gleam/uri.gleam", 199).
+-spec parse_host(binary(), uri()) -> {ok, uri()} | {error, nil}.
+parse_host(Uri_string, Pieces) ->
+    case Uri_string of
+        <<"["/utf8, _/binary>> ->
+            parse_host_within_brackets(Uri_string, Pieces);
+
+        <<":"/utf8, _/binary>> ->
+            Pieces@1 = begin
+                _record = Pieces,
+                {uri,
+                    erlang:element(2, _record),
+                    erlang:element(3, _record),
+                    {some, <<""/utf8>>},
+                    erlang:element(5, _record),
+                    erlang:element(6, _record),
+                    erlang:element(7, _record),
+                    erlang:element(8, _record)}
+            end,
+            parse_port(Uri_string, Pieces@1);
+
+        <<""/utf8>> ->
+            {ok,
+                begin
+                    _record@1 = Pieces,
+                    {uri,
+                        erlang:element(2, _record@1),
+                        erlang:element(3, _record@1),
+                        {some, <<""/utf8>>},
+                        erlang:element(5, _record@1),
+                        erlang:element(6, _record@1),
+                        erlang:element(7, _record@1),
+                        erlang:element(8, _record@1)}
+                end};
+
+        _ ->
+            parse_host_outside_of_brackets(Uri_string, Pieces)
+    end.
+
+-file("src/gleam/uri.gleam", 167).
+-spec parse_userinfo_loop(binary(), binary(), uri(), integer()) -> {ok, uri()} |
+    {error, nil}.
+parse_userinfo_loop(Original, Uri_string, Pieces, Size) ->
+    case Uri_string of
+        <<"@"/utf8, Rest/binary>> when Size =:= 0 ->
+            parse_host(Rest, Pieces);
+
+        <<"@"/utf8, Rest@1/binary>> ->
+            Userinfo = binary:part(Original, 0, Size),
+            Pieces@1 = begin
+                _record = Pieces,
+                {uri,
+                    erlang:element(2, _record),
+                    {some, Userinfo},
+                    erlang:element(4, _record),
+                    erlang:element(5, _record),
+                    erlang:element(6, _record),
+                    erlang:element(7, _record),
+                    erlang:element(8, _record)}
+            end,
+            parse_host(Rest@1, Pieces@1);
+
+        <<""/utf8>> ->
+            parse_host(Original, Pieces);
+
+        <<"/"/utf8, _/binary>> ->
+            parse_host(Original, Pieces);
+
+        <<"?"/utf8, _/binary>> ->
+            parse_host(Original, Pieces);
+
+        <<"#"/utf8, _/binary>> ->
+            parse_host(Original, Pieces);
+
+        _ ->
+            {_, Rest@2} = gleam_stdlib:string_pop_codeunit(Uri_string),
+            parse_userinfo_loop(Original, Rest@2, Pieces, Size + 1)
+    end.
+
+-file("src/gleam/uri.gleam", 163).
+-spec parse_authority_pieces(binary(), uri()) -> {ok, uri()} | {error, nil}.
+parse_authority_pieces(String, Pieces) ->
+    parse_userinfo_loop(String, String, Pieces, 0).
+
+-file("src/gleam/uri.gleam", 150).
+-spec parse_authority_with_slashes(binary(), uri()) -> {ok, uri()} |
+    {error, nil}.
+parse_authority_with_slashes(Uri_string, Pieces) ->
+    case Uri_string of
+        <<"//"/utf8>> ->
+            {ok,
+                begin
+                    _record = Pieces,
+                    {uri,
+                        erlang:element(2, _record),
+                        erlang:element(3, _record),
+                        {some, <<""/utf8>>},
+                        erlang:element(5, _record),
+                        erlang:element(6, _record),
+                        erlang:element(7, _record),
+                        erlang:element(8, _record)}
+                end};
+
+        <<"//"/utf8, Rest/binary>> ->
+            parse_authority_pieces(Rest, Pieces);
+
+        _ ->
+            parse_path(Uri_string, Pieces)
+    end.
+
+-file("src/gleam/uri.gleam", 91).
+-spec parse_scheme_loop(binary(), binary(), uri(), integer()) -> {ok, uri()} |
+    {error, nil}.
+parse_scheme_loop(Original, Uri_string, Pieces, Size) ->
+    case Uri_string of
+        <<"/"/utf8, _/binary>> when Size =:= 0 ->
+            parse_authority_with_slashes(Uri_string, Pieces);
+
+        <<"/"/utf8, _/binary>> ->
+            Scheme = binary:part(Original, 0, Size),
+            Pieces@1 = begin
+                _record = Pieces,
+                {uri,
+                    {some, string:lowercase(Scheme)},
+                    erlang:element(3, _record),
+                    erlang:element(4, _record),
+                    erlang:element(5, _record),
+                    erlang:element(6, _record),
+                    erlang:element(7, _record),
+                    erlang:element(8, _record)}
+            end,
+            parse_authority_with_slashes(Uri_string, Pieces@1);
+
+        <<"?"/utf8, Rest/binary>> when Size =:= 0 ->
+            parse_query_with_question_mark(Rest, Pieces);
+
+        <<"?"/utf8, Rest@1/binary>> ->
+            Scheme@1 = binary:part(Original, 0, Size),
+            Pieces@2 = begin
+                _record@1 = Pieces,
+                {uri,
+                    {some, string:lowercase(Scheme@1)},
+                    erlang:element(3, _record@1),
+                    erlang:element(4, _record@1),
+                    erlang:element(5, _record@1),
+                    erlang:element(6, _record@1),
+                    erlang:element(7, _record@1),
+                    erlang:element(8, _record@1)}
+            end,
+            parse_query_with_question_mark(Rest@1, Pieces@2);
+
+        <<"#"/utf8, Rest@2/binary>> when Size =:= 0 ->
+            parse_fragment(Rest@2, Pieces);
+
+        <<"#"/utf8, Rest@3/binary>> ->
+            Scheme@2 = binary:part(Original, 0, Size),
+            Pieces@3 = begin
+                _record@2 = Pieces,
+                {uri,
+                    {some, string:lowercase(Scheme@2)},
+                    erlang:element(3, _record@2),
+                    erlang:element(4, _record@2),
+                    erlang:element(5, _record@2),
+                    erlang:element(6, _record@2),
+                    erlang:element(7, _record@2),
+                    erlang:element(8, _record@2)}
+            end,
+            parse_fragment(Rest@3, Pieces@3);
+
+        <<":"/utf8, _/binary>> when Size =:= 0 ->
+            {error, nil};
+
+        <<":"/utf8, Rest@4/binary>> ->
+            Scheme@3 = binary:part(Original, 0, Size),
+            Pieces@4 = begin
+                _record@3 = Pieces,
+                {uri,
+                    {some, string:lowercase(Scheme@3)},
+                    erlang:element(3, _record@3),
+                    erlang:element(4, _record@3),
+                    erlang:element(5, _record@3),
+                    erlang:element(6, _record@3),
+                    erlang:element(7, _record@3),
+                    erlang:element(8, _record@3)}
+            end,
+            parse_authority_with_slashes(Rest@4, Pieces@4);
+
+        <<""/utf8>> ->
+            {ok,
+                begin
+                    _record@4 = Pieces,
+                    {uri,
+                        erlang:element(2, _record@4),
+                        erlang:element(3, _record@4),
+                        erlang:element(4, _record@4),
+                        erlang:element(5, _record@4),
+                        Original,
+                        erlang:element(7, _record@4),
+                        erlang:element(8, _record@4)}
+                end};
+
+        _ ->
+            {_, Rest@5} = gleam_stdlib:string_pop_codeunit(Uri_string),
+            parse_scheme_loop(Original, Rest@5, Pieces, Size + 1)
+    end.
+
+-file("src/gleam/uri.gleam", 534).
+?DOC(
+    " Parses an urlencoded query string into a list of key value pairs.\n"
+    " Returns an error for invalid encoding.\n"
+    "\n"
+    " The opposite operation is `uri.query_to_string`.\n"
+    "\n"
+    " ## Examples\n"
+    "\n"
+    " ```gleam\n"
+    " parse_query(\"a=1&b=2\")\n"
+    " // -> Ok([#(\"a\", \"1\"), #(\"b\", \"2\")])\n"
+    " ```\n"
+).
 -spec parse_query(binary()) -> {ok, list({binary(), binary()})} | {error, nil}.
 parse_query(Query) ->
     gleam_stdlib:parse_query(Query).
 
--file("/Users/louis/src/gleam/stdlib/src/gleam/uri.gleam", 242).
+-file("src/gleam/uri.gleam", 570).
+?DOC(
+    " Encodes a string into a percent encoded representation.\n"
+    "\n"
+    " ## Examples\n"
+    "\n"
+    " ```gleam\n"
+    " percent_encode(\"100% great\")\n"
+    " // -> \"100%25%20great\"\n"
+    " ```\n"
+).
 -spec percent_encode(binary()) -> binary().
 percent_encode(Value) ->
     gleam_stdlib:percent_encode(Value).
 
--file("/Users/louis/src/gleam/stdlib/src/gleam/uri.gleam", 225).
--spec query_pair({binary(), binary()}) -> gleam@string_builder:string_builder().
+-file("src/gleam/uri.gleam", 555).
+-spec query_pair({binary(), binary()}) -> gleam@string_tree:string_tree().
 query_pair(Pair) ->
-    gleam@string_builder:from_strings(
-        [percent_encode(erlang:element(1, Pair)),
+    gleam_stdlib:identity(
+        [gleam_stdlib:percent_encode(erlang:element(1, Pair)),
             <<"="/utf8>>,
-            percent_encode(erlang:element(2, Pair))]
+            gleam_stdlib:percent_encode(erlang:element(2, Pair))]
     ).
 
--file("/Users/louis/src/gleam/stdlib/src/gleam/uri.gleam", 217).
+-file("src/gleam/uri.gleam", 547).
+?DOC(
+    " Encodes a list of key value pairs as a URI query string.\n"
+    "\n"
+    " The opposite operation is `uri.parse_query`.\n"
+    "\n"
+    " ## Examples\n"
+    "\n"
+    " ```gleam\n"
+    " query_to_string([#(\"a\", \"1\"), #(\"b\", \"2\")])\n"
+    " // -> \"a=1&b=2\"\n"
+    " ```\n"
+).
 -spec query_to_string(list({binary(), binary()})) -> binary().
 query_to_string(Query) ->
     _pipe = Query,
     _pipe@1 = gleam@list:map(_pipe, fun query_pair/1),
     _pipe@2 = gleam@list:intersperse(
         _pipe@1,
-        gleam@string_builder:from_string(<<"&"/utf8>>)
+        gleam_stdlib:identity(<<"&"/utf8>>)
     ),
-    _pipe@3 = gleam@string_builder:concat(_pipe@2),
-    gleam@string_builder:to_string(_pipe@3).
+    _pipe@3 = gleam_stdlib:identity(_pipe@2),
+    unicode:characters_to_binary(_pipe@3).
 
--file("/Users/louis/src/gleam/stdlib/src/gleam/uri.gleam", 259).
+-file("src/gleam/uri.gleam", 583).
+?DOC(
+    " Decodes a percent encoded string.\n"
+    "\n"
+    " ## Examples\n"
+    "\n"
+    " ```gleam\n"
+    " percent_decode(\"100%25%20great+fun\")\n"
+    " // -> Ok(\"100% great+fun\")\n"
+    " ```\n"
+).
 -spec percent_decode(binary()) -> {ok, binary()} | {error, nil}.
 percent_decode(Value) ->
     gleam_stdlib:percent_decode(Value).
 
--file("/Users/louis/src/gleam/stdlib/src/gleam/uri.gleam", 267).
--spec do_remove_dot_segments(list(binary()), list(binary())) -> list(binary()).
-do_remove_dot_segments(Input, Accumulator) ->
+-file("src/gleam/uri.gleam", 605).
+-spec remove_dot_segments_loop(list(binary()), list(binary())) -> list(binary()).
+remove_dot_segments_loop(Input, Accumulator) ->
     case Input of
         [] ->
             lists:reverse(Accumulator);
@@ -178,39 +841,65 @@ do_remove_dot_segments(Input, Accumulator) ->
                 {Segment@1, Accumulator@4} ->
                     [Segment@1 | Accumulator@4]
             end,
-            do_remove_dot_segments(Rest, Accumulator@5)
+            remove_dot_segments_loop(Rest, Accumulator@5)
     end.
 
--file("/Users/louis/src/gleam/stdlib/src/gleam/uri.gleam", 286).
+-file("src/gleam/uri.gleam", 601).
 -spec remove_dot_segments(list(binary())) -> list(binary()).
 remove_dot_segments(Input) ->
-    do_remove_dot_segments(Input, []).
+    remove_dot_segments_loop(Input, []).
 
--file("/Users/louis/src/gleam/stdlib/src/gleam/uri.gleam", 302).
+-file("src/gleam/uri.gleam", 597).
+?DOC(
+    " Splits the path section of a URI into it's constituent segments.\n"
+    "\n"
+    " Removes empty segments and resolves dot-segments as specified in\n"
+    " [section 5.2](https://www.ietf.org/rfc/rfc3986.html#section-5.2) of the RFC.\n"
+    "\n"
+    " ## Examples\n"
+    "\n"
+    " ```gleam\n"
+    " path_segments(\"/users/1\")\n"
+    " // -> [\"users\" ,\"1\"]\n"
+    " ```\n"
+).
 -spec path_segments(binary()) -> list(binary()).
 path_segments(Path) ->
     remove_dot_segments(gleam@string:split(Path, <<"/"/utf8>>)).
 
--file("/Users/louis/src/gleam/stdlib/src/gleam/uri.gleam", 318).
+-file("src/gleam/uri.gleam", 636).
+?DOC(
+    " Encodes a `Uri` value as a URI string.\n"
+    "\n"
+    " The opposite operation is `uri.parse`.\n"
+    "\n"
+    " ## Examples\n"
+    "\n"
+    " ```gleam\n"
+    " let uri = Uri(..empty, scheme: Some(\"https\"), host: Some(\"example.com\"))\n"
+    " to_string(uri)\n"
+    " // -> \"https://example.com\"\n"
+    " ```\n"
+).
 -spec to_string(uri()) -> binary().
 to_string(Uri) ->
     Parts = case erlang:element(8, Uri) of
         {some, Fragment} ->
             [<<"#"/utf8>>, Fragment];
 
-        _ ->
+        none ->
             []
     end,
     Parts@1 = case erlang:element(7, Uri) of
         {some, Query} ->
             [<<"?"/utf8>>, Query | Parts];
 
-        _ ->
+        none ->
             Parts
     end,
     Parts@2 = [erlang:element(6, Uri) | Parts@1],
     Parts@3 = case {erlang:element(4, Uri),
-        gleam@string:starts_with(erlang:element(6, Uri), <<"/"/utf8>>)} of
+        gleam_stdlib:string_starts_with(erlang:element(6, Uri), <<"/"/utf8>>)} of
         {{some, Host}, false} when Host =/= <<""/utf8>> ->
             [<<"/"/utf8>> | Parts@2];
 
@@ -219,7 +908,7 @@ to_string(Uri) ->
     end,
     Parts@4 = case {erlang:element(4, Uri), erlang:element(5, Uri)} of
         {{some, _}, {some, Port}} ->
-            [<<":"/utf8>>, gleam@int:to_string(Port) | Parts@3];
+            [<<":"/utf8>>, erlang:integer_to_binary(Port) | Parts@3];
 
         {_, _} ->
             Parts@3
@@ -247,7 +936,24 @@ to_string(Uri) ->
     end,
     gleam@string:concat(Parts@5).
 
--file("/Users/louis/src/gleam/stdlib/src/gleam/uri.gleam", 362).
+-file("src/gleam/uri.gleam", 680).
+?DOC(
+    " Fetches the origin of a URI.\n"
+    "\n"
+    " Returns the origin of a uri as defined in\n"
+    " [RFC 6454](https://tools.ietf.org/html/rfc6454)\n"
+    "\n"
+    " The supported URI schemes are `http` and `https`.\n"
+    " URLs without a scheme will return `Error`.\n"
+    "\n"
+    " ## Examples\n"
+    "\n"
+    " ```gleam\n"
+    " let assert Ok(uri) = parse(\"https://example.com/path?foo#bar\")\n"
+    " origin(uri)\n"
+    " // -> Ok(\"https://example.com\")\n"
+    " ```\n"
+).
 -spec origin(uri()) -> {ok, binary()} | {error, nil}.
 origin(Uri) ->
     {uri, Scheme, _, Host, Port, _, _, _} = Uri,
@@ -267,7 +973,7 @@ origin(Uri) ->
                                 <<"://"/utf8>>,
                                 H@2,
                                 <<":"/utf8>>,
-                                gleam@int:to_string(P)]
+                                erlang:integer_to_binary(P)]
                         )};
 
                 none ->
@@ -278,17 +984,24 @@ origin(Uri) ->
             {error, nil}
     end.
 
--file("/Users/louis/src/gleam/stdlib/src/gleam/uri.gleam", 379).
--spec drop_last(list(FKT)) -> list(FKT).
+-file("src/gleam/uri.gleam", 759).
+-spec drop_last(list(ELP)) -> list(ELP).
 drop_last(Elements) ->
     gleam@list:take(Elements, erlang:length(Elements) - 1).
 
--file("/Users/louis/src/gleam/stdlib/src/gleam/uri.gleam", 383).
+-file("src/gleam/uri.gleam", 763).
 -spec join_segments(list(binary())) -> binary().
 join_segments(Segments) ->
     gleam@string:join([<<""/utf8>> | Segments], <<"/"/utf8>>).
 
--file("/Users/louis/src/gleam/stdlib/src/gleam/uri.gleam", 393).
+-file("src/gleam/uri.gleam", 703).
+?DOC(
+    " Resolves a URI with respect to the given base URI.\n"
+    "\n"
+    " The base URI must be an absolute URI or this function will return an error.\n"
+    " The algorithm for merging uris is described in\n"
+    " [RFC 3986](https://tools.ietf.org/html/rfc3986#section-5.2).\n"
+).
 -spec merge(uri(), uri()) -> {ok, uri()} | {error, nil}.
 merge(Base, Relative) ->
     case Base of
@@ -329,7 +1042,7 @@ merge(Base, Relative) ->
                                 )};
 
                         _ ->
-                            Path_segments = case gleam@string:starts_with(
+                            Path_segments = case gleam_stdlib:string_starts_with(
                                 erlang:element(6, Relative),
                                 <<"/"/utf8>>
                             ) of
@@ -374,3 +1087,31 @@ merge(Base, Relative) ->
         _ ->
             {error, nil}
     end.
+
+-file("src/gleam/uri.gleam", 81).
+?DOC(
+    " Parses a compliant URI string into the `Uri` Type.\n"
+    " If the string is not a valid URI string then an error is returned.\n"
+    "\n"
+    " The opposite operation is `uri.to_string`.\n"
+    "\n"
+    " ## Examples\n"
+    "\n"
+    " ```gleam\n"
+    " parse(\"https://example.com:1234/a/b?query=true#fragment\")\n"
+    " // -> Ok(\n"
+    " //   Uri(\n"
+    " //     scheme: Some(\"https\"),\n"
+    " //     userinfo: None,\n"
+    " //     host: Some(\"example.com\"),\n"
+    " //     port: Some(1234),\n"
+    " //     path: \"/a/b\",\n"
+    " //     query: Some(\"query=true\"),\n"
+    " //     fragment: Some(\"fragment\")\n"
+    " //   )\n"
+    " // )\n"
+    " ```\n"
+).
+-spec parse(binary()) -> {ok, uri()} | {error, nil}.
+parse(Uri_string) ->
+    gleam_stdlib:uri_parse(Uri_string).

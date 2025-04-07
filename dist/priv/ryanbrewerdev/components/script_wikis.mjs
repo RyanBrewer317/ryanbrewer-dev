@@ -1,8 +1,8 @@
 import * as $arctic from "../../arctic/arctic.mjs";
 import * as $list from "../../gleam_stdlib/gleam/list.mjs";
 import * as $string from "../../gleam_stdlib/gleam/string.mjs";
-import * as $string_builder from "../../gleam_stdlib/gleam/string_builder.mjs";
-import { append, append_builder, concat, from_string, join, to_string } from "../../gleam_stdlib/gleam/string_builder.mjs";
+import * as $string_tree from "../../gleam_stdlib/gleam/string_tree.mjs";
+import { append, append_tree, concat, from_string, join, to_string } from "../../gleam_stdlib/gleam/string_tree.mjs";
 import * as $element from "../../lustre/lustre/element.mjs";
 import * as $html from "../../lustre/lustre/element/html.mjs";
 import { toList } from "../gleam.mjs";
@@ -13,7 +13,7 @@ export function script_wikis(wikis) {
       toList([]),
       (() => {
         let _pipe = from_string("const WIKIS = {");
-        let _pipe$1 = append_builder(_pipe, concat(k()));
+        let _pipe$1 = append_tree(_pipe, concat(k()));
         let _pipe$2 = append(_pipe$1, "};");
         return to_string(_pipe$2);
       })(),
@@ -33,7 +33,7 @@ export function script_wikis(wikis) {
           let _pipe$6 = append(_pipe$5, "\", \"title\": \"");
           let _pipe$7 = append(_pipe$6, $string.replace(w.title, "\"", "\\\""));
           let _pipe$8 = append(_pipe$7, "\", \"tags\": [");
-          let _pipe$9 = append_builder(
+          let _pipe$9 = append_tree(
             _pipe$8,
             join(
               $list.map(

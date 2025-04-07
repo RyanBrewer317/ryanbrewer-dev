@@ -1,7 +1,7 @@
 -module(birl@duration).
 -compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch]).
 
--export([add/2, subtract/2, scale_up/2, scale_down/2, micro_seconds/1, compare/2, milli_seconds/1, seconds/1, minutes/1, hours/1, days/1, weeks/1, months/1, years/1, new/1, decompose/1, accurate_new/1, accurate_decompose/1, blur_to/2, blur/1, parse/1]).
+-export([add/2, subtract/2, scale_up/2, scale_down/2, micro_seconds/1, compare/2, milli_seconds/1, seconds/1, minutes/1, hours/1, days/1, weeks/1, months/1, years/1, new/1, decompose/1, blur_to/2, blur/1, accurate_new/1, accurate_decompose/1, parse/1]).
 -export_type([duration/0, unit/0]).
 
 -type duration() :: {duration, integer()}.
@@ -16,23 +16,27 @@
     month |
     year.
 
+-file("/home/runner/work/birl/birl/src/birl/duration.gleam", 25).
 -spec add(duration(), duration()) -> duration().
 add(A, B) ->
     {duration, A@1} = A,
     {duration, B@1} = B,
     {duration, A@1 + B@1}.
 
+-file("/home/runner/work/birl/birl/src/birl/duration.gleam", 31).
 -spec subtract(duration(), duration()) -> duration().
 subtract(A, B) ->
     {duration, A@1} = A,
     {duration, B@1} = B,
     {duration, A@1 - B@1}.
 
+-file("/home/runner/work/birl/birl/src/birl/duration.gleam", 37).
 -spec scale_up(duration(), integer()) -> duration().
 scale_up(Value, Factor) ->
     {duration, Value@1} = Value,
     {duration, Value@1 * Factor}.
 
+-file("/home/runner/work/birl/birl/src/birl/duration.gleam", 42).
 -spec scale_down(duration(), integer()) -> duration().
 scale_down(Value, Factor) ->
     {duration, Value@1} = Value,
@@ -41,10 +45,12 @@ scale_down(Value, Factor) ->
             Gleam@denominator -> Value@1 div Gleam@denominator
         end}.
 
+-file("/home/runner/work/birl/birl/src/birl/duration.gleam", 47).
 -spec micro_seconds(integer()) -> duration().
 micro_seconds(Value) ->
     {duration, Value}.
 
+-file("/home/runner/work/birl/birl/src/birl/duration.gleam", 83).
 -spec compare(duration(), duration()) -> gleam@order:order().
 compare(A, B) ->
     {duration, Dta} = A,
@@ -60,6 +66,7 @@ compare(A, B) ->
             gt
     end.
 
+-file("/home/runner/work/birl/birl/src/birl/duration.gleam", 385).
 -spec extract(integer(), integer()) -> {integer(), integer()}.
 extract(Duration, Unit_value) ->
     {case Unit_value of
@@ -70,38 +77,47 @@ extract(Duration, Unit_value) ->
             Gleam@denominator@1 -> Duration rem Gleam@denominator@1
         end}.
 
+-file("/home/runner/work/birl/birl/src/birl/duration.gleam", 51).
 -spec milli_seconds(integer()) -> duration().
 milli_seconds(Value) ->
     {duration, Value * 1000}.
 
+-file("/home/runner/work/birl/birl/src/birl/duration.gleam", 55).
 -spec seconds(integer()) -> duration().
 seconds(Value) ->
     {duration, Value * 1000000}.
 
+-file("/home/runner/work/birl/birl/src/birl/duration.gleam", 59).
 -spec minutes(integer()) -> duration().
 minutes(Value) ->
     {duration, Value * 60000000}.
 
+-file("/home/runner/work/birl/birl/src/birl/duration.gleam", 63).
 -spec hours(integer()) -> duration().
 hours(Value) ->
     {duration, Value * 3600000000}.
 
+-file("/home/runner/work/birl/birl/src/birl/duration.gleam", 67).
 -spec days(integer()) -> duration().
 days(Value) ->
     {duration, Value * 86400000000}.
 
+-file("/home/runner/work/birl/birl/src/birl/duration.gleam", 71).
 -spec weeks(integer()) -> duration().
 weeks(Value) ->
     {duration, Value * 604800000000}.
 
+-file("/home/runner/work/birl/birl/src/birl/duration.gleam", 75).
 -spec months(integer()) -> duration().
 months(Value) ->
     {duration, Value * 2592000000000}.
 
+-file("/home/runner/work/birl/birl/src/birl/duration.gleam", 79).
 -spec years(integer()) -> duration().
 years(Value) ->
     {duration, Value * 31536000000000}.
 
+-file("/home/runner/work/birl/birl/src/birl/duration.gleam", 95).
 -spec new(list({integer(), unit()})) -> duration().
 new(Values) ->
     _pipe = Values,
@@ -135,6 +151,7 @@ new(Values) ->
             end end),
     {duration, _pipe@1}.
 
+-file("/home/runner/work/birl/birl/src/birl/duration.gleam", 133).
 -spec decompose(duration()) -> list({integer(), unit()}).
 decompose(Duration) ->
     {duration, Value} = Duration,
@@ -168,6 +185,85 @@ decompose(Duration) ->
                     Item@1
             end end).
 
+-file("/home/runner/work/birl/birl/src/birl/duration.gleam", 243).
+-spec unit_values(unit()) -> integer().
+unit_values(Unit) ->
+    case Unit of
+        year ->
+            31536000000000;
+
+        month ->
+            2592000000000;
+
+        week ->
+            604800000000;
+
+        day ->
+            86400000000;
+
+        hour ->
+            3600000000;
+
+        minute ->
+            60000000;
+
+        second ->
+            1000000;
+
+        milli_second ->
+            1000;
+
+        micro_second ->
+            1
+    end.
+
+-file("/home/runner/work/birl/birl/src/birl/duration.gleam", 206).
+-spec blur_to(duration(), unit()) -> integer().
+blur_to(Duration, Unit) ->
+    Unit_value = unit_values(Unit),
+    {duration, Value} = Duration,
+    {Unit_counts, Remaining} = extract(Value, Unit_value),
+    case Remaining >= ((Unit_value * 2) div 3) of
+        true ->
+            Unit_counts + 1;
+
+        false ->
+            Unit_counts
+    end.
+
+-file("/home/runner/work/birl/birl/src/birl/duration.gleam", 257).
+-spec inner_blur(list({integer(), unit()})) -> {integer(), unit()}.
+inner_blur(Values) ->
+    case Values of
+        [] ->
+            {0, micro_second};
+
+        [Single] ->
+            Single;
+
+        [Smaller, Larger | Rest] ->
+            Smaller_unit_value = unit_values(erlang:element(2, Smaller)),
+            Larger_unit_value = unit_values(erlang:element(2, Larger)),
+            At_least_two_thirds = (erlang:element(1, Smaller) * Smaller_unit_value)
+            < ((Larger_unit_value * 2) div 3),
+            Rounded = case At_least_two_thirds of
+                true ->
+                    Larger;
+
+                false ->
+                    {erlang:element(1, Larger) + 1, erlang:element(2, Larger)}
+            end,
+            inner_blur([Rounded | Rest])
+    end.
+
+-file("/home/runner/work/birl/birl/src/birl/duration.gleam", 217).
+-spec blur(duration()) -> {integer(), unit()}.
+blur(Duration) ->
+    _pipe = decompose(Duration),
+    _pipe@1 = lists:reverse(_pipe),
+    inner_blur(_pipe@1).
+
+-file("/home/runner/work/birl/birl/src/birl/duration.gleam", 114).
 -spec accurate_new(list({integer(), unit()})) -> duration().
 accurate_new(Values) ->
     _pipe = Values,
@@ -201,6 +297,7 @@ accurate_new(Values) ->
             end end),
     {duration, _pipe@1}.
 
+-file("/home/runner/work/birl/birl/src/birl/duration.gleam", 166).
 -spec accurate_decompose(duration()) -> list({integer(), unit()}).
 accurate_decompose(Duration) ->
     {duration, Value} = Duration,
@@ -234,141 +331,23 @@ accurate_decompose(Duration) ->
                     Item@1
             end end).
 
--spec blur_to(duration(), unit()) -> integer().
-blur_to(Duration, Unit) ->
-    _assert_subject = gleam@list:key_find(
-        [{year, 31536000000000},
-            {month, 2592000000000},
-            {week, 604800000000},
-            {day, 86400000000},
-            {hour, 3600000000},
-            {minute, 60000000},
-            {second, 1000000},
-            {milli_second, 1000},
-            {micro_second, 1}],
-        Unit
-    ),
-    {ok, Unit_value} = case _assert_subject of
-        {ok, _} -> _assert_subject;
-        _assert_fail ->
-            erlang:error(#{gleam_error => let_assert,
-                        message => <<"Assertion pattern match failed"/utf8>>,
-                        value => _assert_fail,
-                        module => <<"birl/duration"/utf8>>,
-                        function => <<"blur_to"/utf8>>,
-                        line => 207})
-    end,
-    {duration, Value} = Duration,
-    {Unit_counts, Remaining} = extract(Value, Unit_value),
-    case Remaining >= ((Unit_value * 2) div 3) of
-        true ->
-            Unit_counts + 1;
-
-        false ->
-            Unit_counts
-    end.
-
--spec inner_blur(list({integer(), unit()})) -> {integer(), unit()}.
-inner_blur(Values) ->
-    [Second, Leading | _] = case Values of
-        [_, _ | _] -> Values;
-        _assert_fail ->
-            erlang:error(#{gleam_error => let_assert,
-                        message => <<"Assertion pattern match failed"/utf8>>,
-                        value => _assert_fail,
-                        module => <<"birl/duration"/utf8>>,
-                        function => <<"inner_blur"/utf8>>,
-                        line => 254})
-    end,
-    _assert_subject = gleam@list:key_find(
-        [{year, 31536000000000},
-            {month, 2592000000000},
-            {week, 604800000000},
-            {day, 86400000000},
-            {hour, 3600000000},
-            {minute, 60000000},
-            {second, 1000000},
-            {milli_second, 1000},
-            {micro_second, 1}],
-        erlang:element(2, Leading)
-    ),
-    {ok, Leading_unit} = case _assert_subject of
-        {ok, _} -> _assert_subject;
-        _assert_fail@1 ->
-            erlang:error(#{gleam_error => let_assert,
-                        message => <<"Assertion pattern match failed"/utf8>>,
-                        value => _assert_fail@1,
-                        module => <<"birl/duration"/utf8>>,
-                        function => <<"inner_blur"/utf8>>,
-                        line => 255})
-    end,
-    _assert_subject@1 = gleam@list:key_find(
-        [{year, 31536000000000},
-            {month, 2592000000000},
-            {week, 604800000000},
-            {day, 86400000000},
-            {hour, 3600000000},
-            {minute, 60000000},
-            {second, 1000000},
-            {milli_second, 1000},
-            {micro_second, 1}],
-        erlang:element(2, Second)
-    ),
-    {ok, Second_unit} = case _assert_subject@1 of
-        {ok, _} -> _assert_subject@1;
-        _assert_fail@2 ->
-            erlang:error(#{gleam_error => let_assert,
-                        message => <<"Assertion pattern match failed"/utf8>>,
-                        value => _assert_fail@2,
-                        module => <<"birl/duration"/utf8>>,
-                        function => <<"inner_blur"/utf8>>,
-                        line => 256})
-    end,
-    Leading@1 = case (erlang:element(1, Second) * Second_unit) < ((Leading_unit
-    * 2)
-    div 3) of
-        true ->
-            Leading;
-
-        false ->
-            {erlang:element(1, Leading) + 1, erlang:element(2, Leading)}
-    end,
-    case gleam@list:drop(Values, 2) of
-        [] ->
-            Leading@1;
-
-        Chopped ->
-            inner_blur([Leading@1 | Chopped])
-    end.
-
--spec blur(duration()) -> {integer(), unit()}.
-blur(Duration) ->
-    case decompose(Duration) of
-        [] ->
-            {0, micro_second};
-
-        Decomposed ->
-            _pipe = Decomposed,
-            _pipe@1 = lists:reverse(_pipe),
-            inner_blur(_pipe@1)
-    end.
-
+-file("/home/runner/work/birl/birl/src/birl/duration.gleam", 327).
 -spec parse(binary()) -> {ok, duration()} | {error, nil}.
 parse(Expression) ->
-    _assert_subject = gleam@regex:from_string(
+    _assert_subject = gleam@regexp:from_string(
         <<"([+|\\-])?\\s*(\\d+)\\s*(\\w+)?"/utf8>>
     ),
     {ok, Re} = case _assert_subject of
         {ok, _} -> _assert_subject;
         _assert_fail ->
             erlang:error(#{gleam_error => let_assert,
-                        message => <<"Assertion pattern match failed"/utf8>>,
+                        message => <<"Pattern match failed, no pattern matched the value."/utf8>>,
                         value => _assert_fail,
                         module => <<"birl/duration"/utf8>>,
                         function => <<"parse"/utf8>>,
-                        line => 319})
+                        line => 328})
     end,
-    {Constructor, Expression@2} = case gleam@string:starts_with(
+    {Constructor, Expression@2} = case gleam_stdlib:string_starts_with(
         Expression,
         <<"accurate:"/utf8>>
     ) of
@@ -378,11 +357,11 @@ parse(Expression) ->
                 [_, _] -> _assert_subject@1;
                 _assert_fail@1 ->
                     erlang:error(#{gleam_error => let_assert,
-                                message => <<"Assertion pattern match failed"/utf8>>,
+                                message => <<"Pattern match failed, no pattern matched the value."/utf8>>,
                                 value => _assert_fail@1,
                                 module => <<"birl/duration"/utf8>>,
                                 function => <<"parse"/utf8>>,
-                                line => 325})
+                                line => 334})
             end,
             {fun accurate_new/1, Expression@1};
 
@@ -391,12 +370,12 @@ parse(Expression) ->
     end,
     case begin
         _pipe = Expression@2,
-        _pipe@1 = gleam@string:lowercase(_pipe),
-        _pipe@2 = gleam@regex:scan(Re, _pipe@1),
+        _pipe@1 = string:lowercase(_pipe),
+        _pipe@2 = gleam@regexp:scan(Re, _pipe@1),
         gleam@list:try_map(_pipe@2, fun(Item) -> case Item of
                     {match, _, [Sign_option, {some, Amount_string}]} ->
                         gleam@result:then(
-                            gleam@int:parse(Amount_string),
+                            gleam_stdlib:parse_int(Amount_string),
                             fun(Amount) -> case Sign_option of
                                     {some, <<"-"/utf8>>} ->
                                         {ok, {-1 * Amount, micro_second}};
@@ -416,7 +395,7 @@ parse(Expression) ->
                         _,
                         [Sign_option@1, {some, Amount_string@1}, {some, Unit}]} ->
                         gleam@result:then(
-                            gleam@int:parse(Amount_string@1),
+                            gleam_stdlib:parse_int(Amount_string@1),
                             fun(Amount@1) ->
                                 gleam@result:then(
                                     gleam@list:find(

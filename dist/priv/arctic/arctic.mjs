@@ -1,12 +1,14 @@
-import * as $birl from "../birl/birl.mjs";
 import * as $dict from "../gleam_stdlib/gleam/dict.mjs";
+import * as $int from "../gleam_stdlib/gleam/int.mjs";
 import * as $option from "../gleam_stdlib/gleam/option.mjs";
 import * as $order from "../gleam_stdlib/gleam/order.mjs";
 import * as $result from "../gleam_stdlib/gleam/result.mjs";
 import * as $string from "../gleam_stdlib/gleam/string.mjs";
+import * as $calendar from "../gleam_time/gleam/time/calendar.mjs";
+import * as $timestamp from "../gleam_time/gleam/time/timestamp.mjs";
 import * as $element from "../lustre/lustre/element.mjs";
 import * as $snag from "../snag/snag.mjs";
-import { toList, CustomType as $CustomType, makeError } from "./gleam.mjs";
+import { Ok, Error, toList, CustomType as $CustomType, makeError } from "./gleam.mjs";
 
 export class Collection extends $CustomType {
   constructor(directory, parse, index, feed, ordering, render, raw_pages) {
@@ -83,7 +85,7 @@ export function get_id(p) {
       throw makeError(
         "let_assert",
         "arctic",
-        80,
+        82,
         "get_id",
         "Pattern match failed, no pattern matched the value.",
         { value: $ }
@@ -95,6 +97,94 @@ export function get_id(p) {
     let page = p[0];
     return page.id;
   }
+}
+
+export function output_path(input_path) {
+  let $ = $string.split(input_path, ".txt");
+  if (!$.hasLength(2) || $.tail.head !== "") {
+    throw makeError(
+      "let_assert",
+      "arctic",
+      90,
+      "output_path",
+      "Pattern match failed, no pattern matched the value.",
+      { value: $ }
+    )
+  }
+  let start = $.head;
+  return ("arctic_build/" + start) + "/index.html";
+}
+
+export function parse_date(date) {
+  let _pipe = (() => {
+    let $ = $string.split(date, "-");
+    if ($.hasLength(3)) {
+      let year_str = $.head;
+      let month_str = $.tail.head;
+      let day_str = $.tail.tail.head;
+      return $result.try$(
+        $int.parse(year_str),
+        (year) => {
+          return $result.try$(
+            $int.parse(month_str),
+            (month_int) => {
+              return $result.try$(
+                $int.parse(day_str),
+                (day) => {
+                  return $result.try$(
+                    (() => {
+                      if (month_int === 1) {
+                        return new Ok(new $calendar.January());
+                      } else if (month_int === 2) {
+                        return new Ok(new $calendar.February());
+                      } else if (month_int === 3) {
+                        return new Ok(new $calendar.March());
+                      } else if (month_int === 4) {
+                        return new Ok(new $calendar.April());
+                      } else if (month_int === 5) {
+                        return new Ok(new $calendar.May());
+                      } else if (month_int === 6) {
+                        return new Ok(new $calendar.June());
+                      } else if (month_int === 7) {
+                        return new Ok(new $calendar.July());
+                      } else if (month_int === 8) {
+                        return new Ok(new $calendar.August());
+                      } else if (month_int === 9) {
+                        return new Ok(new $calendar.September());
+                      } else if (month_int === 10) {
+                        return new Ok(new $calendar.October());
+                      } else if (month_int === 11) {
+                        return new Ok(new $calendar.November());
+                      } else if (month_int === 12) {
+                        return new Ok(new $calendar.December());
+                      } else {
+                        return new Error(undefined);
+                      }
+                    })(),
+                    (month) => {
+                      return new Ok(
+                        $timestamp.from_calendar(
+                          new $calendar.Date(year, month, day),
+                          new $calendar.TimeOfDay(0, 0, 0, 0),
+                          $calendar.utc_offset,
+                        ),
+                      );
+                    },
+                  );
+                },
+              );
+            },
+          );
+        },
+      );
+    } else {
+      return new Error(undefined);
+    }
+  })();
+  return $result.map_error(
+    _pipe,
+    (_) => { return $snag.new$(("couldn't parse date `" + date) + "`"); },
+  );
 }
 
 export function to_dummy_page(c) {
@@ -122,7 +212,14 @@ export function to_dummy_page(c) {
     let date = (() => {
       let _pipe = metadata;
       let _pipe$1 = $dict.get(_pipe, "date");
-      let _pipe$2 = $result.try$(_pipe$1, $birl.parse);
+      let _pipe$2 = $result.try$(
+        _pipe$1,
+        (s) => {
+          let _pipe$2 = s;
+          let _pipe$3 = parse_date(_pipe$2);
+          return $result.map_error(_pipe$3, (_) => { return undefined; });
+        },
+      );
       return $option.from_result(_pipe$2);
     })();
     return new Page(get_id(c), toList([]), metadata, title, blerb, tags, date);
@@ -132,18 +229,43 @@ export function to_dummy_page(c) {
   }
 }
 
-export function output_path(input_path) {
-  let $ = $string.split(input_path, ".txt");
-  if (!$.hasLength(2) || $.tail.head !== "") {
-    throw makeError(
-      "let_assert",
-      "arctic",
-      88,
-      "output_path",
-      "Pattern match failed, no pattern matched the value.",
-      { value: $ }
-    )
-  }
-  let start = $.head;
-  return ("arctic_build/" + start) + "/index.html";
+export function date_to_string(ts) {
+  let d = $timestamp.to_calendar(ts, $calendar.utc_offset)[0];
+  let month_str = (() => {
+    let $ = d.month;
+    if ($ instanceof $calendar.January) {
+      return "01";
+    } else if ($ instanceof $calendar.February) {
+      return "02";
+    } else if ($ instanceof $calendar.March) {
+      return "03";
+    } else if ($ instanceof $calendar.April) {
+      return "04";
+    } else if ($ instanceof $calendar.May) {
+      return "05";
+    } else if ($ instanceof $calendar.June) {
+      return "06";
+    } else if ($ instanceof $calendar.July) {
+      return "07";
+    } else if ($ instanceof $calendar.August) {
+      return "08";
+    } else if ($ instanceof $calendar.September) {
+      return "09";
+    } else if ($ instanceof $calendar.October) {
+      return "10";
+    } else if ($ instanceof $calendar.November) {
+      return "11";
+    } else {
+      return "12";
+    }
+  })();
+  let day_str = (() => {
+    let $ = d.day < 10;
+    if ($) {
+      return "0" + $int.to_string(d.day);
+    } else {
+      return $int.to_string(d.day);
+    }
+  })();
+  return ((($int.to_string(d.year) + "-") + month_str) + "-") + day_str;
 }

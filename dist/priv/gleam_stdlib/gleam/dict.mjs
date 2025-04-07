@@ -3,24 +3,16 @@ import * as $option from "../gleam/option.mjs";
 import {
   map_size as size,
   map_to_list as to_list,
-  new_map as do_new,
-  map_get as do_get,
+  new_map as new$,
+  map_get as get,
   map_insert as do_insert,
   map_remove as do_delete,
 } from "../gleam_stdlib.mjs";
 
-export { size, to_list };
-
-export function new$() {
-  return do_new();
-}
+export { get, new$, size, to_list };
 
 export function is_empty(dict) {
-  return isEqual(dict, new$());
-}
-
-export function get(from, get) {
-  return do_get(from, get);
+  return size(dict) === 0;
 }
 
 function do_has_key(key, dict) {
@@ -35,23 +27,24 @@ export function insert(dict, key, value) {
   return do_insert(key, value, dict);
 }
 
-function fold_list_of_pair(loop$list, loop$initial) {
+function from_list_loop(loop$list, loop$initial) {
   while (true) {
     let list = loop$list;
     let initial = loop$initial;
     if (list.hasLength(0)) {
       return initial;
     } else {
-      let x = list.head;
+      let key = list.head[0];
+      let value = list.head[1];
       let rest = list.tail;
       loop$list = rest;
-      loop$initial = insert(initial, x[0], x[1]);
+      loop$initial = insert(initial, key, value);
     }
   }
 }
 
 export function from_list(list) {
-  return fold_list_of_pair(list, new$());
+  return from_list_loop(list, new$());
 }
 
 function reverse_and_concat(loop$remaining, loop$accumulator) {
@@ -61,63 +54,54 @@ function reverse_and_concat(loop$remaining, loop$accumulator) {
     if (remaining.hasLength(0)) {
       return accumulator;
     } else {
-      let item = remaining.head;
+      let first = remaining.head;
       let rest = remaining.tail;
       loop$remaining = rest;
-      loop$accumulator = listPrepend(item, accumulator);
+      loop$accumulator = listPrepend(first, accumulator);
     }
   }
 }
 
-function do_keys_acc(loop$list, loop$acc) {
+function do_keys_loop(loop$list, loop$acc) {
   while (true) {
     let list = loop$list;
     let acc = loop$acc;
     if (list.hasLength(0)) {
       return reverse_and_concat(acc, toList([]));
     } else {
-      let first = list.head;
+      let key = list.head[0];
       let rest = list.tail;
       loop$list = rest;
-      loop$acc = listPrepend(first[0], acc);
+      loop$acc = listPrepend(key, acc);
     }
   }
-}
-
-function do_keys(dict) {
-  let list_of_pairs = to_list(dict);
-  return do_keys_acc(list_of_pairs, toList([]));
 }
 
 export function keys(dict) {
-  return do_keys(dict);
+  return do_keys_loop(to_list(dict), toList([]));
 }
 
-function do_values_acc(loop$list, loop$acc) {
+function do_values_loop(loop$list, loop$acc) {
   while (true) {
     let list = loop$list;
     let acc = loop$acc;
     if (list.hasLength(0)) {
       return reverse_and_concat(acc, toList([]));
     } else {
-      let first = list.head;
+      let value = list.head[1];
       let rest = list.tail;
       loop$list = rest;
-      loop$acc = listPrepend(first[1], acc);
+      loop$acc = listPrepend(value, acc);
     }
   }
 }
 
-function do_values(dict) {
-  let list_of_pairs = to_list(dict);
-  return do_values_acc(list_of_pairs, toList([]));
-}
-
 export function values(dict) {
-  return do_values(dict);
+  let list_of_pairs = to_list(dict);
+  return do_values_loop(list_of_pairs, toList([]));
 }
 
-function insert_taken(loop$dict, loop$desired_keys, loop$acc) {
+function do_take_loop(loop$dict, loop$desired_keys, loop$acc) {
   while (true) {
     let dict = loop$dict;
     let desired_keys = loop$desired_keys;
@@ -144,7 +128,7 @@ function insert_taken(loop$dict, loop$desired_keys, loop$acc) {
 }
 
 function do_take(desired_keys, dict) {
-  return insert_taken(dict, desired_keys, new$());
+  return do_take_loop(dict, desired_keys, new$());
 }
 
 export function take(dict, desired_keys) {
@@ -170,14 +154,10 @@ function fold_inserts(loop$new_entries, loop$dict) {
   }
 }
 
-function do_merge(dict, new_entries) {
+export function merge(dict, new_entries) {
   let _pipe = new_entries;
   let _pipe$1 = to_list(_pipe);
   return fold_inserts(_pipe$1, dict);
-}
-
-export function merge(dict, new_entries) {
-  return do_merge(dict, new_entries);
 }
 
 export function delete$(dict, key) {
@@ -200,14 +180,16 @@ export function drop(loop$dict, loop$disallowed_keys) {
 }
 
 export function upsert(dict, key, fun) {
-  let _pipe = dict;
-  let _pipe$1 = get(_pipe, key);
-  let _pipe$2 = $option.from_result(_pipe$1);
-  let _pipe$3 = fun(_pipe$2);
-  return ((_capture) => { return insert(dict, key, _capture); })(_pipe$3);
+  let $ = get(dict, key);
+  if ($.isOk()) {
+    let value = $[0];
+    return insert(dict, key, fun(new $option.Some(value)));
+  } else {
+    return insert(dict, key, fun(new $option.None()));
+  }
 }
 
-function do_fold(loop$list, loop$initial, loop$fun) {
+function fold_loop(loop$list, loop$initial, loop$fun) {
   while (true) {
     let list = loop$list;
     let initial = loop$initial;
@@ -226,9 +208,7 @@ function do_fold(loop$list, loop$initial, loop$fun) {
 }
 
 export function fold(dict, initial, fun) {
-  let _pipe = dict;
-  let _pipe$1 = to_list(_pipe);
-  return do_fold(_pipe$1, initial, fun);
+  return fold_loop(to_list(dict), initial, fun);
 }
 
 function do_map_values(f, dict) {
@@ -249,8 +229,7 @@ function do_filter(f, dict) {
       return dict;
     }
   };
-  let _pipe = dict;
-  return fold(_pipe, new$(), insert$1);
+  return fold(dict, new$(), insert$1);
 }
 
 export function filter(dict, predicate) {

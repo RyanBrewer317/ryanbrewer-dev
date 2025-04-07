@@ -4,13 +4,21 @@
 -export([new/1, add_static_dir/2, use_index_routes/1, add_static_route/3, add_static_xml/3, add_dynamic_route/4, add_static_asset/3, build/1]).
 -export_type([config/3, no_static_routes/0, no_static_dir/0, has_static_routes/0, has_static_dir/0, use_direct_routes/0, use_index_routes/0, route/0, build_error/0]).
 
--opaque config(PLC, PLD, PLE) :: {config,
+-if(?OTP_RELEASE >= 27).
+-define(MODULEDOC(Str), -moduledoc(Str)).
+-define(DOC(Str), -doc(Str)).
+-else.
+-define(MODULEDOC(Str), -compile([])).
+-define(DOC(Str), -compile([])).
+-endif.
+
+-opaque config(QEX, QEY, QEZ) :: {config,
         binary(),
         gleam@option:option(binary()),
         gleam@dict:dict(binary(), binary()),
         list(route()),
         boolean()} |
-    {gleam_phantom, PLC, PLD, PLE}.
+    {gleam_phantom, QEX, QEY, QEZ}.
 
 -type no_static_routes() :: any().
 
@@ -36,42 +44,74 @@
     {cannot_write_to_output_dir, simplifile:file_error()} |
     {cannot_cleanup_temp_dir, simplifile:file_error()}.
 
+-file("src/lustre/ssg.gleam", 20).
+?DOC(
+    " Initialise a new configuration for the static site generator. If you pass a\n"
+    " relative path it will be resolved relative to the current working directory,\n"
+    " _not_ the directory of the Gleam file.\n"
+).
 -spec new(binary()) -> config(no_static_routes(), no_static_dir(), use_direct_routes()).
 new(Out_dir) ->
-    {config, Out_dir, none, gleam@dict:new(), [], false}.
+    {config, Out_dir, none, maps:new(), [], false}.
 
--spec add_static_dir(config(PNI, no_static_dir(), PNJ), binary()) -> config(PNI, has_static_dir(), PNJ).
+-file("src/lustre/ssg.gleam", 405).
+?DOC(
+    " Include a static directory from which all files will be copied over into\n"
+    " the temporary build directory before building the site.\n"
+).
+-spec add_static_dir(config(QHD, no_static_dir(), QHE), binary()) -> config(QHD, has_static_dir(), QHE).
 add_static_dir(Config, Path) ->
     {config, Out_dir, _, Static_assets, Routes, Use_index_routes} = Config,
     {config, Out_dir, {some, Path}, Static_assets, Routes, Use_index_routes}.
 
--spec use_index_routes(config(PNZ, POA, any())) -> config(PNZ, POA, use_index_routes()).
+-file("src/lustre/ssg.gleam", 445).
+?DOC(
+    " Configure the static site generator to generate an `index.html` file at any\n"
+    " static route provided. For example, the route \"/blog\" will generate a file\n"
+    " at \"/blog/index.html\".\n"
+).
+-spec use_index_routes(config(QHU, QHV, any())) -> config(QHU, QHV, use_index_routes()).
 use_index_routes(Config) ->
     {config, Out_dir, Static_dir, Static_assets, Routes, _} = Config,
     {config, Out_dir, Static_dir, Static_assets, Routes, true}.
 
+-file("src/lustre/ssg.gleam", 458).
 -spec routify(binary()) -> binary().
 routify(Path) ->
-    _assert_subject = gleam@regex:from_string(<<"\\s+"/utf8>>),
+    _assert_subject = gleam@regexp:from_string(<<"\\s+"/utf8>>),
     {ok, Whitespace} = case _assert_subject of
         {ok, _} -> _assert_subject;
         _assert_fail ->
             erlang:error(#{gleam_error => let_assert,
-                        message => <<"Assertion pattern match failed"/utf8>>,
+                        message => <<"Pattern match failed, no pattern matched the value."/utf8>>,
                         value => _assert_fail,
                         module => <<"lustre/ssg"/utf8>>,
                         function => <<"routify"/utf8>>,
                         line => 459})
     end,
-    _pipe = gleam@regex:split(Whitespace, Path),
+    _pipe = gleam@regexp:split(Whitespace, Path),
     _pipe@1 = gleam@string:join(_pipe, <<"-"/utf8>>),
-    gleam@string:lowercase(_pipe@1).
+    string:lowercase(_pipe@1).
 
+-file("src/lustre/ssg.gleam", 313).
+?DOC(
+    " Configure a static route to be generated. The path should be the route that\n"
+    " the page will be available at when served by a HTTP server. For example the\n"
+    " path \"/blog\" would be available at \"https://your_site.com/blog\".\n"
+    "\n"
+    " You need to add at least one static route before you can build your site. This\n"
+    " is to prevent you from providing empty dynamic routes and accidentally building\n"
+    " nothing.\n"
+    "\n"
+    " Paths are converted to kebab-case and lowercased. This means that the path\n"
+    " \"/Blog\" will be available at \"/blog\" and and \"/About me\" will be available at\n"
+    " \"/about-me\".\n"
+).
 -spec add_static_route(
-    config(any(), PLZ, PMA),
+    config(any(), QFU, QFV),
     binary(),
     lustre@internals@vdom:element(any())
-) -> config(has_static_routes(), PLZ, PMA).
+) -> config(has_static_routes(), QFU, QFV).
 add_static_route(Config, Path, Page) ->
     {config, Out_dir, Static_dir, Static_assets, Routes, Use_index_routes} = Config,
     Route = {static, routify(Path), lustre@element:map(Page, fun(_) -> nil end)},
@@ -82,11 +122,13 @@ add_static_route(Config, Path, Page) ->
         [Route | Routes],
         Use_index_routes}.
 
+-file("src/lustre/ssg.gleam", 336).
+?DOC("\n").
 -spec add_static_xml(
-    config(PMJ, PMK, PML),
+    config(QGE, QGF, QGG),
     binary(),
     lustre@internals@vdom:element(any())
-) -> config(PMJ, PMK, PML).
+) -> config(QGE, QGF, QGG).
 add_static_xml(Config, Path, Page) ->
     {config, Out_dir, Static_dir, Static_assets, Routes, Use_index_routes} = Config,
     Route = {xml, routify(Path), lustre@element:map(Page, fun(_) -> nil end)},
@@ -97,12 +139,40 @@ add_static_xml(Config, Path, Page) ->
         [Route | Routes],
         Use_index_routes}.
 
+-file("src/lustre/ssg.gleam", 383).
+?DOC(
+    " Configure a map of dynamic routes to be generated. As with `add_static_route`\n"
+    " the base path should be the route that each page will be available at when\n"
+    " served by a HTTP server.\n"
+    "\n"
+    " The initial path is the base for all dynamic routes to be generated. The\n"
+    " keys of the `data` map will be used to generate the dynamic routes. For\n"
+    " example, to generate dynamic routes for a blog where each page is a post\n"
+    " with the route \"/blog/:post\" you might do:\n"
+    "\n"
+    " ```gleam\n"
+    " let posts = [\n"
+    "   #(\"hello-world\", Post(...)),\n"
+    "   #(\"why-lustre-is-great\", Post(...)),\n"
+    " ]\n"
+    "\n"
+    " ...\n"
+    "\n"
+    " ssg.config(\"./dist\")\n"
+    " |> ...\n"
+    " |> ssg.add_dynamic_route(\"/blog\", posts, render_post)\n"
+    " ```\n"
+    "\n"
+    " Paths are converted to kebab-case and lowercased. This means that the path\n"
+    " \"/Blog\" will be available at \"/blog\" and and \"/About me\" will be available at\n"
+    " \"/about-me\".\n"
+).
 -spec add_dynamic_route(
-    config(PMU, PMV, PMW),
+    config(QGP, QGQ, QGR),
     binary(),
-    gleam@dict:dict(binary(), PNA),
-    fun((PNA) -> lustre@internals@vdom:element(any()))
-) -> config(PMU, PMV, PMW).
+    gleam@dict:dict(binary(), QGV),
+    fun((QGV) -> lustre@internals@vdom:element(any()))
+) -> config(QGP, QGQ, QGR).
 add_dynamic_route(Config, Path, Data, Page) ->
     Route = begin
         Path@1 = routify(Path),
@@ -114,46 +184,74 @@ add_dynamic_route(Config, Path, Data, Page) ->
         ),
         {dynamic, Path@1, Pages}
     end,
-    erlang:setelement(5, Config, [Route | erlang:element(5, Config)]).
+    _record = Config,
+    {config,
+        erlang:element(2, _record),
+        erlang:element(3, _record),
+        erlang:element(4, _record),
+        [Route | erlang:element(5, Config)],
+        erlang:element(6, _record)}.
 
--spec add_static_asset(config(PNQ, PNR, PNS), binary(), binary()) -> config(PNQ, PNR, PNS).
+-file("src/lustre/ssg.gleam", 429).
+?DOC(
+    " Include a static asset in the generated site. This might be something you\n"
+    " want to be generated at build time, like a robots.txt, a sitemap.xml, or\n"
+    " an RSS feed.\n"
+    "\n"
+    " The path should be the path that the asset will be available at when served\n"
+    " by an HTTP server. For example, the path \"/robots.txt\" would be available at\n"
+    " \"https://your_site.com/robots.txt\". The path will be converted to kebab-case\n"
+    " and lowercased.\n"
+    "\n"
+    " If you have configured a static assets directory to be copied over, any static\n"
+    " asset added here will overwrite any file with the same path.\n"
+).
+-spec add_static_asset(config(QHL, QHM, QHN), binary(), binary()) -> config(QHL, QHM, QHN).
 add_static_asset(Config, Path, Content) ->
     Static_assets = gleam@dict:insert(
         erlang:element(4, Config),
         routify(Path),
         Content
     ),
-    erlang:setelement(4, Config, Static_assets).
+    _record = Config,
+    {config,
+        erlang:element(2, _record),
+        erlang:element(3, _record),
+        Static_assets,
+        erlang:element(5, _record),
+        erlang:element(6, _record)}.
 
+-file("src/lustre/ssg.gleam", 466).
 -spec trim_slash(binary()) -> binary().
 trim_slash(Path) ->
-    case gleam@string:ends_with(Path, <<"/"/utf8>>) of
+    case gleam_stdlib:string_ends_with(Path, <<"/"/utf8>>) of
         true ->
-            gleam@string:drop_right(Path, 1);
+            gleam@string:drop_end(Path, 1);
 
         false ->
             Path
     end.
 
+-file("src/lustre/ssg.gleam", 473).
 -spec last_segment(binary()) -> {binary(), binary()}.
 last_segment(Path) ->
-    _assert_subject = gleam@regex:from_string(<<"(.*/)+?(.+)"/utf8>>),
+    _assert_subject = gleam@regexp:from_string(<<"(.*/)+?(.+)"/utf8>>),
     {ok, Segments} = case _assert_subject of
         {ok, _} -> _assert_subject;
         _assert_fail ->
             erlang:error(#{gleam_error => let_assert,
-                        message => <<"Assertion pattern match failed"/utf8>>,
+                        message => <<"Pattern match failed, no pattern matched the value."/utf8>>,
                         value => _assert_fail,
                         module => <<"lustre/ssg"/utf8>>,
                         function => <<"last_segment"/utf8>>,
                         line => 474})
     end,
-    _assert_subject@1 = gleam@regex:scan(Segments, Path),
+    _assert_subject@1 = gleam@regexp:scan(Segments, Path),
     [{match, _, [{some, Leading}, {some, Last}]}] = case _assert_subject@1 of
         [{match, _, [{some, _}, {some, _}]}] -> _assert_subject@1;
         _assert_fail@1 ->
             erlang:error(#{gleam_error => let_assert,
-                        message => <<"Assertion pattern match failed"/utf8>>,
+                        message => <<"Pattern match failed, no pattern matched the value."/utf8>>,
                         value => _assert_fail@1,
                         module => <<"lustre/ssg"/utf8>>,
                         function => <<"last_segment"/utf8>>,
@@ -161,6 +259,13 @@ last_segment(Path) ->
     end,
     {Leading, Last}.
 
+-file("src/lustre/ssg.gleam", 51).
+?DOC(
+    " Generate the static site. This will delete the output directory if it already\n"
+    " exists and then generate all of the routes configured. If a static assets\n"
+    " directory has been configured, its contents will be recursively copied into\n"
+    " the output directory **before** any routes are generated.\n"
+).
 -spec do_build(config(has_static_routes(), any(), any())) -> {ok,
         {ok, nil} | {error, build_error()}} |
     {error, simplifile:file_error()}.
@@ -186,34 +291,36 @@ do_build(Config) ->
                 end,
                 fun(_) ->
                     gleam@result:'try'(
-                        (gleam@list:try_map(
-                            maps:to_list(Static_assets),
-                            fun(_use0) ->
-                                {Path@1, Content} = _use0,
-                                Dir = filepath:directory_name(Path@1),
-                                _pipe@1 = filepath:join(Temp, Dir),
-                                _pipe@2 = simplifile:create_directory_all(
-                                    _pipe@1
-                                ),
-                                _pipe@3 = gleam@result:then(
-                                    _pipe@2,
-                                    fun(_) ->
-                                        simplifile:write(
-                                            <<Temp/binary, Path@1/binary>>,
-                                            Content
-                                        )
-                                    end
-                                ),
-                                gleam@result:map_error(
-                                    _pipe@3,
-                                    fun(_capture) ->
-                                        {cannot_write_static_asset,
-                                            _capture,
-                                            Path@1}
-                                    end
-                                )
-                            end
-                        )),
+                        begin
+                            gleam@list:try_map(
+                                maps:to_list(Static_assets),
+                                fun(_use0) ->
+                                    {Path@1, Content} = _use0,
+                                    Dir = filepath:directory_name(Path@1),
+                                    _pipe@1 = filepath:join(Temp, Dir),
+                                    _pipe@2 = simplifile:create_directory_all(
+                                        _pipe@1
+                                    ),
+                                    _pipe@3 = gleam@result:then(
+                                        _pipe@2,
+                                        fun(_) ->
+                                            simplifile:write(
+                                                <<Temp/binary, Path@1/binary>>,
+                                                Content
+                                            )
+                                        end
+                                    ),
+                                    gleam@result:map_error(
+                                        _pipe@3,
+                                        fun(_capture) ->
+                                            {cannot_write_static_asset,
+                                                _capture,
+                                                Path@1}
+                                        end
+                                    )
+                                end
+                            )
+                        end,
                         fun(_) ->
                             gleam@result:'try'(
                                 begin
@@ -427,6 +534,13 @@ do_build(Config) ->
         end
     ).
 
+-file("src/lustre/ssg.gleam", 37).
+?DOC(
+    " Generate the static site. This will delete the output directory if it already\n"
+    " exists and then generate all of the routes configured. If a static assets\n"
+    " directory has been configured, its contents will be recursively copied into\n"
+    " the output directory **before** any routes are generated.\n"
+).
 -spec build(config(has_static_routes(), any(), any())) -> {ok, nil} |
     {error, build_error()}.
 build(Config) ->

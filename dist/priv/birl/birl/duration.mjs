@@ -1,8 +1,8 @@
+import * as $regexp from "../../gleam_regexp/gleam/regexp.mjs";
 import * as $int from "../../gleam_stdlib/gleam/int.mjs";
 import * as $list from "../../gleam_stdlib/gleam/list.mjs";
 import * as $option from "../../gleam_stdlib/gleam/option.mjs";
 import * as $order from "../../gleam_stdlib/gleam/order.mjs";
-import * as $regex from "../../gleam_stdlib/gleam/regex.mjs";
 import * as $result from "../../gleam_stdlib/gleam/result.mjs";
 import * as $string from "../../gleam_stdlib/gleam/string.mjs";
 import {
@@ -224,6 +224,78 @@ export function decompose(duration) {
   );
 }
 
+function unit_values(unit) {
+  if (unit instanceof Year) {
+    return year;
+  } else if (unit instanceof Month) {
+    return month;
+  } else if (unit instanceof Week) {
+    return week;
+  } else if (unit instanceof Day) {
+    return day;
+  } else if (unit instanceof Hour) {
+    return hour;
+  } else if (unit instanceof Minute) {
+    return minute;
+  } else if (unit instanceof Second) {
+    return second;
+  } else if (unit instanceof MilliSecond) {
+    return milli_second;
+  } else {
+    return 1;
+  }
+}
+
+export function blur_to(duration, unit) {
+  let unit_value = unit_values(unit);
+  let value = duration[0];
+  let $ = extract(value, unit_value);
+  let unit_counts = $[0];
+  let remaining = $[1];
+  let $1 = remaining >= (divideInt(unit_value * 2, 3));
+  if ($1) {
+    return unit_counts + 1;
+  } else {
+    return unit_counts;
+  }
+}
+
+function inner_blur(loop$values) {
+  while (true) {
+    let values = loop$values;
+    if (values.hasLength(0)) {
+      return [0, new MicroSecond()];
+    } else if (values.hasLength(1)) {
+      let single = values.head;
+      return single;
+    } else {
+      let smaller = values.head;
+      let larger = values.tail.head;
+      let rest = values.tail.tail;
+      let smaller_unit_value = unit_values(smaller[1]);
+      let larger_unit_value = unit_values(larger[1]);
+      let at_least_two_thirds = smaller[0] * smaller_unit_value < (divideInt(
+        larger_unit_value * 2,
+        3
+      ));
+      let rounded = (() => {
+        if (at_least_two_thirds) {
+          return larger;
+        } else {
+          return [larger[0] + 1, larger[1]];
+        }
+      })();
+      loop$values = listPrepend(rounded, rest);
+    }
+  }
+}
+
+export function blur(duration) {
+  let _pipe = decompose(duration);
+  let _pipe$1 = $list.reverse(_pipe);
+  return inner_blur(_pipe$1);
+}
+
 const accurate_month = 2_629_746_000_000;
 
 const accurate_year = 31_556_952_000_000;
@@ -319,112 +391,6 @@ export function accurate_decompose(duration) {
   );
 }
 
-const unit_values = /* @__PURE__ */ toList([
-  [/* @__PURE__ */ new Year(), year],
-  [/* @__PURE__ */ new Month(), month],
-  [/* @__PURE__ */ new Week(), week],
-  [/* @__PURE__ */ new Day(), day],
-  [/* @__PURE__ */ new Hour(), hour],
-  [/* @__PURE__ */ new Minute(), minute],
-  [/* @__PURE__ */ new Second(), second],
-  [/* @__PURE__ */ new MilliSecond(), milli_second],
-  [/* @__PURE__ */ new MicroSecond(), 1],
-]);
-
-export function blur_to(duration, unit) {
-  let $ = $list.key_find(unit_values, unit);
-  if (!$.isOk()) {
-    throw makeError(
-      "let_assert",
-      "birl/duration",
-      207,
-      "blur_to",
-      "Pattern match failed, no pattern matched the value.",
-      { value: $ }
-    )
-  }
-  let unit_value = $[0];
-  let value = duration[0];
-  let $1 = extract(value, unit_value);
-  let unit_counts = $1[0];
-  let remaining = $1[1];
-  let $2 = remaining >= (divideInt(unit_value * 2, 3));
-  if ($2) {
-    return unit_counts + 1;
-  } else {
-    return unit_counts;
-  }
-}
-
-function inner_blur(loop$values) {
-  while (true) {
-    let values = loop$values;
-    if (!values.atLeastLength(2)) {
-      throw makeError(
-        "let_assert",
-        "birl/duration",
-        254,
-        "inner_blur",
-        "Pattern match failed, no pattern matched the value.",
-        { value: values }
-      )
-    }
-    let second$1 = values.head;
-    let leading = values.tail.head;
-    let $ = $list.key_find(unit_values, leading[1]);
-    if (!$.isOk()) {
-      throw makeError(
-        "let_assert",
-        "birl/duration",
-        255,
-        "inner_blur",
-        "Pattern match failed, no pattern matched the value.",
-        { value: $ }
-      )
-    }
-    let leading_unit = $[0];
-    let $1 = $list.key_find(unit_values, second$1[1]);
-    if (!$1.isOk()) {
-      throw makeError(
-        "let_assert",
-        "birl/duration",
-        256,
-        "inner_blur",
-        "Pattern match failed, no pattern matched the value.",
-        { value: $1 }
-      )
-    }
-    let second_unit = $1[0];
-    let leading$1 = (() => {
-      let $2 = second$1[0] * second_unit < (divideInt(leading_unit * 2, 3));
-      if ($2) {
-        return leading;
-      } else {
-        return [leading[0] + 1, leading[1]];
-      }
-    })();
-    let $2 = $list.drop(values, 2);
-    if ($2.hasLength(0)) {
-      return leading$1;
-    } else {
-      let chopped = $2;
-      loop$values = listPrepend(leading$1, chopped);
-    }
-  }
-}
-
-export function blur(duration) {
-  let $ = decompose(duration);
-  if ($.hasLength(0)) {
-    return [0, new MicroSecond()];
-  } else {
-    let decomposed = $;
-    let _pipe = decomposed;
-    let _pipe$1 = $list.reverse(_pipe);
-    return inner_blur(_pipe$1);
-  }
-}
-
 const year_units = /* @__PURE__ */ toList(["y", "year", "years"]);
 
 const month_units = /* @__PURE__ */ toList(["mon", "month", "months"]);
@@ -469,12 +435,12 @@ const units = /* @__PURE__ */ toList([
 ]);
 
 export function parse(expression) {
-  let $ = $regex.from_string("([+|\\-])?\\s*(\\d+)\\s*(\\w+)?");
+  let $ = $regexp.from_string("([+|\\-])?\\s*(\\d+)\\s*(\\w+)?");
   if (!$.isOk()) {
     throw makeError(
       "let_assert",
       "birl/duration",
-      319,
+      328,
       "parse",
       "Pattern match failed, no pattern matched the value.",
       { value: $ }
@@ -489,7 +455,7 @@ export function parse(expression) {
         throw makeError(
           "let_assert",
           "birl/duration",
-          325,
+          334,
           "parse",
           "Pattern match failed, no pattern matched the value.",
           { value: $3 }
@@ -506,11 +472,13 @@ export function parse(expression) {
   let $2 = (() => {
     let _pipe = expression$1;
     let _pipe$1 = $string.lowercase(_pipe);
-    let _pipe$2 = ((_capture) => { return $regex.scan(re, _capture); })(_pipe$1);
+    let _pipe$2 = ((_capture) => { return $regexp.scan(re, _capture); })(
+      _pipe$1,
+    );
     return $list.try_map(
       _pipe$2,
       (item) => {
-        if (item instanceof $regex.Match &&
+        if (item instanceof $regexp.Match &&
         item.submatches.hasLength(2) &&
         item.submatches.tail.head instanceof $option.Some) {
           let sign_option = item.submatches.head;
@@ -530,7 +498,7 @@ export function parse(expression) {
               }
             },
           );
-        } else if (item instanceof $regex.Match &&
+        } else if (item instanceof $regexp.Match &&
         item.submatches.hasLength(3) &&
         item.submatches.tail.head instanceof $option.Some &&
         item.submatches.tail.tail.head instanceof $option.Some) {

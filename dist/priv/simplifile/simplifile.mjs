@@ -572,7 +572,7 @@ function integer_to_permissions(integer) {
     throw makeError(
       "panic",
       "simplifile",
-      650,
+      652,
       "integer_to_permissions",
       "`panic` expression evaluated.",
       {}

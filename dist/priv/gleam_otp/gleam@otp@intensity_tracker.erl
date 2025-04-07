@@ -4,6 +4,19 @@
 -export([new/2, trim_window/3, add_event/1]).
 -export_type([intensity_tracker/0, too_intense/0]).
 
+-if(?OTP_RELEASE >= 27).
+-define(MODULEDOC(Str), -moduledoc(Str)).
+-define(DOC(Str), -doc(Str)).
+-else.
+-define(MODULEDOC(Str), -compile([])).
+-define(DOC(Str), -compile([])).
+-endif.
+
+?MODULEDOC(
+    " The intensity tracker is used to monitor how frequently an event happens,\n"
+    " erroring if it happens too many times within a period of time.\n"
+).
+
 -opaque intensity_tracker() :: {intensity_tracker,
         integer(),
         integer(),
@@ -53,5 +66,12 @@ add_event(Tracker) ->
             {error, too_intense};
 
         false ->
-            {ok, erlang:setelement(4, Tracker, Events)}
+            {ok,
+                begin
+                    _record = Tracker,
+                    {intensity_tracker,
+                        erlang:element(2, _record),
+                        erlang:element(3, _record),
+                        Events}
+                end}
     end.

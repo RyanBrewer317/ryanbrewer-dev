@@ -16,11 +16,11 @@ export class Some extends $CustomType {
 
 export class None extends $CustomType {}
 
-function do_all(list, acc) {
+function all_loop(list, acc) {
   if (list.hasLength(0)) {
     return new Some(acc);
   } else {
-    let x = list.head;
+    let first = list.head;
     let rest = list.tail;
     let accumulate = (acc, item) => {
       if (acc instanceof Some && item instanceof Some) {
@@ -31,12 +31,12 @@ function do_all(list, acc) {
         return new None();
       }
     };
-    return accumulate(do_all(rest, acc), x);
+    return accumulate(all_loop(rest, acc), first);
   }
 }
 
 export function all(list) {
-  return do_all(list, toList([]));
+  return all_loop(list, toList([]));
 }
 
 export function is_some(option) {
@@ -126,7 +126,7 @@ export function lazy_or(first, second) {
   }
 }
 
-function do_values(list, acc) {
+function values_loop(list, acc) {
   if (list.hasLength(0)) {
     return acc;
   } else {
@@ -140,10 +140,10 @@ function do_values(list, acc) {
         return acc;
       }
     };
-    return accumulate(do_values(rest, acc), first);
+    return accumulate(values_loop(rest, acc), first);
   }
 }
 
 export function values(options) {
-  return do_values(options, toList([]));
+  return values_loop(options, toList([]));
 }

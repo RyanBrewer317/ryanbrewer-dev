@@ -1,46 +1,85 @@
 -module(gleam@bit_array).
 -compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch]).
 
--export([from_string/1, byte_size/1, slice/3, is_utf8/1, to_string/1, concat/1, append/2, base64_encode/2, base64_decode/1, base64_url_encode/2, base64_url_decode/1, base16_encode/1, base16_decode/1, inspect/1, compare/2]).
+-export([from_string/1, bit_size/1, byte_size/1, pad_to_bytes/1, slice/3, is_utf8/1, to_string/1, concat/1, append/2, base64_encode/2, base64_decode/1, base64_url_encode/2, base64_url_decode/1, base16_encode/1, base16_decode/1, inspect/1, compare/2, starts_with/2]).
 
--file("/Users/louis/src/gleam/stdlib/src/gleam/bit_array.gleam", 11).
+-if(?OTP_RELEASE >= 27).
+-define(MODULEDOC(Str), -moduledoc(Str)).
+-define(DOC(Str), -doc(Str)).
+-else.
+-define(MODULEDOC(Str), -compile([])).
+-define(DOC(Str), -compile([])).
+-endif.
+
+?MODULEDOC(" BitArrays are a sequence of binary data of any length.\n").
+
+-file("src/gleam/bit_array.gleam", 11).
+?DOC(" Converts a UTF-8 `String` type into a `BitArray`.\n").
 -spec from_string(binary()) -> bitstring().
 from_string(X) ->
     gleam_stdlib:identity(X).
 
--file("/Users/louis/src/gleam/stdlib/src/gleam/bit_array.gleam", 17).
+-file("src/gleam/bit_array.gleam", 17).
+?DOC(" Returns an integer which is the number of bits in the bit array.\n").
+-spec bit_size(bitstring()) -> integer().
+bit_size(X) ->
+    erlang:bit_size(X).
+
+-file("src/gleam/bit_array.gleam", 23).
+?DOC(" Returns an integer which is the number of bytes in the bit array.\n").
 -spec byte_size(bitstring()) -> integer().
 byte_size(X) ->
     erlang:byte_size(X).
 
--file("/Users/louis/src/gleam/stdlib/src/gleam/bit_array.gleam", 42).
+-file("src/gleam/bit_array.gleam", 29).
+?DOC(" Pads a bit array with zeros so that it is a whole number of bytes.\n").
+-spec pad_to_bytes(bitstring()) -> bitstring().
+pad_to_bytes(X) ->
+    gleam_stdlib:bit_array_pad_to_bytes(X).
+
+-file("src/gleam/bit_array.gleam", 54).
+?DOC(
+    " Extracts a sub-section of a bit array.\n"
+    "\n"
+    " The slice will start at given position and continue up to specified\n"
+    " length.\n"
+    " A negative length can be used to extract bytes at the end of a bit array.\n"
+    "\n"
+    " This function runs in constant time.\n"
+).
 -spec slice(bitstring(), integer(), integer()) -> {ok, bitstring()} |
     {error, nil}.
 slice(String, Position, Length) ->
     gleam_stdlib:bit_array_slice(String, Position, Length).
 
--file("/Users/louis/src/gleam/stdlib/src/gleam/bit_array.gleam", 55).
--spec do_is_utf8(bitstring()) -> boolean().
-do_is_utf8(Bits) ->
+-file("src/gleam/bit_array.gleam", 67).
+-spec is_utf8_loop(bitstring()) -> boolean().
+is_utf8_loop(Bits) ->
     case Bits of
         <<>> ->
             true;
 
         <<_/utf8, Rest/binary>> ->
-            do_is_utf8(Rest);
+            is_utf8_loop(Rest);
 
         _ ->
             false
     end.
 
--file("/Users/louis/src/gleam/stdlib/src/gleam/bit_array.gleam", 50).
+-file("src/gleam/bit_array.gleam", 62).
+?DOC(" Tests to see whether a bit array is valid UTF-8.\n").
 -spec is_utf8(bitstring()) -> boolean().
 is_utf8(Bits) ->
-    do_is_utf8(Bits).
+    is_utf8_loop(Bits).
 
--file("/Users/louis/src/gleam/stdlib/src/gleam/bit_array.gleam", 83).
--spec do_to_string(bitstring()) -> {ok, binary()} | {error, nil}.
-do_to_string(Bits) ->
+-file("src/gleam/bit_array.gleam", 88).
+?DOC(
+    " Converts a bit array to a string.\n"
+    "\n"
+    " Returns an error if the bit array is invalid UTF-8 data.\n"
+).
+-spec to_string(bitstring()) -> {ok, binary()} | {error, nil}.
+to_string(Bits) ->
     case is_utf8(Bits) of
         true ->
             {ok, gleam_stdlib:identity(Bits)};
@@ -49,27 +88,49 @@ do_to_string(Bits) ->
             {error, nil}
     end.
 
--file("/Users/louis/src/gleam/stdlib/src/gleam/bit_array.gleam", 75).
--spec to_string(bitstring()) -> {ok, binary()} | {error, nil}.
-to_string(Bits) ->
-    do_to_string(Bits).
-
--file("/Users/louis/src/gleam/stdlib/src/gleam/bit_array.gleam", 101).
+-file("src/gleam/bit_array.gleam", 109).
+?DOC(
+    " Creates a new bit array by joining multiple binaries.\n"
+    "\n"
+    " ## Examples\n"
+    "\n"
+    " ```gleam\n"
+    " concat([from_string(\"butter\"), from_string(\"fly\")])\n"
+    " // -> from_string(\"butterfly\")\n"
+    " ```\n"
+).
 -spec concat(list(bitstring())) -> bitstring().
 concat(Bit_arrays) ->
     gleam_stdlib:bit_array_concat(Bit_arrays).
 
--file("/Users/louis/src/gleam/stdlib/src/gleam/bit_array.gleam", 28).
+-file("src/gleam/bit_array.gleam", 40).
+?DOC(
+    " Creates a new bit array by joining two bit arrays.\n"
+    "\n"
+    " ## Examples\n"
+    "\n"
+    " ```gleam\n"
+    " append(to: from_string(\"butter\"), suffix: from_string(\"fly\"))\n"
+    " // -> from_string(\"butterfly\")\n"
+    " ```\n"
+).
 -spec append(bitstring(), bitstring()) -> bitstring().
 append(First, Second) ->
     gleam_stdlib:bit_array_concat([First, Second]).
 
--file("/Users/louis/src/gleam/stdlib/src/gleam/bit_array.gleam", 107).
+-file("src/gleam/bit_array.gleam", 118).
+?DOC(
+    " Encodes a BitArray into a base 64 encoded string.\n"
+    "\n"
+    " If the bit array does not contain a whole number of bytes then it is padded\n"
+    " with zero bits prior to being encoded.\n"
+).
 -spec base64_encode(bitstring(), boolean()) -> binary().
 base64_encode(Input, Padding) ->
     gleam_stdlib:bit_array_base64_encode(Input, Padding).
 
--file("/Users/louis/src/gleam/stdlib/src/gleam/bit_array.gleam", 111).
+-file("src/gleam/bit_array.gleam", 122).
+?DOC(" Decodes a base 64 encoded string into a `BitArray`.\n").
 -spec base64_decode(binary()) -> {ok, bitstring()} | {error, nil}.
 base64_decode(Encoded) ->
     Padded = case erlang:byte_size(gleam_stdlib:identity(Encoded)) rem 4 of
@@ -84,14 +145,25 @@ base64_decode(Encoded) ->
     end,
     gleam_stdlib:base_decode64(Padded).
 
--file("/Users/louis/src/gleam/stdlib/src/gleam/bit_array.gleam", 125).
+-file("src/gleam/bit_array.gleam", 140).
+?DOC(
+    " Encodes a `BitArray` into a base 64 encoded string with URL and filename\n"
+    " safe alphabet.\n"
+    "\n"
+    " If the bit array does not contain a whole number of bytes then it is padded\n"
+    " with zero bits prior to being encoded.\n"
+).
 -spec base64_url_encode(bitstring(), boolean()) -> binary().
 base64_url_encode(Input, Padding) ->
     _pipe = gleam_stdlib:bit_array_base64_encode(Input, Padding),
     _pipe@1 = gleam@string:replace(_pipe, <<"+"/utf8>>, <<"-"/utf8>>),
     gleam@string:replace(_pipe@1, <<"/"/utf8>>, <<"_"/utf8>>).
 
--file("/Users/louis/src/gleam/stdlib/src/gleam/bit_array.gleam", 133).
+-file("src/gleam/bit_array.gleam", 149).
+?DOC(
+    " Decodes a base 64 encoded string with URL and filename safe alphabet into a\n"
+    " `BitArray`.\n"
+).
 -spec base64_url_decode(binary()) -> {ok, bitstring()} | {error, nil}.
 base64_url_decode(Encoded) ->
     _pipe = Encoded,
@@ -99,49 +171,56 @@ base64_url_decode(Encoded) ->
     _pipe@2 = gleam@string:replace(_pipe@1, <<"_"/utf8>>, <<"/"/utf8>>),
     base64_decode(_pipe@2).
 
--file("/Users/louis/src/gleam/stdlib/src/gleam/bit_array.gleam", 142).
+-file("src/gleam/bit_array.gleam", 163).
+?DOC(
+    " Encodes a `BitArray` into a base 16 encoded string.\n"
+    "\n"
+    " If the bit array does not contain a whole number of bytes then it is padded\n"
+    " with zero bits prior to being encoded.\n"
+).
 -spec base16_encode(bitstring()) -> binary().
 base16_encode(Input) ->
-    binary:encode_hex(Input).
+    gleam_stdlib:base16_encode(Input).
 
--file("/Users/louis/src/gleam/stdlib/src/gleam/bit_array.gleam", 146).
+-file("src/gleam/bit_array.gleam", 169).
+?DOC(" Decodes a base 16 encoded string into a `BitArray`.\n").
 -spec base16_decode(binary()) -> {ok, bitstring()} | {error, nil}.
 base16_decode(Input) ->
     gleam_stdlib:base16_decode(Input).
 
--file("/Users/louis/src/gleam/stdlib/src/gleam/bit_array.gleam", 165).
--spec do_inspect(bitstring(), binary()) -> binary().
-do_inspect(Input, Accumulator) ->
+-file("src/gleam/bit_array.gleam", 188).
+-spec inspect_loop(bitstring(), binary()) -> binary().
+inspect_loop(Input, Accumulator) ->
     case Input of
         <<>> ->
             Accumulator;
 
         <<X:1>> ->
-            <<<<Accumulator/binary, (gleam@int:to_string(X))/binary>>/binary,
+            <<<<Accumulator/binary, (erlang:integer_to_binary(X))/binary>>/binary,
                 ":size(1)"/utf8>>;
 
         <<X@1:2>> ->
-            <<<<Accumulator/binary, (gleam@int:to_string(X@1))/binary>>/binary,
+            <<<<Accumulator/binary, (erlang:integer_to_binary(X@1))/binary>>/binary,
                 ":size(2)"/utf8>>;
 
         <<X@2:3>> ->
-            <<<<Accumulator/binary, (gleam@int:to_string(X@2))/binary>>/binary,
+            <<<<Accumulator/binary, (erlang:integer_to_binary(X@2))/binary>>/binary,
                 ":size(3)"/utf8>>;
 
         <<X@3:4>> ->
-            <<<<Accumulator/binary, (gleam@int:to_string(X@3))/binary>>/binary,
+            <<<<Accumulator/binary, (erlang:integer_to_binary(X@3))/binary>>/binary,
                 ":size(4)"/utf8>>;
 
         <<X@4:5>> ->
-            <<<<Accumulator/binary, (gleam@int:to_string(X@4))/binary>>/binary,
+            <<<<Accumulator/binary, (erlang:integer_to_binary(X@4))/binary>>/binary,
                 ":size(5)"/utf8>>;
 
         <<X@5:6>> ->
-            <<<<Accumulator/binary, (gleam@int:to_string(X@5))/binary>>/binary,
+            <<<<Accumulator/binary, (erlang:integer_to_binary(X@5))/binary>>/binary,
                 ":size(6)"/utf8>>;
 
         <<X@6:7>> ->
-            <<<<Accumulator/binary, (gleam@int:to_string(X@6))/binary>>/binary,
+            <<<<Accumulator/binary, (erlang:integer_to_binary(X@6))/binary>>/binary,
                 ":size(7)"/utf8>>;
 
         <<X@7, Rest/bitstring>> ->
@@ -153,20 +232,49 @@ do_inspect(Input, Accumulator) ->
                     <<", "/utf8>>
             end,
             Accumulator@1 = <<<<Accumulator/binary,
-                    (gleam@int:to_string(X@7))/binary>>/binary,
+                    (erlang:integer_to_binary(X@7))/binary>>/binary,
                 Suffix/binary>>,
-            do_inspect(Rest, Accumulator@1);
+            inspect_loop(Rest, Accumulator@1);
 
         _ ->
             Accumulator
     end.
 
--file("/Users/louis/src/gleam/stdlib/src/gleam/bit_array.gleam", 160).
+-file("src/gleam/bit_array.gleam", 183).
+?DOC(
+    " Converts a bit array to a string containing the decimal value of each byte.\n"
+    "\n"
+    " ## Examples\n"
+    "\n"
+    " ```gleam\n"
+    " inspect(<<0, 20, 0x20, 255>>)\n"
+    " // -> \"<<0, 20, 32, 255>>\"\n"
+    "\n"
+    " inspect(<<100, 5:3>>)\n"
+    " // -> \"<<100, 5:size(3)>>\"\n"
+    " ```\n"
+).
 -spec inspect(bitstring()) -> binary().
 inspect(Input) ->
-    <<(do_inspect(Input, <<"<<"/utf8>>))/binary, ">>"/utf8>>.
+    <<(inspect_loop(Input, <<"<<"/utf8>>))/binary, ">>"/utf8>>.
 
--file("/Users/louis/src/gleam/stdlib/src/gleam/bit_array.gleam", 210).
+-file("src/gleam/bit_array.gleam", 229).
+?DOC(
+    " Compare two bit arrays as sequences of bytes.\n"
+    "\n"
+    " ## Examples\n"
+    "\n"
+    " ```gleam\n"
+    " compare(<<1>>, <<2>>)\n"
+    " // -> Lt\n"
+    "\n"
+    " compare(<<\"AB\":utf8>>, <<\"AA\":utf8>>)\n"
+    " // -> Gt\n"
+    "\n"
+    " compare(<<1, 2:size(2)>>, with: <<1, 2:size(2)>>)\n"
+    " // -> Eq\n"
+    " ```\n"
+).
 -spec compare(bitstring(), bitstring()) -> gleam@order:order().
 compare(A, B) ->
     case {A, B} of
@@ -210,4 +318,26 @@ compare(A, B) ->
                 {_, _} ->
                     eq
             end
+    end.
+
+-file("src/gleam/bit_array.gleam", 270).
+?DOC(
+    " Checks whether the first `BitArray` starts with the second one.\n"
+    "\n"
+    " ## Examples\n"
+    "\n"
+    " ```gleam\n"
+    " starts_with(<<1, 2, 3, 4>>, <<1, 2>>)\n"
+    " // -> True\n"
+    " ```\n"
+).
+-spec starts_with(bitstring(), bitstring()) -> boolean().
+starts_with(Bits, Prefix) ->
+    Prefix_size = erlang:bit_size(Prefix),
+    case Bits of
+        <<Pref:Prefix_size/bitstring, _/bitstring>> when Pref =:= Prefix ->
+            true;
+
+        _ ->
+            false
     end.

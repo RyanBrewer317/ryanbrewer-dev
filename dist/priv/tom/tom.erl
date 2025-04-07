@@ -90,7 +90,7 @@ classify(Toml) ->
     end.
 
 -file("/Users/louis/src/gleam/tom/src/tom.gleam", 383).
--spec push_key({ok, FMG} | {error, get_error()}, binary()) -> {ok, FMG} |
+-spec push_key({ok, FMU} | {error, get_error()}, binary()) -> {ok, FMU} |
     {error, get_error()}.
 push_key(Result, Key) ->
     case Result of
@@ -406,8 +406,8 @@ insert(Table, Key, Value) ->
 -file("/Users/louis/src/gleam/tom/src/tom.gleam", 564).
 -spec expect_end_of_line(
     list(binary()),
-    fun((list(binary())) -> {ok, {FOL, list(binary())}} | {error, parse_error()})
-) -> {ok, {FOL, list(binary())}} | {error, parse_error()}.
+    fun((list(binary())) -> {ok, {FOZ, list(binary())}} | {error, parse_error()})
+) -> {ok, {FOZ, list(binary())}} | {error, parse_error()}.
 expect_end_of_line(Input, Next) ->
     case Input of
         [<<"\n"/utf8>> | Input@1] ->
@@ -575,9 +575,9 @@ drop_comments(Input, Acc, In_string) ->
 
 -file("/Users/louis/src/gleam/tom/src/tom.gleam", 708).
 -spec do(
-    {ok, {FOW, list(binary())}} | {error, parse_error()},
-    fun((FOW, list(binary())) -> {ok, FOZ} | {error, parse_error()})
-) -> {ok, FOZ} | {error, parse_error()}.
+    {ok, {FPK, list(binary())}} | {error, parse_error()},
+    fun((FPK, list(binary())) -> {ok, FPN} | {error, parse_error()})
+) -> {ok, FPN} | {error, parse_error()}.
 do(Result, Next) ->
     case Result of
         {ok, {A, Input}} ->
@@ -611,8 +611,8 @@ parse_key(Input, Segments) ->
 -spec expect(
     list(binary()),
     binary(),
-    fun((list(binary())) -> {ok, {FPE, list(binary())}} | {error, parse_error()})
-) -> {ok, {FPE, list(binary())}} | {error, parse_error()}.
+    fun((list(binary())) -> {ok, {FPS, list(binary())}} | {error, parse_error()})
+) -> {ok, {FPS, list(binary())}} | {error, parse_error()}.
 expect(Input, Expected, Next) ->
     case Input of
         [G | Input@1] when G =:= Expected ->
@@ -1897,11 +1897,14 @@ as_table(Toml) ->
         {table, Tbl} ->
             {ok, Tbl};
 
+        {inline_table, Tbl@1} ->
+            {ok, Tbl@1};
+
         Other ->
             {error, {wrong_type, [], <<"Table"/utf8>>, classify(Other)}}
     end.
 
--file("/Users/louis/src/gleam/tom/src/tom.gleam", 1530).
+-file("/Users/louis/src/gleam/tom/src/tom.gleam", 1531).
 -spec as_number(toml()) -> {ok, number_()} | {error, get_error()}.
 as_number(Toml) ->
     case Toml of

@@ -1,9 +1,9 @@
 import * as $filepath from "../../filepath/filepath.mjs";
+import * as $regexp from "../../gleam_regexp/gleam/regexp.mjs";
 import * as $dict from "../../gleam_stdlib/gleam/dict.mjs";
 import * as $list from "../../gleam_stdlib/gleam/list.mjs";
 import * as $option from "../../gleam_stdlib/gleam/option.mjs";
 import { None, Some } from "../../gleam_stdlib/gleam/option.mjs";
-import * as $regex from "../../gleam_stdlib/gleam/regex.mjs";
 import * as $result from "../../gleam_stdlib/gleam/result.mjs";
 import * as $string from "../../gleam_stdlib/gleam/string.mjs";
 import * as $element from "../../lustre/lustre/element.mjs";
@@ -117,7 +117,7 @@ export function use_index_routes(config) {
 }
 
 function routify(path) {
-  let $ = $regex.from_string("\\s+");
+  let $ = $regexp.from_string("\\s+");
   if (!$.isOk()) {
     throw makeError(
       "let_assert",
@@ -129,7 +129,7 @@ function routify(path) {
     )
   }
   let whitespace = $[0];
-  let _pipe = $regex.split(whitespace, path);
+  let _pipe = $regexp.split(whitespace, path);
   let _pipe$1 = $string.join(_pipe, "-");
   return $string.lowercase(_pipe$1);
 }
@@ -208,14 +208,14 @@ export function add_static_asset(config, path, content) {
 function trim_slash(path) {
   let $ = $string.ends_with(path, "/");
   if ($) {
-    return $string.drop_right(path, 1);
+    return $string.drop_end(path, 1);
   } else {
     return path;
   }
 }
 
 function last_segment(path) {
-  let $ = $regex.from_string("(.*/)+?(.+)");
+  let $ = $regexp.from_string("(.*/)+?(.+)");
   if (!$.isOk()) {
     throw makeError(
       "let_assert",
@@ -227,10 +227,10 @@ function last_segment(path) {
     )
   }
   let segments = $[0];
-  let $1 = $regex.scan(segments, path);
+  let $1 = $regexp.scan(segments, path);
   if (
     !$1.hasLength(1) ||
-    !($1.head instanceof $regex.Match) ||
+    !($1.head instanceof $regexp.Match) ||
     !$1.head.submatches.hasLength(2) ||
     !($1.head.submatches.head instanceof Some) ||
     !($1.head.submatches.tail.head instanceof Some)

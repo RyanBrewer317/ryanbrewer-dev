@@ -1,4 +1,5 @@
 import * as $dynamic from "../../../gleam_stdlib/gleam/dynamic.mjs";
+import * as $decode from "../../../gleam_stdlib/gleam/dynamic/decode.mjs";
 import * as $string from "../../../gleam_stdlib/gleam/string.mjs";
 import { CustomType as $CustomType } from "../../gleam.mjs";
 import * as $erlang from "../../gleam/erlang.mjs";

@@ -3,30 +3,32 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 import arctic.{type Page}
-import birl
 import gleam/int
 import gleam/option.{Some}
 import gleam/order.{type Order, negate}
+import gleam/time/calendar
+import gleam/time/timestamp.{type Timestamp}
 
 pub type Date =
-  birl.Time
+  Timestamp
 
 pub fn string_to_date(s: String) -> Result(Date, Nil) {
-  birl.from_naive(s)
+  timestamp.parse_rfc3339(s)
 }
 
-pub fn pretty_date(date: Date) -> String {
-  birl.string_month(date)
+pub fn pretty_date(ts: Date) -> String {
+  let date = timestamp.to_calendar(ts, calendar.utc_offset).0
+  calendar.month_to_string(date.month)
   <> " "
-  <> int.to_string(birl.get_day(date).date)
+  <> int.to_string(date.day)
   <> ", "
-  <> int.to_string(birl.get_day(date).year)
+  <> int.to_string(date.year)
 }
 
 pub fn before(p1: Page, p2: Page) -> Order {
   let assert Some(p1_date) = p1.date
   let assert Some(p2_date) = p2.date
-  birl.compare(p1_date, p2_date)
+  timestamp.compare(p1_date, p2_date)
 }
 
 pub fn after(p1: Page, p2: Page) -> Order {

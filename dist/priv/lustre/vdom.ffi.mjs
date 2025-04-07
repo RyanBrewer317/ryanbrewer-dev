@@ -7,8 +7,11 @@
 // - https://www.zhenghao.io/posts/object-vs-map
 //
 
-if (window && window.customElements) {
-  window.customElements.define(
+if (
+  globalThis.customElements &&
+  !globalThis.customElements.get("lustre-fragment")
+) {
+  globalThis.customElements.define(
     "lustre-fragment",
     class LustreFragment extends HTMLElement {
       constructor() {
@@ -363,6 +366,11 @@ function createElementNode({ prev, next, dispatch, stack }) {
 
       handlersForEl.set(eventName, callback);
       el.setAttribute(name, value);
+      // Same as above, prevent removal of handler & attribute in next step
+      if (canMorph) {
+        prevHandlers.delete(eventName)
+        prevAttributes.delete(name);
+      }
     } else if (
       name.startsWith("delegate:data-") ||
       name.startsWith("delegate:aria-")

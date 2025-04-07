@@ -2526,6 +2526,9 @@ export function as_table(toml) {
   if (toml instanceof Table) {
     let tbl = toml[0];
     return new Ok(tbl);
+  } else if (toml instanceof InlineTable) {
+    let tbl = toml[0];
+    return new Ok(tbl);
   } else {
     let other = toml;
     return new Error(new WrongType(toList([]), "Table", classify(other)));

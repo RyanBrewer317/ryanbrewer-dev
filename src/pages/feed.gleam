@@ -3,35 +3,37 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 import arctic.{type CacheablePage}
-import birl
+import gleam/float
 import gleam/int
 import gleam/list
 import gleam/option.{Some}
-import gleam/string_builder.{append, append_builder, from_string, to_string}
+import gleam/result
+import gleam/string_tree.{append, append_tree, from_string, to_string}
+import gleam/time/calendar
+import gleam/time/timestamp
 
 pub fn feed(posts: List(CacheablePage)) -> String {
   let items = {
     use cacheable_post <- list.map(list.reverse(posts))
     let post = arctic.to_dummy_page(cacheable_post)
     let assert Some(post_date) = post.date
-    let date = birl.get_day(post_date)
-    let time = birl.get_time_of_day(post_date)
+    let #(date, time) = timestamp.to_calendar(post_date, calendar.utc_offset)
     from_string("    <item>\n      <title>")
     |> append(post.title)
     |> append("</title>\n      <pubDate>")
     |> append(day(post_date))
     |> append(", ")
-    |> append(pad(date.date))
+    |> append(pad(date.day))
     |> append(" ")
     |> append(month(post_date))
     |> append(" ")
     |> append(int.to_string(date.year))
     |> append(" ")
-    |> append(pad(time.hour))
+    |> append(pad(time.hours))
     |> append(":")
-    |> append(pad(time.minute))
+    |> append(pad(time.minutes))
     |> append(":")
-    |> append(pad(time.second))
+    |> append(pad(time.seconds))
     |> append(" PST</pubDate>\n      <link>https://ryanbrewer.dev/posts/")
     |> append(post.id)
     |> append("/</link>\n      <guid>https://ryanbrewer.dev/posts/")
@@ -55,7 +57,7 @@ pub fn feed(posts: List(CacheablePage)) -> String {
     <language>en-us</language>
 ",
   )
-  |> append_builder(string_builder.concat(items))
+  |> append_tree(string_tree.concat(items))
   |> append("  </channel>\n</rss>")
   |> to_string
 }
@@ -67,31 +69,40 @@ fn pad(i: Int) -> String {
   }
 }
 
-fn day(date: birl.Time) -> String {
-  case birl.weekday(date) {
-    birl.Mon -> "Mon"
-    birl.Tue -> "Tue"
-    birl.Wed -> "Wed"
-    birl.Thu -> "Thu"
-    birl.Fri -> "Fri"
-    birl.Sat -> "Sat"
-    birl.Sun -> "Sun"
+fn day(ts: timestamp.Timestamp) -> String {
+  let weekday =
+    ts
+    |> timestamp.to_unix_seconds()
+    |> fn(n) { n /. 86_400.0 }
+    |> float.truncate()
+    |> fn(n) { n + 4 }
+    |> int.modulo(7)
+    |> result.lazy_unwrap(fn() { panic })
+  case weekday {
+    0 -> "Sun"
+    1 -> "Mon"
+    2 -> "Tue"
+    3 -> "Wed"
+    4 -> "Thu"
+    5 -> "Fri"
+    6 -> "Sat"
+    _ -> panic
   }
 }
 
-fn month(date: birl.Time) -> String {
-  case birl.month(date) {
-    birl.Jan -> "Jan"
-    birl.Feb -> "Feb"
-    birl.Mar -> "Mar"
-    birl.Apr -> "Apr"
-    birl.May -> "May"
-    birl.Jun -> "Jun"
-    birl.Jul -> "Jul"
-    birl.Aug -> "Aug"
-    birl.Sep -> "Sep"
-    birl.Oct -> "Oct"
-    birl.Nov -> "Nov"
-    birl.Dec -> "Dec"
+fn month(date: timestamp.Timestamp) -> String {
+  case { timestamp.to_calendar(date, calendar.utc_offset).0 }.month {
+    calendar.January -> "Jan"
+    calendar.February -> "Feb"
+    calendar.March -> "Mar"
+    calendar.April -> "Apr"
+    calendar.May -> "May"
+    calendar.June -> "Jun"
+    calendar.July -> "Jul"
+    calendar.August -> "Aug"
+    calendar.September -> "Sep"
+    calendar.October -> "Oct"
+    calendar.November -> "Nov"
+    calendar.December -> "Dec"
   }
 }

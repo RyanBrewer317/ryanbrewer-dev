@@ -47,6 +47,13 @@ export class LetBeStdout extends $CustomType {}
 
 export class OverlappedStdio extends $CustomType {}
 
+export class SetEnvironment extends $CustomType {
+  constructor(x0) {
+    super();
+    this[0] = x0;
+  }
+}
+
 export function display(values) {
   return $dict.from_list(toList([["display", values]]));
 }
@@ -64,11 +71,22 @@ function escape(code, string) {
 }
 
 export function command(executable, arguments$, directory, options) {
+  let environment = $list.flat_map(
+    options,
+    (option) => {
+      if (option instanceof SetEnvironment) {
+        let env = option[0];
+        return env;
+      } else {
+        return toList([]);
+      }
+    },
+  );
   let _pipe = options;
   let _pipe$1 = $list.map(_pipe, (opt) => { return [opt, true]; });
   let _pipe$2 = $dict.from_list(_pipe$1);
   return ((_capture) => {
-    return do_command(executable, arguments$, directory, _capture);
+    return do_command(executable, arguments$, directory, _capture, environment);
   })(_pipe$2);
 }
 

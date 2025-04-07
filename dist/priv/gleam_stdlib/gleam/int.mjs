@@ -2,11 +2,11 @@ import { Ok, Error, toList, prepend as listPrepend, remainderInt, divideInt } fr
 import * as $float from "../gleam/float.mjs";
 import * as $order from "../gleam/order.mjs";
 import {
-  parse_int as do_parse,
+  parse_int as parse,
   int_from_base_string as do_base_parse,
-  to_string as do_to_string,
+  to_string,
   int_to_base_string as do_to_base_string,
-  identity as do_to_float,
+  identity as to_float,
   bitwise_and,
   bitwise_not,
   bitwise_or,
@@ -22,6 +22,9 @@ export {
   bitwise_or,
   bitwise_shift_left,
   bitwise_shift_right,
+  parse,
+  to_float,
+  to_string,
 };
 
 export function absolute_value(x) {
@@ -33,10 +36,6 @@ export function absolute_value(x) {
   }
 }
 
-export function parse(string) {
-  return do_parse(string);
-}
-
 export function base_parse(string, base) {
   let $ = (base >= 2) && (base <= 36);
   if ($) {
@@ -44,10 +43,6 @@ export function base_parse(string, base) {
   } else {
     return new Error(undefined);
   }
-}
-
-export function to_string(x) {
-  return do_to_string(x);
 }
 
 export function to_base_string(x, base) {
@@ -75,20 +70,14 @@ export function to_base36(x) {
   return do_to_base_string(x, 36);
 }
 
-export function to_float(x) {
-  return do_to_float(x);
-}
-
 export function power(base, exponent) {
-  let _pipe = base;
-  let _pipe$1 = to_float(_pipe);
-  return $float.power(_pipe$1, exponent);
+  let _pipe = to_float(base);
+  return $float.power(_pipe, exponent);
 }
 
 export function square_root(x) {
-  let _pipe = x;
-  let _pipe$1 = to_float(_pipe);
-  return $float.square_root(_pipe$1);
+  let _pipe = to_float(x);
+  return $float.square_root(_pipe);
 }
 
 export function compare(a, b) {
@@ -141,50 +130,45 @@ export function negate(x) {
   return -1 * x;
 }
 
-function do_sum(loop$numbers, loop$initial) {
+function sum_loop(loop$numbers, loop$initial) {
   while (true) {
     let numbers = loop$numbers;
     let initial = loop$initial;
-    if (numbers.hasLength(0)) {
-      return initial;
-    } else {
-      let x = numbers.head;
+    if (numbers.atLeastLength(1)) {
+      let first = numbers.head;
       let rest = numbers.tail;
       loop$numbers = rest;
-      loop$initial = x + initial;
+      loop$initial = first + initial;
+    } else {
+      return initial;
     }
   }
 }
 
 export function sum(numbers) {
-  let _pipe = numbers;
-  return do_sum(_pipe, 0);
+  return sum_loop(numbers, 0);
 }
 
-function do_product(loop$numbers, loop$initial) {
+function product_loop(loop$numbers, loop$initial) {
   while (true) {
     let numbers = loop$numbers;
     let initial = loop$initial;
-    if (numbers.hasLength(0)) {
-      return initial;
-    } else {
-      let x = numbers.head;
+    if (numbers.atLeastLength(1)) {
+      let first = numbers.head;
       let rest = numbers.tail;
       loop$numbers = rest;
-      loop$initial = x * initial;
+      loop$initial = first * initial;
+    } else {
+      return initial;
     }
   }
 }
 
 export function product(numbers) {
-  if (numbers.hasLength(0)) {
-    return 1;
-  } else {
-    return do_product(numbers, 1);
-  }
+  return product_loop(numbers, 1);
 }
 
-function do_digits(loop$x, loop$base, loop$acc) {
+function digits_loop(loop$x, loop$base, loop$acc) {
   while (true) {
     let x = loop$x;
     let base = loop$base;
@@ -205,11 +189,11 @@ export function digits(x, base) {
   if ($) {
     return new Error(undefined);
   } else {
-    return new Ok(do_digits(x, base, toList([])));
+    return new Ok(digits_loop(x, base, toList([])));
   }
 }
 
-function do_undigits(loop$numbers, loop$base, loop$acc) {
+function undigits_loop(loop$numbers, loop$base, loop$acc) {
   while (true) {
     let numbers = loop$numbers;
     let base = loop$base;
@@ -234,7 +218,7 @@ export function undigits(numbers, base) {
   if ($) {
     return new Error(undefined);
   } else {
-    return do_undigits(numbers, base, 0);
+    return undigits_loop(numbers, base, 0);
   }
 }
 

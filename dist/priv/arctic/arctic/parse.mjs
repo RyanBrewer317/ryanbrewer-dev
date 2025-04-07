@@ -1,4 +1,3 @@
-import * as $birl from "../../birl/birl.mjs";
 import * as $dict from "../../gleam_stdlib/gleam/dict.mjs";
 import * as $int from "../../gleam_stdlib/gleam/int.mjs";
 import * as $io from "../../gleam_stdlib/gleam/io.mjs";
@@ -292,7 +291,7 @@ function escaped_char() {
                                   throw makeError(
                                     "let_assert",
                                     "arctic/parse",
-                                    402,
+                                    396,
                                     "",
                                     "Pattern match failed, no pattern matched the value.",
                                     { value: $ }
@@ -1022,15 +1021,7 @@ export function parse(p, src_name, src) {
                 if ($1.isOk()) {
                   let s = $1[0];
                   return $result.try$(
-                    (() => {
-                      let _pipe = $birl.parse(s);
-                      return $result.map_error(
-                        _pipe,
-                        (_) => {
-                          return $snag.new$(("couldn't parse date `" + s) + "`");
-                        },
-                      );
-                    })(),
+                    $arctic.parse_date(s),
                     (d) => { return new Ok(new Some(d)); },
                   );
                 } else {

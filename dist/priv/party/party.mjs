@@ -299,6 +299,10 @@ export function seq(p, q) {
   return do$(p, (_) => { return q; });
 }
 
+export function drop(p, f) {
+  return seq(p, lazy(f));
+}
+
 export function all(ps) {
   if (ps.hasLength(1)) {
     let p = ps.head;
@@ -311,7 +315,7 @@ export function all(ps) {
     throw makeError(
       "panic",
       "party",
-      300,
+      314,
       "all",
       "all(parsers) doesn't accept an empty list of parsers",
       {}

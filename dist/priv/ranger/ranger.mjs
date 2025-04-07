@@ -1,7 +1,7 @@
 import * as $bool from "../gleam_stdlib/gleam/bool.mjs";
-import * as $iterator from "../gleam_stdlib/gleam/iterator.mjs";
 import * as $option from "../gleam_stdlib/gleam/option.mjs";
 import * as $order from "../gleam_stdlib/gleam/order.mjs";
+import * as $yielder from "../gleam_yielder/gleam/yielder.mjs";
 import { Ok, Error, CustomType as $CustomType } from "./gleam.mjs";
 
 class Forward extends $CustomType {}
@@ -42,23 +42,23 @@ export function create(validate, negate_step, add, compare) {
           let direction = $[0][0][0];
           let step = $[0][0][1];
           return new Ok(
-            $iterator.unfold(
+            $yielder.unfold(
               a,
               (current) => {
                 let $1 = compare(current, b);
                 if ($1 instanceof $order.Gt && direction instanceof Forward) {
-                  return new $iterator.Done();
+                  return new $yielder.Done();
                 } else if ($1 instanceof $order.Lt &&
                 direction instanceof Backward) {
-                  return new $iterator.Done();
+                  return new $yielder.Done();
                 } else {
-                  return new $iterator.Next(current, add(current, step));
+                  return new $yielder.Next(current, add(current, step));
                 }
               },
             ),
           );
         } else if ($.isOk() && $[0] instanceof $option.None) {
-          return new Ok($iterator.once(() => { return a; }));
+          return new Ok($yielder.once(() => { return a; }));
         } else {
           return new Error(undefined);
         }
@@ -84,14 +84,14 @@ export function create_infinite(validate, add, compare) {
         return $bool.guard(
           is_step_zero(a, s),
           (() => {
-            let _pipe = $iterator.once(() => { return a; });
+            let _pipe = $yielder.once(() => { return a; });
             return new Ok(_pipe);
           })(),
           () => {
-            let _pipe = $iterator.unfold(
+            let _pipe = $yielder.unfold(
               a,
               (current) => {
-                return new $iterator.Next(current, add(current, s));
+                return new $yielder.Next(current, add(current, s));
               },
             );
             return new Ok(_pipe);

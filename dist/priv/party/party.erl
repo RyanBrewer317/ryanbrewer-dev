@@ -1,7 +1,7 @@
 -module(party).
 -compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch]).
 
--export([run/3, pos/0, satisfy/1, any_char/0, char/1, either/2, choice/1, many/1, many1/1, map/2, 'try'/2, error_map/2, perhaps/1, 'not'/1, 'end'/0, lazy/1, do/2, seq/2, all/1, return/1, between/3, sep1/2, sep/2, string/1, go/2, lowercase_letter/0, uppercase_letter/0, letter/0, digit/0, alphanum/0, many_concat/1, whitespace/0, many1_concat/1, digits/0, whitespace1/0, fail/0, until/2, line/0, line_concat/0, stateful_many/2, stateful_many1/2]).
+-export([run/3, pos/0, satisfy/1, any_char/0, char/1, either/2, choice/1, many/1, many1/1, map/2, 'try'/2, error_map/2, perhaps/1, 'not'/1, 'end'/0, lazy/1, do/2, seq/2, drop/2, all/1, return/1, between/3, sep1/2, sep/2, string/1, go/2, lowercase_letter/0, uppercase_letter/0, letter/0, digit/0, alphanum/0, many_concat/1, whitespace/0, many1_concat/1, digits/0, whitespace1/0, fail/0, until/2, line/0, line_concat/0, stateful_many/2, stateful_many1/2]).
 -export_type([parse_error/1, position/0, parser/2]).
 
 -type parse_error(FKG) :: {unexpected, position(), binary()} |
@@ -125,7 +125,7 @@ many1(P) ->
                     )
             end end}.
 
--spec map(parser(FPT, FPU), fun((FPT) -> FPX)) -> parser(FPX, FPU).
+-spec map(parser(FQC, FQD), fun((FQC) -> FQG)) -> parser(FQG, FQD).
 map(P, F) ->
     {parser, fun(Source, Pos) -> case run(P, Source, Pos) of
                 {ok, {X, R, Pos2}} ->
@@ -135,7 +135,7 @@ map(P, F) ->
                     {error, E}
             end end}.
 
--spec 'try'(parser(FQA, FQB), fun((FQA) -> {ok, FQE} | {error, FQB})) -> parser(FQE, FQB).
+-spec 'try'(parser(FQJ, FQK), fun((FQJ) -> {ok, FQN} | {error, FQK})) -> parser(FQN, FQK).
 'try'(P, F) ->
     {parser, fun(Source, Pos) -> case run(P, Source, Pos) of
                 {ok, {X, R, Pos2}} ->
@@ -151,7 +151,7 @@ map(P, F) ->
                     {error, E@1}
             end end}.
 
--spec error_map(parser(FQJ, FQK), fun((FQK) -> FQN)) -> parser(FQJ, FQN).
+-spec error_map(parser(FQS, FQT), fun((FQT) -> FQW)) -> parser(FQS, FQW).
 error_map(P, F) ->
     {parser, fun(Source, Pos) -> case run(P, Source, Pos) of
                 {ok, Res} ->
@@ -167,7 +167,7 @@ error_map(P, F) ->
                     end
             end end}.
 
--spec perhaps(parser(FQQ, FQR)) -> parser({ok, FQQ} | {error, nil}, FQR).
+-spec perhaps(parser(FQZ, FRA)) -> parser({ok, FQZ} | {error, nil}, FRA).
 perhaps(P) ->
     {parser, fun(Source, Pos) -> case run(P, Source, Pos) of
                 {ok, {X, R, Pos2}} ->
@@ -177,7 +177,7 @@ perhaps(P) ->
                     {ok, {{error, nil}, Source, Pos}}
             end end}.
 
--spec 'not'(parser(any(), FRJ)) -> parser(nil, FRJ).
+-spec 'not'(parser(any(), FRS)) -> parser(nil, FRS).
 'not'(P) ->
     {parser, fun(Source, Pos) -> case run(P, Source, Pos) of
                 {ok, _} ->
@@ -203,11 +203,11 @@ perhaps(P) ->
                     {error, {unexpected, Pos, H}}
             end end}.
 
--spec lazy(fun(() -> parser(FRR, FRS))) -> parser(FRR, FRS).
+-spec lazy(fun(() -> parser(FSA, FSB))) -> parser(FSA, FSB).
 lazy(P) ->
     {parser, fun(Source, Pos) -> run(P(), Source, Pos) end}.
 
--spec do(parser(FRX, FRY), fun((FRX) -> parser(FSB, FRY))) -> parser(FSB, FRY).
+-spec do(parser(FSG, FSH), fun((FSG) -> parser(FSK, FSH))) -> parser(FSK, FSH).
 do(P, F) ->
     {parser, fun(Source, Pos) -> case run(P, Source, Pos) of
                 {ok, {X, R, Pos2}} ->
@@ -221,7 +221,11 @@ do(P, F) ->
 seq(P, Q) ->
     do(P, fun(_) -> Q end).
 
--spec all(list(parser(FQY, FQZ))) -> parser(FQY, FQZ).
+-spec drop(parser(any(), FPA), fun(() -> parser(FPD, FPA))) -> parser(FPD, FPA).
+drop(P, F) ->
+    seq(P, lazy(F)).
+
+-spec all(list(parser(FRH, FRI))) -> parser(FRH, FRI).
 all(Ps) ->
     case Ps of
         [P] ->
@@ -235,10 +239,10 @@ all(Ps) ->
                     message => <<"all(parsers) doesn't accept an empty list of parsers"/utf8>>,
                     module => <<"party"/utf8>>,
                     function => <<"all"/utf8>>,
-                    line => 300})
+                    line => 314})
     end.
 
--spec return(FSG) -> parser(FSG, any()).
+-spec return(FSP) -> parser(FSP, any()).
 return(X) ->
     {parser, fun(Source, Pos) -> {ok, {X, Source, Pos}} end}.
 
@@ -249,7 +253,7 @@ between(Open, P, Close) ->
         fun(_) -> do(P, fun(X) -> do(Close, fun(_) -> return(X) end) end) end
     ).
 
--spec sep1(parser(FPJ, FPK), parser(any(), FPK)) -> parser(list(FPJ), FPK).
+-spec sep1(parser(FPS, FPT), parser(any(), FPT)) -> parser(list(FPS), FPT).
 sep1(Parser, S) ->
     do(
         Parser,
@@ -258,7 +262,7 @@ sep1(Parser, S) ->
         end
     ).
 
--spec sep(parser(FOZ, FPA), parser(any(), FPA)) -> parser(list(FOZ), FPA).
+-spec sep(parser(FPI, FPJ), parser(any(), FPJ)) -> parser(list(FPI), FPJ).
 sep(Parser, S) ->
     do(perhaps(sep1(Parser, S)), fun(Res) -> case Res of
                 {ok, Sequence} ->
@@ -368,7 +372,7 @@ fail() ->
                     {error, {unexpected, Pos, H}}
             end end}.
 
--spec until(parser(FSM, FSN), parser(any(), FSN)) -> parser(list(FSM), FSN).
+-spec until(parser(FSV, FSW), parser(any(), FSW)) -> parser(list(FSV), FSW).
 until(P, Terminator) ->
     either(
         (do(Terminator, fun(_) -> return([]) end)),
@@ -392,8 +396,8 @@ line_concat() ->
     _pipe = line(),
     map(_pipe, fun gleam@string:concat/1).
 
--spec stateful_many(FSW, parser(fun((FSW) -> {FSX, FSW}), FSY)) -> parser({list(FSX),
-    FSW}, FSY).
+-spec stateful_many(FTF, parser(fun((FTF) -> {FTG, FTF}), FTH)) -> parser({list(FTG),
+    FTF}, FTH).
 stateful_many(State, P) ->
     {parser, fun(Source, Pos) -> case run(P, Source, Pos) of
                 {error, _} ->
@@ -410,8 +414,8 @@ stateful_many(State, P) ->
                     )
             end end}.
 
--spec stateful_many1(FTE, parser(fun((FTE) -> {FTF, FTE}), FTG)) -> parser({list(FTF),
-    FTE}, FTG).
+-spec stateful_many1(FTN, parser(fun((FTN) -> {FTO, FTN}), FTP)) -> parser({list(FTO),
+    FTN}, FTP).
 stateful_many1(State, P) ->
     {parser, fun(Source, Pos) -> case run(P, Source, Pos) of
                 {error, E} ->

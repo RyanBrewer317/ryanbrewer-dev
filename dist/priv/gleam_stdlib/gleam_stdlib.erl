@@ -3,18 +3,18 @@
 -export([
     map_get/2, iodata_append/2, identity/1, decode_int/1, decode_bool/1,
     decode_float/1, decode_list/1, decode_option/2, decode_field/2, parse_int/1,
-    parse_float/1, less_than/2, string_pop_grapheme/1, string_starts_with/2,
-    wrap_list/1, string_ends_with/2, string_pad/4, decode_map/1, uri_parse/1,
-    bit_array_int_to_u32/1, bit_array_int_from_u32/1, decode_result/1,
-    bit_array_slice/3, decode_bit_array/1, compile_regex/2, regex_scan/2,
-    percent_encode/1, percent_decode/1, regex_check/2, regex_split/2,
-    base_decode64/1, parse_query/1, bit_array_concat/1,
-    bit_array_base64_encode/2, size_of_tuple/1,
-    decode_tuple/1, decode_tuple2/1, decode_tuple3/1, decode_tuple4/1,
-    decode_tuple5/1, decode_tuple6/1, tuple_get/2, classify_dynamic/1, print/1,
-    println/1, print_error/1, println_error/1, inspect/1, float_to_string/1,
-    int_from_base_string/2, utf_codepoint_list_to_string/1, contains_string/2,
-    crop_string/2, base16_decode/1, string_replace/3, regex_replace/3, slice/3, bit_array_to_int_and_size/1
+    parse_float/1, less_than/2, string_pop_grapheme/1, string_pop_codeunit/1,
+    string_starts_with/2, wrap_list/1, string_ends_with/2, string_pad/4,
+    decode_map/1, uri_parse/1, decode_result/1, bit_array_slice/3,
+    decode_bit_array/1, percent_encode/1, percent_decode/1, base_decode64/1,
+    parse_query/1, bit_array_concat/1, bit_array_base64_encode/2,
+    size_of_tuple/1, decode_tuple/1, decode_tuple2/1, decode_tuple3/1,
+    decode_tuple4/1, decode_tuple5/1, decode_tuple6/1, tuple_get/2,
+    classify_dynamic/1, print/1, println/1, print_error/1, println_error/1,
+    inspect/1, float_to_string/1, int_from_base_string/2,
+    utf_codepoint_list_to_string/1, contains_string/2, crop_string/2,
+    base16_encode/1, base16_decode/1, string_replace/3, slice/3,
+    bit_array_to_int_and_size/1, bit_array_pad_to_bytes/1
 ]).
 
 %% Taken from OTP's uri_string module
@@ -203,12 +203,24 @@ string_pop_grapheme(String) ->
         _ -> {error, nil}
     end.
 
+string_pop_codeunit(<<Cp/integer, Rest/binary>>) -> {Cp, Rest};
+string_pop_codeunit(Binary) -> {0, Binary}.
+
+bit_array_pad_to_bytes(Bin) ->
+    case erlang:bit_size(Bin) rem 8 of
+        0 -> Bin;
+        TrailingBits ->
+            PaddingBits = 8 - TrailingBits,
+            <<Bin/bits, 0:PaddingBits>>
+    end.
+
 bit_array_concat(BitArrays) ->
     list_to_bitstring(BitArrays).
 
 -if(?OTP_RELEASE >= 26).
 bit_array_base64_encode(Bin, Padding) ->
-    base64:encode(Bin, #{padding => Padding}).
+    PaddedBin = bit_array_pad_to_bytes(Bin),
+    base64:encode(PaddedBin, #{padding => Padding}).
 -else.
 bit_array_base64_encode(_Bin, _Padding) ->
     erlang:error(<<"Erlang OTP/26 or higher is required to use base64:encode">>).
@@ -218,58 +230,6 @@ bit_array_slice(Bin, Pos, Len) ->
     try {ok, binary:part(Bin, Pos, Len)}
     catch error:badarg -> {error, nil}
     end.
-
-bit_array_int_to_u32(I) when 0 =< I, I < 4294967296 ->
-    {ok, <<I:32>>};
-bit_array_int_to_u32(_) ->
-    {error, nil}.
-
-bit_array_int_from_u32(<<I:32>>) ->
-    {ok, I};
-bit_array_int_from_u32(_) ->
-    {error, nil}.
-
-compile_regex(String, Options) ->
-    {options, Caseless, Multiline} = Options,
-    OptionsList = [
-        unicode,
-        ucp,
-        Caseless andalso caseless,
-        Multiline andalso multiline
-    ],
-    FilteredOptions = [Option || Option <- OptionsList, Option /= false],
-    case re:compile(String, FilteredOptions) of
-        {ok, MP} -> {ok, MP};
-        {error, {Str, Pos}} ->
-            {error, {compile_error, unicode:characters_to_binary(Str), Pos}}
-    end.
-
-regex_check(Regex, String) ->
-    re:run(String, Regex) /= nomatch.
-
-regex_split(Regex, String) ->
-    re:split(String, Regex).
-
-regex_submatches(_, {-1, 0}) -> none;
-regex_submatches(String, {Start, Length}) ->
-    BinarySlice = binary:part(String, {Start, Length}),
-    case string:is_empty(binary_to_list(BinarySlice)) of
-        true -> none;
-        false -> {some, BinarySlice}
-    end.
-
-regex_matches(String, [{Start, Length} | Submatches]) ->
-    Submatches1 = lists:map(fun(X) -> regex_submatches(String, X) end, Submatches),
-    {match, binary:part(String, Start, Length), Submatches1}.
-
-regex_scan(Regex, String) ->
-    case re:run(String, Regex, [global]) of
-        {match, Captured} -> lists:map(fun(X) -> regex_matches(String, X) end, Captured);
-        nomatch -> []
-    end.
-
-regex_replace(Regex, Subject, Replacement) ->
-    re:replace(Subject, Regex, Replacement, [global, {return, binary}]).
 
 base_decode64(S) ->
     try {ok, base64:decode(S)}
@@ -396,11 +356,7 @@ inspect(Data) when is_map(Data) ->
     ],
     ["dict.from_list([", lists:join(", ", Fields), "])"];
 inspect(Atom) when is_atom(Atom) ->
-    Binary = erlang:atom_to_binary(Atom),
-    case inspect_maybe_gleam_atom(Binary, none, <<>>) of
-        {ok, Inspected} -> Inspected;
-        {error, _} -> ["atom.create_from_string(\"", Binary, "\")"]
-	end;
+    erlang:element(2, inspect_atom(Atom));
 inspect(Any) when is_integer(Any) ->
     erlang:integer_to_list(Any);
 inspect(Any) when is_float(Any) ->
@@ -426,10 +382,15 @@ inspect(Any) when is_tuple(Any) % Record constructors
   andalso element(1, Any) =/= nil
 ->
     [Atom | ArgsList] = erlang:tuple_to_list(Any),
-    Args = lists:join(<<", ">>,
-        lists:map(fun inspect/1, ArgsList)
-    ),
-    [inspect(Atom), "(", Args, ")"];
+    InspectedArgs = lists:map(fun inspect/1, ArgsList),
+    case inspect_atom(Atom) of
+        {gleam_atom, GleamAtom} ->
+            Args = lists:join(<<", ">>, InspectedArgs),
+            [GleamAtom, "(", Args, ")"];
+        {erlang_atom, ErlangAtom} ->
+            Args = lists:join(<<", ">>, [ErlangAtom | InspectedArgs]),
+            ["#(", Args, ")"]
+    end;
 inspect(Tuple) when is_tuple(Tuple) ->
     Elements = lists:map(fun inspect/1, erlang:tuple_to_list(Tuple)),
     ["#(", lists:join(", ", Elements), ")"];
@@ -443,6 +404,12 @@ inspect(Any) when is_function(Any) ->
 inspect(Any) ->
     ["//erl(", io_lib:format("~p", [Any]), ")"].
 
+inspect_atom(Atom) ->
+    Binary = erlang:atom_to_binary(Atom),
+    case inspect_maybe_gleam_atom(Binary, none, <<>>) of
+        {ok, Inspected} -> {gleam_atom, Inspected};
+        {error, _} -> {erlang_atom, ["atom.create_from_string(\"", Binary, "\")"]}
+	end.
 
 inspect_maybe_gleam_atom(<<>>, none, _) ->
     {error, nil};
@@ -547,6 +514,10 @@ crop_string(String, Prefix) ->
 
 contains_string(String, Substring) ->
     is_bitstring(string:find(String, Substring)).
+
+base16_encode(Bin) ->
+    PaddedBin = bit_array_pad_to_bytes(Bin),
+    binary:encode_hex(PaddedBin).
 
 base16_decode(String) ->
     try

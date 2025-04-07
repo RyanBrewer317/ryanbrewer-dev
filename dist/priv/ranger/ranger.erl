@@ -6,12 +6,13 @@
 
 -type direction() :: forward | backward.
 
+-file("/home/runner/work/ranger/ranger/src/ranger.gleam", 68).
 -spec create(
-    fun((FJS) -> boolean()),
-    fun((FJT) -> FJT),
-    fun((FJS, FJT) -> FJS),
-    fun((FJS, FJS) -> gleam@order:order())
-) -> fun((FJS, FJS, FJT) -> {ok, gleam@iterator:iterator(FJS)} | {error, nil}).
+    fun((GZQ) -> boolean()),
+    fun((GZR) -> GZR),
+    fun((GZQ, GZR) -> GZQ),
+    fun((GZQ, GZQ) -> gleam@order:order())
+) -> fun((GZQ, GZQ, GZR) -> {ok, gleam@yielder:yielder(GZQ)} | {error, nil}).
 create(Validate, Negate_step, Add, Compare) ->
     Adjust_step = fun(A, B, Step) ->
         Negated_step = Negate_step(Step),
@@ -50,7 +51,7 @@ create(Validate, Negate_step, Add, Compare) ->
             fun() -> case Adjust_step(A@1, B@1, S) of
                     {ok, {some, {Direction, Step@1}}} ->
                         {ok,
-                            gleam@iterator:unfold(
+                            gleam@yielder:unfold(
                                 A@1,
                                 fun(Current) ->
                                     case {Compare(Current, B@1), Direction} of
@@ -69,7 +70,7 @@ create(Validate, Negate_step, Add, Compare) ->
                             )};
 
                     {ok, none} ->
-                        {ok, gleam@iterator:once(fun() -> A@1 end)};
+                        {ok, gleam@yielder:once(fun() -> A@1 end)};
 
                     {error, nil} ->
                         {error, nil}
@@ -77,11 +78,12 @@ create(Validate, Negate_step, Add, Compare) ->
         )
     end.
 
+-file("/home/runner/work/ranger/ranger/src/ranger.gleam", 144).
 -spec create_infinite(
-    fun((FJX) -> boolean()),
-    fun((FJX, FJY) -> FJX),
-    fun((FJX, FJX) -> gleam@order:order())
-) -> fun((FJX, FJY) -> {ok, gleam@iterator:iterator(FJX)} | {error, nil}).
+    fun((GZV) -> boolean()),
+    fun((GZV, GZW) -> GZV),
+    fun((GZV, GZV) -> gleam@order:order())
+) -> fun((GZV, GZW) -> {ok, gleam@yielder:yielder(GZV)} | {error, nil}).
 create_infinite(Validate, Add, Compare) ->
     Is_step_zero = fun(A, S) -> case Compare(A, Add(A, S)) of
             eq ->
@@ -98,11 +100,11 @@ create_infinite(Validate, Add, Compare) ->
                 gleam@bool:guard(
                     Is_step_zero(A@1, S@1),
                     begin
-                        _pipe = gleam@iterator:once(fun() -> A@1 end),
+                        _pipe = gleam@yielder:once(fun() -> A@1 end),
                         {ok, _pipe}
                     end,
                     fun() ->
-                        _pipe@1 = gleam@iterator:unfold(
+                        _pipe@1 = gleam@yielder:unfold(
                             A@1,
                             fun(Current) ->
                                 {next, Current, Add(Current, S@1)}

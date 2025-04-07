@@ -233,7 +233,7 @@ function event_handler(attribute) {
   } else {
     let name = attribute[0];
     let handler = attribute[1];
-    let name$1 = $string.drop_left(name, 2);
+    let name$1 = $string.drop_start(name, 2);
     return new Ok([name$1, handler]);
   }
 }
@@ -533,7 +533,7 @@ function do_elements(loop$diff, loop$old, loop$new, loop$key) {
           attribute_diff.handlers,
           diff.handlers,
           (handlers, name, handler) => {
-            let name$1 = $string.drop_left(name, 2);
+            let name$1 = $string.drop_start(name, 2);
             return $dict.insert(handlers, (key + "-") + name$1, handler);
           },
         );

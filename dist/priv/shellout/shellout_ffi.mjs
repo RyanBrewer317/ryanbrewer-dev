@@ -1,9 +1,10 @@
-import { Error, Ok, toList } from "./gleam.mjs";
-import { LetBeStderr, LetBeStdout, OverlappedStdio } from "./shellout.mjs";
 import { spawnSync } from "node:child_process";
 import { statSync } from "node:fs";
-import * as path from "node:path";
+import { delimiter as pathDelimiter, join as pathJoin } from "node:path";
 import process from "node:process";
+import { is_ok, map_error } from "../gleam_stdlib/gleam/result.mjs";
+import { Error, Ok, toList } from "./gleam.mjs";
+import { LetBeStderr, LetBeStdout, OverlappedStdio } from "./shellout.mjs";
 
 const Nil = undefined;
 const Signals = {
@@ -47,13 +48,13 @@ export function start_arguments() {
   return toList(globalThis.Deno?.args ?? process.argv.slice(1));
 }
 
-export function os_command(command, args, dir, opts) {
+export function os_command(command, args, dir, opts, env_list) {
   let executable = os_which(command);
-  executable = executable.isOk() ? executable : os_which(
-    path.join(dir, command),
+  executable = is_ok(executable) ? executable : os_which(
+    pathJoin(dir, command),
   );
-  if (!executable.isOk()) {
-    return new Error([1, executable[0]]);
+  if (!is_ok(executable)) {
+    return map_error(executable, (error) => [1, error]);
   }
 
   let getBool = (map, key) => (map.get(key) ?? false);
@@ -76,6 +77,10 @@ export function os_command(command, args, dir, opts) {
     process.on("SIGINT", () => Nil);
     stdout = "inherit";
   }
+  let env = {};
+  for (let e of env_list) {
+    env[e[0]] = e[1];
+  }
 
   let result = {};
   if (isDeno) {
@@ -85,6 +90,7 @@ export function os_command(command, args, dir, opts) {
       stdin,
       stdout,
       stderr,
+      env,
     };
     try {
       result = new Deno.Command(command, spawnOpts).outputSync();
@@ -92,6 +98,9 @@ export function os_command(command, args, dir, opts) {
     result.status = result.code ?? null;
   } else {
     spawnOpts.stdio = [stdin, stdout, stderr];
+    if (env) {
+      spawnOpts.env = { ...process.env, ...env };
+    }
     result = spawnSync(command, args, spawnOpts);
   }
   if (result.error) {
@@ -131,9 +140,9 @@ export function os_which(command) {
   let pathexts = (process.env.PATHEXT || "").split(";");
   let paths = (process.env.PATH || "")
     .replace(/"+/g, "")
-    .split(path.delimiter)
+    .split(pathDelimiter)
     .filter(Boolean)
-    .map((item) => path.join(item, command))
+    .map((item) => pathJoin(item, command))
     .concat([command])
     .flatMap((item) => pathexts.map((ext) => item + ext));
   let result = paths.map(

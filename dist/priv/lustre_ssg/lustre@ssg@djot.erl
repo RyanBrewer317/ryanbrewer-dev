@@ -4,26 +4,54 @@
 -export([frontmatter/1, metadata/1, content/1, default_renderer/0, render/2, render_with_metadata/2]).
 -export_type([renderer/1]).
 
--type renderer(QDM) :: {renderer,
-        fun((gleam@dict:dict(binary(), binary()), gleam@option:option(binary()), binary()) -> QDM),
-        fun((list(QDM)) -> QDM),
-        fun((gleam@dict:dict(binary(), binary()), integer(), list(QDM)) -> QDM),
-        fun((jot:destination(), gleam@dict:dict(binary(), binary()), list(QDM)) -> QDM),
-        fun((gleam@dict:dict(binary(), binary()), list(QDM)) -> QDM),
-        fun((list(QDM)) -> QDM),
-        fun((binary()) -> QDM),
-        fun((binary()) -> QDM),
-        fun((jot:destination(), binary()) -> QDM),
-        fun(() -> QDM)}.
+-if(?OTP_RELEASE >= 27).
+-define(MODULEDOC(Str), -moduledoc(Str)).
+-define(DOC(Str), -doc(Str)).
+-else.
+-define(MODULEDOC(Str), -compile([])).
+-define(DOC(Str), -compile([])).
+-endif.
 
+-type renderer(QYC) :: {renderer,
+        fun((gleam@dict:dict(binary(), binary()), gleam@option:option(binary()), binary()) -> QYC),
+        fun((list(QYC)) -> QYC),
+        fun((gleam@dict:dict(binary(), binary()), integer(), list(QYC)) -> QYC),
+        fun((jot:destination(), gleam@dict:dict(binary(), binary()), list(QYC)) -> QYC),
+        fun((gleam@dict:dict(binary(), binary()), list(QYC)) -> QYC),
+        fun((list(QYC)) -> QYC),
+        fun((binary()) -> QYC),
+        fun((binary()) -> QYC),
+        fun((jot:destination(), binary()) -> QYC),
+        QYC,
+        QYC}.
+
+-file("src/lustre/ssg/djot.gleam", 135).
+?DOC(
+    " Extract the frontmatter string from a djot document. Frontmatter is anything\n"
+    " between two lines of three dashes, like this:\n"
+    "\n"
+    " ```djot\n"
+    " ---\n"
+    " title = \"My Document\"\n"
+    " ---\n"
+    "\n"
+    " # My Document\n"
+    "\n"
+    " ...\n"
+    " ```\n"
+    "\n"
+    " The document **must** start with exactly three dashes and a newline for there\n"
+    " to be any frontmatter. If there is no frontmatter, this function returns\n"
+    " `Error(Nil)`,\n"
+).
 -spec frontmatter(binary()) -> {ok, binary()} | {error, nil}.
 frontmatter(Document) ->
     gleam@bool:guard(
-        not gleam@string:starts_with(Document, <<"---"/utf8>>),
+        not gleam_stdlib:string_starts_with(Document, <<"---"/utf8>>),
         {error, nil},
         fun() ->
             Options = {options, false, true},
-            _assert_subject = gleam@regex:compile(
+            _assert_subject = gleam@regexp:compile(
                 <<"^---\\n[\\s\\S]*?\\n---"/utf8>>,
                 Options
             ),
@@ -31,19 +59,19 @@ frontmatter(Document) ->
                 {ok, _} -> _assert_subject;
                 _assert_fail ->
                     erlang:error(#{gleam_error => let_assert,
-                                message => <<"Assertion pattern match failed"/utf8>>,
+                                message => <<"Pattern match failed, no pattern matched the value."/utf8>>,
                                 value => _assert_fail,
                                 module => <<"lustre/ssg/djot"/utf8>>,
                                 function => <<"frontmatter"/utf8>>,
-                                line => 135})
+                                line => 138})
             end,
-            case gleam@regex:scan(Re, Document) of
+            case gleam@regexp:scan(Re, Document) of
                 [{match, Frontmatter, _} | _] ->
                     {ok,
                         begin
                             _pipe = Frontmatter,
-                            _pipe@1 = gleam@string:drop_left(_pipe, 4),
-                            gleam@string:drop_right(_pipe@1, 4)
+                            _pipe@1 = gleam@string:drop_start(_pipe, 4),
+                            gleam@string:drop_end(_pipe@1, 4)
                         end};
 
                 _ ->
@@ -52,6 +80,14 @@ frontmatter(Document) ->
         end
     ).
 
+-file("src/lustre/ssg/djot.gleam", 157).
+?DOC(
+    " Extract the TOML metadata from a djot document. This takes the [`frontmatter`](#frontmatter)\n"
+    " and parses it as TOML. If there is *no* frontmatter, this function returns\n"
+    " an empty dictionary.\n"
+    "\n"
+    " If the frontmatter is invalid TOML, this function returns a TOML parse error.\n"
+).
 -spec metadata(binary()) -> {ok, gleam@dict:dict(binary(), tom:toml())} |
     {error, tom:parse_error()}.
 metadata(Document) ->
@@ -60,9 +96,14 @@ metadata(Document) ->
             tom:parse(Frontmatter);
 
         {error, _} ->
-            {ok, gleam@dict:new()}
+            {ok, maps:new()}
     end.
 
+-file("src/lustre/ssg/djot.gleam", 167).
+?DOC(
+    " Extract the djot content from a document with optional frontmatter. If the\n"
+    " document does not have frontmatter, this acts as an identity function.\n"
+).
 -spec content(binary()) -> binary().
 content(Document) ->
     Toml = frontmatter(Document),
@@ -78,23 +119,30 @@ content(Document) ->
             Document
     end.
 
+-file("src/lustre/ssg/djot.gleam", 292).
 -spec linkify(binary()) -> binary().
 linkify(Text) ->
-    _assert_subject = gleam@regex:from_string(<<" +"/utf8>>),
+    _assert_subject = gleam@regexp:from_string(<<" +"/utf8>>),
     {ok, Re} = case _assert_subject of
         {ok, _} -> _assert_subject;
         _assert_fail ->
             erlang:error(#{gleam_error => let_assert,
-                        message => <<"Assertion pattern match failed"/utf8>>,
+                        message => <<"Pattern match failed, no pattern matched the value."/utf8>>,
                         value => _assert_fail,
                         module => <<"lustre/ssg/djot"/utf8>>,
                         function => <<"linkify"/utf8>>,
-                        line => 284})
+                        line => 293})
     end,
     _pipe = Text,
-    _pipe@1 = gleam@regex:split(Re, _pipe),
+    _pipe@1 = gleam@regexp:split(Re, _pipe),
     gleam@string:join(_pipe@1, <<"-"/utf8>>).
 
+-file("src/lustre/ssg/djot.gleam", 58).
+?DOC(
+    " The default renderer generates some sensible Lustre elements from a djot\n"
+    " document. You can use this if you need a quick drop-in renderer for some\n"
+    " markup in a Lustre project.\n"
+).
 -spec default_renderer() -> renderer(lustre@internals@vdom:element(any())).
 default_renderer() ->
     To_attributes = fun(Attrs) ->
@@ -116,7 +164,7 @@ default_renderer() ->
                                 <<"data-lang"/utf8>>,
                                 Lang@1
                             )],
-                        [lustre@element:text(Code)]
+                        [lustre@element@html:text(Code)]
                     )]
             )
         end,
@@ -145,7 +193,7 @@ default_renderer() ->
             end end,
         fun(Destination, References, Content@2) -> case Destination of
                 {reference, Ref} ->
-                    case gleam@dict:get(References, Ref) of
+                    case gleam_stdlib:map_get(References, Ref) of
                         {ok, Url} ->
                             lustre@element@html:a(
                                 [lustre@attribute:href(Url)],
@@ -174,9 +222,9 @@ default_renderer() ->
             lustre@element@html:p(To_attributes(Attrs@4), Content@3)
         end,
         fun(Content@4) -> lustre@element@html:strong([], Content@4) end,
-        fun(Text) -> lustre@element:text(Text) end,
+        fun(Text) -> lustre@element@html:text(Text) end,
         fun(Content@5) ->
-            lustre@element@html:code([], [lustre@element:text(Content@5)])
+            lustre@element@html:code([], [lustre@element@html:text(Content@5)])
         end,
         fun(Destination@1, Alt) -> case Destination@1 of
                 {reference, Ref@1} ->
@@ -192,8 +240,10 @@ default_renderer() ->
                         [lustre@attribute:src(Url@2), lustre@attribute:alt(Alt)]
                     )
             end end,
-        fun() -> lustre@element@html:br([]) end}.
+        lustre@element@html:br([]),
+        lustre@element@html:hr([])}.
 
+-file("src/lustre/ssg/djot.gleam", 300).
 -spec text_content(list(jot:inline())) -> binary().
 text_content(Segments) ->
     gleam@list:fold(Segments, <<""/utf8>>, fun(Text, Inline) -> case Inline of
@@ -216,14 +266,18 @@ text_content(Segments) ->
                     Text;
 
                 linebreak ->
+                    Text;
+
+                {footnote, _} ->
                     Text
             end end).
 
+-file("src/lustre/ssg/djot.gleam", 246).
 -spec render_inline(
     jot:inline(),
     gleam@dict:dict(binary(), binary()),
-    renderer(QEM)
-) -> QEM.
+    renderer(QZC)
+) -> QZC.
 render_inline(Inline, References, Renderer) ->
     case Inline of
         {text, Text} ->
@@ -264,18 +318,25 @@ render_inline(Inline, References, Renderer) ->
         {code, Content@3} ->
             (erlang:element(9, Renderer))(Content@3);
 
-        {image, Alt, Destination@1} ->
-            (erlang:element(10, Renderer))(Destination@1, text_content(Alt));
+        {image, Content@4, Destination@1} ->
+            (erlang:element(10, Renderer))(
+                Destination@1,
+                text_content(Content@4)
+            );
 
         linebreak ->
-            (erlang:element(11, Renderer))()
+            erlang:element(11, Renderer);
+
+        {footnote, _} ->
+            (erlang:element(8, Renderer))(<<""/utf8>>)
     end.
 
+-file("src/lustre/ssg/djot.gleam", 215).
 -spec render_block(
     jot:container(),
     gleam@dict:dict(binary(), binary()),
-    renderer(QEI)
-) -> QEI.
+    renderer(QYY)
+) -> QYY.
 render_block(Block, References, Renderer) ->
     case Block of
         {paragraph, Attrs, Inline} ->
@@ -302,23 +363,39 @@ render_block(Block, References, Renderer) ->
             );
 
         {codeblock, Attrs@2, Language, Code} ->
-            (erlang:element(2, Renderer))(Attrs@2, Language, Code)
+            (erlang:element(2, Renderer))(Attrs@2, Language, Code);
+
+        thematic_break ->
+            erlang:element(12, Renderer)
     end.
 
--spec render(binary(), renderer(QDW)) -> list(QDW).
+-file("src/lustre/ssg/djot.gleam", 181).
+?DOC(
+    " Render a djot document using the given renderer. If the document contains\n"
+    " [`frontmatter`](#frontmatter) it is stripped out before rendering.\n"
+).
+-spec render(binary(), renderer(QYM)) -> list(QYM).
 render(Document, Renderer) ->
     Content = content(Document),
-    {document, Content@1, References} = jot:parse(Content),
+    {document, Content@1, References, _} = jot:parse(Content),
     _pipe = Content@1,
     gleam@list:map(
         _pipe,
         fun(_capture) -> render_block(_capture, References, Renderer) end
     ).
 
+-file("src/lustre/ssg/djot.gleam", 195).
+?DOC(
+    " Render a djot document using the given renderer. TOML metadata is extracted\n"
+    " from the document's frontmatter and passed to the renderer. If the frontmatter\n"
+    " is invalid TOML this function will return the TOML parse error, but if there\n"
+    " is no frontmatter to parse this function will succeed and just pass an empty\n"
+    " dictionary to the renderer.\n"
+).
 -spec render_with_metadata(
     binary(),
-    fun((gleam@dict:dict(binary(), tom:toml())) -> renderer(QEB))
-) -> {ok, list(QEB)} | {error, tom:parse_error()}.
+    fun((gleam@dict:dict(binary(), tom:toml())) -> renderer(QYR))
+) -> {ok, list(QYR)} | {error, tom:parse_error()}.
 render_with_metadata(Document, Renderer) ->
     Toml = frontmatter(Document),
     gleam@result:'try'(
@@ -330,7 +407,7 @@ render_with_metadata(Document, Renderer) ->
         fun(Metadata) ->
             Content = content(Document),
             Renderer@1 = Renderer(Metadata),
-            {document, Content@1, References} = jot:parse(Content),
+            {document, Content@1, References, _} = jot:parse(Content),
             _pipe@2 = Content@1,
             _pipe@3 = gleam@list:map(
                 _pipe@2,

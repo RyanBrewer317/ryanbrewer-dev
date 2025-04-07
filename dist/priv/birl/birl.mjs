@@ -1,11 +1,10 @@
+import * as $regexp from "../gleam_regexp/gleam/regexp.mjs";
 import * as $bool from "../gleam_stdlib/gleam/bool.mjs";
 import * as $function from "../gleam_stdlib/gleam/function.mjs";
 import * as $int from "../gleam_stdlib/gleam/int.mjs";
-import * as $iterator from "../gleam_stdlib/gleam/iterator.mjs";
 import * as $list from "../gleam_stdlib/gleam/list.mjs";
 import * as $option from "../gleam_stdlib/gleam/option.mjs";
 import * as $order from "../gleam_stdlib/gleam/order.mjs";
-import * as $regex from "../gleam_stdlib/gleam/regex.mjs";
 import * as $result from "../gleam_stdlib/gleam/result.mjs";
 import * as $string from "../gleam_stdlib/gleam/string.mjs";
 import * as $ranger from "../ranger/ranger.mjs";
@@ -28,6 +27,7 @@ import {
   makeError,
   remainderInt,
   divideInt,
+  isEqual,
 } from "./gleam.mjs";
 
 class Time extends $CustomType {
@@ -100,20 +100,20 @@ export class Dec extends $CustomType {}
 export function time_of_day_to_string(value) {
   return ((((($int.to_string(value.hour) + ":") + (() => {
     let _pipe = $int.to_string(value.minute);
-    return $string.pad_left(_pipe, 2, "0");
+    return $string.pad_start(_pipe, 2, "0");
   })()) + ":") + (() => {
     let _pipe = $int.to_string(value.second);
-    return $string.pad_left(_pipe, 2, "0");
+    return $string.pad_start(_pipe, 2, "0");
   })()) + ".") + (() => {
     let _pipe = $int.to_string(value.milli_second);
-    return $string.pad_left(_pipe, 3, "0");
+    return $string.pad_start(_pipe, 3, "0");
   })();
 }
 
 export function time_of_day_to_short_string(value) {
   return ($int.to_string(value.hour) + ":") + (() => {
     let _pipe = $int.to_string(value.minute);
-    return $string.pad_left(_pipe, 2, "0");
+    return $string.pad_start(_pipe, 2, "0");
   })();
 }
 
@@ -294,7 +294,7 @@ export function range(a, b, s) {
     throw makeError(
       "let_assert",
       "birl",
-      1145,
+      1151,
       "range",
       "Pattern match failed, no pattern matched the value.",
       { value: $ }
@@ -334,12 +334,12 @@ function parse_offset(offset) {
     $list.contains(toList(["Z", "z"]), offset),
     new Ok(0),
     () => {
-      let $ = $regex.from_string("([+-])");
+      let $ = $regexp.from_string("([+-])");
       if (!$.isOk()) {
         throw makeError(
           "let_assert",
           "birl",
-          1326,
+          1332,
           "",
           "Pattern match failed, no pattern matched the value.",
           { value: $ }
@@ -348,7 +348,7 @@ function parse_offset(offset) {
       let re = $[0];
       return $result.then$(
         (() => {
-          let $1 = $regex.split(re, offset);
+          let $1 = $regexp.split(re, offset);
           if ($1.hasLength(3) && $1.head === "" && $1.tail.head === "+") {
             let offset$1 = $1.tail.tail.head;
             return new Ok([1, offset$1]);
@@ -410,7 +410,7 @@ function parse_offset(offset) {
                 throw makeError(
                   "let_assert",
                   "birl",
-                  1356,
+                  1362,
                   "",
                   "Pattern match failed, no pattern matched the value.",
                   { value: $3 }
@@ -499,7 +499,7 @@ function generate_offset(offset) {
                   (() => {
                     let _pipe = hour;
                     let _pipe$1 = $int.to_string(_pipe);
-                    return $string.pad_left(_pipe$1, 2, "0");
+                    return $string.pad_start(_pipe$1, 2, "0");
                   })(),
                 ]),
               );
@@ -511,7 +511,7 @@ function generate_offset(offset) {
                     let _pipe = hour;
                     let _pipe$1 = $int.absolute_value(_pipe);
                     let _pipe$2 = $int.to_string(_pipe$1);
-                    return $string.pad_left(_pipe$2, 2, "0");
+                    return $string.pad_start(_pipe$2, 2, "0");
                   })(),
                 ]),
               );
@@ -521,7 +521,7 @@ function generate_offset(offset) {
             let _pipe = minute;
             let _pipe$1 = $int.absolute_value(_pipe);
             let _pipe$2 = $int.to_string(_pipe$1);
-            return $string.pad_left(_pipe$2, 2, "0");
+            return $string.pad_start(_pipe$2, 2, "0");
           })(),
         ]);
         let _pipe$1 = $string.join(_pipe, ":");
@@ -538,7 +538,7 @@ function generate_offset(offset) {
                   (() => {
                     let _pipe = hour;
                     let _pipe$1 = $int.to_string(_pipe);
-                    return $string.pad_left(_pipe$1, 2, "0");
+                    return $string.pad_start(_pipe$1, 2, "0");
                   })(),
                 ]),
               );
@@ -550,7 +550,7 @@ function generate_offset(offset) {
                     let _pipe = hour;
                     let _pipe$1 = $int.absolute_value(_pipe);
                     let _pipe$2 = $int.to_string(_pipe$1);
-                    return $string.pad_left(_pipe$2, 2, "0");
+                    return $string.pad_start(_pipe$2, 2, "0");
                   })(),
                 ]),
               );
@@ -574,7 +574,7 @@ export function get_offset(value) {
     throw makeError(
       "let_assert",
       "birl",
-      1202,
+      1208,
       "get_offset",
       "Pattern match failed, no pattern matched the value.",
       { value: $ }
@@ -619,27 +619,27 @@ function is_invalid_time(time) {
 }
 
 function parse_section(section, pattern_string, default$) {
-  let $ = $regex.from_string(pattern_string);
+  let $ = $regexp.from_string(pattern_string);
   if (!$.isOk()) {
     throw makeError(
       "let_assert",
       "birl",
-      1521,
+      1527,
       "parse_section",
       "Pattern match failed, no pattern matched the value.",
       { value: $ }
     )
   }
   let pattern = $[0];
-  let $1 = $regex.scan(pattern, section);
+  let $1 = $regexp.scan(pattern, section);
   if ($1.hasLength(1) &&
-  $1.head instanceof $regex.Match &&
+  $1.head instanceof $regexp.Match &&
   $1.head.submatches.hasLength(1) &&
   $1.head.submatches.head instanceof $option.Some) {
     let major = $1.head.submatches.head[0];
     return toList([$int.parse(major), new Ok(default$), new Ok(default$)]);
   } else if ($1.hasLength(1) &&
-  $1.head instanceof $regex.Match &&
+  $1.head instanceof $regexp.Match &&
   $1.head.submatches.hasLength(2) &&
   $1.head.submatches.head instanceof $option.Some &&
   $1.head.submatches.tail.head instanceof $option.Some) {
@@ -647,7 +647,7 @@ function parse_section(section, pattern_string, default$) {
     let middle = $1.head.submatches.tail.head[0];
     return toList([$int.parse(major), $int.parse(middle), new Ok(default$)]);
   } else if ($1.hasLength(1) &&
-  $1.head instanceof $regex.Match &&
+  $1.head instanceof $regexp.Match &&
   $1.head.submatches.hasLength(3) &&
   $1.head.submatches.head instanceof $option.Some &&
   $1.head.submatches.tail.head instanceof $option.Some &&
@@ -669,29 +669,29 @@ function parse_date_section(date) {
       let _pipe = (() => {
         let $ = $string.contains(date, "-");
         if ($) {
-          let $1 = $regex.from_string(
+          let $1 = $regexp.from_string(
             "(\\d{4})(?:-(1[0-2]|0?[0-9]))?(?:-(3[0-1]|[1-2][0-9]|0?[0-9]))?",
           );
           if (!$1.isOk()) {
             throw makeError(
               "let_assert",
               "birl",
-              1441,
+              1447,
               "",
               "Pattern match failed, no pattern matched the value.",
               { value: $1 }
             )
           }
           let dash_pattern = $1[0];
-          let $2 = $regex.scan(dash_pattern, date);
+          let $2 = $regexp.scan(dash_pattern, date);
           if ($2.hasLength(1) &&
-          $2.head instanceof $regex.Match &&
+          $2.head instanceof $regexp.Match &&
           $2.head.submatches.hasLength(1) &&
           $2.head.submatches.head instanceof $option.Some) {
             let major = $2.head.submatches.head[0];
             return toList([$int.parse(major), new Ok(1), new Ok(1)]);
           } else if ($2.hasLength(1) &&
-          $2.head instanceof $regex.Match &&
+          $2.head instanceof $regexp.Match &&
           $2.head.submatches.hasLength(2) &&
           $2.head.submatches.head instanceof $option.Some &&
           $2.head.submatches.tail.head instanceof $option.Some) {
@@ -699,7 +699,7 @@ function parse_date_section(date) {
             let middle = $2.head.submatches.tail.head[0];
             return toList([$int.parse(major), $int.parse(middle), new Ok(1)]);
           } else if ($2.hasLength(1) &&
-          $2.head instanceof $regex.Match &&
+          $2.head instanceof $regexp.Match &&
           $2.head.submatches.hasLength(3) &&
           $2.head.submatches.head instanceof $option.Some &&
           $2.head.submatches.tail.head instanceof $option.Some &&
@@ -744,12 +744,12 @@ function parse_time_section(time) {
 }
 
 export function parse_time_of_day(value) {
-  let $ = $regex.from_string("(.*)([+|\\-].*)");
+  let $ = $regexp.from_string("(.*)([+|\\-].*)");
   if (!$.isOk()) {
     throw makeError(
       "let_assert",
       "birl",
-      398,
+      405,
       "parse_time_of_day",
       "Pattern match failed, no pattern matched the value.",
       { value: $ }
@@ -760,9 +760,9 @@ export function parse_time_of_day(value) {
     let $1 = $string.starts_with(value, "T");
     let $2 = $string.starts_with(value, "t");
     if ($1) {
-      return $string.drop_left(value, 1);
+      return $string.drop_start(value, 1);
     } else if ($2) {
-      return $string.drop_left(value, 1);
+      return $string.drop_start(value, 1);
     } else {
       return value;
     }
@@ -774,11 +774,11 @@ export function parse_time_of_day(value) {
         "z",
       );
       if ($1) {
-        return new Ok([$string.drop_right(value, 1), "+00:00"]);
+        return new Ok([$string.drop_end(value, 1), "+00:00"]);
       } else {
-        let $2 = $regex.scan(offset_pattern, value);
+        let $2 = $regexp.scan(offset_pattern, value);
         if ($2.hasLength(1) &&
-        $2.head instanceof $regex.Match &&
+        $2.head instanceof $regexp.Match &&
         $2.head.submatches.hasLength(2) &&
         $2.head.submatches.head instanceof $option.Some &&
         $2.head.submatches.tail.head instanceof $option.Some) {
@@ -809,7 +809,7 @@ export function parse_time_of_day(value) {
                 (() => {
                   let _pipe = milli_seconds_string;
                   let _pipe$1 = $string.slice(_pipe, 0, 3);
-                  let _pipe$2 = $string.pad_right(_pipe$1, 3, "0");
+                  let _pipe$2 = $string.pad_end(_pipe$1, 3, "0");
                   return $int.parse(_pipe$2);
                 })(),
               ],
@@ -823,7 +823,7 @@ export function parse_time_of_day(value) {
                 (() => {
                   let _pipe = milli_seconds_string;
                   let _pipe$1 = $string.slice(_pipe, 0, 3);
-                  let _pipe$2 = $string.pad_right(_pipe$1, 3, "0");
+                  let _pipe$2 = $string.pad_end(_pipe$1, 3, "0");
                   return $int.parse(_pipe$2);
                 })(),
               ],
@@ -844,7 +844,7 @@ export function parse_time_of_day(value) {
                   throw makeError(
                     "let_assert",
                     "birl",
-                    447,
+                    457,
                     "",
                     "Pattern match failed, no pattern matched the value.",
                     { value: time_of_day }
@@ -885,9 +885,9 @@ export function parse_naive_time_of_day(value) {
     let $ = $string.starts_with(value, "T");
     let $1 = $string.starts_with(value, "t");
     if ($) {
-      return $string.drop_left(value, 1);
+      return $string.drop_start(value, 1);
     } else if ($1) {
-      return $string.drop_left(value, 1);
+      return $string.drop_start(value, 1);
     } else {
       return value;
     }
@@ -908,7 +908,7 @@ export function parse_naive_time_of_day(value) {
             (() => {
               let _pipe = milli_seconds_string;
               let _pipe$1 = $string.slice(_pipe, 0, 3);
-              let _pipe$2 = $string.pad_right(_pipe$1, 3, "0");
+              let _pipe$2 = $string.pad_end(_pipe$1, 3, "0");
               return $int.parse(_pipe$2);
             })(),
           ],
@@ -922,7 +922,7 @@ export function parse_naive_time_of_day(value) {
             (() => {
               let _pipe = milli_seconds_string;
               let _pipe$1 = $string.slice(_pipe, 0, 3);
-              let _pipe$2 = $string.pad_right(_pipe$1, 3, "0");
+              let _pipe$2 = $string.pad_end(_pipe$1, 3, "0");
               return $int.parse(_pipe$2);
             })(),
           ],
@@ -943,7 +943,7 @@ export function parse_naive_time_of_day(value) {
               throw makeError(
                 "let_assert",
                 "birl",
-                496,
+                506,
                 "",
                 "Pattern match failed, no pattern matched the value.",
                 { value: time_of_day }
@@ -1076,7 +1076,7 @@ function to_parts(value) {
       throw makeError(
         "let_assert",
         "birl",
-        1318,
+        1324,
         "to_parts",
         "Pattern match failed, no pattern matched the value.",
         { value: $1 }
@@ -1096,11 +1096,11 @@ export function to_date_string(value) {
   return (((($int.to_string(year) + "-") + (() => {
     let _pipe = month$1;
     let _pipe$1 = $int.to_string(_pipe);
-    return $string.pad_left(_pipe$1, 2, "0");
+    return $string.pad_start(_pipe$1, 2, "0");
   })()) + "-") + (() => {
     let _pipe = day;
     let _pipe$1 = $int.to_string(_pipe);
-    return $string.pad_left(_pipe$1, 2, "0");
+    return $string.pad_start(_pipe$1, 2, "0");
   })()) + offset;
 }
 
@@ -1112,11 +1112,11 @@ export function to_naive_date_string(value) {
   return ((($int.to_string(year) + "-") + (() => {
     let _pipe = month$1;
     let _pipe$1 = $int.to_string(_pipe);
-    return $string.pad_left(_pipe$1, 2, "0");
+    return $string.pad_start(_pipe$1, 2, "0");
   })()) + "-") + (() => {
     let _pipe = day;
     let _pipe$1 = $int.to_string(_pipe);
-    return $string.pad_left(_pipe$1, 2, "0");
+    return $string.pad_start(_pipe$1, 2, "0");
   })();
 }
 
@@ -1130,19 +1130,19 @@ export function to_time_string(value) {
   return (((((((() => {
     let _pipe = hour;
     let _pipe$1 = $int.to_string(_pipe);
-    return $string.pad_left(_pipe$1, 2, "0");
+    return $string.pad_start(_pipe$1, 2, "0");
   })() + ":") + (() => {
     let _pipe = minute;
     let _pipe$1 = $int.to_string(_pipe);
-    return $string.pad_left(_pipe$1, 2, "0");
+    return $string.pad_start(_pipe$1, 2, "0");
   })()) + ":") + (() => {
     let _pipe = second;
     let _pipe$1 = $int.to_string(_pipe);
-    return $string.pad_left(_pipe$1, 2, "0");
+    return $string.pad_start(_pipe$1, 2, "0");
   })()) + ".") + (() => {
     let _pipe = milli_second;
     let _pipe$1 = $int.to_string(_pipe);
-    return $string.pad_left(_pipe$1, 3, "0");
+    return $string.pad_start(_pipe$1, 3, "0");
   })()) + offset;
 }
 
@@ -1155,19 +1155,19 @@ export function to_naive_time_string(value) {
   return ((((((() => {
     let _pipe = hour;
     let _pipe$1 = $int.to_string(_pipe);
-    return $string.pad_left(_pipe$1, 2, "0");
+    return $string.pad_start(_pipe$1, 2, "0");
   })() + ":") + (() => {
     let _pipe = minute;
     let _pipe$1 = $int.to_string(_pipe);
-    return $string.pad_left(_pipe$1, 2, "0");
+    return $string.pad_start(_pipe$1, 2, "0");
   })()) + ":") + (() => {
     let _pipe = second;
     let _pipe$1 = $int.to_string(_pipe);
-    return $string.pad_left(_pipe$1, 2, "0");
+    return $string.pad_start(_pipe$1, 2, "0");
   })()) + ".") + (() => {
     let _pipe = milli_second;
     let _pipe$1 = $int.to_string(_pipe);
-    return $string.pad_left(_pipe$1, 3, "0");
+    return $string.pad_start(_pipe$1, 3, "0");
   })();
 }
 
@@ -1184,27 +1184,27 @@ export function to_iso8601(value) {
   return (((((((((((($int.to_string(year) + "-") + (() => {
     let _pipe = month$1;
     let _pipe$1 = $int.to_string(_pipe);
-    return $string.pad_left(_pipe$1, 2, "0");
+    return $string.pad_start(_pipe$1, 2, "0");
   })()) + "-") + (() => {
     let _pipe = day;
     let _pipe$1 = $int.to_string(_pipe);
-    return $string.pad_left(_pipe$1, 2, "0");
+    return $string.pad_start(_pipe$1, 2, "0");
   })()) + "T") + (() => {
     let _pipe = hour;
     let _pipe$1 = $int.to_string(_pipe);
-    return $string.pad_left(_pipe$1, 2, "0");
+    return $string.pad_start(_pipe$1, 2, "0");
   })()) + ":") + (() => {
     let _pipe = minute;
     let _pipe$1 = $int.to_string(_pipe);
-    return $string.pad_left(_pipe$1, 2, "0");
+    return $string.pad_start(_pipe$1, 2, "0");
   })()) + ":") + (() => {
     let _pipe = second;
     let _pipe$1 = $int.to_string(_pipe);
-    return $string.pad_left(_pipe$1, 2, "0");
+    return $string.pad_start(_pipe$1, 2, "0");
   })()) + ".") + (() => {
     let _pipe = milli_second;
     let _pipe$1 = $int.to_string(_pipe);
-    return $string.pad_left(_pipe$1, 3, "0");
+    return $string.pad_start(_pipe$1, 3, "0");
   })()) + offset;
 }
 
@@ -1220,27 +1220,27 @@ export function to_naive(value) {
   return ((((((((((($int.to_string(year) + "-") + (() => {
     let _pipe = month$1;
     let _pipe$1 = $int.to_string(_pipe);
-    return $string.pad_left(_pipe$1, 2, "0");
+    return $string.pad_start(_pipe$1, 2, "0");
   })()) + "-") + (() => {
     let _pipe = day;
     let _pipe$1 = $int.to_string(_pipe);
-    return $string.pad_left(_pipe$1, 2, "0");
+    return $string.pad_start(_pipe$1, 2, "0");
   })()) + "T") + (() => {
     let _pipe = hour;
     let _pipe$1 = $int.to_string(_pipe);
-    return $string.pad_left(_pipe$1, 2, "0");
+    return $string.pad_start(_pipe$1, 2, "0");
   })()) + ":") + (() => {
     let _pipe = minute;
     let _pipe$1 = $int.to_string(_pipe);
-    return $string.pad_left(_pipe$1, 2, "0");
+    return $string.pad_start(_pipe$1, 2, "0");
   })()) + ":") + (() => {
     let _pipe = second;
     let _pipe$1 = $int.to_string(_pipe);
-    return $string.pad_left(_pipe$1, 2, "0");
+    return $string.pad_start(_pipe$1, 2, "0");
   })()) + ".") + (() => {
     let _pipe = milli_second;
     let _pipe$1 = $int.to_string(_pipe);
-    return $string.pad_left(_pipe$1, 3, "0");
+    return $string.pad_start(_pipe$1, 3, "0");
   })();
 }
 
@@ -1252,7 +1252,7 @@ export function month(value) {
     throw makeError(
       "let_assert",
       "birl",
-      1099,
+      1109,
       "month",
       "Pattern match failed, no pattern matched the value.",
       { value: $1 }
@@ -1354,12 +1354,12 @@ function from_parts(date, time, offset) {
 }
 
 export function parse(value) {
-  let $ = $regex.from_string("(.*)([+|\\-].*)");
+  let $ = $regexp.from_string("(.*)([+|\\-].*)");
   if (!$.isOk()) {
     throw makeError(
       "let_assert",
       "birl",
-      295,
+      298,
       "parse",
       "Pattern match failed, no pattern matched the value.",
       { value: $ }
@@ -1405,14 +1405,14 @@ export function parse(value) {
             return new Ok(
               [
                 day_string$1,
-                $string.drop_right(offsetted_time_string$1, 1),
+                $string.drop_end(offsetted_time_string$1, 1),
                 "+00:00",
               ],
             );
           } else {
-            let $2 = $regex.scan(offset_pattern, offsetted_time_string$1);
+            let $2 = $regexp.scan(offset_pattern, offsetted_time_string$1);
             if ($2.hasLength(1) &&
-            $2.head instanceof $regex.Match &&
+            $2.head instanceof $regexp.Match &&
             $2.head.submatches.hasLength(2) &&
             $2.head.submatches.head instanceof $option.Some &&
             $2.head.submatches.tail.head instanceof $option.Some) {
@@ -1420,9 +1420,9 @@ export function parse(value) {
               let offset_string = $2.head.submatches.tail.head[0];
               return new Ok([day_string$1, time_string, offset_string]);
             } else {
-              let $3 = $regex.scan(offset_pattern, day_string$1);
+              let $3 = $regexp.scan(offset_pattern, day_string$1);
               if ($3.hasLength(1) &&
-              $3.head instanceof $regex.Match &&
+              $3.head instanceof $regexp.Match &&
               $3.head.submatches.hasLength(2) &&
               $3.head.submatches.head instanceof $option.Some &&
               $3.head.submatches.tail.head instanceof $option.Some) {
@@ -1455,7 +1455,7 @@ export function parse(value) {
                     (() => {
                       let _pipe = milli_seconds_string;
                       let _pipe$1 = $string.slice(_pipe, 0, 3);
-                      let _pipe$2 = $string.pad_right(_pipe$1, 3, "0");
+                      let _pipe$2 = $string.pad_end(_pipe$1, 3, "0");
                       return $int.parse(_pipe$2);
                     })(),
                   ],
@@ -1469,7 +1469,7 @@ export function parse(value) {
                     (() => {
                       let _pipe = milli_seconds_string;
                       let _pipe$1 = $string.slice(_pipe, 0, 3);
-                      let _pipe$2 = $string.pad_right(_pipe$1, 3, "0");
+                      let _pipe$2 = $string.pad_end(_pipe$1, 3, "0");
                       return $int.parse(_pipe$2);
                     })(),
                   ],
@@ -1490,7 +1490,7 @@ export function parse(value) {
                       throw makeError(
                         "let_assert",
                         "birl",
-                        363,
+                        370,
                         "",
                         "Pattern match failed, no pattern matched the value.",
                         { value: day }
@@ -1506,7 +1506,7 @@ export function parse(value) {
                           throw makeError(
                             "let_assert",
                             "birl",
-                            366,
+                            373,
                             "",
                             "Pattern match failed, no pattern matched the value.",
                             { value: time_of_day }
@@ -1581,7 +1581,7 @@ export function from_naive(value) {
                 (() => {
                   let _pipe = milli_seconds_string;
                   let _pipe$1 = $string.slice(_pipe, 0, 3);
-                  let _pipe$2 = $string.pad_right(_pipe$1, 3, "0");
+                  let _pipe$2 = $string.pad_end(_pipe$1, 3, "0");
                   return $int.parse(_pipe$2);
                 })(),
               ],
@@ -1595,7 +1595,7 @@ export function from_naive(value) {
                 (() => {
                   let _pipe = milli_seconds_string;
                   let _pipe$1 = $string.slice(_pipe, 0, 3);
-                  let _pipe$2 = $string.pad_right(_pipe$1, 3, "0");
+                  let _pipe$2 = $string.pad_end(_pipe$1, 3, "0");
                   return $int.parse(_pipe$2);
                 })(),
               ],
@@ -1616,7 +1616,7 @@ export function from_naive(value) {
                   throw makeError(
                     "let_assert",
                     "birl",
-                    612,
+                    622,
                     "",
                     "Pattern match failed, no pattern matched the value.",
                     { value: day }
@@ -1632,7 +1632,7 @@ export function from_naive(value) {
                       throw makeError(
                         "let_assert",
                         "birl",
-                        615,
+                        625,
                         "",
                         "Pattern match failed, no pattern matched the value.",
                         { value: time_of_day }
@@ -1671,7 +1671,7 @@ export function set_day(value, day) {
     throw makeError(
       "let_assert",
       "birl",
-      1209,
+      1215,
       "set_day",
       "Pattern match failed, no pattern matched the value.",
       { value: $1 }
@@ -1699,7 +1699,7 @@ export function set_time_of_day(value, time) {
     throw makeError(
       "let_assert",
       "birl",
-      1227,
+      1233,
       "set_time_of_day",
       "Pattern match failed, no pattern matched the value.",
       { value: $1 }
@@ -1723,7 +1723,7 @@ export function weekday(value) {
       throw makeError(
         "let_assert",
         "birl",
-        1033,
+        1043,
         "weekday",
         "Pattern match failed, no pattern matched the value.",
         { value: $ }
@@ -1750,7 +1750,7 @@ export function to_http(value) {
     throw makeError(
       "let_assert",
       "birl",
-      630,
+      640,
       "to_http",
       "Pattern match failed, no pattern matched the value.",
       { value: $ }
@@ -1768,19 +1768,19 @@ export function to_http(value) {
   return ((((((((((((short_weekday + ", ") + (() => {
     let _pipe = day;
     let _pipe$1 = $int.to_string(_pipe);
-    return $string.pad_left(_pipe$1, 2, "0");
+    return $string.pad_start(_pipe$1, 2, "0");
   })()) + " ") + short_month) + " ") + $int.to_string(year)) + " ") + (() => {
     let _pipe = hour;
     let _pipe$1 = $int.to_string(_pipe);
-    return $string.pad_left(_pipe$1, 2, "0");
+    return $string.pad_start(_pipe$1, 2, "0");
   })()) + ":") + (() => {
     let _pipe = minute;
     let _pipe$1 = $int.to_string(_pipe);
-    return $string.pad_left(_pipe$1, 2, "0");
+    return $string.pad_start(_pipe$1, 2, "0");
   })()) + ":") + (() => {
     let _pipe = second;
     let _pipe$1 = $int.to_string(_pipe);
-    return $string.pad_left(_pipe$1, 2, "0");
+    return $string.pad_start(_pipe$1, 2, "0");
   })()) + " GMT";
 }
 
@@ -1804,19 +1804,19 @@ export function to_http_with_offset(value) {
   return (((((((((((((short_weekday + ", ") + (() => {
     let _pipe = day;
     let _pipe$1 = $int.to_string(_pipe);
-    return $string.pad_left(_pipe$1, 2, "0");
+    return $string.pad_start(_pipe$1, 2, "0");
   })()) + " ") + short_month) + " ") + $int.to_string(year)) + " ") + (() => {
     let _pipe = hour;
     let _pipe$1 = $int.to_string(_pipe);
-    return $string.pad_left(_pipe$1, 2, "0");
+    return $string.pad_start(_pipe$1, 2, "0");
   })()) + ":") + (() => {
     let _pipe = minute;
     let _pipe$1 = $int.to_string(_pipe);
-    return $string.pad_left(_pipe$1, 2, "0");
+    return $string.pad_start(_pipe$1, 2, "0");
   })()) + ":") + (() => {
     let _pipe = second;
     let _pipe$1 = $int.to_string(_pipe);
-    return $string.pad_left(_pipe$1, 2, "0");
+    return $string.pad_start(_pipe$1, 2, "0");
   })()) + " ") + offset$1;
 }
 
@@ -1846,6 +1846,10 @@ export function now() {
   );
 }
 
+export function has_occured(value) {
+  return isEqual(compare(now(), value), new $order.Gt());
+}
+
 export const unix_epoch = /* @__PURE__ */ new Time(
   0,
   0,
@@ -1873,7 +1877,7 @@ export function parse_relative(origin, legible_difference) {
       if (!$1) {
         return unit;
       } else {
-        return $string.drop_right(unit, 1);
+        return $string.drop_end(unit, 1);
       }
     })();
     return $result.then$(
@@ -1895,7 +1899,7 @@ export function parse_relative(origin, legible_difference) {
       if (!$1) {
         return unit;
       } else {
-        return $string.drop_right(unit, 1);
+        return $string.drop_end(unit, 1);
       }
     })();
     return $result.then$(
@@ -1917,7 +1921,7 @@ export function parse_relative(origin, legible_difference) {
       if (!$1) {
         return unit;
       } else {
-        return $string.drop_right(unit, 1);
+        return $string.drop_end(unit, 1);
       }
     })();
     return $result.then$(
@@ -1939,7 +1943,7 @@ export function parse_relative(origin, legible_difference) {
       if (!$1) {
         return unit;
       } else {
-        return $string.drop_right(unit, 1);
+        return $string.drop_end(unit, 1);
       }
     })();
     return $result.then$(
@@ -1961,7 +1965,7 @@ export function parse_relative(origin, legible_difference) {
       if (!$1) {
         return unit;
       } else {
-        return $string.drop_right(unit, 1);
+        return $string.drop_end(unit, 1);
       }
     })();
     return $result.then$(
@@ -1983,7 +1987,7 @@ export function parse_relative(origin, legible_difference) {
       if (!$1) {
         return unit;
       } else {
-        return $string.drop_right(unit, 1);
+        return $string.drop_end(unit, 1);
       }
     })();
     return $result.then$(
@@ -2005,7 +2009,7 @@ export function parse_relative(origin, legible_difference) {
       if (!$1) {
         return unit;
       } else {
-        return $string.drop_right(unit, 1);
+        return $string.drop_end(unit, 1);
       }
     })();
     return $result.then$(
@@ -2029,7 +2033,7 @@ export function parse_relative(origin, legible_difference) {
       if (!$1) {
         return unit;
       } else {
-        return $string.drop_right(unit, 1);
+        return $string.drop_end(unit, 1);
       }
     })();
     return $result.then$(
@@ -2053,7 +2057,7 @@ export function parse_relative(origin, legible_difference) {
       if (!$1) {
         return unit;
       } else {
-        return $string.drop_right(unit, 1);
+        return $string.drop_end(unit, 1);
       }
     })();
     return $result.then$(
@@ -2077,7 +2081,7 @@ export function parse_relative(origin, legible_difference) {
       if (!$1) {
         return unit;
       } else {
-        return $string.drop_right(unit, 1);
+        return $string.drop_end(unit, 1);
       }
     })();
     return $result.then$(
@@ -2101,7 +2105,7 @@ export function parse_relative(origin, legible_difference) {
       if (!$1) {
         return unit;
       } else {
-        return $string.drop_right(unit, 1);
+        return $string.drop_end(unit, 1);
       }
     })();
     return $result.then$(
@@ -2149,7 +2153,7 @@ export function legible_difference(a, b) {
       throw makeError(
         "let_assert",
         "birl",
-        963,
+        973,
         "legible_difference",
         "Pattern match failed, no pattern matched the value.",
         { value: $1 }
@@ -2236,19 +2240,19 @@ export function from_http(value) {
         new Error(undefined),
         () => {
           let rest$1 = $string.trim(rest);
-          let $ = $regex.from_string("\\s+");
+          let $ = $regexp.from_string("\\s+");
           if (!$.isOk()) {
             throw makeError(
               "let_assert",
               "birl",
-              737,
+              747,
               "",
               "Pattern match failed, no pattern matched the value.",
               { value: $ }
             )
           }
           let whitespace_pattern = $[0];
-          let $1 = $regex.split(whitespace_pattern, rest$1);
+          let $1 = $regexp.split(whitespace_pattern, rest$1);
           if ($1.hasLength(5)) {
             let day_string = $1.head;
             let month_string = $1.tail.head;

@@ -1,9 +1,9 @@
+import * as $regexp from "../../../gleam_regexp/gleam/regexp.mjs";
+import { Match } from "../../../gleam_regexp/gleam/regexp.mjs";
 import * as $bool from "../../../gleam_stdlib/gleam/bool.mjs";
 import * as $dict from "../../../gleam_stdlib/gleam/dict.mjs";
 import * as $list from "../../../gleam_stdlib/gleam/list.mjs";
 import * as $option from "../../../gleam_stdlib/gleam/option.mjs";
-import * as $regex from "../../../gleam_stdlib/gleam/regex.mjs";
-import { Match } from "../../../gleam_stdlib/gleam/regex.mjs";
 import * as $result from "../../../gleam_stdlib/gleam/result.mjs";
 import * as $string from "../../../gleam_stdlib/gleam/string.mjs";
 import * as $jot from "../../../jot/jot.mjs";
@@ -23,7 +23,7 @@ import {
 } from "../../gleam.mjs";
 
 export class Renderer extends $CustomType {
-  constructor(codeblock, emphasis, heading, link, paragraph, strong, text, code, image, linebreak) {
+  constructor(codeblock, emphasis, heading, link, paragraph, strong, text, code, image, linebreak, thematicbreak) {
     super();
     this.codeblock = codeblock;
     this.emphasis = emphasis;
@@ -35,6 +35,7 @@ export class Renderer extends $CustomType {
     this.code = code;
     this.image = image;
     this.linebreak = linebreak;
+    this.thematicbreak = thematicbreak;
   }
 }
 
@@ -43,27 +44,27 @@ export function frontmatter(document) {
     !$string.starts_with(document, "---"),
     new Error(undefined),
     () => {
-      let options = new $regex.Options(false, true);
-      let $ = $regex.compile("^---\\n[\\s\\S]*?\\n---", options);
+      let options = new $regexp.Options(false, true);
+      let $ = $regexp.compile("^---\\n[\\s\\S]*?\\n---", options);
       if (!$.isOk()) {
         throw makeError(
           "let_assert",
           "lustre/ssg/djot",
-          135,
+          138,
           "",
           "Pattern match failed, no pattern matched the value.",
           { value: $ }
         )
       }
       let re = $[0];
-      let $1 = $regex.scan(re, document);
+      let $1 = $regexp.scan(re, document);
       if ($1.atLeastLength(1) && $1.head instanceof Match) {
         let frontmatter$1 = $1.head.content;
         return new Ok(
           (() => {
             let _pipe = frontmatter$1;
-            let _pipe$1 = $string.drop_left(_pipe, 4);
-            return $string.drop_right(_pipe$1, 4);
+            let _pipe$1 = $string.drop_start(_pipe, 4);
+            return $string.drop_end(_pipe$1, 4);
           })(),
         );
       } else {
@@ -94,12 +95,12 @@ export function content(document) {
 }
 
 function linkify(text) {
-  let $ = $regex.from_string(" +");
+  let $ = $regexp.from_string(" +");
   if (!$.isOk()) {
     throw makeError(
       "let_assert",
       "lustre/ssg/djot",
-      284,
+      293,
       "linkify",
       "Pattern match failed, no pattern matched the value.",
       { value: $ }
@@ -107,7 +108,7 @@ function linkify(text) {
   }
   let re = $[0];
   let _pipe = text;
-  let _pipe$1 = ((_capture) => { return $regex.split(re, _capture); })(_pipe);
+  let _pipe$1 = ((_capture) => { return $regexp.split(re, _capture); })(_pipe);
   return $string.join(_pipe$1, "-");
 }
 
@@ -127,7 +128,7 @@ export function default_renderer() {
         toList([
           $html.code(
             toList([attribute("data-lang", lang$1)]),
-            toList([$element.text(code)]),
+            toList([$html.text(code)]),
           ),
         ]),
       );
@@ -173,9 +174,9 @@ export function default_renderer() {
     },
     (attrs, content) => { return $html.p(to_attributes(attrs), content); },
     (content) => { return $html.strong(toList([]), content); },
-    (text) => { return $element.text(text); },
+    (text) => { return $html.text(text); },
     (content) => {
-      return $html.code(toList([]), toList([$element.text(content)]));
+      return $html.code(toList([]), toList([$html.text(content)]));
     },
     (destination, alt) => {
       if (destination instanceof $jot.Reference) {
@@ -188,7 +189,8 @@ export function default_renderer() {
         return $html.img(toList([$attribute.src(url), $attribute.alt(alt)]));
       }
     },
-    () => { return $html.br(toList([])); },
+    $html.br(toList([])),
+    $html.hr(toList([])),
   );
 }
 
@@ -213,6 +215,8 @@ function text_content(segments) {
         let content$1 = inline.content;
         return text + content$1;
       } else if (inline instanceof $jot.Image) {
+        return text;
+      } else if (inline instanceof $jot.Linebreak) {
         return text;
       } else {
         return text;
@@ -256,11 +260,13 @@ function render_inline(inline, references, renderer) {
     let content$1 = inline.content;
     return renderer.code(content$1);
   } else if (inline instanceof $jot.Image) {
-    let alt = inline.content;
+    let content$1 = inline.content;
     let destination = inline.destination;
-    return renderer.image(destination, text_content(alt));
+    return renderer.image(destination, text_content(content$1));
+  } else if (inline instanceof $jot.Linebreak) {
+    return renderer.linebreak;
   } else {
-    return renderer.linebreak();
+    return renderer.text("");
   }
 }
 
@@ -287,11 +293,13 @@ function render_block(block, references, renderer) {
         (_capture) => { return render_inline(_capture, references, renderer); },
       ),
     );
-  } else {
+  } else if (block instanceof $jot.Codeblock) {
     let attrs = block.attributes;
     let language = block.language;
     let code = block.content;
     return renderer.codeblock(attrs, language, code);
+  } else {
+    return renderer.thematicbreak;
   }
 }
 

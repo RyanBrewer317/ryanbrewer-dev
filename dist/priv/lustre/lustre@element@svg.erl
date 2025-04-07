@@ -3,8 +3,17 @@
 
 -export([animate/1, animate_motion/1, animate_transform/1, mpath/1, set/1, circle/1, ellipse/1, line/1, polygon/1, polyline/1, rect/1, a/2, defs/2, g/2, marker/2, mask/2, missing_glyph/2, pattern/2, svg/2, switch/2, symbol/2, desc/2, metadata/2, title/2, fe_blend/1, fe_color_matrix/1, fe_component_transfer/1, fe_composite/1, fe_convolve_matrix/1, fe_diffuse_lighting/2, fe_displacement_map/1, fe_drop_shadow/1, fe_flood/1, fe_func_a/1, fe_func_b/1, fe_func_g/1, fe_func_r/1, fe_gaussian_blur/1, fe_image/1, fe_merge/2, fe_merge_node/1, fe_morphology/1, fe_offset/1, fe_specular_lighting/2, fe_tile/2, fe_turbulence/1, linear_gradient/2, radial_gradient/2, stop/1, image/1, path/1, text/2, use_/1, fe_distant_light/1, fe_point_light/1, fe_spot_light/1, clip_path/2, script/2, style/2, foreign_object/2, text_path/2, tspan/2]).
 
--file("/Users/hayleigh/work/lustre-labs/lustre/src/lustre/element/svg.gleam", 19).
--spec animate(list(lustre@internals@vdom:attribute(RSJ))) -> lustre@internals@vdom:element(RSJ).
+-if(?OTP_RELEASE >= 27).
+-define(MODULEDOC(Str), -moduledoc(Str)).
+-define(DOC(Str), -doc(Str)).
+-else.
+-define(MODULEDOC(Str), -compile([])).
+-define(DOC(Str), -compile([])).
+-endif.
+
+-file("src/lustre/element/svg.gleam", 19).
+?DOC("\n").
+-spec animate(list(lustre@internals@vdom:attribute(SGH))) -> lustre@internals@vdom:element(SGH).
 animate(Attrs) ->
     lustre@element:namespaced(
         <<"http://www.w3.org/2000/svg"/utf8>>,
@@ -13,8 +22,9 @@ animate(Attrs) ->
         []
     ).
 
--file("/Users/hayleigh/work/lustre-labs/lustre/src/lustre/element/svg.gleam", 24).
--spec animate_motion(list(lustre@internals@vdom:attribute(RSN))) -> lustre@internals@vdom:element(RSN).
+-file("src/lustre/element/svg.gleam", 24).
+?DOC("\n").
+-spec animate_motion(list(lustre@internals@vdom:attribute(SGL))) -> lustre@internals@vdom:element(SGL).
 animate_motion(Attrs) ->
     lustre@element:namespaced(
         <<"http://www.w3.org/2000/svg"/utf8>>,
@@ -23,8 +33,9 @@ animate_motion(Attrs) ->
         []
     ).
 
--file("/Users/hayleigh/work/lustre-labs/lustre/src/lustre/element/svg.gleam", 29).
--spec animate_transform(list(lustre@internals@vdom:attribute(RSR))) -> lustre@internals@vdom:element(RSR).
+-file("src/lustre/element/svg.gleam", 29).
+?DOC("\n").
+-spec animate_transform(list(lustre@internals@vdom:attribute(SGP))) -> lustre@internals@vdom:element(SGP).
 animate_transform(Attrs) ->
     lustre@element:namespaced(
         <<"http://www.w3.org/2000/svg"/utf8>>,
@@ -33,8 +44,9 @@ animate_transform(Attrs) ->
         []
     ).
 
--file("/Users/hayleigh/work/lustre-labs/lustre/src/lustre/element/svg.gleam", 34).
--spec mpath(list(lustre@internals@vdom:attribute(RSV))) -> lustre@internals@vdom:element(RSV).
+-file("src/lustre/element/svg.gleam", 34).
+?DOC("\n").
+-spec mpath(list(lustre@internals@vdom:attribute(SGT))) -> lustre@internals@vdom:element(SGT).
 mpath(Attrs) ->
     lustre@element:namespaced(
         <<"http://www.w3.org/2000/svg"/utf8>>,
@@ -43,8 +55,9 @@ mpath(Attrs) ->
         []
     ).
 
--file("/Users/hayleigh/work/lustre-labs/lustre/src/lustre/element/svg.gleam", 39).
--spec set(list(lustre@internals@vdom:attribute(RSZ))) -> lustre@internals@vdom:element(RSZ).
+-file("src/lustre/element/svg.gleam", 39).
+?DOC("\n").
+-spec set(list(lustre@internals@vdom:attribute(SGX))) -> lustre@internals@vdom:element(SGX).
 set(Attrs) ->
     lustre@element:namespaced(
         <<"http://www.w3.org/2000/svg"/utf8>>,
@@ -53,8 +66,9 @@ set(Attrs) ->
         []
     ).
 
--file("/Users/hayleigh/work/lustre-labs/lustre/src/lustre/element/svg.gleam", 46).
--spec circle(list(lustre@internals@vdom:attribute(RTD))) -> lustre@internals@vdom:element(RTD).
+-file("src/lustre/element/svg.gleam", 46).
+?DOC("\n").
+-spec circle(list(lustre@internals@vdom:attribute(SHB))) -> lustre@internals@vdom:element(SHB).
 circle(Attrs) ->
     lustre@element:namespaced(
         <<"http://www.w3.org/2000/svg"/utf8>>,
@@ -63,8 +77,9 @@ circle(Attrs) ->
         []
     ).
 
--file("/Users/hayleigh/work/lustre-labs/lustre/src/lustre/element/svg.gleam", 51).
--spec ellipse(list(lustre@internals@vdom:attribute(RTH))) -> lustre@internals@vdom:element(RTH).
+-file("src/lustre/element/svg.gleam", 51).
+?DOC("\n").
+-spec ellipse(list(lustre@internals@vdom:attribute(SHF))) -> lustre@internals@vdom:element(SHF).
 ellipse(Attrs) ->
     lustre@element:namespaced(
         <<"http://www.w3.org/2000/svg"/utf8>>,
@@ -73,8 +88,9 @@ ellipse(Attrs) ->
         []
     ).
 
--file("/Users/hayleigh/work/lustre-labs/lustre/src/lustre/element/svg.gleam", 56).
--spec line(list(lustre@internals@vdom:attribute(RTL))) -> lustre@internals@vdom:element(RTL).
+-file("src/lustre/element/svg.gleam", 56).
+?DOC("\n").
+-spec line(list(lustre@internals@vdom:attribute(SHJ))) -> lustre@internals@vdom:element(SHJ).
 line(Attrs) ->
     lustre@element:namespaced(
         <<"http://www.w3.org/2000/svg"/utf8>>,
@@ -83,8 +99,9 @@ line(Attrs) ->
         []
     ).
 
--file("/Users/hayleigh/work/lustre-labs/lustre/src/lustre/element/svg.gleam", 61).
--spec polygon(list(lustre@internals@vdom:attribute(RTP))) -> lustre@internals@vdom:element(RTP).
+-file("src/lustre/element/svg.gleam", 61).
+?DOC("\n").
+-spec polygon(list(lustre@internals@vdom:attribute(SHN))) -> lustre@internals@vdom:element(SHN).
 polygon(Attrs) ->
     lustre@element:namespaced(
         <<"http://www.w3.org/2000/svg"/utf8>>,
@@ -93,8 +110,9 @@ polygon(Attrs) ->
         []
     ).
 
--file("/Users/hayleigh/work/lustre-labs/lustre/src/lustre/element/svg.gleam", 66).
--spec polyline(list(lustre@internals@vdom:attribute(RTT))) -> lustre@internals@vdom:element(RTT).
+-file("src/lustre/element/svg.gleam", 66).
+?DOC("\n").
+-spec polyline(list(lustre@internals@vdom:attribute(SHR))) -> lustre@internals@vdom:element(SHR).
 polyline(Attrs) ->
     lustre@element:namespaced(
         <<"http://www.w3.org/2000/svg"/utf8>>,
@@ -103,8 +121,9 @@ polyline(Attrs) ->
         []
     ).
 
--file("/Users/hayleigh/work/lustre-labs/lustre/src/lustre/element/svg.gleam", 71).
--spec rect(list(lustre@internals@vdom:attribute(RTX))) -> lustre@internals@vdom:element(RTX).
+-file("src/lustre/element/svg.gleam", 71).
+?DOC("\n").
+-spec rect(list(lustre@internals@vdom:attribute(SHV))) -> lustre@internals@vdom:element(SHV).
 rect(Attrs) ->
     lustre@element:namespaced(
         <<"http://www.w3.org/2000/svg"/utf8>>,
@@ -113,11 +132,12 @@ rect(Attrs) ->
         []
     ).
 
--file("/Users/hayleigh/work/lustre-labs/lustre/src/lustre/element/svg.gleam", 78).
+-file("src/lustre/element/svg.gleam", 78).
+?DOC("\n").
 -spec a(
-    list(lustre@internals@vdom:attribute(RUB)),
-    list(lustre@internals@vdom:element(RUB))
-) -> lustre@internals@vdom:element(RUB).
+    list(lustre@internals@vdom:attribute(SHZ)),
+    list(lustre@internals@vdom:element(SHZ))
+) -> lustre@internals@vdom:element(SHZ).
 a(Attrs, Children) ->
     lustre@element:namespaced(
         <<"http://www.w3.org/2000/svg"/utf8>>,
@@ -126,11 +146,12 @@ a(Attrs, Children) ->
         Children
     ).
 
--file("/Users/hayleigh/work/lustre-labs/lustre/src/lustre/element/svg.gleam", 86).
+-file("src/lustre/element/svg.gleam", 86).
+?DOC("\n").
 -spec defs(
-    list(lustre@internals@vdom:attribute(RUH)),
-    list(lustre@internals@vdom:element(RUH))
-) -> lustre@internals@vdom:element(RUH).
+    list(lustre@internals@vdom:attribute(SIF)),
+    list(lustre@internals@vdom:element(SIF))
+) -> lustre@internals@vdom:element(SIF).
 defs(Attrs, Children) ->
     lustre@element:namespaced(
         <<"http://www.w3.org/2000/svg"/utf8>>,
@@ -139,11 +160,12 @@ defs(Attrs, Children) ->
         Children
     ).
 
--file("/Users/hayleigh/work/lustre-labs/lustre/src/lustre/element/svg.gleam", 94).
+-file("src/lustre/element/svg.gleam", 94).
+?DOC("\n").
 -spec g(
-    list(lustre@internals@vdom:attribute(RUN)),
-    list(lustre@internals@vdom:element(RUN))
-) -> lustre@internals@vdom:element(RUN).
+    list(lustre@internals@vdom:attribute(SIL)),
+    list(lustre@internals@vdom:element(SIL))
+) -> lustre@internals@vdom:element(SIL).
 g(Attrs, Children) ->
     lustre@element:namespaced(
         <<"http://www.w3.org/2000/svg"/utf8>>,
@@ -152,11 +174,12 @@ g(Attrs, Children) ->
         Children
     ).
 
--file("/Users/hayleigh/work/lustre-labs/lustre/src/lustre/element/svg.gleam", 102).
+-file("src/lustre/element/svg.gleam", 102).
+?DOC("\n").
 -spec marker(
-    list(lustre@internals@vdom:attribute(RUT)),
-    list(lustre@internals@vdom:element(RUT))
-) -> lustre@internals@vdom:element(RUT).
+    list(lustre@internals@vdom:attribute(SIR)),
+    list(lustre@internals@vdom:element(SIR))
+) -> lustre@internals@vdom:element(SIR).
 marker(Attrs, Children) ->
     lustre@element:namespaced(
         <<"http://www.w3.org/2000/svg"/utf8>>,
@@ -165,11 +188,12 @@ marker(Attrs, Children) ->
         Children
     ).
 
--file("/Users/hayleigh/work/lustre-labs/lustre/src/lustre/element/svg.gleam", 110).
+-file("src/lustre/element/svg.gleam", 110).
+?DOC("\n").
 -spec mask(
-    list(lustre@internals@vdom:attribute(RUZ)),
-    list(lustre@internals@vdom:element(RUZ))
-) -> lustre@internals@vdom:element(RUZ).
+    list(lustre@internals@vdom:attribute(SIX)),
+    list(lustre@internals@vdom:element(SIX))
+) -> lustre@internals@vdom:element(SIX).
 mask(Attrs, Children) ->
     lustre@element:namespaced(
         <<"http://www.w3.org/2000/svg"/utf8>>,
@@ -178,11 +202,12 @@ mask(Attrs, Children) ->
         Children
     ).
 
--file("/Users/hayleigh/work/lustre-labs/lustre/src/lustre/element/svg.gleam", 118).
+-file("src/lustre/element/svg.gleam", 118).
+?DOC("\n").
 -spec missing_glyph(
-    list(lustre@internals@vdom:attribute(RVF)),
-    list(lustre@internals@vdom:element(RVF))
-) -> lustre@internals@vdom:element(RVF).
+    list(lustre@internals@vdom:attribute(SJD)),
+    list(lustre@internals@vdom:element(SJD))
+) -> lustre@internals@vdom:element(SJD).
 missing_glyph(Attrs, Children) ->
     lustre@element:namespaced(
         <<"http://www.w3.org/2000/svg"/utf8>>,
@@ -191,11 +216,12 @@ missing_glyph(Attrs, Children) ->
         Children
     ).
 
--file("/Users/hayleigh/work/lustre-labs/lustre/src/lustre/element/svg.gleam", 126).
+-file("src/lustre/element/svg.gleam", 126).
+?DOC("\n").
 -spec pattern(
-    list(lustre@internals@vdom:attribute(RVL)),
-    list(lustre@internals@vdom:element(RVL))
-) -> lustre@internals@vdom:element(RVL).
+    list(lustre@internals@vdom:attribute(SJJ)),
+    list(lustre@internals@vdom:element(SJJ))
+) -> lustre@internals@vdom:element(SJJ).
 pattern(Attrs, Children) ->
     lustre@element:namespaced(
         <<"http://www.w3.org/2000/svg"/utf8>>,
@@ -204,11 +230,12 @@ pattern(Attrs, Children) ->
         Children
     ).
 
--file("/Users/hayleigh/work/lustre-labs/lustre/src/lustre/element/svg.gleam", 134).
+-file("src/lustre/element/svg.gleam", 134).
+?DOC("\n").
 -spec svg(
-    list(lustre@internals@vdom:attribute(RVR)),
-    list(lustre@internals@vdom:element(RVR))
-) -> lustre@internals@vdom:element(RVR).
+    list(lustre@internals@vdom:attribute(SJP)),
+    list(lustre@internals@vdom:element(SJP))
+) -> lustre@internals@vdom:element(SJP).
 svg(Attrs, Children) ->
     lustre@element:namespaced(
         <<"http://www.w3.org/2000/svg"/utf8>>,
@@ -217,11 +244,12 @@ svg(Attrs, Children) ->
         Children
     ).
 
--file("/Users/hayleigh/work/lustre-labs/lustre/src/lustre/element/svg.gleam", 142).
+-file("src/lustre/element/svg.gleam", 142).
+?DOC("\n").
 -spec switch(
-    list(lustre@internals@vdom:attribute(RVX)),
-    list(lustre@internals@vdom:element(RVX))
-) -> lustre@internals@vdom:element(RVX).
+    list(lustre@internals@vdom:attribute(SJV)),
+    list(lustre@internals@vdom:element(SJV))
+) -> lustre@internals@vdom:element(SJV).
 switch(Attrs, Children) ->
     lustre@element:namespaced(
         <<"http://www.w3.org/2000/svg"/utf8>>,
@@ -230,11 +258,12 @@ switch(Attrs, Children) ->
         Children
     ).
 
--file("/Users/hayleigh/work/lustre-labs/lustre/src/lustre/element/svg.gleam", 150).
+-file("src/lustre/element/svg.gleam", 150).
+?DOC("\n").
 -spec symbol(
-    list(lustre@internals@vdom:attribute(RWD)),
-    list(lustre@internals@vdom:element(RWD))
-) -> lustre@internals@vdom:element(RWD).
+    list(lustre@internals@vdom:attribute(SKB)),
+    list(lustre@internals@vdom:element(SKB))
+) -> lustre@internals@vdom:element(SKB).
 symbol(Attrs, Children) ->
     lustre@element:namespaced(
         <<"http://www.w3.org/2000/svg"/utf8>>,
@@ -243,11 +272,12 @@ symbol(Attrs, Children) ->
         Children
     ).
 
--file("/Users/hayleigh/work/lustre-labs/lustre/src/lustre/element/svg.gleam", 160).
+-file("src/lustre/element/svg.gleam", 160).
+?DOC("\n").
 -spec desc(
-    list(lustre@internals@vdom:attribute(RWJ)),
-    list(lustre@internals@vdom:element(RWJ))
-) -> lustre@internals@vdom:element(RWJ).
+    list(lustre@internals@vdom:attribute(SKH)),
+    list(lustre@internals@vdom:element(SKH))
+) -> lustre@internals@vdom:element(SKH).
 desc(Attrs, Children) ->
     lustre@element:namespaced(
         <<"http://www.w3.org/2000/svg"/utf8>>,
@@ -256,11 +286,12 @@ desc(Attrs, Children) ->
         Children
     ).
 
--file("/Users/hayleigh/work/lustre-labs/lustre/src/lustre/element/svg.gleam", 168).
+-file("src/lustre/element/svg.gleam", 168).
+?DOC("\n").
 -spec metadata(
-    list(lustre@internals@vdom:attribute(RWP)),
-    list(lustre@internals@vdom:element(RWP))
-) -> lustre@internals@vdom:element(RWP).
+    list(lustre@internals@vdom:attribute(SKN)),
+    list(lustre@internals@vdom:element(SKN))
+) -> lustre@internals@vdom:element(SKN).
 metadata(Attrs, Children) ->
     lustre@element:namespaced(
         <<"http://www.w3.org/2000/svg"/utf8>>,
@@ -269,11 +300,12 @@ metadata(Attrs, Children) ->
         Children
     ).
 
--file("/Users/hayleigh/work/lustre-labs/lustre/src/lustre/element/svg.gleam", 176).
+-file("src/lustre/element/svg.gleam", 176).
+?DOC("\n").
 -spec title(
-    list(lustre@internals@vdom:attribute(RWV)),
-    list(lustre@internals@vdom:element(RWV))
-) -> lustre@internals@vdom:element(RWV).
+    list(lustre@internals@vdom:attribute(SKT)),
+    list(lustre@internals@vdom:element(SKT))
+) -> lustre@internals@vdom:element(SKT).
 title(Attrs, Children) ->
     lustre@element:namespaced(
         <<"http://www.w3.org/2000/svg"/utf8>>,
@@ -282,8 +314,9 @@ title(Attrs, Children) ->
         Children
     ).
 
--file("/Users/hayleigh/work/lustre-labs/lustre/src/lustre/element/svg.gleam", 186).
--spec fe_blend(list(lustre@internals@vdom:attribute(RXB))) -> lustre@internals@vdom:element(RXB).
+-file("src/lustre/element/svg.gleam", 186).
+?DOC("\n").
+-spec fe_blend(list(lustre@internals@vdom:attribute(SKZ))) -> lustre@internals@vdom:element(SKZ).
 fe_blend(Attrs) ->
     lustre@element:namespaced(
         <<"http://www.w3.org/2000/svg"/utf8>>,
@@ -292,8 +325,9 @@ fe_blend(Attrs) ->
         []
     ).
 
--file("/Users/hayleigh/work/lustre-labs/lustre/src/lustre/element/svg.gleam", 191).
--spec fe_color_matrix(list(lustre@internals@vdom:attribute(RXF))) -> lustre@internals@vdom:element(RXF).
+-file("src/lustre/element/svg.gleam", 191).
+?DOC("\n").
+-spec fe_color_matrix(list(lustre@internals@vdom:attribute(SLD))) -> lustre@internals@vdom:element(SLD).
 fe_color_matrix(Attrs) ->
     lustre@element:namespaced(
         <<"http://www.w3.org/2000/svg"/utf8>>,
@@ -302,8 +336,9 @@ fe_color_matrix(Attrs) ->
         []
     ).
 
--file("/Users/hayleigh/work/lustre-labs/lustre/src/lustre/element/svg.gleam", 196).
--spec fe_component_transfer(list(lustre@internals@vdom:attribute(RXJ))) -> lustre@internals@vdom:element(RXJ).
+-file("src/lustre/element/svg.gleam", 196).
+?DOC("\n").
+-spec fe_component_transfer(list(lustre@internals@vdom:attribute(SLH))) -> lustre@internals@vdom:element(SLH).
 fe_component_transfer(Attrs) ->
     lustre@element:namespaced(
         <<"http://www.w3.org/2000/svg"/utf8>>,
@@ -312,8 +347,9 @@ fe_component_transfer(Attrs) ->
         []
     ).
 
--file("/Users/hayleigh/work/lustre-labs/lustre/src/lustre/element/svg.gleam", 201).
--spec fe_composite(list(lustre@internals@vdom:attribute(RXN))) -> lustre@internals@vdom:element(RXN).
+-file("src/lustre/element/svg.gleam", 201).
+?DOC("\n").
+-spec fe_composite(list(lustre@internals@vdom:attribute(SLL))) -> lustre@internals@vdom:element(SLL).
 fe_composite(Attrs) ->
     lustre@element:namespaced(
         <<"http://www.w3.org/2000/svg"/utf8>>,
@@ -322,8 +358,9 @@ fe_composite(Attrs) ->
         []
     ).
 
--file("/Users/hayleigh/work/lustre-labs/lustre/src/lustre/element/svg.gleam", 206).
--spec fe_convolve_matrix(list(lustre@internals@vdom:attribute(RXR))) -> lustre@internals@vdom:element(RXR).
+-file("src/lustre/element/svg.gleam", 206).
+?DOC("\n").
+-spec fe_convolve_matrix(list(lustre@internals@vdom:attribute(SLP))) -> lustre@internals@vdom:element(SLP).
 fe_convolve_matrix(Attrs) ->
     lustre@element:namespaced(
         <<"http://www.w3.org/2000/svg"/utf8>>,
@@ -332,11 +369,12 @@ fe_convolve_matrix(Attrs) ->
         []
     ).
 
--file("/Users/hayleigh/work/lustre-labs/lustre/src/lustre/element/svg.gleam", 211).
+-file("src/lustre/element/svg.gleam", 211).
+?DOC("\n").
 -spec fe_diffuse_lighting(
-    list(lustre@internals@vdom:attribute(RXV)),
-    list(lustre@internals@vdom:element(RXV))
-) -> lustre@internals@vdom:element(RXV).
+    list(lustre@internals@vdom:attribute(SLT)),
+    list(lustre@internals@vdom:element(SLT))
+) -> lustre@internals@vdom:element(SLT).
 fe_diffuse_lighting(Attrs, Children) ->
     lustre@element:namespaced(
         <<"http://www.w3.org/2000/svg"/utf8>>,
@@ -345,8 +383,9 @@ fe_diffuse_lighting(Attrs, Children) ->
         Children
     ).
 
--file("/Users/hayleigh/work/lustre-labs/lustre/src/lustre/element/svg.gleam", 219).
--spec fe_displacement_map(list(lustre@internals@vdom:attribute(RYB))) -> lustre@internals@vdom:element(RYB).
+-file("src/lustre/element/svg.gleam", 219).
+?DOC("\n").
+-spec fe_displacement_map(list(lustre@internals@vdom:attribute(SLZ))) -> lustre@internals@vdom:element(SLZ).
 fe_displacement_map(Attrs) ->
     lustre@element:namespaced(
         <<"http://www.w3.org/2000/svg"/utf8>>,
@@ -355,8 +394,9 @@ fe_displacement_map(Attrs) ->
         []
     ).
 
--file("/Users/hayleigh/work/lustre-labs/lustre/src/lustre/element/svg.gleam", 224).
--spec fe_drop_shadow(list(lustre@internals@vdom:attribute(RYF))) -> lustre@internals@vdom:element(RYF).
+-file("src/lustre/element/svg.gleam", 224).
+?DOC("\n").
+-spec fe_drop_shadow(list(lustre@internals@vdom:attribute(SMD))) -> lustre@internals@vdom:element(SMD).
 fe_drop_shadow(Attrs) ->
     lustre@element:namespaced(
         <<"http://www.w3.org/2000/svg"/utf8>>,
@@ -365,8 +405,9 @@ fe_drop_shadow(Attrs) ->
         []
     ).
 
--file("/Users/hayleigh/work/lustre-labs/lustre/src/lustre/element/svg.gleam", 229).
--spec fe_flood(list(lustre@internals@vdom:attribute(RYJ))) -> lustre@internals@vdom:element(RYJ).
+-file("src/lustre/element/svg.gleam", 229).
+?DOC("\n").
+-spec fe_flood(list(lustre@internals@vdom:attribute(SMH))) -> lustre@internals@vdom:element(SMH).
 fe_flood(Attrs) ->
     lustre@element:namespaced(
         <<"http://www.w3.org/2000/svg"/utf8>>,
@@ -375,8 +416,9 @@ fe_flood(Attrs) ->
         []
     ).
 
--file("/Users/hayleigh/work/lustre-labs/lustre/src/lustre/element/svg.gleam", 234).
--spec fe_func_a(list(lustre@internals@vdom:attribute(RYN))) -> lustre@internals@vdom:element(RYN).
+-file("src/lustre/element/svg.gleam", 234).
+?DOC("\n").
+-spec fe_func_a(list(lustre@internals@vdom:attribute(SML))) -> lustre@internals@vdom:element(SML).
 fe_func_a(Attrs) ->
     lustre@element:namespaced(
         <<"http://www.w3.org/2000/svg"/utf8>>,
@@ -385,8 +427,9 @@ fe_func_a(Attrs) ->
         []
     ).
 
--file("/Users/hayleigh/work/lustre-labs/lustre/src/lustre/element/svg.gleam", 239).
--spec fe_func_b(list(lustre@internals@vdom:attribute(RYR))) -> lustre@internals@vdom:element(RYR).
+-file("src/lustre/element/svg.gleam", 239).
+?DOC("\n").
+-spec fe_func_b(list(lustre@internals@vdom:attribute(SMP))) -> lustre@internals@vdom:element(SMP).
 fe_func_b(Attrs) ->
     lustre@element:namespaced(
         <<"http://www.w3.org/2000/svg"/utf8>>,
@@ -395,8 +438,9 @@ fe_func_b(Attrs) ->
         []
     ).
 
--file("/Users/hayleigh/work/lustre-labs/lustre/src/lustre/element/svg.gleam", 244).
--spec fe_func_g(list(lustre@internals@vdom:attribute(RYV))) -> lustre@internals@vdom:element(RYV).
+-file("src/lustre/element/svg.gleam", 244).
+?DOC("\n").
+-spec fe_func_g(list(lustre@internals@vdom:attribute(SMT))) -> lustre@internals@vdom:element(SMT).
 fe_func_g(Attrs) ->
     lustre@element:namespaced(
         <<"http://www.w3.org/2000/svg"/utf8>>,
@@ -405,8 +449,9 @@ fe_func_g(Attrs) ->
         []
     ).
 
--file("/Users/hayleigh/work/lustre-labs/lustre/src/lustre/element/svg.gleam", 249).
--spec fe_func_r(list(lustre@internals@vdom:attribute(RYZ))) -> lustre@internals@vdom:element(RYZ).
+-file("src/lustre/element/svg.gleam", 249).
+?DOC("\n").
+-spec fe_func_r(list(lustre@internals@vdom:attribute(SMX))) -> lustre@internals@vdom:element(SMX).
 fe_func_r(Attrs) ->
     lustre@element:namespaced(
         <<"http://www.w3.org/2000/svg"/utf8>>,
@@ -415,8 +460,9 @@ fe_func_r(Attrs) ->
         []
     ).
 
--file("/Users/hayleigh/work/lustre-labs/lustre/src/lustre/element/svg.gleam", 254).
--spec fe_gaussian_blur(list(lustre@internals@vdom:attribute(RZD))) -> lustre@internals@vdom:element(RZD).
+-file("src/lustre/element/svg.gleam", 254).
+?DOC("\n").
+-spec fe_gaussian_blur(list(lustre@internals@vdom:attribute(SNB))) -> lustre@internals@vdom:element(SNB).
 fe_gaussian_blur(Attrs) ->
     lustre@element:namespaced(
         <<"http://www.w3.org/2000/svg"/utf8>>,
@@ -425,8 +471,9 @@ fe_gaussian_blur(Attrs) ->
         []
     ).
 
--file("/Users/hayleigh/work/lustre-labs/lustre/src/lustre/element/svg.gleam", 259).
--spec fe_image(list(lustre@internals@vdom:attribute(RZH))) -> lustre@internals@vdom:element(RZH).
+-file("src/lustre/element/svg.gleam", 259).
+?DOC("\n").
+-spec fe_image(list(lustre@internals@vdom:attribute(SNF))) -> lustre@internals@vdom:element(SNF).
 fe_image(Attrs) ->
     lustre@element:namespaced(
         <<"http://www.w3.org/2000/svg"/utf8>>,
@@ -435,11 +482,12 @@ fe_image(Attrs) ->
         []
     ).
 
--file("/Users/hayleigh/work/lustre-labs/lustre/src/lustre/element/svg.gleam", 264).
+-file("src/lustre/element/svg.gleam", 264).
+?DOC("\n").
 -spec fe_merge(
-    list(lustre@internals@vdom:attribute(RZL)),
-    list(lustre@internals@vdom:element(RZL))
-) -> lustre@internals@vdom:element(RZL).
+    list(lustre@internals@vdom:attribute(SNJ)),
+    list(lustre@internals@vdom:element(SNJ))
+) -> lustre@internals@vdom:element(SNJ).
 fe_merge(Attrs, Children) ->
     lustre@element:namespaced(
         <<"http://www.w3.org/2000/svg"/utf8>>,
@@ -448,8 +496,9 @@ fe_merge(Attrs, Children) ->
         Children
     ).
 
--file("/Users/hayleigh/work/lustre-labs/lustre/src/lustre/element/svg.gleam", 272).
--spec fe_merge_node(list(lustre@internals@vdom:attribute(RZR))) -> lustre@internals@vdom:element(RZR).
+-file("src/lustre/element/svg.gleam", 272).
+?DOC("\n").
+-spec fe_merge_node(list(lustre@internals@vdom:attribute(SNP))) -> lustre@internals@vdom:element(SNP).
 fe_merge_node(Attrs) ->
     lustre@element:namespaced(
         <<"http://www.w3.org/2000/svg"/utf8>>,
@@ -458,8 +507,9 @@ fe_merge_node(Attrs) ->
         []
     ).
 
--file("/Users/hayleigh/work/lustre-labs/lustre/src/lustre/element/svg.gleam", 277).
--spec fe_morphology(list(lustre@internals@vdom:attribute(RZV))) -> lustre@internals@vdom:element(RZV).
+-file("src/lustre/element/svg.gleam", 277).
+?DOC("\n").
+-spec fe_morphology(list(lustre@internals@vdom:attribute(SNT))) -> lustre@internals@vdom:element(SNT).
 fe_morphology(Attrs) ->
     lustre@element:namespaced(
         <<"http://www.w3.org/2000/svg"/utf8>>,
@@ -468,8 +518,9 @@ fe_morphology(Attrs) ->
         []
     ).
 
--file("/Users/hayleigh/work/lustre-labs/lustre/src/lustre/element/svg.gleam", 282).
--spec fe_offset(list(lustre@internals@vdom:attribute(RZZ))) -> lustre@internals@vdom:element(RZZ).
+-file("src/lustre/element/svg.gleam", 282).
+?DOC("\n").
+-spec fe_offset(list(lustre@internals@vdom:attribute(SNX))) -> lustre@internals@vdom:element(SNX).
 fe_offset(Attrs) ->
     lustre@element:namespaced(
         <<"http://www.w3.org/2000/svg"/utf8>>,
@@ -478,11 +529,12 @@ fe_offset(Attrs) ->
         []
     ).
 
--file("/Users/hayleigh/work/lustre-labs/lustre/src/lustre/element/svg.gleam", 287).
+-file("src/lustre/element/svg.gleam", 287).
+?DOC("\n").
 -spec fe_specular_lighting(
-    list(lustre@internals@vdom:attribute(SAD)),
-    list(lustre@internals@vdom:element(SAD))
-) -> lustre@internals@vdom:element(SAD).
+    list(lustre@internals@vdom:attribute(SOB)),
+    list(lustre@internals@vdom:element(SOB))
+) -> lustre@internals@vdom:element(SOB).
 fe_specular_lighting(Attrs, Children) ->
     lustre@element:namespaced(
         <<"http://www.w3.org/2000/svg"/utf8>>,
@@ -491,11 +543,12 @@ fe_specular_lighting(Attrs, Children) ->
         Children
     ).
 
--file("/Users/hayleigh/work/lustre-labs/lustre/src/lustre/element/svg.gleam", 295).
+-file("src/lustre/element/svg.gleam", 295).
+?DOC("\n").
 -spec fe_tile(
-    list(lustre@internals@vdom:attribute(SAJ)),
-    list(lustre@internals@vdom:element(SAJ))
-) -> lustre@internals@vdom:element(SAJ).
+    list(lustre@internals@vdom:attribute(SOH)),
+    list(lustre@internals@vdom:element(SOH))
+) -> lustre@internals@vdom:element(SOH).
 fe_tile(Attrs, Children) ->
     lustre@element:namespaced(
         <<"http://www.w3.org/2000/svg"/utf8>>,
@@ -504,8 +557,9 @@ fe_tile(Attrs, Children) ->
         Children
     ).
 
--file("/Users/hayleigh/work/lustre-labs/lustre/src/lustre/element/svg.gleam", 303).
--spec fe_turbulence(list(lustre@internals@vdom:attribute(SAP))) -> lustre@internals@vdom:element(SAP).
+-file("src/lustre/element/svg.gleam", 303).
+?DOC("\n").
+-spec fe_turbulence(list(lustre@internals@vdom:attribute(SON))) -> lustre@internals@vdom:element(SON).
 fe_turbulence(Attrs) ->
     lustre@element:namespaced(
         <<"http://www.w3.org/2000/svg"/utf8>>,
@@ -514,11 +568,12 @@ fe_turbulence(Attrs) ->
         []
     ).
 
--file("/Users/hayleigh/work/lustre-labs/lustre/src/lustre/element/svg.gleam", 310).
+-file("src/lustre/element/svg.gleam", 310).
+?DOC("\n").
 -spec linear_gradient(
-    list(lustre@internals@vdom:attribute(SAT)),
-    list(lustre@internals@vdom:element(SAT))
-) -> lustre@internals@vdom:element(SAT).
+    list(lustre@internals@vdom:attribute(SOR)),
+    list(lustre@internals@vdom:element(SOR))
+) -> lustre@internals@vdom:element(SOR).
 linear_gradient(Attrs, Children) ->
     lustre@element:namespaced(
         <<"http://www.w3.org/2000/svg"/utf8>>,
@@ -527,11 +582,12 @@ linear_gradient(Attrs, Children) ->
         Children
     ).
 
--file("/Users/hayleigh/work/lustre-labs/lustre/src/lustre/element/svg.gleam", 318).
+-file("src/lustre/element/svg.gleam", 318).
+?DOC("\n").
 -spec radial_gradient(
-    list(lustre@internals@vdom:attribute(SAZ)),
-    list(lustre@internals@vdom:element(SAZ))
-) -> lustre@internals@vdom:element(SAZ).
+    list(lustre@internals@vdom:attribute(SOX)),
+    list(lustre@internals@vdom:element(SOX))
+) -> lustre@internals@vdom:element(SOX).
 radial_gradient(Attrs, Children) ->
     lustre@element:namespaced(
         <<"http://www.w3.org/2000/svg"/utf8>>,
@@ -540,8 +596,9 @@ radial_gradient(Attrs, Children) ->
         Children
     ).
 
--file("/Users/hayleigh/work/lustre-labs/lustre/src/lustre/element/svg.gleam", 326).
--spec stop(list(lustre@internals@vdom:attribute(SBF))) -> lustre@internals@vdom:element(SBF).
+-file("src/lustre/element/svg.gleam", 326).
+?DOC("\n").
+-spec stop(list(lustre@internals@vdom:attribute(SPD))) -> lustre@internals@vdom:element(SPD).
 stop(Attrs) ->
     lustre@element:namespaced(
         <<"http://www.w3.org/2000/svg"/utf8>>,
@@ -550,8 +607,9 @@ stop(Attrs) ->
         []
     ).
 
--file("/Users/hayleigh/work/lustre-labs/lustre/src/lustre/element/svg.gleam", 333).
--spec image(list(lustre@internals@vdom:attribute(SBJ))) -> lustre@internals@vdom:element(SBJ).
+-file("src/lustre/element/svg.gleam", 333).
+?DOC("\n").
+-spec image(list(lustre@internals@vdom:attribute(SPH))) -> lustre@internals@vdom:element(SPH).
 image(Attrs) ->
     lustre@element:namespaced(
         <<"http://www.w3.org/2000/svg"/utf8>>,
@@ -560,8 +618,9 @@ image(Attrs) ->
         []
     ).
 
--file("/Users/hayleigh/work/lustre-labs/lustre/src/lustre/element/svg.gleam", 338).
--spec path(list(lustre@internals@vdom:attribute(SBN))) -> lustre@internals@vdom:element(SBN).
+-file("src/lustre/element/svg.gleam", 338).
+?DOC("\n").
+-spec path(list(lustre@internals@vdom:attribute(SPL))) -> lustre@internals@vdom:element(SPL).
 path(Attrs) ->
     lustre@element:namespaced(
         <<"http://www.w3.org/2000/svg"/utf8>>,
@@ -570,8 +629,9 @@ path(Attrs) ->
         []
     ).
 
--file("/Users/hayleigh/work/lustre-labs/lustre/src/lustre/element/svg.gleam", 343).
--spec text(list(lustre@internals@vdom:attribute(SBR)), binary()) -> lustre@internals@vdom:element(SBR).
+-file("src/lustre/element/svg.gleam", 343).
+?DOC("\n").
+-spec text(list(lustre@internals@vdom:attribute(SPP)), binary()) -> lustre@internals@vdom:element(SPP).
 text(Attrs, Content) ->
     lustre@element:namespaced(
         <<"http://www.w3.org/2000/svg"/utf8>>,
@@ -580,8 +640,9 @@ text(Attrs, Content) ->
         [lustre@element:text(Content)]
     ).
 
--file("/Users/hayleigh/work/lustre-labs/lustre/src/lustre/element/svg.gleam", 348).
--spec use_(list(lustre@internals@vdom:attribute(SBV))) -> lustre@internals@vdom:element(SBV).
+-file("src/lustre/element/svg.gleam", 348).
+?DOC("\n").
+-spec use_(list(lustre@internals@vdom:attribute(SPT))) -> lustre@internals@vdom:element(SPT).
 use_(Attrs) ->
     lustre@element:namespaced(
         <<"http://www.w3.org/2000/svg"/utf8>>,
@@ -590,8 +651,9 @@ use_(Attrs) ->
         []
     ).
 
--file("/Users/hayleigh/work/lustre-labs/lustre/src/lustre/element/svg.gleam", 355).
--spec fe_distant_light(list(lustre@internals@vdom:attribute(SBZ))) -> lustre@internals@vdom:element(SBZ).
+-file("src/lustre/element/svg.gleam", 355).
+?DOC("\n").
+-spec fe_distant_light(list(lustre@internals@vdom:attribute(SPX))) -> lustre@internals@vdom:element(SPX).
 fe_distant_light(Attrs) ->
     lustre@element:namespaced(
         <<"http://www.w3.org/2000/svg"/utf8>>,
@@ -600,8 +662,9 @@ fe_distant_light(Attrs) ->
         []
     ).
 
--file("/Users/hayleigh/work/lustre-labs/lustre/src/lustre/element/svg.gleam", 360).
--spec fe_point_light(list(lustre@internals@vdom:attribute(SCD))) -> lustre@internals@vdom:element(SCD).
+-file("src/lustre/element/svg.gleam", 360).
+?DOC("\n").
+-spec fe_point_light(list(lustre@internals@vdom:attribute(SQB))) -> lustre@internals@vdom:element(SQB).
 fe_point_light(Attrs) ->
     lustre@element:namespaced(
         <<"http://www.w3.org/2000/svg"/utf8>>,
@@ -610,8 +673,9 @@ fe_point_light(Attrs) ->
         []
     ).
 
--file("/Users/hayleigh/work/lustre-labs/lustre/src/lustre/element/svg.gleam", 365).
--spec fe_spot_light(list(lustre@internals@vdom:attribute(SCH))) -> lustre@internals@vdom:element(SCH).
+-file("src/lustre/element/svg.gleam", 365).
+?DOC("\n").
+-spec fe_spot_light(list(lustre@internals@vdom:attribute(SQF))) -> lustre@internals@vdom:element(SQF).
 fe_spot_light(Attrs) ->
     lustre@element:namespaced(
         <<"http://www.w3.org/2000/svg"/utf8>>,
@@ -620,11 +684,12 @@ fe_spot_light(Attrs) ->
         []
     ).
 
--file("/Users/hayleigh/work/lustre-labs/lustre/src/lustre/element/svg.gleam", 372).
+-file("src/lustre/element/svg.gleam", 372).
+?DOC("\n").
 -spec clip_path(
-    list(lustre@internals@vdom:attribute(SCL)),
-    list(lustre@internals@vdom:element(SCL))
-) -> lustre@internals@vdom:element(SCL).
+    list(lustre@internals@vdom:attribute(SQJ)),
+    list(lustre@internals@vdom:element(SQJ))
+) -> lustre@internals@vdom:element(SQJ).
 clip_path(Attrs, Children) ->
     lustre@element:namespaced(
         <<"http://www.w3.org/2000/svg"/utf8>>,
@@ -633,8 +698,9 @@ clip_path(Attrs, Children) ->
         Children
     ).
 
--file("/Users/hayleigh/work/lustre-labs/lustre/src/lustre/element/svg.gleam", 380).
--spec script(list(lustre@internals@vdom:attribute(SCR)), binary()) -> lustre@internals@vdom:element(SCR).
+-file("src/lustre/element/svg.gleam", 380).
+?DOC("\n").
+-spec script(list(lustre@internals@vdom:attribute(SQP)), binary()) -> lustre@internals@vdom:element(SQP).
 script(Attrs, Js) ->
     lustre@element:namespaced(
         <<"http://www.w3.org/2000/svg"/utf8>>,
@@ -643,8 +709,9 @@ script(Attrs, Js) ->
         [lustre@element:text(Js)]
     ).
 
--file("/Users/hayleigh/work/lustre-labs/lustre/src/lustre/element/svg.gleam", 385).
--spec style(list(lustre@internals@vdom:attribute(SCV)), binary()) -> lustre@internals@vdom:element(SCV).
+-file("src/lustre/element/svg.gleam", 385).
+?DOC("\n").
+-spec style(list(lustre@internals@vdom:attribute(SQT)), binary()) -> lustre@internals@vdom:element(SQT).
 style(Attrs, Css) ->
     lustre@element:namespaced(
         <<"http://www.w3.org/2000/svg"/utf8>>,
@@ -653,11 +720,12 @@ style(Attrs, Css) ->
         [lustre@element:text(Css)]
     ).
 
--file("/Users/hayleigh/work/lustre-labs/lustre/src/lustre/element/svg.gleam", 392).
+-file("src/lustre/element/svg.gleam", 392).
+?DOC("\n").
 -spec foreign_object(
-    list(lustre@internals@vdom:attribute(SCZ)),
-    list(lustre@internals@vdom:element(SCZ))
-) -> lustre@internals@vdom:element(SCZ).
+    list(lustre@internals@vdom:attribute(SQX)),
+    list(lustre@internals@vdom:element(SQX))
+) -> lustre@internals@vdom:element(SQX).
 foreign_object(Attrs, Children) ->
     lustre@element:namespaced(
         <<"http://www.w3.org/2000/svg"/utf8>>,
@@ -666,11 +734,12 @@ foreign_object(Attrs, Children) ->
         Children
     ).
 
--file("/Users/hayleigh/work/lustre-labs/lustre/src/lustre/element/svg.gleam", 400).
+-file("src/lustre/element/svg.gleam", 400).
+?DOC("\n").
 -spec text_path(
-    list(lustre@internals@vdom:attribute(SDF)),
-    list(lustre@internals@vdom:element(SDF))
-) -> lustre@internals@vdom:element(SDF).
+    list(lustre@internals@vdom:attribute(SRD)),
+    list(lustre@internals@vdom:element(SRD))
+) -> lustre@internals@vdom:element(SRD).
 text_path(Attrs, Children) ->
     lustre@element:namespaced(
         <<"http://www.w3.org/2000/svg"/utf8>>,
@@ -679,11 +748,12 @@ text_path(Attrs, Children) ->
         Children
     ).
 
--file("/Users/hayleigh/work/lustre-labs/lustre/src/lustre/element/svg.gleam", 408).
+-file("src/lustre/element/svg.gleam", 408).
+?DOC("\n").
 -spec tspan(
-    list(lustre@internals@vdom:attribute(SDL)),
-    list(lustre@internals@vdom:element(SDL))
-) -> lustre@internals@vdom:element(SDL).
+    list(lustre@internals@vdom:attribute(SRJ)),
+    list(lustre@internals@vdom:element(SRJ))
+) -> lustre@internals@vdom:element(SRJ).
 tspan(Attrs, Children) ->
     lustre@element:namespaced(
         <<"http://www.w3.org/2000/svg"/utf8>>,

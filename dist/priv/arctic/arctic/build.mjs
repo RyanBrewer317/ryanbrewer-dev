@@ -1,4 +1,3 @@
-import * as $birl from "../../birl/birl.mjs";
 import * as $crypto from "../../gleam_crypto/gleam/crypto.mjs";
 import * as $bit_array from "../../gleam_stdlib/gleam/bit_array.mjs";
 import * as $dict from "../../gleam_stdlib/gleam/dict.mjs";
@@ -35,7 +34,7 @@ function get_id(p) {
       throw makeError(
         "let_assert",
         "arctic/build",
-        36,
+        35,
         "get_id",
         "Pattern match failed, no pattern matched the value.",
         { value: $ }
@@ -233,9 +232,7 @@ function read_collection(collection, cache) {
                             $option.map(
                               p.date,
                               (d) => {
-                                return (",\"date:" + $birl.to_naive_date_string(
-                                  d,
-                                )) + "\"";
+                                return (",\"date:" + $arctic.date_to_string(d)) + "\"";
                               },
                             ),
                             "",
@@ -407,7 +404,7 @@ function make_ssg_config(processed_collections, config, k) {
                   throw makeError(
                     "let_assert",
                     "arctic/build",
-                    403,
+                    402,
                     "",
                     "Pattern match failed, no pattern matched the value.",
                     { value: $ }
@@ -424,7 +421,7 @@ function make_ssg_config(processed_collections, config, k) {
                     throw makeError(
                       "panic",
                       "arctic/build",
-                      408,
+                      407,
                       "",
                       cached_path,
                       {}
@@ -443,7 +440,7 @@ function make_ssg_config(processed_collections, config, k) {
                       throw makeError(
                         "panic",
                         "arctic/build",
-                        420,
+                        419,
                         "",
                         cached_path,
                         {}
