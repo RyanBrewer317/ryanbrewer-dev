@@ -43,7 +43,10 @@ I'm straight and cisgender, using he/him pronouns.
             ),
           ]),
         ]),
-        html.div([attribute.id("homepage-flags")], [text("🏳️‍🌈🏳️‍⚧️🇵🇸🇺🇦")]),
+        html.div([attribute.id("homepage-flags")], [
+          text("I support: "),
+          html.span([], [text("🏳️‍🌈🏳️‍⚧️🇵🇸🇺🇦")]),
+        ]),
         html.div([attribute.id("homepage-img")], [
           html.img([attribute.src("/ryan-ferry.jpg")]),
         ]),

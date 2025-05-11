@@ -235,8 +235,13 @@ textarea:focus, input:focus, #search-posts:focus, #search-projects:focus {
 }
 
 #homepage-flags {
-  font-size: 30pt;
   text-align: center;
+}
+
+#homepage-flags span {
+  font-size: 30pt;
+  position: relative;
+  top: 7.5pt;
 }
 
 #contact-img {

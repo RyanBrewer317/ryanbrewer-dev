@@ -56,7 +56,10 @@ export function homepage(_) {
               ),
               $html.div(
                 toList([$attribute.id("homepage-flags")]),
-                toList([text("🏳️‍🌈🏳️‍⚧️🇵🇸🇺🇦")]),
+                toList([
+                  text("I support: "),
+                  $html.span(toList([]), toList([text("🏳️‍🌈🏳️‍⚧️🇵🇸🇺🇦")])),
+                ]),
               ),
               $html.div(
                 toList([$attribute.id("homepage-img")]),
