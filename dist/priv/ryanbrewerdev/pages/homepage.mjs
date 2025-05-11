@@ -55,10 +55,24 @@ export function homepage(_) {
                 ]),
               ),
               $html.div(
-                toList([$attribute.id("homepage-flags")]),
+                toList([
+                  $attribute.id("homepage-flags"),
+                  $attribute.style(toList([["text-align", "center"]])),
+                ]),
                 toList([
                   text("I support: "),
-                  $html.span(toList([]), toList([text("🏳️‍🌈🏳️‍⚧️🇵🇸🇺🇦")])),
+                  $html.span(
+                    toList([
+                      $attribute.style(
+                        toList([
+                          ["font-size", "30pt"],
+                          ["position", "relative"],
+                          ["top", "7.5pt"],
+                        ]),
+                      ),
+                    ]),
+                    toList([text("🏳️‍🌈🏳️‍⚧️🇵🇸🇺🇦")]),
+                  ),
                 ]),
               ),
               $html.div(
