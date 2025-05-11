@@ -38,6 +38,11 @@ They aren't the most polished thing but they're mine and I'm proud of them :)
         "Simon and Garfunkel",
         "https://cdn.ryanbrewer.dev/homeward-bound.mp4",
       ),
+      thumbnail(
+        "The Only Living Boy in New York",
+        "Simon and Garfunkel",
+        "https://cdn.ryanbrewer.dev/the-only-living-boy-in-new-york.mp4",
+      ),
     ]),
     tail(),
   ])
