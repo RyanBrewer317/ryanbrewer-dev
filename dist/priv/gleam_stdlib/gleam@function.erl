@@ -13,7 +13,7 @@
 
 -file("src/gleam/function.gleam", 3).
 ?DOC(" Takes a single argument and always returns its input value.\n").
--spec identity(ECY) -> ECY.
+-spec identity(ECX) -> ECX.
 identity(X) ->
     X.
 
@@ -24,7 +24,7 @@ identity(X) ->
     "\n"
     " Useful for running synchronous side effects in a pipeline.\n"
 ).
--spec tap(ECZ, fun((ECZ) -> any())) -> ECZ.
+-spec tap(ECY, fun((ECY) -> any())) -> ECY.
 tap(Arg, Effect) ->
     Effect(Arg),
     Arg.

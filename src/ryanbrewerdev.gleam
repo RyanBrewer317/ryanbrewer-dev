@@ -7,7 +7,6 @@ import arctic/collection
 import arctic/config
 import components/head
 import gleam/io
-import gleam/list
 import helpers
 import lustre/attribute
 import lustre/element/html
@@ -15,9 +14,11 @@ import pages/contact
 import pages/cricket
 import pages/demos
 import pages/feed
+import pages/guitar
 import pages/homepage
 import pages/list_posts
 import pages/list_wikis
+import pages/projects
 import pages/unknown_page
 import parse
 import render
@@ -36,14 +37,21 @@ pub fn main() {
     |> collection.with_parser(parse.parse)
     |> collection.with_index(list_wikis.list_wikis)
     |> collection.with_renderer(render.wiki)
+  let projects =
+    collection.new("projects")
+    |> collection.with_parser(parse.parse)
+    |> collection.with_index(projects.projects)
+    |> collection.with_renderer(render.project)
   let config =
     config.new()
     |> config.add_collection(posts)
     |> config.add_collection(wiki)
+    |> config.add_collection(projects)
     |> config.add_main_page("contact", contact.contact())
     |> config.add_main_page("demos", demos.demos())
     |> config.add_main_page("404", unknown_page.unknown_page())
     |> config.add_main_page("cricket", cricket.cricket())
+    |> config.add_main_page("guitar", guitar.guitar())
     |> config.add_spa_frame(fn(body) {
       html.html([attribute.attribute("lang", "en")], [
         head.head([
@@ -52,11 +60,7 @@ pub fn main() {
         html.body([], [body]),
       ])
     })
-    |> config.home_renderer(fn(collections) {
-      let assert Ok(posts) =
-        list.find(collections, fn(c) { c.collection.directory == "posts" })
-      homepage.homepage(posts.pages)
-    })
+    |> config.home_renderer(homepage.homepage)
   let res = build.build(config)
   case res {
     Ok(Nil) -> io.println("Success!")

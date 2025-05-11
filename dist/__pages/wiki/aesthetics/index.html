@@ -1,10 +1,25 @@
 <!doctype html>
-<div><div><title>Aesthetics - Ryan Brewer</title><meta name="description" content><script type="text/javascript" async="true" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script><script>
+<div><div><link rel="preload" as="image" href="/ryan-silly.jpg"><link rel="prefetch" href="/ryan-silly-2.png"><title>Aesthetics - Ryan Brewer</title><meta name="description" content><script type="text/javascript" async="true" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script><script>
 window.MathJax = {
   loader: {load: ['[tex]/unicode','[tex]/bussproofs']},
   tex: {packages: {'[+]': ['unicode','bussproofs']}},
 };
-        </script><script>hljs.highlightAll();</script></div><nav id="nav"><div id="nav-dropdown" onclick="document.getElementById(&#39;nav&#39;).classList.toggle(&#39;dropdown&#39;);document.body.classList.toggle(&#39;noscroll&#39;);">☰</div><a href="/" id="nav-home" onclick="document.body.classList.remove(&#39;noscroll&#39;);">Ryan Brewer</a><a href="/posts" id="nav-posts" onclick="document.body.classList.remove(&#39;noscroll&#39;);">Posts</a><a href="/wiki" id="nav-wiki" onclick="document.body.classList.remove(&#39;noscroll&#39;);">Wiki</a><a href="/contact" id="nav-contact" onclick="document.body.classList.remove(&#39;noscroll&#39;);">Contact</a><a href="/demos" id="nav-demos" onclick="document.body.classList.remove(&#39;noscroll&#39;);">Demos</a><a href="/feed.rss" id="nav-subscribe" onclick="window.location.href = &#39;/feed.rss&#39;"><img src="/rss-icon.png" id="rss-subscribe-icon">Subscribe</a></nav><div id="body"><h1>Aesthetics</h1><p><span>This entry encompasses my philosophy of aesthetics. It does not attempt to be a survey of the field, though I will make references to relevant philosophers when appropriate.
+        </script><script>hljs.highlightAll();</script></div><nav id="nav"><script>
+function click_nav_home_link() {
+  let p=new URL(location.href).pathname;
+  if(p=='/'){
+    document.getElementById('nav').classList.remove('dropdown');
+  }
+  document.body.classList.remove('noscroll');
+}
+function click_nav_link(route) {
+  let p=new URL(location.href).pathname;
+  if(p==route||p==route+'/'){
+    document.getElementById('nav').classList.remove('dropdown');
+  }
+  document.body.classList.remove('noscroll');
+}
+    </script><div id="nav-dropdown" onclick="document.getElementById(&#39;nav&#39;).classList.toggle(&#39;dropdown&#39;);document.body.classList.toggle(&#39;noscroll&#39;);">☰</div><a href="/" id="nav-home" onclick="click_nav_home_link()">Ryan Brewer</a><a href="/contact" id="nav-contact" onclick="click_nav_link(&#39;/contact&#39;)">Contact</a><a href="/demos" id="nav-demos" onclick="click_nav_link(&#39;/demos&#39;)">Demos</a><a href="/posts" id="nav-posts" onclick="click_nav_link(&#39;/posts&#39;)">Posts</a><a href="/projects" id="nav-projects" onclick="click_nav_link(&#39;/projects&#39;)">Projects</a></nav><div id="body"><h1>Aesthetics</h1><p><span>This entry encompasses my philosophy of aesthetics. It does not attempt to be a survey of the field, though I will make references to relevant philosophers when appropriate.
 </span></p><p><span>We know from Wittgenstein that children learn language by experiencing people use sounds, gestures, etc. to reference their surroundings and communicate. That is, the child picks up on the repetitions in the symbols, and gets an intuitive grasp of the language via its patterns. This is a philosophy of language with many pleasing properties. It explains how we know what words mean and use them correctly, yet struggle to define them. It explains why people&#39;s definitions can differ in significant ways but we&#39;re still able to communicate: we&#39;re citing patterns we&#39;ve both experienced about those words, which have enough overlap to make us coherent to each other in the context of the conversation. We all have our own understandings of the words, because we all have different experience of them, but our experiences are close enough, enough of the time, to meaningfully cite them with each other. This is vaguely in line with Chomsky&#39;s notion of the idiolect.
 </span></p><p><span>We also know from Heidegger that the newborn child is traumatized as they enter existence. With absolutely nothing to go on, and time ceaselessly, mercilessly marching forward without a break, the child must find any bearings they can to make sense of the world. The world is a confusing flash of sensations: light, sound, color, hunger, pain. There is some combination of sensations <i><span>all the time.</span></i>
 </span></p><p><span>But, over time, patterns emerge from the chaos. Certain things always seem to be a certain way, every single time. We are faced with Hume&#39;s problem of induction, but here induction is all the child has to go on. <i><span>Induction is the only way to feel some sense of security and control in this inexplicable sudden existence.</span></i> For if a child finds a pattern, and then it is confirmed at the next opportunity, and the next, and the next, then the child will start to feel that they can <i><span>predict</span></i> things.

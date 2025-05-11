@@ -79,3 +79,15 @@ export function wiki(wiki) {
     ]),
   );
 }
+
+export function project(project) {
+  return $html.div(
+    toList([]),
+    toList([
+      $head.local_head(project.title, project.blerb),
+      navbar(),
+      $html.div(toList([$attribute.id("body")]), render_wiki_as_list(project)),
+      tail(),
+    ]),
+  );
+}

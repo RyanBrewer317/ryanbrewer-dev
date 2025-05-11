@@ -461,20 +461,24 @@ export function optional_field(key, default$, field_decoder, next) {
   return new Decoder(
     (data) => {
       let $ = (() => {
-        let $1 = bare_index(data, key);
-        if ($1.isOk() && $1[0] instanceof Some) {
-          let data$1 = $1[0][0];
-          return field_decoder.function(data$1);
-        } else if ($1.isOk() && $1[0] instanceof None) {
-          return [default$, toList([])];
-        } else {
-          let kind = $1[0];
-          let _pipe = [
-            default$,
-            toList([new DecodeError(kind, $dynamic.classify(data), toList([]))]),
-          ];
-          return push_path(_pipe, toList([key]));
-        }
+        let _pipe = (() => {
+          let $1 = bare_index(data, key);
+          if ($1.isOk() && $1[0] instanceof Some) {
+            let data$1 = $1[0][0];
+            return field_decoder.function(data$1);
+          } else if ($1.isOk() && $1[0] instanceof None) {
+            return [default$, toList([])];
+          } else {
+            let kind = $1[0];
+            return [
+              default$,
+              toList([
+                new DecodeError(kind, $dynamic.classify(data), toList([])),
+              ]),
+            ];
+          }
+        })();
+        return push_path(_pipe, toList([key]));
       })();
       let out = $[0];
       let errors1 = $[1];

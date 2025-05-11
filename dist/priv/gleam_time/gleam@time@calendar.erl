@@ -1,7 +1,7 @@
 -module(gleam@time@calendar).
 -compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch]).
 
--export([local_offset/0, month_to_string/1]).
+-export([local_offset/0, month_to_string/1, month_to_int/1, month_from_int/1]).
 -export_type([date/0, time_of_day/0, month/0]).
 
 -if(?OTP_RELEASE >= 27).
@@ -67,19 +67,25 @@
     november |
     december.
 
--file("src/gleam/time/calendar.gleam", 86).
+-file("src/gleam/time/calendar.gleam", 92).
 ?DOC(
     " Get the offset for the computer's currently configured time zone.\n"
     "\n"
     " Note this may not be the time zone that is correct to use for your user.\n"
     " For example, if you are making a web application that runs on a server you\n"
     " want _their_ computer's time zone, not yours.\n"
+    "\n"
+    " This is the _current local_ offset, not the current local time zone. This\n"
+    " means that while it will result in the expected outcome for the current\n"
+    " time, it may result in unexpected output if used with other timestamps. For\n"
+    " example: a timestamp that would locally be during daylight savings time if\n"
+    " is it not currently daylight savings time when this function is called.\n"
 ).
 -spec local_offset() -> gleam@time@duration:duration().
 local_offset() ->
     gleam@time@duration:seconds(gleam_time_ffi:local_time_offset_seconds()).
 
--file("src/gleam/time/calendar.gleam", 102).
+-file("src/gleam/time/calendar.gleam", 108).
 ?DOC(
     " Returns the English name for a month.\n"
     "\n"
@@ -128,4 +134,109 @@ month_to_string(Month) ->
 
         december ->
             <<"December"/utf8>>
+    end.
+
+-file("src/gleam/time/calendar.gleam", 133).
+?DOC(
+    " Returns the number for the month, where January is 1 and December is 12.\n"
+    "\n"
+    " # Examples\n"
+    "\n"
+    " ```gleam\n"
+    " month_to_int(January)\n"
+    " // -> 1\n"
+    " ```\n"
+).
+-spec month_to_int(month()) -> integer().
+month_to_int(Month) ->
+    case Month of
+        january ->
+            1;
+
+        february ->
+            2;
+
+        march ->
+            3;
+
+        april ->
+            4;
+
+        may ->
+            5;
+
+        june ->
+            6;
+
+        july ->
+            7;
+
+        august ->
+            8;
+
+        september ->
+            9;
+
+        october ->
+            10;
+
+        november ->
+            11;
+
+        december ->
+            12
+    end.
+
+-file("src/gleam/time/calendar.gleam", 158).
+?DOC(
+    " Returns the month for a given number, where January is 1 and December is 12.\n"
+    "\n"
+    " # Examples\n"
+    "\n"
+    " ```gleam\n"
+    " month_from_int(1)\n"
+    " // -> Ok(January)\n"
+    " ```\n"
+).
+-spec month_from_int(integer()) -> {ok, month()} | {error, nil}.
+month_from_int(Month) ->
+    case Month of
+        1 ->
+            {ok, january};
+
+        2 ->
+            {ok, february};
+
+        3 ->
+            {ok, march};
+
+        4 ->
+            {ok, april};
+
+        5 ->
+            {ok, may};
+
+        6 ->
+            {ok, june};
+
+        7 ->
+            {ok, july};
+
+        8 ->
+            {ok, august};
+
+        9 ->
+            {ok, september};
+
+        10 ->
+            {ok, october};
+
+        11 ->
+            {ok, november};
+
+        12 ->
+            {ok, december};
+
+        _ ->
+            {error, nil}
     end.

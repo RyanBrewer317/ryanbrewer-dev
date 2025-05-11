@@ -88,8 +88,8 @@ is_error(Result) ->
     " // -> Error(1)\n"
     " ```\n"
 ).
--spec map({ok, BWR} | {error, BWS}, fun((BWR) -> BWV)) -> {ok, BWV} |
-    {error, BWS}.
+-spec map({ok, BWQ} | {error, BWR}, fun((BWQ) -> BWU)) -> {ok, BWU} |
+    {error, BWR}.
 map(Result, Fun) ->
     case Result of
         {ok, X} ->
@@ -119,8 +119,8 @@ map(Result, Fun) ->
     " // -> Ok(1)\n"
     " ```\n"
 ).
--spec map_error({ok, BWY} | {error, BWZ}, fun((BWZ) -> BXC)) -> {ok, BWY} |
-    {error, BXC}.
+-spec map_error({ok, BWX} | {error, BWY}, fun((BWY) -> BXB)) -> {ok, BWX} |
+    {error, BXB}.
 map_error(Result, Fun) ->
     case Result of
         {ok, X} ->
@@ -151,8 +151,8 @@ map_error(Result, Fun) ->
     " // -> Error(Nil)\n"
     " ```\n"
 ).
--spec flatten({ok, {ok, BXF} | {error, BXG}} | {error, BXG}) -> {ok, BXF} |
-    {error, BXG}.
+-spec flatten({ok, {ok, BXE} | {error, BXF}} | {error, BXF}) -> {ok, BXE} |
+    {error, BXF}.
 flatten(Result) ->
     case Result of
         {ok, X} ->
@@ -195,9 +195,9 @@ flatten(Result) ->
     " // -> Error(Nil)\n"
     " ```\n"
 ).
--spec 'try'({ok, BXN} | {error, BXO}, fun((BXN) -> {ok, BXR} | {error, BXO})) -> {ok,
-        BXR} |
-    {error, BXO}.
+-spec 'try'({ok, BXM} | {error, BXN}, fun((BXM) -> {ok, BXQ} | {error, BXN})) -> {ok,
+        BXQ} |
+    {error, BXN}.
 'try'(Result, Fun) ->
     case Result of
         {ok, X} ->
@@ -209,9 +209,9 @@ flatten(Result) ->
 
 -file("src/gleam/result.gleam", 170).
 ?DOC(" An alias for `try`. See the documentation for that function for more information.\n").
--spec then({ok, BXW} | {error, BXX}, fun((BXW) -> {ok, BYA} | {error, BXX})) -> {ok,
-        BYA} |
-    {error, BXX}.
+-spec then({ok, BXV} | {error, BXW}, fun((BXV) -> {ok, BXZ} | {error, BXW})) -> {ok,
+        BXZ} |
+    {error, BXW}.
 then(Result, Fun) ->
     'try'(Result, Fun).
 
@@ -232,7 +232,7 @@ then(Result, Fun) ->
     " // -> 0\n"
     " ```\n"
 ).
--spec unwrap({ok, BYF} | {error, any()}, BYF) -> BYF.
+-spec unwrap({ok, BYE} | {error, any()}, BYE) -> BYE.
 unwrap(Result, Default) ->
     case Result of
         {ok, V} ->
@@ -259,7 +259,7 @@ unwrap(Result, Default) ->
     " // -> 0\n"
     " ```\n"
 ).
--spec lazy_unwrap({ok, BYJ} | {error, any()}, fun(() -> BYJ)) -> BYJ.
+-spec lazy_unwrap({ok, BYI} | {error, any()}, fun(() -> BYI)) -> BYI.
 lazy_unwrap(Result, Default) ->
     case Result of
         {ok, V} ->
@@ -286,7 +286,7 @@ lazy_unwrap(Result, Default) ->
     " // -> 0\n"
     " ```\n"
 ).
--spec unwrap_error({ok, any()} | {error, BYO}, BYO) -> BYO.
+-spec unwrap_error({ok, any()} | {error, BYN}, BYN) -> BYN.
 unwrap_error(Result, Default) ->
     case Result of
         {ok, _} ->
@@ -313,7 +313,7 @@ unwrap_error(Result, Default) ->
     " // -> 2\n"
     " ```\n"
 ).
--spec unwrap_both({ok, BYR} | {error, BYR}) -> BYR.
+-spec unwrap_both({ok, BYQ} | {error, BYQ}) -> BYQ.
 unwrap_both(Result) ->
     case Result of
         {ok, A} ->
@@ -349,8 +349,8 @@ unwrap_both(Result) ->
     " // -> Error(\"Error 2\")\n"
     " ```\n"
 ).
--spec 'or'({ok, BYU} | {error, BYV}, {ok, BYU} | {error, BYV}) -> {ok, BYU} |
-    {error, BYV}.
+-spec 'or'({ok, BYT} | {error, BYU}, {ok, BYT} | {error, BYU}) -> {ok, BYT} |
+    {error, BYU}.
 'or'(First, Second) ->
     case First of
         {ok, _} ->
@@ -388,9 +388,9 @@ unwrap_both(Result) ->
     " // -> Error(\"Error 2\")\n"
     " ```\n"
 ).
--spec lazy_or({ok, BZC} | {error, BZD}, fun(() -> {ok, BZC} | {error, BZD})) -> {ok,
-        BZC} |
-    {error, BZD}.
+-spec lazy_or({ok, BZB} | {error, BZC}, fun(() -> {ok, BZB} | {error, BZC})) -> {ok,
+        BZB} |
+    {error, BZC}.
 lazy_or(First, Second) ->
     case First of
         {ok, _} ->
@@ -418,13 +418,13 @@ lazy_or(First, Second) ->
     " // -> Error(\"e\")\n"
     " ```\n"
 ).
--spec all(list({ok, BZK} | {error, BZL})) -> {ok, list(BZK)} | {error, BZL}.
+-spec all(list({ok, BZJ} | {error, BZK})) -> {ok, list(BZJ)} | {error, BZK}.
 all(Results) ->
     gleam@list:try_map(Results, fun(X) -> X end).
 
 -file("src/gleam/result.gleam", 368).
--spec partition_loop(list({ok, BZZ} | {error, CAA}), list(BZZ), list(CAA)) -> {list(BZZ),
-    list(CAA)}.
+-spec partition_loop(list({ok, BZY} | {error, BZZ}), list(BZY), list(BZZ)) -> {list(BZY),
+    list(BZZ)}.
 partition_loop(Results, Oks, Errors) ->
     case Results of
         [] ->
@@ -451,7 +451,7 @@ partition_loop(Results, Oks, Errors) ->
     " // -> #([2, 1], [\"b\", \"a\"])\n"
     " ```\n"
 ).
--spec partition(list({ok, BZS} | {error, BZT})) -> {list(BZS), list(BZT)}.
+-spec partition(list({ok, BZR} | {error, BZS})) -> {list(BZR), list(BZS)}.
 partition(Results) ->
     partition_loop(Results, [], []).
 
@@ -471,7 +471,7 @@ partition(Results) ->
     " // -> Error(1)\n"
     " ```\n"
 ).
--spec replace({ok, any()} | {error, CAI}, CAL) -> {ok, CAL} | {error, CAI}.
+-spec replace({ok, any()} | {error, CAH}, CAK) -> {ok, CAK} | {error, CAH}.
 replace(Result, Value) ->
     case Result of
         {ok, _} ->
@@ -497,7 +497,7 @@ replace(Result, Value) ->
     " // -> Ok(1)\n"
     " ```\n"
 ).
--spec replace_error({ok, CAO} | {error, any()}, CAS) -> {ok, CAO} | {error, CAS}.
+-spec replace_error({ok, CAN} | {error, any()}, CAR) -> {ok, CAN} | {error, CAR}.
 replace_error(Result, Error) ->
     case Result of
         {ok, X} ->
@@ -518,7 +518,7 @@ replace_error(Result, Error) ->
     " // -> [1, 3]\n"
     " ```\n"
 ).
--spec values(list({ok, CAV} | {error, any()})) -> list(CAV).
+-spec values(list({ok, CAU} | {error, any()})) -> list(CAU).
 values(Results) ->
     gleam@list:filter_map(Results, fun(R) -> R end).
 
@@ -554,9 +554,9 @@ values(Results) ->
     " ```\n"
 ).
 -spec try_recover(
-    {ok, CBB} | {error, CBC},
-    fun((CBC) -> {ok, CBB} | {error, CBF})
-) -> {ok, CBB} | {error, CBF}.
+    {ok, CBA} | {error, CBB},
+    fun((CBB) -> {ok, CBA} | {error, CBE})
+) -> {ok, CBA} | {error, CBE}.
 try_recover(Result, Fun) ->
     case Result of
         {ok, Value} ->

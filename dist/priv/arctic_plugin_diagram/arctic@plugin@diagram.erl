@@ -3,13 +3,14 @@
 
 -export([parse/3]).
 
--spec parse(binary(), fun((WJT) -> integer()), fun((integer()) -> WJT)) -> fun((list(binary()), binary(), arctic@parse:parse_data(WJT)) -> {ok,
-        {lustre@internals@vdom:element(any()), WJT}} |
+-file("src/arctic/plugin/diagram.gleam", 12).
+-spec parse(binary(), fun((YWK) -> integer()), fun((integer()) -> YWK)) -> fun((list(binary()), binary(), arctic@parse:parse_data(YWK)) -> {ok,
+        {lustre@internals@vdom:element(any()), YWK}} |
     {error, snag:snag()}).
 parse(Dir, Get_id, To_state) ->
     fun(_, Body, Data) ->
         Counter = Get_id(arctic@parse:get_state(Data)),
-        _assert_subject = gleam@dict:get(
+        _assert_subject = gleam_stdlib:map_get(
             arctic@parse:get_metadata(Data),
             <<"id"/utf8>>
         ),
@@ -17,14 +18,14 @@ parse(Dir, Get_id, To_state) ->
             {ok, _} -> _assert_subject;
             _assert_fail ->
                 erlang:error(#{gleam_error => let_assert,
-                            message => <<"Assertion pattern match failed"/utf8>>,
+                            message => <<"Pattern match failed, no pattern matched the value."/utf8>>,
                             value => _assert_fail,
                             module => <<"arctic/plugin/diagram"/utf8>>,
                             function => <<"parse"/utf8>>,
                             line => 16})
         end,
         Img_filename = <<<<<<<<"image-"/utf8,
-                        (gleam@int:to_string(Counter))/binary>>/binary,
+                        (erlang:integer_to_binary(Counter))/binary>>/binary,
                     "-"/utf8>>/binary,
                 Id/binary>>/binary,
             ".svg"/utf8>>,
@@ -106,7 +107,7 @@ parse(Dir, Get_id, To_state) ->
                                             fun(Err@2) ->
                                                 snag:new(
                                                     <<<<<<"couldn't execute `pdflatex -interaction nonstopmode diagram.tex` in `diagram-work` (Code "/utf8,
-                                                                (gleam@int:to_string(
+                                                                (erlang:integer_to_binary(
                                                                     erlang:element(
                                                                         1,
                                                                         Err@2
@@ -145,7 +146,7 @@ parse(Dir, Get_id, To_state) ->
                                                                                         "/"/utf8>>/binary,
                                                                                     Img_filename/binary>>/binary,
                                                                                 " diagram.pdf` in `diagram-work` (Code "/utf8>>/binary,
-                                                                            (gleam@int:to_string(
+                                                                            (erlang:integer_to_binary(
                                                                                 erlang:element(
                                                                                     1,
                                                                                     Err@3

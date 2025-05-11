@@ -14,12 +14,27 @@ HTMLDocument.prototype.addEventListener = function(type, listener, options) {
     document.arctic_addEventListener(type, listener, options);
   } else document.arctic_addEventListener(type, listener, options);
 }
-       </script><div id="arctic-app"><div><div><title>Implicit Products: A Better Type-Theoretic &quot;Forall&quot; - Ryan Brewer</title><meta name="description" content="Implicit products are a fascinating approach to universal quantification in dependent type theory, as well as proof irrelevance/erasure in compiler implementation."><script type="text/javascript" async="true" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script><script>
+       </script><div id="arctic-app"><div><div><link rel="preload" as="image" href="/ryan-silly.jpg"><link rel="prefetch" href="/ryan-silly-2.png"><title>Implicit Products: A Better Type-Theoretic &quot;Forall&quot; - Ryan Brewer</title><meta name="description" content="Implicit products are a fascinating approach to universal quantification in dependent type theory, as well as proof irrelevance/erasure in compiler implementation."><script type="text/javascript" async="true" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script><script>
 window.MathJax = {
   loader: {load: ['[tex]/unicode','[tex]/bussproofs']},
   tex: {packages: {'[+]': ['unicode','bussproofs']}},
 };
-        </script><script>hljs.highlightAll();</script></div><nav id="nav"><div id="nav-dropdown" onclick="document.getElementById(&#39;nav&#39;).classList.toggle(&#39;dropdown&#39;);document.body.classList.toggle(&#39;noscroll&#39;);">☰</div><a href="/" id="nav-home" onclick="document.body.classList.remove(&#39;noscroll&#39;);">Ryan Brewer</a><a href="/posts" id="nav-posts" onclick="document.body.classList.remove(&#39;noscroll&#39;);">Posts</a><a href="/wiki" id="nav-wiki" onclick="document.body.classList.remove(&#39;noscroll&#39;);">Wiki</a><a href="/contact" id="nav-contact" onclick="document.body.classList.remove(&#39;noscroll&#39;);">Contact</a><a href="/demos" id="nav-demos" onclick="document.body.classList.remove(&#39;noscroll&#39;);">Demos</a><a href="/feed.rss" id="nav-subscribe" onclick="window.location.href = &#39;/feed.rss&#39;"><img src="/rss-icon.png" id="rss-subscribe-icon">Subscribe</a></nav><div id="body"><h1>Implicit Products: A Better Type-Theoretic &quot;Forall&quot;</h1><div class="date">December 10, 2023</div><p><span>In this post I&#39;ll talk about a type theory idea that deserves more attention: implicit products. They came about in the 1998 dissertation of Alexandre Miquel, but for English speakers a common citation would be <a href="https://www.semanticscholar.org/paper/The-Implicit-Calculus-of-Constructions-Extending-an-Miquel/990f8f44e011192122dfd35617f8cabf08052d60"><span>The Implicit Calculus of Constructions</span></a>. They are used most notably in the <a href="https://cedille.github.io/"><span>Cedille</span></a> proof assistant.
+        </script><script>hljs.highlightAll();</script></div><nav id="nav"><script>
+function click_nav_home_link() {
+  let p=new URL(location.href).pathname;
+  if(p=='/'){
+    document.getElementById('nav').classList.remove('dropdown');
+  }
+  document.body.classList.remove('noscroll');
+}
+function click_nav_link(route) {
+  let p=new URL(location.href).pathname;
+  if(p==route||p==route+'/'){
+    document.getElementById('nav').classList.remove('dropdown');
+  }
+  document.body.classList.remove('noscroll');
+}
+    </script><div id="nav-dropdown" onclick="document.getElementById(&#39;nav&#39;).classList.toggle(&#39;dropdown&#39;);document.body.classList.toggle(&#39;noscroll&#39;);">☰</div><a href="/" id="nav-home" onclick="click_nav_home_link()">Ryan Brewer</a><a href="/contact" id="nav-contact" onclick="click_nav_link(&#39;/contact&#39;)">Contact</a><a href="/demos" id="nav-demos" onclick="click_nav_link(&#39;/demos&#39;)">Demos</a><a href="/posts" id="nav-posts" onclick="click_nav_link(&#39;/posts&#39;)">Posts</a><a href="/projects" id="nav-projects" onclick="click_nav_link(&#39;/projects&#39;)">Projects</a></nav><div id="body"><h1>Implicit Products: A Better Type-Theoretic &quot;Forall&quot;</h1><div class="date">December 10, 2023</div><p><span>In this post I&#39;ll talk about a type theory idea that deserves more attention: implicit products. They came about in the 1998 dissertation of Alexandre Miquel, but for English speakers a common citation would be <a href="https://www.semanticscholar.org/paper/The-Implicit-Calculus-of-Constructions-Extending-an-Miquel/990f8f44e011192122dfd35617f8cabf08052d60"><span>The Implicit Calculus of Constructions</span></a>. They are used most notably in the <a href="https://cedille.github.io/"><span>Cedille</span></a> proof assistant.
 </span></p><p><span>This post assumes familiarity with logic (including the universal quantifer &quot;for all&quot;), <a href="/posts/logic-in-types.html"><span>dependent types</span></a>, very basic set theory, and the \(\lambda\)-calculus.
 </span></p><h3><span>What is it?
 </span></h3><p><span>For a moment, you&#39;ll have to ignore the strange name <i><span>implicit product.</span></i> It makes a lot of sense once you know how they&#39;re used, but I&#39;ll get to that later. Think of an implicit product like a universal quantifer (&quot;for all&quot;) in logic. It&#39;s written like:

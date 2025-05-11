@@ -1,0 +1,69 @@
+id: philosophy-useful
+title: Useless Philosophy that's Useful
+date: 2025-05-04
+tags: 
+blerb: 
+
+Alternative title: Do Women Exist? (lol)
+
+Here's a fun little post to get me back into writing, where I talk about two ideas from philosophy that are widely believed (among The People) to be totally useless: solipsism, and the Ship of Theseus. Along the way I'll touch on what apples are, to prove that I'm a classic useless philosopher. Then I hope to show you how I actually use these ideas in understanding the political reality in the US, and why they're much more useful than we tend to give them credit for.
+
+### Solipsism
+
+Solipsism is the idea that you don't know anything exists besides yourself. For example, maybe your vision isn't coming from your eyes, but instead some part of your imagination? And the same for your physical touch, your taste, your hearing, etc. It's actually very challenging to prove that this *isn't* the case. Our entire experience of the world for our entire life has come from these sensors. 
+
+It's a bit like a general, who must make decisions based on the reports of their scouts and lieutenants. These scouts and lieutenants can conspire together to lie about the state of the war, and the general has to just trust them blindly, because they're the source of all the general's information. 
+
+Our "scouts" are our senses, and we have no way to factcheck them; we trust them blindly. When our eyes lie, perhaps due to optical illusions or hallucinogenic drugs, we can't just "look again but better" to fact check these faulty reports. In fact it's a bit annoying, in my experience, because when we know our eyes are lying, we basically can't see, and we have to wait for that to pass.
+
+But if our senses conspire together, and have been conspiring for our entire life, we really *couldn't* know that they were lying. So maybe the whole physical world, our understanding of our physical body, and everybody we've ever met is all a lie. Maybe *I* don't exist, and your mind is just conjuring this article itself as you read! In philosophy, this concept is called Solipsism.
+
+Solipsism has a bit of a reputation for being useless, because it's one of those things that might make you go "woah" and then continue on with your life unaffected. If the outside world really doesn't exist, then so what? There would be nothing *wrong* with continuing to live your life as you do, when it's all imagined activity. And if the world *does* exist, then of *course* it would be best to continue living your life as you do. The best use for solipsism people can seem to find is as a way to repress their stress, a reminder that there's a real chance none of this matters anyway. But let's be honest, that's true whether or not the world exists. And no one we'd think of as mentally healthy seems to actually believe that everyone around them is a figment of their imagination.
+
+### The Ship of Theseus
+
+Imagine a ship is sailing on an extremely long voyage. Over time, as it stops at various islands, damaged parts of the ship are replaced. When it finally returns home, not a single piece of the original ship is still there. Every plank of wood, every piece of rope, ever part of the sail; it's all new materials.
+
+The fun question for (nerdy) parties is, is this still the same ship from the start of the journey? It's got none of the physical pieces, so an immediate answer seems to be "no," but then at which point did it stop being the same ship? When it lost the last original piece? When it lost 50% of its original pieces?
+
+People generally seem to decide that there are lots of reasonable answers, none better or worse than the others, and move on with their life. No one cares, let's face it, whether or not it's the same ship, or when it changes. It almost feels like a debate about coffee vs. tea, or picking a favorite sports team.
+
+### Approaching Useful
+
+One thing people don't generally realize is that the Ship of Theseus is describing a whole category of similar questions. For example, it's surprisingly difficult to say what the difference between species is. It isn't actually about reproduction, though that's a common rule of thumb. Let's say there's a common ancestor for apples and pears: over time, a big enough difference appeared between fruits of this species that we'd categorize them into two broad groups and call them apples and pears respectively. When exactly did this happen? How different did they have to get before they were different species? (I don't actually know the genealogy of apples and pears, but I hope the example makes sense.) It's maybe easier to see how this would come up with, say, dog breeds.
+
+We can't actually define apples. Using careful cross-pollination and surgery, we can always produce edge cases where reasonable people will disagree on whether or not it's an apple. The Ship of Theseus is a nice illustration of the messy gradient between various classifications of objects.
+
+In the past few years there's been a very famous Ship of Theseus in the zeitgeist: the notorious question "what is a woman?" Particularly in its context, a discussion of transgender women. People change themselves to widely-varying degrees and say they are women, leading some (politically-motivated) groups to ask exactly how much do you need to actually be a woman.
+
+This leads us to realize that, even though we struggle to define all sorts of concepts we use in our daily vocabulary, it's actually useful, no, *crucial* to be able to define them. All the laws and services that manifest our basic human rights depend on being able to define all sorts of everyday notions in a satisfactory and fine-grained way.
+
+### Using Solipsism
+
+Solipsism's biggest use in my life is reminding me that everything I know comes from the reports of my senses. I was not born knowing what apples are. I *saw* a bunch of them, *experienced* them, and heard authority figures in my life talk about them. Moreover, apples, rocks, trees, the sky, all *didn't exist* until humans invented them. If the world doesn't exist then this is literal, and if it does then they were all just bunches of matter before we decided to divide them up into "distinct" groupings like this.
+
+Apples might not exist at all, but I have a set of experiences from my senses (trustworthy or not) that fully encapsulate what I call an apple. "Apples" as a concept are about remembering these experiences, and basing my expectations and planning upon them. If there is no external world, it's obvious that this is the entirety of "being an apple." Therefore, "being an apple" is a definition that must allow for the possibility that apples are just a social/mental construct. Indeed, we can quickly make the notion of apple (as a God-given category of thing) fall apart, and I'll explore this more below.
+
+This solipsism-inspired perspective answers that the Ship of Theseus is the same *to its crew,* but different *to those in its homeland,* if they can no longer recognize it. The crew experienced it during every slight replacement, and could easily say that that slight change didn't make it a new boat. Without those experiences, the people in the homeland see one massive change, and ask "why are you in a different boat?"
+
+Basically, *there is no such thing as an object.* By "object" I mean things, people, artwork, shadows, anything that *feels* like a single continuous thing in our vision. There are always obvious cases where we can all agree, "there's a dog in front of us right now." But if we go the popular route, of science, we'd say that everything is made of the same stuff, elementary particles or whatever. There are practically unlimited possible combinations, some of which  (so we're told) are apples, or dogs. But how many atoms need to change in an apple before it's not an apple? We'll never find an answer everyone agrees with.
+
+Objects are a *human invention,* and a very flimsy one at that. It's a concept that falls apart quickly under any scrutiny. How damaged does an object need to be before it's a different object? At the atomic level, there's not much difference between apples and apple slices, even if we can easily distinguish them. But honestly, *can* we easily distinguish apples from apple slices? If I cut a little bit out of an apple, is that a (damaged) apple and an apple slice? Or is that two apple slices? How big does the piece need to be before it's two apple slices, instead of an apple with a bit cut out and an apple slice.
+
+Objects are patterns, drawn from all of our personal experiences from birth up to the present moment. We use them to categorize our new experiences as we encounter them, but it's *never* a perfect fit. 
+
+### When Objects Are Needed
+
+We categorize people this way. I don't want to say "as objects," but I don't mean "object" in that kind of way. We divide people into races and genders, among many other identities, but there's no philosophical weight to the way we do this. We can determine if someone is a guy or a gal in a way that appears objective, because everyone will agree without needing to be told the answer. But that's only for certain "obvious" cases, and thinking about edge cases reveals that there's nothing objective about this at all, it's entirely *subjective.* Whether or not someone is a woman to you is based entirely on your experiences of people who seem similar in someway, and everyone has different life experiences.
+
+The takeaway from all this is not that you can tell someone if they're a woman "to you" or not. It's to reveal that these concepts have no divine/natural weight behind them. When a trans woman makes an effort to "be a woman" to those around her, it's to take care of herself and get much needed support and the social treatment she needs. Obviously it makes no sense to talk about "all trans women," but their reasons for trying to "pass" are often body dysmorphia or fear of ostracization and physical brutality from the people living around them. These are serious causes for concern for their wellbeing. Because these are all made-up and logically-incoherent notions, telling a woman that they aren't a woman "to you" is just needlessly hurtful. You haven't experienced women like her yet, so what? Your situation still comes down to the decision to either treat her how she wants or not. Your life experiences aren't actually so important as to justify being hurtful to some random stranger. Womanhood isn't God-given, it's created in our daily social practice, and it's subjective, so it's completely up to us. And so there's good, *logical* reason for letting people *be women* just because they say they are.
+
+Similarly, (with still too much generalization) the desire of American black people to identify with "being black" is a result of wanting solidarity and community in a country that, every generation, demonstrates its desires to inflict brutal physical harm to them. There is a unique flavor of pain in the community that is only accessible to them, and "colorblindness" has ultimately done more to remove the unique support they need than to heal anything. As with the term "woman," "black" has become a tool of empowerment and self-advocacy, pushing back on violence.
+
+Defining "needing help" is hopeless. Wealthy people work with lawyers and lobbyists to position themselves into special cases where they don't officially have much money or property even as they live in luxury. Meanwhile, many people genuinely struggling find themselves in random circumstances that make them ineligible for government support. Foodbanks often don't do this, and will give free food to anyone who comes to take it. This isn't very exploited; the people who need it use it, and the people who don't need it generally don't use it. Government programs, on the other hand, often rely very heavily on trying to define the need for aid, and constantly reveal themselves to be easily manipulated. I desperately want to destigmatize going to foodbanks for support (and donating when possible), instead of classifying people as "rich" and "poor" in ultimately arbitrary ways. And to move to a system that doesn't define "people who need help," so that the main people who benefit aren't just those who can afford legal advice. I love the foodbank model of aid, and hope we can drastically expand it in scale and scope to help many more people.
+
+### Conclusion
+
+All of these political notions, which are inherently fairly deconstructionist, are well-explained by the philosophical framework we've developed throughout this post. Who knew that the Ship of Theseus and solipsism would actually be relevant to real-world issues? Studying objects and identity (even the identity of apples!) has political implications. This is one of my favorite parts of philosophy, which I'll expand on more in the future.
+
+I should give the necessary disclaimer: I'm not a woman, nor black. I don't particularly need support to get by. I don't want any of this to be interpreted as including myself in those struggles, but I do think that systemic oppression can't be solved with only the (disenfranchised!) political power of the *victims.* I don't expect to change the minds of women or black people, who know their situation much better than I do. But I think I should be pretty effective at changing the minds of white men like me. White men who, no matter what, are necessary for bringing about systemic change. I hope the inevitable mis-presentations I make here can be forgiven, and I hope to keep this post up-to-date as I learn more. Reach out to correct me!

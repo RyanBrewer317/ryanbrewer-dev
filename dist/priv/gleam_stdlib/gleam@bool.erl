@@ -299,7 +299,7 @@ to_string(Bool) ->
     " // -> \"Hello, Kamaka\"\n"
     " ```\n"
 ).
--spec guard(boolean(), BUT, fun(() -> BUT)) -> BUT.
+-spec guard(boolean(), BUS, fun(() -> BUS)) -> BUS.
 guard(Requirement, Consequence, Alternative) ->
     case Requirement of
         true ->
@@ -341,7 +341,7 @@ guard(Requirement, Consequence, Alternative) ->
     " // -> \"Welcome, User 54\"\n"
     " ```\n"
 ).
--spec lazy_guard(boolean(), fun(() -> BUU), fun(() -> BUU)) -> BUU.
+-spec lazy_guard(boolean(), fun(() -> BUT), fun(() -> BUT)) -> BUT.
 lazy_guard(Requirement, Consequence, Alternative) ->
     case Requirement of
         true ->

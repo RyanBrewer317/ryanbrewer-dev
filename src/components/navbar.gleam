@@ -47,22 +47,6 @@ function click_nav_link(route) {
     ),
     html.a(
       [
-        attribute.href("/posts"),
-        attribute.id("nav-posts"),
-        attribute("onclick", "click_nav_link('/posts')"),
-      ],
-      [text("Posts")],
-    ),
-    html.a(
-      [
-        attribute.href("/wiki"),
-        attribute.id("nav-wiki"),
-        attribute("onclick", "click_nav_link('/wiki')"),
-      ],
-      [text("Wiki")],
-    ),
-    html.a(
-      [
         attribute.href("/contact"),
         attribute.id("nav-contact"),
         attribute("onclick", "click_nav_link('/contact')"),
@@ -79,17 +63,19 @@ function click_nav_link(route) {
     ),
     html.a(
       [
-        attribute.href("/feed.rss"),
-        attribute.id("nav-subscribe"),
-        attribute.attribute("onclick", "window.location.href = '/feed.rss'"),
+        attribute.href("/posts"),
+        attribute.id("nav-posts"),
+        attribute("onclick", "click_nav_link('/posts')"),
       ],
+      [text("Posts")],
+    ),
+    html.a(
       [
-        html.img([
-          attribute.src("/rss-icon.png"),
-          attribute.id("rss-subscribe-icon"),
-        ]),
-        text("Subscribe"),
+        attribute.href("/projects"),
+        attribute.id("nav-projects"),
+        attribute("onclick", "click_nav_link('/projects')"),
       ],
+      [text("Projects")],
     ),
   ])
 }

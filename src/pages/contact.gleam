@@ -15,7 +15,7 @@ pub fn contact() -> Element(Nil) {
     navbar(),
     html.div([attribute.id("body")], [
       html.div([attribute.id("contact-img")], [
-        html.img([attribute.src("/ryan-silly-2.png"), attribute.width(340)]),
+        html.img([attribute.src("/ryan-silly.jpg"), attribute.height(273)]),
       ]),
       html.h3([], [text("Ryan Brewer.")]),
       html.p([], [

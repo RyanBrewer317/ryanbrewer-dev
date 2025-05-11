@@ -274,8 +274,8 @@
 
 -type decode_error() :: {decode_error, binary(), binary(), list(binary())}.
 
--opaque decoder(DMN) :: {decoder,
-        fun((gleam@dynamic:dynamic_()) -> {DMN, list(decode_error())})}.
+-opaque decoder(DMM) :: {decoder,
+        fun((gleam@dynamic:dynamic_()) -> {DMM, list(decode_error())})}.
 
 -file("src/gleam/dynamic/decode.gleam", 348).
 ?DOC(
@@ -294,7 +294,7 @@
     " decode.run(data, decoder)\n"
     " ```\n"
 ).
--spec run(gleam@dynamic:dynamic_(), decoder(DMV)) -> {ok, DMV} |
+-spec run(gleam@dynamic:dynamic_(), decoder(DMU)) -> {ok, DMU} |
     {error, list(decode_error())}.
 run(Data, Decoder) ->
     {Maybe_invalid_data, Errors} = (erlang:element(2, Decoder))(Data),
@@ -328,17 +328,17 @@ run(Data, Decoder) ->
     " assert result == Ok(SignUp(name: \"Lucy\", email: \"lucy@example.com\"))\n"
     " ```\n"
 ).
--spec success(DNW) -> decoder(DNW).
+-spec success(DNV) -> decoder(DNV).
 success(Data) ->
     {decoder, fun(_) -> {Data, []} end}.
 
--file("src/gleam/dynamic/decode.gleam", 708).
+-file("src/gleam/dynamic/decode.gleam", 709).
 -spec decode_dynamic(gleam@dynamic:dynamic_()) -> {gleam@dynamic:dynamic_(),
     list(decode_error())}.
 decode_dynamic(Data) ->
     {Data, []}.
 
--file("src/gleam/dynamic/decode.gleam", 862).
+-file("src/gleam/dynamic/decode.gleam", 863).
 ?DOC(
     " Apply a transformation function to any value decoded by the decoder.\n"
     "\n"
@@ -350,7 +350,7 @@ decode_dynamic(Data) ->
     " assert result == Ok(\"1000\")\n"
     " ```\n"
 ).
--spec map(decoder(DQT), fun((DQT) -> DQV)) -> decoder(DQV).
+-spec map(decoder(DQS), fun((DQS) -> DQU)) -> decoder(DQU).
 map(Decoder, Transformer) ->
     {decoder,
         fun(D) ->
@@ -358,12 +358,12 @@ map(Decoder, Transformer) ->
             {Transformer(Data), Errors}
         end}.
 
--file("src/gleam/dynamic/decode.gleam", 871).
+-file("src/gleam/dynamic/decode.gleam", 872).
 ?DOC(" Apply a transformation function to any errors returned by the decoder.\n").
 -spec map_errors(
-    decoder(DQX),
+    decoder(DQW),
     fun((list(decode_error())) -> list(decode_error()))
-) -> decoder(DQX).
+) -> decoder(DQW).
 map_errors(Decoder, Transformer) ->
     {decoder,
         fun(D) ->
@@ -371,13 +371,13 @@ map_errors(Decoder, Transformer) ->
             {Data, Transformer(Errors)}
         end}.
 
--file("src/gleam/dynamic/decode.gleam", 909).
+-file("src/gleam/dynamic/decode.gleam", 910).
 ?DOC(
     " Create a new decoder based upon the value of a previous decoder.\n"
     "\n"
     " This may be useful to run one previous decoder to use in further decoding.\n"
 ).
--spec then(decoder(DRF), fun((DRF) -> decoder(DRH))) -> decoder(DRH).
+-spec then(decoder(DRE), fun((DRE) -> decoder(DRG))) -> decoder(DRG).
 then(Decoder, Next) ->
     {decoder,
         fun(Dynamic_data) ->
@@ -393,12 +393,12 @@ then(Decoder, Next) ->
             end
         end}.
 
--file("src/gleam/dynamic/decode.gleam", 952).
+-file("src/gleam/dynamic/decode.gleam", 953).
 -spec run_decoders(
     gleam@dynamic:dynamic_(),
-    {DRP, list(decode_error())},
-    list(decoder(DRP))
-) -> {DRP, list(decode_error())}.
+    {DRO, list(decode_error())},
+    list(decoder(DRO))
+) -> {DRO, list(decode_error())}.
 run_decoders(Data, Failure, Decoders) ->
     case Decoders of
         [] ->
@@ -415,7 +415,7 @@ run_decoders(Data, Failure, Decoders) ->
             end
     end.
 
--file("src/gleam/dynamic/decode.gleam", 939).
+-file("src/gleam/dynamic/decode.gleam", 940).
 ?DOC(
     " Create a new decoder from several other decoders. Each of the inner\n"
     " decoders is run in turn, and the value from the first to succeed is used.\n"
@@ -435,7 +435,7 @@ run_decoders(Data, Failure, Decoders) ->
     " // -> Ok(\"1000\")\n"
     " ```\n"
 ).
--spec one_of(decoder(DRK), list(decoder(DRK))) -> decoder(DRK).
+-spec one_of(decoder(DRJ), list(decoder(DRJ))) -> decoder(DRJ).
 one_of(First, Alternatives) ->
     {decoder,
         fun(Dynamic_data) ->
@@ -449,7 +449,7 @@ one_of(First, Alternatives) ->
             end
         end}.
 
--file("src/gleam/dynamic/decode.gleam", 1035).
+-file("src/gleam/dynamic/decode.gleam", 1036).
 ?DOC(
     " Create a decoder that can refer to itself, useful for decoding deeply\n"
     " nested data.\n"
@@ -472,7 +472,7 @@ one_of(First, Alternatives) ->
     " }\n"
     " ```\n"
 ).
--spec recursive(fun(() -> decoder(DSA))) -> decoder(DSA).
+-spec recursive(fun(() -> decoder(DRZ))) -> decoder(DRZ).
 recursive(Inner) ->
     {decoder,
         fun(Data) ->
@@ -480,7 +480,7 @@ recursive(Inner) ->
             (erlang:element(2, Decoder))(Data)
         end}.
 
--file("src/gleam/dynamic/decode.gleam", 840).
+-file("src/gleam/dynamic/decode.gleam", 841).
 ?DOC(
     " A decoder that decodes nullable values of a type decoded by with a given\n"
     " decoder.\n"
@@ -501,7 +501,7 @@ recursive(Inner) ->
     " assert result == Ok(option.None)\n"
     " ```\n"
 ).
--spec optional(decoder(DQP)) -> decoder(gleam@option:option(DQP)).
+-spec optional(decoder(DQO)) -> decoder(gleam@option:option(DQO)).
 optional(Inner) ->
     {decoder, fun(Data) -> case gleam_stdlib_decode_ffi:is_null(Data) of
                 true ->
@@ -518,12 +518,12 @@ optional(Inner) ->
 decode_error(Expected, Found) ->
     [{decode_error, Expected, gleam_stdlib:classify_dynamic(Found), []}].
 
--file("src/gleam/dynamic/decode.gleam", 599).
+-file("src/gleam/dynamic/decode.gleam", 600).
 -spec run_dynamic_function(
     gleam@dynamic:dynamic_(),
     binary(),
-    fun((gleam@dynamic:dynamic_()) -> {ok, DOQ} | {error, DOQ})
-) -> {DOQ, list(decode_error())}.
+    fun((gleam@dynamic:dynamic_()) -> {ok, DOP} | {error, DOP})
+) -> {DOP, list(decode_error())}.
 run_dynamic_function(Data, Name, F) ->
     case F(Data) of
         {ok, Data@1} ->
@@ -534,7 +534,7 @@ run_dynamic_function(Data, Name, F) ->
                 [{decode_error, Name, gleam_stdlib:classify_dynamic(Data), []}]}
     end.
 
--file("src/gleam/dynamic/decode.gleam", 648).
+-file("src/gleam/dynamic/decode.gleam", 649).
 -spec decode_bool(gleam@dynamic:dynamic_()) -> {boolean(), list(decode_error())}.
 decode_bool(Data) ->
     case gleam_stdlib:identity(true) =:= Data of
@@ -551,7 +551,7 @@ decode_bool(Data) ->
             end
     end.
 
--file("src/gleam/dynamic/decode.gleam", 670).
+-file("src/gleam/dynamic/decode.gleam", 671).
 -spec decode_int(gleam@dynamic:dynamic_()) -> {integer(), list(decode_error())}.
 decode_int(Data) ->
     run_dynamic_function(
@@ -560,7 +560,7 @@ decode_int(Data) ->
         fun gleam_stdlib_decode_ffi:int/1
     ).
 
--file("src/gleam/dynamic/decode.gleam", 689).
+-file("src/gleam/dynamic/decode.gleam", 690).
 -spec decode_float(gleam@dynamic:dynamic_()) -> {float(), list(decode_error())}.
 decode_float(Data) ->
     run_dynamic_function(
@@ -569,7 +569,7 @@ decode_float(Data) ->
         fun gleam_stdlib_decode_ffi:float/1
     ).
 
--file("src/gleam/dynamic/decode.gleam", 723).
+-file("src/gleam/dynamic/decode.gleam", 724).
 -spec decode_bit_array(gleam@dynamic:dynamic_()) -> {bitstring(),
     list(decode_error())}.
 decode_bit_array(Data) ->
@@ -579,7 +579,7 @@ decode_bit_array(Data) ->
         fun gleam_stdlib_decode_ffi:bit_array/1
     ).
 
--file("src/gleam/dynamic/decode.gleam", 895).
+-file("src/gleam/dynamic/decode.gleam", 896).
 ?DOC(
     " Replace all errors produced by a decoder with one single error for a named\n"
     " expected type.\n"
@@ -595,7 +595,7 @@ decode_bit_array(Data) ->
     " assert result == Error([DecodeError(\"MyThing\", \"Int\", [])])\n"
     " ```\n"
 ).
--spec collapse_errors(decoder(DRC), binary()) -> decoder(DRC).
+-spec collapse_errors(decoder(DRB), binary()) -> decoder(DRB).
 collapse_errors(Decoder, Name) ->
     {decoder,
         fun(Dynamic_data) ->
@@ -609,16 +609,16 @@ collapse_errors(Decoder, Name) ->
             end
         end}.
 
--file("src/gleam/dynamic/decode.gleam", 973).
+-file("src/gleam/dynamic/decode.gleam", 974).
 ?DOC(
     " Define a decoder that always fails. The parameter for this function is the\n"
     " name of the type that has failed to decode.\n"
 ).
--spec failure(DRU, binary()) -> decoder(DRU).
+-spec failure(DRT, binary()) -> decoder(DRT).
 failure(Zero, Expected) ->
     {decoder, fun(D) -> {Zero, decode_error(Expected, D)} end}.
 
--file("src/gleam/dynamic/decode.gleam", 1002).
+-file("src/gleam/dynamic/decode.gleam", 1003).
 ?DOC(
     " Create a decoder for a new data type from a decoding function.\n"
     "\n"
@@ -647,8 +647,8 @@ failure(Zero, Expected) ->
 ).
 -spec new_primitive_decoder(
     binary(),
-    fun((gleam@dynamic:dynamic_()) -> {ok, DRW} | {error, DRW})
-) -> decoder(DRW).
+    fun((gleam@dynamic:dynamic_()) -> {ok, DRV} | {error, DRV})
+) -> decoder(DRV).
 new_primitive_decoder(Name, Decoding_function) ->
     {decoder, fun(D) -> case Decoding_function(D) of
                 {ok, T} ->
@@ -662,7 +662,7 @@ new_primitive_decoder(Name, Decoding_function) ->
                                 []}]}
             end end}.
 
--file("src/gleam/dynamic/decode.gleam", 626).
+-file("src/gleam/dynamic/decode.gleam", 627).
 -spec dynamic_string(gleam@dynamic:dynamic_()) -> {ok, binary()} |
     {error, binary()}.
 dynamic_string(Data) ->
@@ -680,20 +680,20 @@ dynamic_string(Data) ->
             {error, <<""/utf8>>}
     end.
 
--file("src/gleam/dynamic/decode.gleam", 621).
+-file("src/gleam/dynamic/decode.gleam", 622).
 -spec decode_string(gleam@dynamic:dynamic_()) -> {binary(),
     list(decode_error())}.
 decode_string(Data) ->
     run_dynamic_function(Data, <<"String"/utf8>>, fun dynamic_string/1).
 
--file("src/gleam/dynamic/decode.gleam", 794).
+-file("src/gleam/dynamic/decode.gleam", 795).
 -spec fold_dict(
-    {gleam@dict:dict(DQB, DQC), list(decode_error())},
+    {gleam@dict:dict(DQA, DQB), list(decode_error())},
     gleam@dynamic:dynamic_(),
     gleam@dynamic:dynamic_(),
-    fun((gleam@dynamic:dynamic_()) -> {DQB, list(decode_error())}),
-    fun((gleam@dynamic:dynamic_()) -> {DQC, list(decode_error())})
-) -> {gleam@dict:dict(DQB, DQC), list(decode_error())}.
+    fun((gleam@dynamic:dynamic_()) -> {DQA, list(decode_error())}),
+    fun((gleam@dynamic:dynamic_()) -> {DQB, list(decode_error())})
+) -> {gleam@dict:dict(DQA, DQB), list(decode_error())}.
 fold_dict(Acc, Key, Value, Key_decoder, Value_decoder) ->
     case Key_decoder(Key) of
         {Key@1, []} ->
@@ -714,7 +714,7 @@ fold_dict(Acc, Key, Value, Key_decoder, Value_decoder) ->
             push_path({maps:new(), Errors@1}, [<<"keys"/utf8>>])
     end.
 
--file("src/gleam/dynamic/decode.gleam", 774).
+-file("src/gleam/dynamic/decode.gleam", 775).
 ?DOC(
     " A decoder that decodes dicts where all keys and vales are decoded with\n"
     " given decoders.\n"
@@ -732,7 +732,7 @@ fold_dict(Acc, Key, Value, Key_decoder, Value_decoder) ->
     " assert result == Ok(values)\n"
     " ```\n"
 ).
--spec dict(decoder(DPU), decoder(DPW)) -> decoder(gleam@dict:dict(DPU, DPW)).
+-spec dict(decoder(DPT), decoder(DPV)) -> decoder(gleam@dict:dict(DPT, DPV)).
 dict(Key, Value) ->
     {decoder, fun(Data) -> case gleam_stdlib_decode_ffi:dict(Data) of
                 {error, _} ->
@@ -758,7 +758,7 @@ dict(Key, Value) ->
                     )
             end end}.
 
--file("src/gleam/dynamic/decode.gleam", 742).
+-file("src/gleam/dynamic/decode.gleam", 743).
 ?DOC(
     " A decoder that decodes lists where all elements are decoded with a given\n"
     " decoder.\n"
@@ -771,7 +771,7 @@ dict(Key, Value) ->
     " assert result == Ok([1, 2, 3])\n"
     " ```\n"
 ).
--spec list(decoder(DPI)) -> decoder(list(DPI)).
+-spec list(decoder(DPH)) -> decoder(list(DPH)).
 list(Inner) ->
     {decoder,
         fun(Data) ->
@@ -785,7 +785,7 @@ list(Inner) ->
         end}.
 
 -file("src/gleam/dynamic/decode.gleam", 430).
--spec push_path({DNR, list(decode_error())}, list(any())) -> {DNR,
+-spec push_path({DNQ, list(decode_error())}, list(any())) -> {DNQ,
     list(decode_error())}.
 push_path(Layer, Path) ->
     Decoder = one_of(
@@ -822,12 +822,12 @@ push_path(Layer, Path) ->
 
 -file("src/gleam/dynamic/decode.gleam", 395).
 -spec index(
-    list(DNF),
-    list(DNF),
-    fun((gleam@dynamic:dynamic_()) -> {DNI, list(decode_error())}),
+    list(DNE),
+    list(DNE),
+    fun((gleam@dynamic:dynamic_()) -> {DNH, list(decode_error())}),
     gleam@dynamic:dynamic_(),
-    fun((gleam@dynamic:dynamic_(), list(DNF)) -> {DNI, list(decode_error())})
-) -> {DNI, list(decode_error())}.
+    fun((gleam@dynamic:dynamic_(), list(DNE)) -> {DNH, list(decode_error())})
+) -> {DNH, list(decode_error())}.
 index(Path, Position, Inner, Data, Handle_miss) ->
     case Path of
         [] ->
@@ -881,7 +881,7 @@ index(Path, Position, Inner, Data, Handle_miss) ->
     " assert result == Ok(SignUp(name: \"Lucy\", email: \"lucy@example.com\"))\n"
     " ```\n"
 ).
--spec subfield(list(any()), decoder(DMQ), fun((DMQ) -> decoder(DMS))) -> decoder(DMS).
+-spec subfield(list(any()), decoder(DMP), fun((DMP) -> decoder(DMR))) -> decoder(DMR).
 subfield(Field_path, Field_decoder, Next) ->
     {decoder,
         fun(Data) ->
@@ -935,7 +935,7 @@ subfield(Field_path, Field_decoder, Next) ->
     " // -> Ok(option.None)\n"
     " ```\n"
 ).
--spec at(list(any()), decoder(DNC)) -> decoder(DNC).
+-spec at(list(any()), decoder(DNB)) -> decoder(DNB).
 at(Path, Inner) ->
     {decoder,
         fun(Data) ->
@@ -990,7 +990,7 @@ at(Path, Inner) ->
     " If you wish to return a default in the event that a field is not present,\n"
     " see [`optional_field`](#optional_field) and / [`optionally_at`](#optionally_at).\n"
 ).
--spec field(any(), decoder(DOA), fun((DOA) -> decoder(DOC))) -> decoder(DOC).
+-spec field(any(), decoder(DNZ), fun((DNZ) -> decoder(DOB))) -> decoder(DOB).
 field(Field_name, Field_decoder, Next) ->
     subfield([Field_name], Field_decoder, Next).
 
@@ -1021,30 +1021,32 @@ field(Field_name, Field_decoder, Next) ->
     " assert result == Ok(SignUp(name: \"Lucy\", email: \"n/a\"))\n"
     " ```\n"
 ).
--spec optional_field(any(), DOG, decoder(DOG), fun((DOG) -> decoder(DOI))) -> decoder(DOI).
+-spec optional_field(any(), DOF, decoder(DOF), fun((DOF) -> decoder(DOH))) -> decoder(DOH).
 optional_field(Key, Default, Field_decoder, Next) ->
     {decoder,
         fun(Data) ->
-            {Out, Errors1} = case gleam_stdlib_decode_ffi:index(Data, Key) of
-                {ok, {some, Data@1}} ->
-                    (erlang:element(2, Field_decoder))(Data@1);
+            {Out, Errors1} = begin
+                _pipe = case gleam_stdlib_decode_ffi:index(Data, Key) of
+                    {ok, {some, Data@1}} ->
+                        (erlang:element(2, Field_decoder))(Data@1);
 
-                {ok, none} ->
-                    {Default, []};
+                    {ok, none} ->
+                        {Default, []};
 
-                {error, Kind} ->
-                    _pipe = {Default,
-                        [{decode_error,
-                                Kind,
-                                gleam_stdlib:classify_dynamic(Data),
-                                []}]},
-                    push_path(_pipe, [Key])
+                    {error, Kind} ->
+                        {Default,
+                            [{decode_error,
+                                    Kind,
+                                    gleam_stdlib:classify_dynamic(Data),
+                                    []}]}
+                end,
+                push_path(_pipe, [Key])
             end,
             {Out@1, Errors2} = (erlang:element(2, Next(Out)))(Data),
             {Out@1, lists:append(Errors1, Errors2)}
         end}.
 
--file("src/gleam/dynamic/decode.gleam", 589).
+-file("src/gleam/dynamic/decode.gleam", 590).
 ?DOC(
     " A decoder that decodes a value that is nested within other values. For\n"
     " example, decoding a value that is within some deeply nested JSON objects.\n"
@@ -1067,7 +1069,7 @@ optional_field(Key, Default, Field_decoder, Next) ->
     " // -> Ok(100)\n"
     " ```\n"
 ).
--spec optionally_at(list(any()), DON, decoder(DON)) -> decoder(DON).
+-spec optionally_at(list(any()), DOM, decoder(DOM)) -> decoder(DOM).
 optionally_at(Path, Default, Inner) ->
     {decoder,
         fun(Data) ->

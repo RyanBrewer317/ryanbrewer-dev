@@ -1,0 +1,19 @@
+id: cricket
+title: The Cricket Language
+tags: programming,language,tech,announce,announcement,cricket,untyped,gradual,gradually,gradually-typed,dynamically,dynamically-typed,dynamic,type,typed,types,object,objects,object-oriented,oriented,immutable
+blerb: Cricket is a lazy gradually-typed functional language with objects. It's very tiny but very expressive; anyone can implement it themselves!
+
+Cricket is a tiny little functional language. It can be implemented very quickly on various platforms. Cricket is lazy, specifically call-by-name. Side effects are done with explicitly-forced evaluation. Cricket is dynamically typed, and uses objects or lambdas for data. Cricket objects can refer to themselves in their methods, enabling much of OOP. Cricket is immutable, with object updates returning new objects.
+
+Cricket is designed such that ordinary programmers who aren't much into the academic theory behind functional programming can still find it easy and intuitive. No monads, for one. However, if you like the confidence in your code that comes with such solid theoretical foundations, rest assured that Cricket is inspired by fascinating categorical [connections](https://ncatlab.org/nlab/show/polarity+in+type+theory). The keywords are call-by-name, negative types, and side effects.
+
+@code(plaintext)
+let iter = {
+  this.go: args->{
+    val: args.start, 
+    next: this.go{start: args.step(args.start), step: args.step}
+  }
+} in 
+console.write(iter.go{start: 7, step: n->n-1}.next.next.val)
+
+To read more about Cricket, look [here](https://github.com/RyanBrewer317/cricket_rs).

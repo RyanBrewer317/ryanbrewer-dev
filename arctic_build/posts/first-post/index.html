@@ -14,12 +14,27 @@ HTMLDocument.prototype.addEventListener = function(type, listener, options) {
     document.arctic_addEventListener(type, listener, options);
   } else document.arctic_addEventListener(type, listener, options);
 }
-       </script><div id="arctic-app"><div><div><title>My First Blog Post - Ryan Brewer</title><meta name="description" content="A test post for the blog."><script type="text/javascript" async="true" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script><script>
+       </script><div id="arctic-app"><div><div><link rel="preload" as="image" href="/ryan-silly.jpg"><link rel="prefetch" href="/ryan-silly-2.png"><title>My First Blog Post - Ryan Brewer</title><meta name="description" content="A test post for the blog."><script type="text/javascript" async="true" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script><script>
 window.MathJax = {
   loader: {load: ['[tex]/unicode','[tex]/bussproofs']},
   tex: {packages: {'[+]': ['unicode','bussproofs']}},
 };
-        </script><script>hljs.highlightAll();</script></div><nav id="nav"><div id="nav-dropdown" onclick="document.getElementById(&#39;nav&#39;).classList.toggle(&#39;dropdown&#39;);document.body.classList.toggle(&#39;noscroll&#39;);">☰</div><a href="/" id="nav-home" onclick="document.body.classList.remove(&#39;noscroll&#39;);">Ryan Brewer</a><a href="/posts" id="nav-posts" onclick="document.body.classList.remove(&#39;noscroll&#39;);">Posts</a><a href="/wiki" id="nav-wiki" onclick="document.body.classList.remove(&#39;noscroll&#39;);">Wiki</a><a href="/contact" id="nav-contact" onclick="document.body.classList.remove(&#39;noscroll&#39;);">Contact</a><a href="/demos" id="nav-demos" onclick="document.body.classList.remove(&#39;noscroll&#39;);">Demos</a><a href="/feed.rss" id="nav-subscribe" onclick="window.location.href = &#39;/feed.rss&#39;"><img src="/rss-icon.png" id="rss-subscribe-icon">Subscribe</a></nav><div id="body"><h1>My First Blog Post</h1><div class="date">November 16, 2023</div><p><span>This is my first blog post! It&#39;s mostly to test out the codebase.
+        </script><script>hljs.highlightAll();</script></div><nav id="nav"><script>
+function click_nav_home_link() {
+  let p=new URL(location.href).pathname;
+  if(p=='/'){
+    document.getElementById('nav').classList.remove('dropdown');
+  }
+  document.body.classList.remove('noscroll');
+}
+function click_nav_link(route) {
+  let p=new URL(location.href).pathname;
+  if(p==route||p==route+'/'){
+    document.getElementById('nav').classList.remove('dropdown');
+  }
+  document.body.classList.remove('noscroll');
+}
+    </script><div id="nav-dropdown" onclick="document.getElementById(&#39;nav&#39;).classList.toggle(&#39;dropdown&#39;);document.body.classList.toggle(&#39;noscroll&#39;);">☰</div><a href="/" id="nav-home" onclick="click_nav_home_link()">Ryan Brewer</a><a href="/contact" id="nav-contact" onclick="click_nav_link(&#39;/contact&#39;)">Contact</a><a href="/demos" id="nav-demos" onclick="click_nav_link(&#39;/demos&#39;)">Demos</a><a href="/posts" id="nav-posts" onclick="click_nav_link(&#39;/posts&#39;)">Posts</a><a href="/projects" id="nav-projects" onclick="click_nav_link(&#39;/projects&#39;)">Projects</a></nav><div id="body"><h1>My First Blog Post</h1><div class="date">November 16, 2023</div><p><span>This is my first blog post! It&#39;s mostly to test out the codebase.
 </span></p><p><span>This project is using a few neat tools together. The code for the home page is written in gleam (compiled to javascript). Blog posts like these are written in text files in a custom format. A build step uses Lustre and Vite to parse the files, produce html files, and bundle the site for deployment. All the code can be found on <a href="https://github.com/RyanBrewer317/ryanbrewer-dev"><span>my github</span></a>. 
 </span></p><p><span>The styles on this site are a work in progress. <code><span>code</span></code>, <i><span>italics</span></i>, \*escaping, <a href="https://ryanbrewer.dev"><span>links</span></a>, \(math+2^2\).
 </span></p><div class="math-block">\[A^1 math_2 block^3!

@@ -62,3 +62,22 @@ export function wiki(cw) {
     ]),
   );
 }
+
+export function project(cp) {
+  let p = $arctic.to_dummy_page(cp);
+  return $html.li(
+    toList([$attribute.class$("project-thumbnail"), $attribute.id(p.id)]),
+    toList([
+      $html.h3(
+        toList([]),
+        toList([
+          $html.a(
+            toList([$attribute.href("../projects/" + p.id)]),
+            toList([text(p.title)]),
+          ),
+        ]),
+      ),
+      $html.p(toList([]), toList([text(p.blerb)])),
+    ]),
+  );
+}

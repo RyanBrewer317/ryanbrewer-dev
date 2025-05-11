@@ -3,6 +3,7 @@ import * as $list from "../../gleam_stdlib/gleam/list.mjs";
 import * as $attribute from "../../lustre/lustre/attribute.mjs";
 import { attribute } from "../../lustre/lustre/attribute.mjs";
 import * as $element from "../../lustre/lustre/element.mjs";
+import { text } from "../../lustre/lustre/element.mjs";
 import * as $html from "../../lustre/lustre/element/html.mjs";
 import * as $head from "../components/head.mjs";
 import * as $navbar from "../components/navbar.mjs";
@@ -45,6 +46,25 @@ export function list_posts(posts) {
         toList([$attribute.id("body")]),
         toList([
           searchbox(),
+          $html.a(
+            toList([
+              $attribute.href("/feed.rss"),
+              $attribute.id("subscribe-tech-blog"),
+              $attribute.attribute(
+                "onclick",
+                "window.location.href = '/feed.rss'",
+              ),
+            ]),
+            toList([
+              $html.img(
+                toList([
+                  $attribute.src("/rss-icon.png"),
+                  $attribute.id("rss-subscribe-icon"),
+                ]),
+              ),
+              text("Subscribe"),
+            ]),
+          ),
           $html.ul(
             toList([$attribute.id("search-posts-menu")]),
             $list.map(posts, $thumbnail.post),

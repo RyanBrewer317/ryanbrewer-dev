@@ -934,7 +934,7 @@ to_string(Uri) ->
         {_, _, _} ->
             Parts@4
     end,
-    gleam@string:concat(Parts@5).
+    erlang:list_to_binary(Parts@5).
 
 -file("src/gleam/uri.gleam", 680).
 ?DOC(
@@ -959,16 +959,16 @@ origin(Uri) ->
     {uri, Scheme, _, Host, Port, _, _, _} = Uri,
     case {Host, Scheme} of
         {{some, H}, {some, <<"https"/utf8>>}} when Port =:= {some, 443} ->
-            {ok, gleam@string:concat([<<"https://"/utf8>>, H])};
+            {ok, erlang:list_to_binary([<<"https://"/utf8>>, H])};
 
         {{some, H@1}, {some, <<"http"/utf8>>}} when Port =:= {some, 80} ->
-            {ok, gleam@string:concat([<<"http://"/utf8>>, H@1])};
+            {ok, erlang:list_to_binary([<<"http://"/utf8>>, H@1])};
 
         {{some, H@2}, {some, S}} when (S =:= <<"http"/utf8>>) orelse (S =:= <<"https"/utf8>>) ->
             case Port of
                 {some, P} ->
                     {ok,
-                        gleam@string:concat(
+                        erlang:list_to_binary(
                             [S,
                                 <<"://"/utf8>>,
                                 H@2,
@@ -977,7 +977,7 @@ origin(Uri) ->
                         )};
 
                 none ->
-                    {ok, gleam@string:concat([S, <<"://"/utf8>>, H@2])}
+                    {ok, erlang:list_to_binary([S, <<"://"/utf8>>, H@2])}
             end;
 
         {_, _} ->
@@ -985,7 +985,7 @@ origin(Uri) ->
     end.
 
 -file("src/gleam/uri.gleam", 759).
--spec drop_last(list(ELP)) -> list(ELP).
+-spec drop_last(list(ELO)) -> list(ELO).
 drop_last(Elements) ->
     gleam@list:take(Elements, erlang:length(Elements) - 1).
 

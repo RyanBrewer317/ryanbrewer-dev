@@ -25,3 +25,13 @@ pub fn wiki(cw: CacheablePage) -> Element(Nil) {
     html.h3([], [html.a([attribute.href("../wiki/" <> w.id)], [text(w.title)])]),
   ])
 }
+
+pub fn project(cp: CacheablePage) -> Element(a) {
+  let p = arctic.to_dummy_page(cp)
+  html.li([attribute.class("project-thumbnail"), attribute.id(p.id)], [
+    html.h3([], [
+      html.a([attribute.href("../projects/" <> p.id)], [text(p.title)]),
+    ]),
+    html.p([], [text(p.blerb)]),
+  ])
+}

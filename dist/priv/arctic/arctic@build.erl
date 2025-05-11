@@ -519,11 +519,11 @@ function find_a(target) {
 
 -file("src/arctic/build.gleam", 438).
 -spec add_route(
-    lustre@ssg:config(any(), WPW, WPX),
+    lustre@ssg:config(any(), WRQ, WRR),
     arctic:config(),
     binary(),
     lustre@internals@vdom:element(nil)
-) -> lustre@ssg:config(lustre@ssg:has_static_routes(), WPW, WPX).
+) -> lustre@ssg:config(lustre@ssg:has_static_routes(), WRQ, WRR).
 add_route(Ssg_config, Config, Path, Content) ->
     case erlang:element(5, Config) of
         {some, Frame} ->
@@ -813,8 +813,8 @@ add_public(K) ->
 
 -file("src/arctic/build.gleam", 519).
 -spec option_to_result_nil(
-    gleam@option:option(WIC),
-    fun((WIC) -> {ok, nil} | {error, snag:snag()})
+    gleam@option:option(WJW),
+    fun((WJW) -> {ok, nil} | {error, snag:snag()})
 ) -> {ok, nil} | {error, snag:snag()}.
 option_to_result_nil(Opt, F) ->
     case Opt of

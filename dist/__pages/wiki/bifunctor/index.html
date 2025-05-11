@@ -1,10 +1,25 @@
 <!doctype html>
-<div><div><title>Bifunctor - Ryan Brewer</title><meta name="description" content><script type="text/javascript" async="true" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script><script>
+<div><div><link rel="preload" as="image" href="/ryan-silly.jpg"><link rel="prefetch" href="/ryan-silly-2.png"><title>Bifunctor - Ryan Brewer</title><meta name="description" content><script type="text/javascript" async="true" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script><script>
 window.MathJax = {
   loader: {load: ['[tex]/unicode','[tex]/bussproofs']},
   tex: {packages: {'[+]': ['unicode','bussproofs']}},
 };
-        </script><script>hljs.highlightAll();</script></div><nav id="nav"><div id="nav-dropdown" onclick="document.getElementById(&#39;nav&#39;).classList.toggle(&#39;dropdown&#39;);document.body.classList.toggle(&#39;noscroll&#39;);">☰</div><a href="/" id="nav-home" onclick="document.body.classList.remove(&#39;noscroll&#39;);">Ryan Brewer</a><a href="/posts" id="nav-posts" onclick="document.body.classList.remove(&#39;noscroll&#39;);">Posts</a><a href="/wiki" id="nav-wiki" onclick="document.body.classList.remove(&#39;noscroll&#39;);">Wiki</a><a href="/contact" id="nav-contact" onclick="document.body.classList.remove(&#39;noscroll&#39;);">Contact</a><a href="/demos" id="nav-demos" onclick="document.body.classList.remove(&#39;noscroll&#39;);">Demos</a><a href="/feed.rss" id="nav-subscribe" onclick="window.location.href = &#39;/feed.rss&#39;"><img src="/rss-icon.png" id="rss-subscribe-icon">Subscribe</a></nav><div id="body"><h1>Bifunctor</h1><p><span>A bifunctor is a <a href="/wiki/functor"><span>functor</span></a> from a <a href="/wiki/product-category"><span>product category</span></a> to another <a href="/wiki/category"><span>category</span></a>. This is useful because it gives a notion of two-argument functor (hence the name).
+        </script><script>hljs.highlightAll();</script></div><nav id="nav"><script>
+function click_nav_home_link() {
+  let p=new URL(location.href).pathname;
+  if(p=='/'){
+    document.getElementById('nav').classList.remove('dropdown');
+  }
+  document.body.classList.remove('noscroll');
+}
+function click_nav_link(route) {
+  let p=new URL(location.href).pathname;
+  if(p==route||p==route+'/'){
+    document.getElementById('nav').classList.remove('dropdown');
+  }
+  document.body.classList.remove('noscroll');
+}
+    </script><div id="nav-dropdown" onclick="document.getElementById(&#39;nav&#39;).classList.toggle(&#39;dropdown&#39;);document.body.classList.toggle(&#39;noscroll&#39;);">☰</div><a href="/" id="nav-home" onclick="click_nav_home_link()">Ryan Brewer</a><a href="/contact" id="nav-contact" onclick="click_nav_link(&#39;/contact&#39;)">Contact</a><a href="/demos" id="nav-demos" onclick="click_nav_link(&#39;/demos&#39;)">Demos</a><a href="/posts" id="nav-posts" onclick="click_nav_link(&#39;/posts&#39;)">Posts</a><a href="/projects" id="nav-projects" onclick="click_nav_link(&#39;/projects&#39;)">Projects</a></nav><div id="body"><h1>Bifunctor</h1><p><span>A bifunctor is a <a href="/wiki/functor"><span>functor</span></a> from a <a href="/wiki/product-category"><span>product category</span></a> to another <a href="/wiki/category"><span>category</span></a>. This is useful because it gives a notion of two-argument functor (hence the name).
 </span></p><p><span>The definition and laws can be derived from the definition of a functor and a product category, but the main points are that the condition of &quot;functoriality&quot; becomes a condition of &quot;bifunctoriality:&quot; Given two product-category morphisms \(h, k\) and \(f, g\), bifunctoriality of a bifunctor \(F\) states that \(F((h, k)\circ(f, g))=F(h\circ f, k\circ g)\). This really is just functoriality, specialized to the case of a product category in the domain of the functor.
 </span></p><p><span>The most important bifunctors to be aware of are those formed by <a href="/wiki/monoidal-category"><span>monoidal products</span></a>. The cartesian product \(A\times B\) gives a bifunctor \(-\times-\) from \(C\times C\) to \(C\) for any cartesian category \(C\). Other monoidal products \(\otimes\) in monoidal categories give bifunctors \(-\otimes-\) from \(C\times C\) to \(C\) for any monoidal category \(C\). This includes the coproduct \(-+-\).
 </span></p><p><span>No, the very notion of a product category \(C\times D\) does not give a bifunctor from \(\texttt{Cat}\times\texttt{Cat}\) to <a href="/wiki/cat"><span>\(\texttt{Cat}\)</span></a>, at least not in the way we&#39;ve defined it so far. This is because we&#39;re thinking of functors as arrows in \(\texttt{Cat}\), which doesn&#39;t contain itself, and because we&#39;re thinking of product categories as the cartesian product in \(\texttt{Cat}\), which doesn&#39;t contain itself. So we&#39;d need to lift all of these definitions up a level if we want to talk about \(\texttt{Cat}\times\texttt{Cat}\) as a category, and \(\texttt{Cat}\times\texttt{Cat}\to\texttt{Cat}\) as a functor. However, this lifting is so routine and unproblematic that we generally ignore it, and happily talk about bifunctors from \(\texttt{Cat}\times\texttt{Cat}\) to \(\texttt{Cat}\). 

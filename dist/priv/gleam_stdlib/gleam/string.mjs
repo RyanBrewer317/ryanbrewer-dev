@@ -22,7 +22,6 @@ import {
   starts_with,
   ends_with,
   split_once,
-  join,
   trim_start,
   trim_end,
   pop_grapheme,
@@ -41,7 +40,6 @@ export {
   crop,
   ends_with,
   from_utf_codepoints,
-  join,
   length,
   lowercase,
   pop_grapheme,
@@ -120,16 +118,26 @@ export function drop_end(string, num_graphemes) {
 }
 
 export function append(first, second) {
-  let _pipe = first;
-  let _pipe$1 = $string_tree.from_string(_pipe);
-  let _pipe$2 = $string_tree.append(_pipe$1, second);
-  return $string_tree.to_string(_pipe$2);
+  return first + second;
+}
+
+function concat_loop(loop$strings, loop$accumulator) {
+  while (true) {
+    let strings = loop$strings;
+    let accumulator = loop$accumulator;
+    if (strings.atLeastLength(1)) {
+      let string = strings.head;
+      let strings$1 = strings.tail;
+      loop$strings = strings$1;
+      loop$accumulator = accumulator + string;
+    } else {
+      return accumulator;
+    }
+  }
 }
 
 export function concat(strings) {
-  let _pipe = strings;
-  let _pipe$1 = $string_tree.from_strings(_pipe);
-  return $string_tree.to_string(_pipe$1);
+  return concat_loop(strings, "");
 }
 
 function repeat_loop(loop$string, loop$times, loop$acc) {
@@ -150,6 +158,33 @@ function repeat_loop(loop$string, loop$times, loop$acc) {
 
 export function repeat(string, times) {
   return repeat_loop(string, times, "");
+}
+
+function join_loop(loop$strings, loop$separator, loop$accumulator) {
+  while (true) {
+    let strings = loop$strings;
+    let separator = loop$separator;
+    let accumulator = loop$accumulator;
+    if (strings.hasLength(0)) {
+      return accumulator;
+    } else {
+      let string = strings.head;
+      let strings$1 = strings.tail;
+      loop$strings = strings$1;
+      loop$separator = separator;
+      loop$accumulator = (accumulator + separator) + string;
+    }
+  }
+}
+
+export function join(strings, separator) {
+  if (strings.hasLength(0)) {
+    return "";
+  } else {
+    let first$1 = strings.head;
+    let rest = strings.tail;
+    return join_loop(rest, separator, first$1);
+  }
 }
 
 function padding(size, pad_string) {

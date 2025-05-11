@@ -1,8 +1,8 @@
 -module(gleam@time@duration).
 -compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch]).
 
--export([compare/2, difference/2, add/2, to_iso8601_string/1, seconds/1, milliseconds/1, nanoseconds/1, to_seconds/1, to_seconds_and_nanoseconds/1]).
--export_type([duration/0]).
+-export([approximate/1, compare/2, difference/2, add/2, to_iso8601_string/1, seconds/1, minutes/1, hours/1, milliseconds/1, nanoseconds/1, to_seconds/1, to_seconds_and_nanoseconds/1]).
+-export_type([duration/0, unit/0]).
 
 -if(?OTP_RELEASE >= 27).
 -define(MODULEDOC(Str), -moduledoc(Str)).
@@ -14,7 +14,18 @@
 
 -opaque duration() :: {duration, integer(), integer()}.
 
--file("src/gleam/time/duration.gleam", 33).
+-type unit() :: nanosecond |
+    microsecond |
+    millisecond |
+    second |
+    minute |
+    hour |
+    day |
+    week |
+    month |
+    year.
+
+-file("src/gleam/time/duration.gleam", 109).
 ?DOC(
     " Ensure the duration is represented with `nanoseconds` being positive and\n"
     " less than 1 second.\n"
@@ -42,7 +53,105 @@ normalise(Duration) ->
             {duration, Seconds - 1, Multiplier + Nanoseconds}
     end.
 
--file("src/gleam/time/duration.gleam", 63).
+-file("src/gleam/time/duration.gleam", 75).
+?DOC(
+    " Convert a duration to a number of the largest number of a unit, serving as\n"
+    " a rough description of the duration that a human can understand.\n"
+    "\n"
+    " The size used for each unit are described in the documentation for the\n"
+    " `Unit` type.\n"
+    "\n"
+    " ```gleam\n"
+    " seconds(125)\n"
+    " |> approximate\n"
+    " // -> #(2, Minute)\n"
+    " ```\n"
+    "\n"
+    " This function rounds _towards zero_. This means that if a duration is just\n"
+    " short of 2 days then it will approximate to 1 day.\n"
+    "\n"
+    " ```gleam\n"
+    " hours(47)\n"
+    " |> approximate\n"
+    " // -> #(1, Day)\n"
+    " ```\n"
+).
+-spec approximate(duration()) -> {integer(), unit()}.
+approximate(Duration) ->
+    {duration, S, Ns} = Duration,
+    Minute = 60,
+    Hour = Minute * 60,
+    Day = Hour * 24,
+    Week = Day * 7,
+    Year = (Day * 365) + (Hour * 6),
+    Month = Year div 12,
+    Microsecond = 1000,
+    Millisecond = Microsecond * 1000,
+    case nil of
+        _ when S < 0 ->
+            {Amount, Unit} = begin
+                _pipe = {duration, - S, - Ns},
+                _pipe@1 = normalise(_pipe),
+                approximate(_pipe@1)
+            end,
+            {- Amount, Unit};
+
+        _ when S >= Year ->
+            {case Year of
+                    0 -> 0;
+                    Gleam@denominator -> S div Gleam@denominator
+                end, year};
+
+        _ when S >= Month ->
+            {case Month of
+                    0 -> 0;
+                    Gleam@denominator@1 -> S div Gleam@denominator@1
+                end, month};
+
+        _ when S >= Week ->
+            {case Week of
+                    0 -> 0;
+                    Gleam@denominator@2 -> S div Gleam@denominator@2
+                end, week};
+
+        _ when S >= Day ->
+            {case Day of
+                    0 -> 0;
+                    Gleam@denominator@3 -> S div Gleam@denominator@3
+                end, day};
+
+        _ when S >= Hour ->
+            {case Hour of
+                    0 -> 0;
+                    Gleam@denominator@4 -> S div Gleam@denominator@4
+                end, hour};
+
+        _ when S >= Minute ->
+            {case Minute of
+                    0 -> 0;
+                    Gleam@denominator@5 -> S div Gleam@denominator@5
+                end, minute};
+
+        _ when S > 0 ->
+            {S, second};
+
+        _ when Ns >= Millisecond ->
+            {case Millisecond of
+                    0 -> 0;
+                    Gleam@denominator@6 -> Ns div Gleam@denominator@6
+                end, millisecond};
+
+        _ when Ns >= Microsecond ->
+            {case Microsecond of
+                    0 -> 0;
+                    Gleam@denominator@7 -> Ns div Gleam@denominator@7
+                end, microsecond};
+
+        _ ->
+            {Ns, nanosecond}
+    end.
+
+-file("src/gleam/time/duration.gleam", 139).
 ?DOC(
     " Compare one duration to another, indicating whether the first spans a\n"
     " larger amount of time (and so is greater) or smaller amount of time (and so\n"
@@ -78,7 +187,7 @@ compare(Left, Right) ->
     _pipe = gleam@int:compare(Ls, Rs),
     gleam@order:break_tie(_pipe, gleam@int:compare(Lns, Rns)).
 
--file("src/gleam/time/duration.gleam", 87).
+-file("src/gleam/time/duration.gleam", 163).
 ?DOC(
     " Calculate the difference between two durations.\n"
     "\n"
@@ -98,7 +207,7 @@ difference(Left, Right) ->
         erlang:element(3, Right) - erlang:element(3, Left)},
     normalise(_pipe).
 
--file("src/gleam/time/duration.gleam", 101).
+-file("src/gleam/time/duration.gleam", 177).
 ?DOC(
     " Add two durations together.\n"
     "\n"
@@ -116,7 +225,7 @@ add(Left, Right) ->
         erlang:element(3, Left) + erlang:element(3, Right)},
     normalise(_pipe).
 
--file("src/gleam/time/duration.gleam", 147).
+-file("src/gleam/time/duration.gleam", 223).
 -spec nanosecond_digits(integer(), integer(), binary()) -> binary().
 nanosecond_digits(N, Position, Acc) ->
     case Position of
@@ -131,7 +240,7 @@ nanosecond_digits(N, Position, Acc) ->
             nanosecond_digits(N div 10, Position + 1, Acc@1)
     end.
 
--file("src/gleam/time/duration.gleam", 115).
+-file("src/gleam/time/duration.gleam", 191).
 ?DOC(
     " Convert the duration to an [ISO8601][1] formatted duration string.\n"
     "\n"
@@ -190,13 +299,25 @@ to_iso8601_string(Duration) ->
                 "S"/utf8>>
     end.
 
--file("src/gleam/time/duration.gleam", 161).
+-file("src/gleam/time/duration.gleam", 237).
 ?DOC(" Create a duration of a number of seconds.\n").
 -spec seconds(integer()) -> duration().
 seconds(Amount) ->
     {duration, Amount, 0}.
 
--file("src/gleam/time/duration.gleam", 166).
+-file("src/gleam/time/duration.gleam", 242).
+?DOC(" Create a duration of a number of minutes.\n").
+-spec minutes(integer()) -> duration().
+minutes(Amount) ->
+    seconds(Amount * 60).
+
+-file("src/gleam/time/duration.gleam", 247).
+?DOC(" Create a duration of a number of hours.\n").
+-spec hours(integer()) -> duration().
+hours(Amount) ->
+    seconds((Amount * 60) * 60).
+
+-file("src/gleam/time/duration.gleam", 252).
 ?DOC(" Create a duration of a number of milliseconds.\n").
 -spec milliseconds(integer()) -> duration().
 milliseconds(Amount) ->
@@ -204,9 +325,10 @@ milliseconds(Amount) ->
     Overflow = Amount - Remainder,
     Nanoseconds = Remainder * 1000000,
     Seconds = Overflow div 1000,
-    {duration, Seconds, Nanoseconds}.
+    _pipe = {duration, Seconds, Nanoseconds},
+    normalise(_pipe).
 
--file("src/gleam/time/duration.gleam", 184).
+-file("src/gleam/time/duration.gleam", 271).
 ?DOC(
     " Create a duration of a number of nanoseconds.\n"
     "\n"
@@ -223,7 +345,7 @@ nanoseconds(Amount) ->
     _pipe = {duration, 0, Amount},
     normalise(_pipe).
 
--file("src/gleam/time/duration.gleam", 194).
+-file("src/gleam/time/duration.gleam", 281).
 ?DOC(
     " Convert the duration to a number of seconds.\n"
     "\n"
@@ -236,7 +358,7 @@ to_seconds(Duration) ->
     Nanoseconds = erlang:float(erlang:element(3, Duration)),
     Seconds + (Nanoseconds / 1000000000.0).
 
--file("src/gleam/time/duration.gleam", 203).
+-file("src/gleam/time/duration.gleam", 290).
 ?DOC(
     " Convert the duration to a number of seconds and nanoseconds. There is no\n"
     " loss of precision with this conversion on any target.\n"

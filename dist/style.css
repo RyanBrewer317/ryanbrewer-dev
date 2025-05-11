@@ -1,7 +1,7 @@
 :root {
   --primary-color: rgb(240, 92, 7);
-  --dark-background: rgb(21, 17, 15);
-  --secondary-color-dark: rgb(240, 235, 235);
+  --dark-background: rgb(38, 24, 41);
+  --secondary-color-dark: rgb(219, 197, 177);
   --light-background: white;
   --secondary-color-light: black;
   --font: Lato, sans-serif;
@@ -35,6 +35,11 @@ h3 {
   margin-bottom: -1pt;
 }
 
+#subscribe-tech-blog {
+  margin: 12px;
+  display: inline-block;
+}
+
 nav {
   padding: 10pt;
   color: var(--secondary-color-dark);
@@ -45,14 +50,13 @@ nav {
   height: 17pt;
 }
 
-#nav-posts, #nav-wiki, #nav-subscribe, #nav-contact, #nav-demos {
+#nav-posts, #nav-projects, #nav-contact, #nav-demos {
   float: right;
   margin-left: 15pt;
 }
 
 nav.dropdown #nav-posts, 
-nav.dropdown #nav-wiki,
-nav.dropdown #nav-subscribe, 
+nav.dropdown #nav-projects,
 nav.dropdown #nav-contact, 
 nav.dropdown #nav-demos {
   float: unset;
@@ -87,7 +91,6 @@ code {
 code::-webkit-scrollbar { /* Chrome, Safari */
   display: none;
 }
-
 
 #body {
   padding: 12pt;
@@ -131,13 +134,13 @@ a:hover {
   transition: 0.2s;
 }
 
-textarea:focus, input:focus, #search-posts:focus, #search-wiki:focus {
+textarea:focus, input:focus, #search-posts:focus, #search-projects:focus {
   outline: none;
   border: 1px solid var(--secondary-color-dark);
   border-radius: 5pt;
 }
 
-#search-posts, #search-wiki {
+#search-posts, #search-projects {
   width: 100%;
   font-size: 18px;
   padding: 11px;
@@ -223,14 +226,17 @@ textarea:focus, input:focus, #search-posts:focus, #search-wiki:focus {
 }
 
 #homepage-img {
-  margin-right: 30pt;
-  height: 454px;
+  padding-top: 10pt;
+  text-align: center;
 }
 
-@media (min-width: 400pt) {
-  #homepage-img {
-    float: left;
-  }
+#homepage-img img {
+  height: 300px;
+}
+
+#homepage-flags {
+  font-size: 30pt;
+  text-align: center;
 }
 
 #contact-img {
@@ -287,48 +293,8 @@ textarea:focus, input:focus, #search-posts:focus, #search-wiki:focus {
   #nav-dropdown { 
     display: inline-block; 
   }
-  #sprites {
-    display: none;
-  }
-}
-
-#sprite-1, #sprite-2 {
-  background: var(--primary-color);
-  position: absolute;
-  width: 15pt;
-  height: 15pt;
-  transition: top 350ms, left 350ms;
-}
-
-#sprite-1 {
-  animation-duration: 3s;
-  animation-iteration-count: infinite;
-  animation-direction: alternate;
-  animation-name: vwoop;
-}
-
-@keyframes vwoop {
-  from {
-    transform: rotate(0);
-  }
-  to {
-    transform: rotate(1turn);
-  }
-}
-
-#sprite-2 {
-  animation-duration: 4s;
-  animation-iteration-count: infinite;
-  animation-direction: alternate;
-  animation-name: vwoop2;
-  bottom: 10pt;
-}
-
-@keyframes vwoop2 {
-  from {
-    transform: rotate(0);
-  }
-  to {
-    transform: rotate(-1turn);
+  #homepage-img img {
+    width: 270px;
+    height: fit-content;
   }
 }

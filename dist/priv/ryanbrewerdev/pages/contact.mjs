@@ -23,8 +23,8 @@ export function contact() {
             toList([
               $html.img(
                 toList([
-                  $attribute.src("/ryan-silly-2.png"),
-                  $attribute.width(340),
+                  $attribute.src("/ryan-silly.jpg"),
+                  $attribute.height(273),
                 ]),
               ),
             ]),

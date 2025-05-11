@@ -24,7 +24,7 @@
     no_tty |
     {report, {report_module_name(), list(gleeunit_progress_option())}}.
 
--file("/Users/louis/src/gleam/gleeunit/src/gleeunit.gleam", 36).
+-file("src/gleeunit.gleam", 36).
 -spec gleam_to_erlang_module_name(binary()) -> binary().
 gleam_to_erlang_module_name(Path) ->
     _pipe = Path,
@@ -32,7 +32,7 @@ gleam_to_erlang_module_name(Path) ->
     _pipe@2 = gleam@string:replace(_pipe@1, <<".erl"/utf8>>, <<""/utf8>>),
     gleam@string:replace(_pipe@2, <<"/"/utf8>>, <<"@"/utf8>>).
 
--file("/Users/louis/src/gleam/gleeunit/src/gleeunit.gleam", 17).
+-file("src/gleeunit.gleam", 17).
 -spec do_main() -> nil.
 do_main() ->
     Options = [verbose,
@@ -59,7 +59,7 @@ do_main() ->
     end,
     erlang:halt(Code).
 
--file("/Users/louis/src/gleam/gleeunit/src/gleeunit.gleam", 12).
+-file("src/gleeunit.gleam", 12).
 ?DOC(
     " Find and run all test functions for the current project using Erlang's EUnit\n"
     " test framework.\n"

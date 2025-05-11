@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en"><head><script async="true" src="https://www.googletagmanager.com/gtag/js?id=G-BDZJ8SX3Y1"></script><script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+        </script><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><link rel="icon" type="image/x-icon" href="/favicon.ico"><link rel="alternate" type="application/rss+xml" title="Ryan Brewer&#39;s Blog" href="https://ryanbrewer.dev/feed.rss"><script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css"><script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script><link rel="stylesheet" href="/style.css"></head><body><div><script>
+var _ARCTIC_C;
+if (typeof HTMLDocument === 'undefined') HTMLDocument = Document;
+let arctic_dom_content_loaded_listeners = [];
+HTMLDocument.prototype.arctic_addEventListener = HTMLDocument.prototype.addEventListener;
+HTMLDocument.prototype.addEventListener = function(type, listener, options) {
+  if (type === 'DOMContentLoaded') {
+    arctic_dom_content_loaded_listeners.push(listener);
+    document.arctic_addEventListener(type, listener, options);
+  } else document.arctic_addEventListener(type, listener, options);
+}
+       </script><div id="arctic-app"><div><div><link rel="preload" as="image" href="/ryan-silly.jpg"><link rel="prefetch" href="/ryan-silly-2.png"><title>The Cricket Language - Ryan Brewer</title><meta name="description" content="Cricket is a lazy gradually-typed functional language with objects. It&#39;s very tiny but very expressive; anyone can implement it themselves!"><script type="text/javascript" async="true" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script><script>
+window.MathJax = {
+  loader: {load: ['[tex]/unicode','[tex]/bussproofs']},
+  tex: {packages: {'[+]': ['unicode','bussproofs']}},
+};
+        </script><script>hljs.highlightAll();</script></div><nav id="nav"><script>
+function click_nav_home_link() {
+  let p=new URL(location.href).pathname;
+  if(p=='/'){
+    document.getElementById('nav').classList.remove('dropdown');
+  }
+  document.body.classList.remove('noscroll');
+}
+function click_nav_link(route) {
+  let p=new URL(location.href).pathname;
+  if(p==route||p==route+'/'){
+    document.getElementById('nav').classList.remove('dropdown');
+  }
+  document.body.classList.remove('noscroll');
+}
+    </script><div id="nav-dropdown" onclick="document.getElementById(&#39;nav&#39;).classList.toggle(&#39;dropdown&#39;);document.body.classList.toggle(&#39;noscroll&#39;);">☰</div><a href="/" id="nav-home" onclick="click_nav_home_link()">Ryan Brewer</a><a href="/contact" id="nav-contact" onclick="click_nav_link(&#39;/contact&#39;)">Contact</a><a href="/demos" id="nav-demos" onclick="click_nav_link(&#39;/demos&#39;)">Demos</a><a href="/posts" id="nav-posts" onclick="click_nav_link(&#39;/posts&#39;)">Posts</a><a href="/projects" id="nav-projects" onclick="click_nav_link(&#39;/projects&#39;)">Projects</a></nav><div id="body"><h1>The Cricket Language</h1><p><span>Cricket is a tiny little functional language. It can be implemented very quickly on various platforms. Cricket is lazy, specifically call-by-name. Side effects are done with explicitly-forced evaluation. Cricket is dynamically typed, and uses objects or lambdas for data. Cricket objects can refer to themselves in their methods, enabling much of OOP. Cricket is immutable, with object updates returning new objects.
+</span></p><p><span>Cricket is designed such that ordinary programmers who aren&#39;t much into the academic theory behind functional programming can still find it easy and intuitive. No monads, for one. However, if you like the confidence in your code that comes with such solid theoretical foundations, rest assured that Cricket is inspired by fascinating categorical <a href="https://ncatlab.org/nlab/show/polarity+in+type+theory"><span>connections</span></a>. The keywords are call-by-name, negative types, and side effects.
+</span></p><pre><code class="language-plaintext">let iter = {
+  this.go: args-&gt;{
+    val: args.start, 
+    next: this.go{start: args.step(args.start), step: args.step}
+  }
+} in 
+console.write(iter.go{start: 7, step: n-&gt;n-1}.next.next.val)
+</code></pre><p><span>To read more about Cricket, look <a href="https://github.com/RyanBrewer317/cricket_rs"><span>here</span></a>.</span></p></div><div><p id="copyright-notice" class="subtle-text">© 2024 Ryan Brewer.</p><script src="/__/firebase/8.10.1/firebase-app.js"></script><script src="/__/firebase/8.10.1/firebase-analytics.js"></script><script src="/__/firebase/init.js"></script><script>firebase.analytics();</script></div></div></div><script>
+// SPA algorithm partially inspired by Hayleigh Thompson's wonderful Modem library
+async function go_to(url, loader, back) {
+  if (!back && url.pathname === window.location.pathname) {
+    if (url.hash) document.getElementById(url.hash.slice(1))?.scrollIntoView();
+    else window.scrollTo(0, 0);
+    return;
+  }
+  document.dispatchEvent(new Event('beforeunload'));
+  document.dispatchEvent(new Event('unload'));
+  for (let i = 0; i < arctic_dom_content_loaded_listeners.length; i++)
+    document.removeEventListener('DOMContentLoaded', arctic_dom_content_loaded_listeners[i]);
+  arctic_dom_content_loaded_listeners = [];
+  const $app = document.getElementById('arctic-app');
+  if (loader) $app.innerHTML = '<div id="arctic-loader"></div>';
+  if (!back) window.history.pushState({}, '', url.href);
+  // handle new path
+  const response = await fetch('/__pages/' + url.pathname + '/index.html');
+  if (!response.ok) response = await fetch('/__pages/404.html');
+  if (!response.ok) return;
+  const html = await response.text();
+  $app.innerHTML = '<script>_ARCTIC_C=0;</'+'script>'+html;
+  // re-create script elements, so their javascript runs
+  const scripts = $app.querySelectorAll('script');
+  const num_scripts = scripts.length;
+  for (let i = 0; i < num_scripts; i++) {
+    const script = scripts[i];
+    const n = document.createElement('script');
+    // scripts load nondeterministically, so we figure out when they've all finished via the _ARCTIC_C barrier
+    if (script.innerHTML === '') {
+      // external scripts don't run their inline js, so they need an onload listener
+      n.onload = () => {
+        if (++_ARCTIC_C >= num_scripts)
+          document.dispatchEvent(new Event('DOMContentLoaded'));
+      };
+    } else {
+      // inline scripts might not trigger onload, so they get js appended to the end instead
+      const t = document.createTextNode(
+        script.innerHTML +
+        ';if(++_ARCTIC_C>=' + num_scripts +
+        ')document.dispatchEvent(new Event(\'DOMContentLoaded\'));'
+      );
+      n.appendChild(t);
+    }
+    // attributes at the end because 'src' needs to load after onload is listening
+    for (let j = 0; j < script.attributes.length; j++) {
+      const attr = script.attributes[j];
+      n.setAttribute(attr.name, attr.value);
+    }
+    script.parentNode.replaceChild(n, script);
+  }
+  window.requestAnimationFrame(() => {
+    if (url.hash)
+      document.getElementById(url.hash.slice(1))?.scrollIntoView();
+    else
+      window.scrollTo(0, 0);
+  });
+}
+document.addEventListener('click', async function(e) {
+  const a = find_a(e.target);
+  if (!a) return;
+  try {
+    const url = new URL(a.href);
+    const is_external = url.host !== window.location.host;
+    if (is_external) return;
+    event.preventDefault();
+    go_to(url, false, false);
+  } catch {
+    return;
+  }
+});
+window.addEventListener('popstate', (e) => {
+  e.preventDefault();
+  const url = new URL(window.location.href);
+  go_to(url, false, true);
+});
+function find_a(target) {
+  if (!target || target.tagName === 'BODY') return null;
+  if (target.tagName === 'A') return target;
+  return find_a(target.parentElement);
+}</script></div></body></html>

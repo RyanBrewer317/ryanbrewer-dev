@@ -10,7 +10,7 @@ import components/tail.{tail}
 import components/thumbnail
 import gleam/list
 import lustre/attribute.{attribute}
-import lustre/element.{type Element}
+import lustre/element.{type Element, text}
 import lustre/element/html
 
 // TODO: I should probably switch this to use Lustre for interactivity instead of JS
@@ -59,6 +59,20 @@ pub fn list_posts(posts: List(CacheablePage)) -> Element(Nil) {
     navbar(),
     html.div([attribute.id("body")], [
       searchbox(),
+      html.a(
+        [
+          attribute.href("/feed.rss"),
+          attribute.id("subscribe-tech-blog"),
+          attribute.attribute("onclick", "window.location.href = '/feed.rss'"),
+        ],
+        [
+          html.img([
+            attribute.src("/rss-icon.png"),
+            attribute.id("rss-subscribe-icon"),
+          ]),
+          text("Subscribe"),
+        ],
+      ),
       html.ul(
         [attribute.id("search-posts-menu")],
         list.map(posts, thumbnail.post),

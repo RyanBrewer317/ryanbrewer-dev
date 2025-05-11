@@ -1,9 +1,8 @@
 import * as $int from "../gleam_stdlib/gleam/int.mjs";
 import * as $list from "../gleam_stdlib/gleam/list.mjs";
 import * as $string from "../gleam_stdlib/gleam/string.mjs";
-import * as $string_tree from "../gleam_stdlib/gleam/string_tree.mjs";
 import * as $gleam from "./gleam.mjs";
-import { Error, toList, prepend as listPrepend, CustomType as $CustomType } from "./gleam.mjs";
+import { Ok, Error, toList, prepend as listPrepend, CustomType as $CustomType } from "./gleam.mjs";
 
 export class Snag extends $CustomType {
   constructor(issue, cause) {
@@ -34,6 +33,17 @@ export function context(result, issue) {
   }
 }
 
+export function map_error(result, describer) {
+  if (result.isOk()) {
+    let a = result[0];
+    return new Ok(a);
+  } else {
+    let b = result[0];
+    let _pipe = describer(b);
+    return error(_pipe);
+  }
+}
+
 function pretty_print_cause(cause) {
   let _pipe = cause;
   let _pipe$1 = $list.index_map(
@@ -44,29 +54,18 @@ function pretty_print_cause(cause) {
       );
     },
   );
-  return $string_tree.from_strings(_pipe$1);
+  return $string.concat(_pipe$1);
 }
 
 export function pretty_print(snag) {
-  let tree = $string_tree.from_strings(
-    toList(["error: ", snag.issue, "\n"]),
-  );
-  return $string_tree.to_string(
-    (() => {
-      let $ = snag.cause;
-      if ($.hasLength(0)) {
-        return tree;
-      } else {
-        let cause = $;
-        let _pipe = tree;
-        let _pipe$1 = $string_tree.append(_pipe, "\ncause:\n");
-        return $string_tree.append_tree(
-          _pipe$1,
-          pretty_print_cause(cause),
-        );
-      }
-    })(),
-  );
+  let output = ("error: " + snag.issue) + "\n";
+  let $ = snag.cause;
+  if ($.hasLength(0)) {
+    return output;
+  } else {
+    let cause = $;
+    return (output + "\ncause:\n") + pretty_print_cause(cause);
+  }
 }
 
 export function line_print(snag) {

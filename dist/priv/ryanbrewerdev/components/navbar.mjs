@@ -33,22 +33,6 @@ export function navbar() {
       ),
       $html.a(
         toList([
-          $attribute.href("/posts"),
-          $attribute.id("nav-posts"),
-          attribute("onclick", "click_nav_link('/posts')"),
-        ]),
-        toList([text("Posts")]),
-      ),
-      $html.a(
-        toList([
-          $attribute.href("/wiki"),
-          $attribute.id("nav-wiki"),
-          attribute("onclick", "click_nav_link('/wiki')"),
-        ]),
-        toList([text("Wiki")]),
-      ),
-      $html.a(
-        toList([
           $attribute.href("/contact"),
           $attribute.id("nav-contact"),
           attribute("onclick", "click_nav_link('/contact')"),
@@ -65,19 +49,19 @@ export function navbar() {
       ),
       $html.a(
         toList([
-          $attribute.href("/feed.rss"),
-          $attribute.id("nav-subscribe"),
-          $attribute.attribute("onclick", "window.location.href = '/feed.rss'"),
+          $attribute.href("/posts"),
+          $attribute.id("nav-posts"),
+          attribute("onclick", "click_nav_link('/posts')"),
         ]),
+        toList([text("Posts")]),
+      ),
+      $html.a(
         toList([
-          $html.img(
-            toList([
-              $attribute.src("/rss-icon.png"),
-              $attribute.id("rss-subscribe-icon"),
-            ]),
-          ),
-          text("Subscribe"),
+          $attribute.href("/projects"),
+          $attribute.id("nav-projects"),
+          attribute("onclick", "click_nav_link('/projects')"),
         ]),
+        toList([text("Projects")]),
       ),
     ]),
   );

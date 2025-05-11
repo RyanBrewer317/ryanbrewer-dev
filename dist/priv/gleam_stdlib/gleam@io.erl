@@ -79,7 +79,7 @@ println(String) ->
 println_error(String) ->
     gleam_stdlib:println_error(String).
 
--file("src/gleam/io.gleam", 96).
+-file("src/gleam/io.gleam", 97).
 ?DOC(
     " Writes a value to standard error (stderr) yielding Gleam syntax.\n"
     "\n"
@@ -114,7 +114,7 @@ println_error(String) ->
     " with some types having the same runtime representation results in it not\n"
     " always being possible to correctly choose which Gleam syntax to show.\n"
 ).
--spec debug(EDC) -> EDC.
+-spec debug(EDB) -> EDB.
 debug(Term) ->
     _pipe = Term,
     _pipe@1 = gleam@string:inspect(_pipe),

@@ -51,3 +51,12 @@ pub fn wiki(wiki: Page) -> Element(Nil) {
     tail(),
   ])
 }
+
+pub fn project(project: Page) -> Element(Nil) {
+  html.div([], [
+    head.local_head(project.title, project.blerb),
+    navbar(),
+    html.div([attribute.id("body")], render_wiki_as_list(project)),
+    tail(),
+  ])
+}

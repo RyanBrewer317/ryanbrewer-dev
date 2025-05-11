@@ -1,5 +1,4 @@
 import gleam/erlang/process
-import gleam/io
 import mist
 import simplifile
 import wisp.{type Request, type Response}
@@ -16,7 +15,6 @@ pub fn main() {
     |> mist.new
     |> mist.port(8085)
     |> mist.start_http
-  io.debug(res)
   let assert Ok(_) = res
   process.sleep_forever()
 }

@@ -1,0 +1,31 @@
+<!doctype html>
+<div><div><link rel="preload" as="image" href="/ryan-silly.jpg"><link rel="prefetch" href="/ryan-silly-2.png"><title>The Cricket Language - Ryan Brewer</title><meta name="description" content="Cricket is a lazy gradually-typed functional language with objects. It&#39;s very tiny but very expressive; anyone can implement it themselves!"><script type="text/javascript" async="true" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script><script>
+window.MathJax = {
+  loader: {load: ['[tex]/unicode','[tex]/bussproofs']},
+  tex: {packages: {'[+]': ['unicode','bussproofs']}},
+};
+        </script><script>hljs.highlightAll();</script></div><nav id="nav"><script>
+function click_nav_home_link() {
+  let p=new URL(location.href).pathname;
+  if(p=='/'){
+    document.getElementById('nav').classList.remove('dropdown');
+  }
+  document.body.classList.remove('noscroll');
+}
+function click_nav_link(route) {
+  let p=new URL(location.href).pathname;
+  if(p==route||p==route+'/'){
+    document.getElementById('nav').classList.remove('dropdown');
+  }
+  document.body.classList.remove('noscroll');
+}
+    </script><div id="nav-dropdown" onclick="document.getElementById(&#39;nav&#39;).classList.toggle(&#39;dropdown&#39;);document.body.classList.toggle(&#39;noscroll&#39;);">☰</div><a href="/" id="nav-home" onclick="click_nav_home_link()">Ryan Brewer</a><a href="/contact" id="nav-contact" onclick="click_nav_link(&#39;/contact&#39;)">Contact</a><a href="/demos" id="nav-demos" onclick="click_nav_link(&#39;/demos&#39;)">Demos</a><a href="/posts" id="nav-posts" onclick="click_nav_link(&#39;/posts&#39;)">Posts</a><a href="/projects" id="nav-projects" onclick="click_nav_link(&#39;/projects&#39;)">Projects</a></nav><div id="body"><h1>The Cricket Language</h1><p><span>Cricket is a tiny little functional language. It can be implemented very quickly on various platforms. Cricket is lazy, specifically call-by-name. Side effects are done with explicitly-forced evaluation. Cricket is dynamically typed, and uses objects or lambdas for data. Cricket objects can refer to themselves in their methods, enabling much of OOP. Cricket is immutable, with object updates returning new objects.
+</span></p><p><span>Cricket is designed such that ordinary programmers who aren&#39;t much into the academic theory behind functional programming can still find it easy and intuitive. No monads, for one. However, if you like the confidence in your code that comes with such solid theoretical foundations, rest assured that Cricket is inspired by fascinating categorical <a href="https://ncatlab.org/nlab/show/polarity+in+type+theory"><span>connections</span></a>. The keywords are call-by-name, negative types, and side effects.
+</span></p><pre><code class="language-plaintext">let iter = {
+  this.go: args-&gt;{
+    val: args.start, 
+    next: this.go{start: args.step(args.start), step: args.step}
+  }
+} in 
+console.write(iter.go{start: 7, step: n-&gt;n-1}.next.next.val)
+</code></pre><p><span>To read more about Cricket, look <a href="https://github.com/RyanBrewer317/cricket_rs"><span>here</span></a>.</span></p></div><div><p id="copyright-notice" class="subtle-text">© 2024 Ryan Brewer.</p><script src="/__/firebase/8.10.1/firebase-app.js"></script><script src="/__/firebase/8.10.1/firebase-analytics.js"></script><script src="/__/firebase/init.js"></script><script>firebase.analytics();</script></div></div>

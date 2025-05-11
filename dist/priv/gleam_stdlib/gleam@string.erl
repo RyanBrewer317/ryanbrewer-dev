@@ -374,12 +374,20 @@ split_once(String, Substring) ->
 ).
 -spec append(binary(), binary()) -> binary().
 append(First, Second) ->
-    _pipe = First,
-    _pipe@1 = gleam_stdlib:identity(_pipe),
-    _pipe@2 = gleam@string_tree:append(_pipe@1, Second),
-    unicode:characters_to_binary(_pipe@2).
+    <<First/binary, Second/binary>>.
 
--file("src/gleam/string.gleam", 393).
+-file("src/gleam/string.gleam", 395).
+-spec concat_loop(list(binary()), binary()) -> binary().
+concat_loop(Strings, Accumulator) ->
+    case Strings of
+        [String | Strings@1] ->
+            concat_loop(Strings@1, <<Accumulator/binary, String/binary>>);
+
+        [] ->
+            Accumulator
+    end.
+
+-file("src/gleam/string.gleam", 391).
 ?DOC(
     " Creates a new `String` by joining many `String`s together.\n"
     "\n"
@@ -396,11 +404,9 @@ append(First, Second) ->
 ).
 -spec concat(list(binary())) -> binary().
 concat(Strings) ->
-    _pipe = Strings,
-    _pipe@1 = gleam_stdlib:identity(_pipe),
-    unicode:characters_to_binary(_pipe@1).
+    erlang:list_to_binary(Strings).
 
--file("src/gleam/string.gleam", 414).
+-file("src/gleam/string.gleam", 417).
 -spec repeat_loop(binary(), integer(), binary()) -> binary().
 repeat_loop(String, Times, Acc) ->
     case Times =< 0 of
@@ -411,7 +417,7 @@ repeat_loop(String, Times, Acc) ->
             repeat_loop(String, Times - 1, <<Acc/binary, String/binary>>)
     end.
 
--file("src/gleam/string.gleam", 410).
+-file("src/gleam/string.gleam", 413).
 ?DOC(
     " Creates a new `String` by repeating a `String` a given number of times.\n"
     "\n"
@@ -428,7 +434,23 @@ repeat_loop(String, Times, Acc) ->
 repeat(String, Times) ->
     repeat_loop(String, Times, <<""/utf8>>).
 
--file("src/gleam/string.gleam", 433).
+-file("src/gleam/string.gleam", 442).
+-spec join_loop(list(binary()), binary(), binary()) -> binary().
+join_loop(Strings, Separator, Accumulator) ->
+    case Strings of
+        [] ->
+            Accumulator;
+
+        [String | Strings@1] ->
+            join_loop(
+                Strings@1,
+                Separator,
+                <<<<Accumulator/binary, Separator/binary>>/binary,
+                    String/binary>>
+            )
+    end.
+
+-file("src/gleam/string.gleam", 435).
 ?DOC(
     " Joins many `String`s together with a given separator.\n"
     "\n"
@@ -443,11 +465,15 @@ repeat(String, Times) ->
 ).
 -spec join(list(binary()), binary()) -> binary().
 join(Strings, Separator) ->
-    _pipe = Strings,
-    _pipe@1 = gleam@list:intersperse(_pipe, Separator),
-    concat(_pipe@1).
+    case Strings of
+        [] ->
+            <<""/utf8>>;
 
--file("src/gleam/string.gleam", 505).
+        [First | Rest] ->
+            join_loop(Rest, Separator, First)
+    end.
+
+-file("src/gleam/string.gleam", 520).
 -spec padding(integer(), binary()) -> binary().
 padding(Size, Pad_string) ->
     Pad_string_length = string:length(Pad_string),
@@ -462,7 +488,7 @@ padding(Size, Pad_string) ->
     <<(repeat(Pad_string, Num_pads))/binary,
         (slice(Pad_string, 0, Extra))/binary>>.
 
--file("src/gleam/string.gleam", 458).
+-file("src/gleam/string.gleam", 473).
 ?DOC(
     " Pads the start of a `String` until it has a given length.\n"
     "\n"
@@ -495,7 +521,7 @@ pad_start(String, Desired_length, Pad_string) ->
             <<(padding(To_pad_length, Pad_string))/binary, String/binary>>
     end.
 
--file("src/gleam/string.gleam", 491).
+-file("src/gleam/string.gleam", 506).
 ?DOC(
     " Pads the end of a `String` until it has a given length.\n"
     "\n"
@@ -528,7 +554,7 @@ pad_end(String, Desired_length, Pad_string) ->
             <<String/binary, (padding(To_pad_length, Pad_string))/binary>>
     end.
 
--file("src/gleam/string.gleam", 549).
+-file("src/gleam/string.gleam", 564).
 ?DOC(
     " Removes whitespace at the start of a `String`.\n"
     "\n"
@@ -543,7 +569,7 @@ pad_end(String, Desired_length, Pad_string) ->
 trim_start(String) ->
     string:trim(String, leading).
 
--file("src/gleam/string.gleam", 563).
+-file("src/gleam/string.gleam", 578).
 ?DOC(
     " Removes whitespace at the end of a `String`.\n"
     "\n"
@@ -558,7 +584,7 @@ trim_start(String) ->
 trim_end(String) ->
     string:trim(String, trailing).
 
--file("src/gleam/string.gleam", 527).
+-file("src/gleam/string.gleam", 542).
 ?DOC(
     " Removes whitespace on both sides of a `String`.\n"
     "\n"
@@ -580,14 +606,16 @@ trim(String) ->
     _pipe@1 = trim_start(_pipe),
     trim_end(_pipe@1).
 
--file("src/gleam/string.gleam", 588).
+-file("src/gleam/string.gleam", 605).
 ?DOC(
     " Splits a non-empty `String` into its first element (head) and rest (tail).\n"
     " This lets you pattern match on `String`s exactly as you would with lists.\n"
     "\n"
-    " Note on JavaScript using the function to iterate over a string will likely\n"
-    " be slower than using `to_graphemes` due to string slicing being more\n"
-    " expensive on JavaScript than Erlang.\n"
+    " ## Performance\n"
+    "\n"
+    " There is a notable overhead to using this function, so you may not want to\n"
+    " use it in a tight loop. If you wish to efficiently parse a string you may\n"
+    " want to use alternatives such as the [splitter package]( https://hex.pm/packages/splitter).\n"
     "\n"
     " ## Examples\n"
     "\n"
@@ -632,7 +660,7 @@ drop_start(String, Num_graphemes) ->
             end
     end.
 
--file("src/gleam/string.gleam", 604).
+-file("src/gleam/string.gleam", 621).
 -spec to_graphemes_loop(binary(), list(binary())) -> list(binary()).
 to_graphemes_loop(String, Acc) ->
     case gleam_stdlib:string_pop_grapheme(String) of
@@ -643,7 +671,7 @@ to_graphemes_loop(String, Acc) ->
             Acc
     end.
 
--file("src/gleam/string.gleam", 599).
+-file("src/gleam/string.gleam", 616).
 ?DOC(
     " Converts a `String` to a list of\n"
     " [graphemes](https://en.wikipedia.org/wiki/Grapheme).\n"
@@ -682,7 +710,7 @@ split(X, Substring) ->
             gleam@list:map(_pipe@2, fun unicode:characters_to_binary/1)
     end.
 
--file("src/gleam/string.gleam", 651).
+-file("src/gleam/string.gleam", 668).
 -spec to_utf_codepoints_loop(bitstring(), list(integer())) -> list(integer()).
 to_utf_codepoints_loop(Bit_array, Acc) ->
     case Bit_array of
@@ -693,12 +721,12 @@ to_utf_codepoints_loop(Bit_array, Acc) ->
             lists:reverse(Acc)
     end.
 
--file("src/gleam/string.gleam", 646).
+-file("src/gleam/string.gleam", 663).
 -spec do_to_utf_codepoints(binary()) -> list(integer()).
 do_to_utf_codepoints(String) ->
     to_utf_codepoints_loop(<<String/binary>>, []).
 
--file("src/gleam/string.gleam", 641).
+-file("src/gleam/string.gleam", 658).
 ?DOC(
     " Converts a `String` to a `List` of `UtfCodepoint`.\n"
     "\n"
@@ -730,7 +758,7 @@ do_to_utf_codepoints(String) ->
 to_utf_codepoints(String) ->
     do_to_utf_codepoints(String).
 
--file("src/gleam/string.gleam", 691).
+-file("src/gleam/string.gleam", 708).
 ?DOC(
     " Converts a `List` of `UtfCodepoint`s to a `String`.\n"
     "\n"
@@ -752,7 +780,7 @@ to_utf_codepoints(String) ->
 from_utf_codepoints(Utf_codepoints) ->
     gleam_stdlib:utf_codepoint_list_to_string(Utf_codepoints).
 
--file("src/gleam/string.gleam", 697).
+-file("src/gleam/string.gleam", 714).
 ?DOC(
     " Converts an integer to a `UtfCodepoint`.\n"
     "\n"
@@ -774,7 +802,7 @@ utf_codepoint(Value) ->
             {ok, gleam_stdlib:identity(I@3)}
     end.
 
--file("src/gleam/string.gleam", 718).
+-file("src/gleam/string.gleam", 735).
 ?DOC(
     " Converts an UtfCodepoint to its ordinal code point value.\n"
     "\n"
@@ -790,7 +818,7 @@ utf_codepoint(Value) ->
 utf_codepoint_to_int(Cp) ->
     gleam_stdlib:identity(Cp).
 
--file("src/gleam/string.gleam", 735).
+-file("src/gleam/string.gleam", 752).
 ?DOC(
     " Converts a `String` into `Option(String)` where an empty `String` becomes\n"
     " `None`.\n"
@@ -817,7 +845,7 @@ to_option(String) ->
             {some, String}
     end.
 
--file("src/gleam/string.gleam", 758).
+-file("src/gleam/string.gleam", 775).
 ?DOC(
     " Returns the first grapheme cluster in a given `String` and wraps it in a\n"
     " `Result(String, Nil)`. If the `String` is empty, it returns `Error(Nil)`.\n"
@@ -845,7 +873,7 @@ first(String) ->
             {error, E}
     end.
 
--file("src/gleam/string.gleam", 781).
+-file("src/gleam/string.gleam", 798).
 ?DOC(
     " Returns the last grapheme cluster in a given `String` and wraps it in a\n"
     " `Result(String, Nil)`. If the `String` is empty, it returns `Error(Nil)`.\n"
@@ -876,7 +904,7 @@ last(String) ->
             {error, E}
     end.
 
--file("src/gleam/string.gleam", 799).
+-file("src/gleam/string.gleam", 816).
 ?DOC(
     " Creates a new `String` with the first grapheme in the input `String`\n"
     " converted to uppercase and the remaining graphemes to lowercase.\n"
@@ -898,14 +926,14 @@ capitalise(String) ->
             <<""/utf8>>
     end.
 
--file("src/gleam/string.gleam", 808).
+-file("src/gleam/string.gleam", 825).
 ?DOC(" Returns a `String` representation of a term in Gleam syntax.\n").
 -spec inspect(any()) -> binary().
 inspect(Term) ->
     _pipe = gleam_stdlib:inspect(Term),
     unicode:characters_to_binary(_pipe).
 
--file("src/gleam/string.gleam", 831).
+-file("src/gleam/string.gleam", 848).
 ?DOC(
     " Returns the number of bytes in a `String`.\n"
     "\n"
