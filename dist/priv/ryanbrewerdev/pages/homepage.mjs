@@ -57,7 +57,9 @@ export function homepage(_) {
               $html.div(
                 toList([
                   $attribute.id("homepage-flags"),
-                  $attribute.style(toList([["text-align", "center"]])),
+                  $attribute.style(
+                    toList([["text-align", "center"], ["font-size", "inherit"]]),
+                  ),
                 ]),
                 toList([
                   text("I support: "),

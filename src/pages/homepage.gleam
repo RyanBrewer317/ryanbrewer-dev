@@ -46,7 +46,10 @@ I'm straight and cisgender, using he/him pronouns.
         html.div(
           [
             attribute.id("homepage-flags"),
-            attribute.style([#("text-align", "center")]),
+            attribute.style([
+              #("text-align", "center"),
+              #("font-size", "inherit"),
+            ]),
           ],
           [
             text("I support: "),
