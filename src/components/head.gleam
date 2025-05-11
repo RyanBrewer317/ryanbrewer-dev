@@ -12,7 +12,7 @@ pub fn local_head(title: String, description: String) -> Element(Nil) {
     html.link([
       attribute.rel("preload"),
       attribute.attribute("as", "image"),
-      attribute.href("/ryan-silly.jpg"),
+      attribute.href("/ryan-ferry.jpg"),
     ]),
     html.link([attribute.rel("prefetch"), attribute.href("/ryan-silly-2.png")]),
     html.title([], title <> " - Ryan Brewer"),

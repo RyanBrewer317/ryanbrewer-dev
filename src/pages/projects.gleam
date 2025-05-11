@@ -54,6 +54,7 @@ If my projects seem cool or valuable in any way, consider supporting my work!
           html.span([], [text("Support")]),
         ],
       ),
+      html.p([], [text("(I haven't put all my projects here yet!)")]),
       html.ul([], list.map(projects, thumbnail.project)),
     ]),
     tail(),

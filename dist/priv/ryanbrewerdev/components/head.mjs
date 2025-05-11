@@ -13,7 +13,7 @@ export function local_head(title, description) {
         toList([
           $attribute.rel("preload"),
           $attribute.attribute("as", "image"),
-          $attribute.href("/ryan-silly.jpg"),
+          $attribute.href("/ryan-ferry.jpg"),
         ]),
       ),
       $html.link(

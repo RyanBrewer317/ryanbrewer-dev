@@ -63,6 +63,10 @@ export function projects(projects) {
               $html.span(toList([]), toList([text("Support")])),
             ]),
           ),
+          $html.p(
+            toList([]),
+            toList([text("(I haven't put all my projects here yet!)")]),
+          ),
           $html.ul(toList([]), $list.map(projects, $thumbnail.project)),
         ]),
       ),
