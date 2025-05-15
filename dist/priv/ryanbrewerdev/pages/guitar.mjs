@@ -64,6 +64,11 @@ export function guitar() {
             "https://cdn.ryanbrewer.dev/bless-the-telephone.mp4",
           ),
           thumbnail(
+            "Calico Skies",
+            "Paul McCartney",
+            "https://cdn.ryanbrewer.dev/calico-skies.mp4",
+          ),
+          thumbnail(
             "Homeward Bound",
             "Simon and Garfunkel",
             "https://cdn.ryanbrewer.dev/homeward-bound.mp4",
