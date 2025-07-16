@@ -202,7 +202,7 @@ fn rel_occurs(t: Term, x: Index) -> Result(Pos, Nil) {
     Ctor1(Refl, _, _) -> Error(Nil)
     Ctor1(_, a, _) -> rel_occurs(a, x)
     Ctor2(App(ZeroMode), a, _, _) -> rel_occurs(a, x)
-    Ctor2(Psi, _, _, _) -> Error(Nil)
+    Ctor2(Psi, a, _, _) -> rel_occurs(a, x)
     Ctor2(_, a, b, _) -> result.or(rel_occurs(a, x), rel_occurs(b, x))
     Ctor3(Cast, a, _, _, _) -> rel_occurs(a, x)
     Ctor3(_, a, b, c, _) ->

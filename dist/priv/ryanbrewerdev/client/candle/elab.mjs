@@ -709,7 +709,9 @@ function rel_occurs(loop$t, loop$x) {
           return $result.or(rel_occurs(a, x), rel_occurs(b, x));
         }
       } else if ($ instanceof Psi) {
-        return new Error(undefined);
+        let a = t[1];
+        loop$t = a;
+        loop$x = x;
       } else {
         let a = t[1];
         let b = t[2];
@@ -885,10 +887,10 @@ export function infer(ctx, s) {
                               "Pattern match failed, no pattern matched the value.",
                               {
                                 value: $1,
-                                start: 16593,
-                                end: 16635,
-                                pattern_start: 16604,
-                                pattern_end: 16615
+                                start: 16599,
+                                end: 16641,
+                                pattern_start: 16610,
+                                pattern_end: 16621
                               }
                             )
                           }
