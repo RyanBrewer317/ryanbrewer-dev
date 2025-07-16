@@ -1,17 +1,18 @@
 -module(glisten).
 -compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch]).
+-define(FILEPATH, "src/glisten.gleam").
+-export([convert_ip_address/1, get_server_info/2, ip_address_to_string/1, get_client_info/1, send/2, continue/1, with_selector/2, stop/0, stop_abnormal/1, convert_next/1, map_selector/2, new/2, with_close/2, with_pool_size/2, with_http2/1, with_ipv6/1, with_tls/3, start_with_listener_name/3, start/2, bind/2, supervised/2]).
+-export_type([message/1, ip_address/0, connection_info/0, connection/1, next/2, builder/2]).
 
--export([get_supervisor/1, convert_ip_address/1, get_server_info/2, ip_address_to_string/1, get_client_info/1, send/2, handler/2, with_close/2, with_pool_size/2, with_http2/1, with_ipv6/1, start_server/2, serve/2, start_ssl_server/4, serve_ssl/4, bind/2]).
--export_type([start_error/0, message/1, ip_address/0, server/0, connection_info/0, connection/1, handler/2]).
+-if(?OTP_RELEASE >= 27).
+-define(MODULEDOC(Str), -moduledoc(Str)).
+-define(DOC(Str), -doc(Str)).
+-else.
+-define(MODULEDOC(Str), -compile([])).
+-define(DOC(Str), -compile([])).
+-endif.
 
--type start_error() :: listener_closed |
-    listener_timeout |
-    acceptor_timeout |
-    {acceptor_failed, gleam@erlang@process:exit_reason()} |
-    {acceptor_crashed, gleam@dynamic:dynamic_()} |
-    {system_error, glisten@socket:socket_reason()}.
-
--type message(IPX) :: {packet, bitstring()} | {user, IPX}.
+-type message(GNV) :: {packet, bitstring()} | {user, GNV}.
 
 -type ip_address() :: {ip_v4, integer(), integer(), integer(), integer()} |
     {ip_v6,
@@ -24,34 +25,32 @@
         integer(),
         integer()}.
 
--opaque server() :: {server,
-        gleam@erlang@process:subject(glisten@internal@listener:message()),
-        gleam@erlang@process:subject(gleam@otp@supervisor:message()),
-        glisten@transport:transport()}.
-
 -type connection_info() :: {connection_info, integer(), ip_address()}.
 
--type connection(IPY) :: {connection,
+-type connection(GNW) :: {connection,
         glisten@socket:socket(),
         glisten@transport:transport(),
-        gleam@erlang@process:subject(glisten@internal@handler:message(IPY))}.
+        gleam@erlang@process:subject(glisten@internal@handler:message(GNW))}.
 
--opaque handler(IPZ, IQA) :: {handler,
+-opaque next(GNX, GNY) :: {continue,
+        GNX,
+        gleam@option:option(gleam@erlang@process:selector(GNY))} |
+    normal_stop |
+    {abnormal_stop, binary()}.
+
+-opaque builder(GNZ, GOA) :: {builder,
         glisten@socket@options:interface(),
-        fun((connection(IPZ)) -> {IQA,
-            gleam@option:option(gleam@erlang@process:selector(IPZ))}),
-        fun((message(IPZ), IQA, connection(IPZ)) -> gleam@otp@actor:next(message(IPZ), IQA)),
-        gleam@option:option(fun((IQA) -> nil)),
+        fun((connection(GOA)) -> {GNZ,
+            gleam@option:option(gleam@erlang@process:selector(GOA))}),
+        fun((GNZ, message(GOA), connection(GOA)) -> next(GNZ, message(GOA))),
+        gleam@option:option(fun((GNZ) -> nil)),
         integer(),
         boolean(),
-        boolean()}.
+        boolean(),
+        gleam@option:option(glisten@socket@options:tls_certs())}.
 
--file("/home/alex/gleams/glisten/src/glisten.gleam", 80).
--spec get_supervisor(server()) -> gleam@erlang@process:subject(gleam@otp@supervisor:message()).
-get_supervisor(Server) ->
-    erlang:element(3, Server).
-
--file("/home/alex/gleams/glisten/src/glisten.gleam", 95).
+-file("src/glisten.gleam", 67).
+?DOC(false).
 -spec convert_ip_address(glisten@socket@options:ip_address()) -> ip_address().
 convert_ip_address(Ip) ->
     case Ip of
@@ -62,31 +61,37 @@ convert_ip_address(Ip) ->
             {ip_v6, A@1, B@1, C@1, D@1, E, F, G, H}
     end.
 
--file("/home/alex/gleams/glisten/src/glisten.gleam", 69).
--spec get_server_info(server(), integer()) -> {ok, connection_info()} |
-    {error, gleam@erlang@process:call_error(glisten@internal@listener:state())}.
-get_server_info(Server, Timeout) ->
-    _pipe = gleam@erlang@process:try_call(
-        erlang:element(2, Server),
-        fun(Field@0) -> {info, Field@0} end,
-        Timeout
+-file("src/glisten.gleam", 47).
+?DOC(" Returns the user-provided port or the OS-assigned value if 0 was provided.\n").
+-spec get_server_info(
+    gleam@erlang@process:name(glisten@internal@listener:message()),
+    integer()
+) -> connection_info().
+get_server_info(Listener, Timeout) ->
+    Listener@1 = gleam@erlang@process:named_subject(Listener),
+    State = gleam@erlang@process:call(
+        Listener@1,
+        Timeout,
+        fun(Field@0) -> {info, Field@0} end
     ),
-    gleam@result:map(
-        _pipe,
-        fun(State) ->
-            {connection_info,
-                erlang:element(3, State),
-                convert_ip_address(erlang:element(4, State))}
-        end
-    ).
+    {connection_info,
+        erlang:element(3, State),
+        convert_ip_address(erlang:element(4, State))}.
 
--file("/home/alex/gleams/glisten/src/glisten.gleam", 124).
+-file("src/glisten.gleam", 96).
 -spec join_ipv6_fields(list(integer())) -> binary().
 join_ipv6_fields(Fields) ->
     _pipe = gleam@list:map(Fields, fun gleam@int:to_base16/1),
     gleam@string:join(_pipe, <<":"/utf8>>).
 
--file("/home/alex/gleams/glisten/src/glisten.gleam", 133).
+-file("src/glisten.gleam", 105).
+?DOC(
+    " Finds the longest sequence of consecutive all-zero fields in an IPv6.\n"
+    " If the address contains multiple runs of all-zero fields of the same size,\n"
+    " it is the leftmost that is compressed.\n"
+    "\n"
+    " This returns the start & end indices of the compressed zeros.\n"
+).
 -spec ipv6_zeros(list(integer()), integer(), integer(), integer(), integer()) -> {ok,
         {integer(), integer()}} |
     {error, nil}.
@@ -112,7 +117,11 @@ ipv6_zeros(Fields, Pos, Len, Max_start, Max_len) ->
             ipv6_zeros(Xs@1, Pos + 1, 0, Max_start, Max_len)
     end.
 
--file("/home/alex/gleams/glisten/src/glisten.gleam", 104).
+-file("src/glisten.gleam", 76).
+?DOC(
+    " Convenience function for convert an `IpAddress` type into a string. It will\n"
+    " convert IPv6 addresses to the canonical short-hand (ie. loopback is ::1).\n"
+).
 -spec ip_address_to_string(ip_address()) -> binary().
 ip_address_to_string(Address) ->
     case Address of
@@ -135,7 +144,12 @@ ip_address_to_string(Address) ->
             string:lowercase(_pipe@2)
     end.
 
--file("/home/alex/gleams/glisten/src/glisten.gleam", 154).
+-file("src/glisten.gleam", 126).
+?DOC(
+    " Tries to read the IP address and port of a connected client.  It will\n"
+    " return valid IPv4 or IPv6 addresses, attempting to return the most relevant\n"
+    " one for the client.\n"
+).
 -spec get_client_info(connection(any())) -> {ok, connection_info()} |
     {error, nil}.
 get_client_info(Conn) ->
@@ -152,7 +166,8 @@ get_client_info(Conn) ->
         end
     ).
 
--file("/home/alex/gleams/glisten/src/glisten.gleam", 162).
+-file("src/glisten.gleam", 134).
+?DOC(" Sends a BytesTree message over the socket using the active transport\n").
 -spec send(connection(any()), gleam@bytes_tree:bytes_tree()) -> {ok, nil} |
     {error, glisten@socket:socket_reason()}.
 send(Conn, Msg) ->
@@ -162,32 +177,69 @@ send(Conn, Msg) ->
         Msg
     ).
 
--file("/home/alex/gleams/glisten/src/glisten.gleam", 223).
--spec convert_on_init(
-    fun((connection(IRO)) -> {IRQ,
-        gleam@option:option(gleam@erlang@process:selector(IRO))})
-) -> fun((glisten@internal@handler:connection(IRO)) -> {IRQ,
-    gleam@option:option(gleam@erlang@process:selector(IRO))}).
-convert_on_init(On_init) ->
-    fun(Conn) ->
-        Connection = {connection,
-            erlang:element(3, Conn),
-            erlang:element(4, Conn),
-            erlang:element(5, Conn)},
-        On_init(Connection)
+-file("src/glisten.gleam", 147).
+-spec continue(GPA) -> next(GPA, any()).
+continue(State) ->
+    {continue, State, none}.
+
+-file("src/glisten.gleam", 151).
+-spec with_selector(next(GPE, GPF), gleam@erlang@process:selector(GPF)) -> next(GPE, GPF).
+with_selector(Next, Selector) ->
+    case Next of
+        {continue, State, _} ->
+            {continue, State, {some, Selector}};
+
+        Stop ->
+            Stop
     end.
 
--file("/home/alex/gleams/glisten/src/glisten.gleam", 242).
--spec handler(
-    fun((connection(IRW)) -> {IRY,
-        gleam@option:option(gleam@erlang@process:selector(IRW))}),
-    fun((message(IRW), IRY, connection(IRW)) -> gleam@otp@actor:next(message(IRW), IRY))
-) -> handler(IRW, IRY).
-handler(On_init, Loop) ->
-    {handler, loopback, On_init, Loop, none, 10, false, false}.
+-file("src/glisten.gleam", 161).
+-spec stop() -> next(any(), any()).
+stop() ->
+    normal_stop.
 
--file("/home/alex/gleams/glisten/src/glisten.gleam", 188).
--spec map_user_selector(gleam@erlang@process:selector(message(IRD))) -> gleam@erlang@process:selector(glisten@internal@handler:loop_message(IRD)).
+-file("src/glisten.gleam", 165).
+-spec stop_abnormal(binary()) -> next(any(), any()).
+stop_abnormal(Reason) ->
+    {abnormal_stop, Reason}.
+
+-file("src/glisten.gleam", 170).
+?DOC(false).
+-spec convert_next(next(GPT, GPU)) -> glisten@internal@handler:next(GPT, GPU).
+convert_next(Next) ->
+    case Next of
+        {continue, State, Selector} ->
+            {continue, State, Selector};
+
+        normal_stop ->
+            normal_stop;
+
+        {abnormal_stop, Reason} ->
+            {abnormal_stop, Reason}
+    end.
+
+-file("src/glisten.gleam", 181).
+?DOC(false).
+-spec map_selector(next(GPZ, GQA), fun((GQA) -> GQD)) -> next(GPZ, GQD).
+map_selector(Next, Mapper) ->
+    case Next of
+        {continue, State, {some, Selector}} ->
+            {continue,
+                State,
+                {some, gleam_erlang_ffi:map_selector(Selector, Mapper)}};
+
+        {continue, State@1, none} ->
+            {continue, State@1, none};
+
+        {abnormal_stop, Reason} ->
+            {abnormal_stop, Reason};
+
+        normal_stop ->
+            normal_stop
+    end.
+
+-file("src/glisten.gleam", 214).
+-spec map_user_selector(gleam@erlang@process:selector(message(GQG))) -> gleam@erlang@process:selector(glisten@internal@handler:loop_message(GQG)).
 map_user_selector(Selector) ->
     gleam_erlang_ffi:map_selector(Selector, fun(Value) -> case Value of
                 {packet, Msg} ->
@@ -197,224 +249,228 @@ map_user_selector(Selector) ->
                     {custom, Msg@1}
             end end).
 
--file("/home/alex/gleams/glisten/src/glisten.gleam", 199).
+-file("src/glisten.gleam", 225).
 -spec convert_loop(
-    fun((message(IRI), IRJ, connection(IRI)) -> gleam@otp@actor:next(message(IRI), IRJ))
-) -> fun((glisten@internal@handler:loop_message(IRI), IRJ, glisten@internal@handler:connection(IRI)) -> gleam@otp@actor:next(glisten@internal@handler:loop_message(IRI), IRJ)).
+    fun((GQL, message(GQM), connection(GQM)) -> next(GQL, message(GQM)))
+) -> fun((GQL, glisten@internal@handler:loop_message(GQM), glisten@internal@handler:connection(GQM)) -> glisten@internal@handler:next(GQL, glisten@internal@handler:loop_message(GQM))).
 convert_loop(Loop) ->
-    fun(Msg, Data, Conn) ->
+    fun(Data, Msg, Conn) ->
         Conn@1 = {connection,
             erlang:element(3, Conn),
             erlang:element(4, Conn),
             erlang:element(5, Conn)},
-        case Msg of
+        Message = case Msg of
             {packet, Msg@1} ->
-                case Loop({packet, Msg@1}, Data, Conn@1) of
-                    {continue, Data@1, Selector} ->
-                        {continue,
-                            Data@1,
-                            gleam@option:map(Selector, fun map_user_selector/1)};
-
-                    {stop, Reason} ->
-                        {stop, Reason}
-                end;
+                {packet, Msg@1};
 
             {custom, Msg@2} ->
-                case Loop({user, Msg@2}, Data, Conn@1) of
-                    {continue, Data@2, Selector@1} ->
-                        {continue,
-                            Data@2,
-                            gleam@option:map(
-                                Selector@1,
-                                fun map_user_selector/1
-                            )};
+                {user, Msg@2}
+        end,
+        case Loop(Data, Message, Conn@1) of
+            {continue, Data@1, Selector} ->
+                case Selector of
+                    {some, Selector@1} ->
+                        _pipe = glisten@internal@handler:continue(Data@1),
+                        glisten@internal@handler:with_selector(
+                            _pipe,
+                            map_user_selector(Selector@1)
+                        );
 
-                    {stop, Reason@1} ->
-                        {stop, Reason@1}
-                end
+                    _ ->
+                        glisten@internal@handler:continue(Data@1)
+                end;
+
+            normal_stop ->
+                glisten@internal@handler:stop();
+
+            {abnormal_stop, Reason} ->
+                glisten@internal@handler:stop_abnormal(Reason)
         end
     end.
 
--file("/home/alex/gleams/glisten/src/glisten.gleam", 259).
--spec with_close(handler(ISF, ISG), fun((ISG) -> nil)) -> handler(ISF, ISG).
-with_close(Handler, On_close) ->
-    _record = Handler,
-    {handler,
-        erlang:element(2, _record),
-        erlang:element(3, _record),
-        erlang:element(4, _record),
+-file("src/glisten.gleam", 249).
+-spec convert_on_init(
+    fun((connection(GQR)) -> {GQT,
+        gleam@option:option(gleam@erlang@process:selector(GQR))})
+) -> fun((glisten@internal@handler:connection(GQR)) -> {GQT,
+    gleam@option:option(gleam@erlang@process:selector(GQR))}).
+convert_on_init(On_init) ->
+    fun(Conn) ->
+        Connection = {connection,
+            erlang:element(3, Conn),
+            erlang:element(4, Conn),
+            erlang:element(5, Conn)},
+        On_init(Connection)
+    end.
+
+-file("src/glisten.gleam", 268).
+?DOC(
+    " Create a new handler for each connection.  The required arguments mirror the\n"
+    " `actor.start` API from `gleam_otp`.  The default pool is 10 accceptor\n"
+    " processes.\n"
+).
+-spec new(
+    fun((connection(GQZ)) -> {GRB,
+        gleam@option:option(gleam@erlang@process:selector(GQZ))}),
+    fun((GRB, message(GQZ), connection(GQZ)) -> next(GRB, message(GQZ)))
+) -> builder(GRB, GQZ).
+new(On_init, Loop) ->
+    {builder, loopback, On_init, Loop, none, 10, false, false, none}.
+
+-file("src/glisten.gleam", 286).
+?DOC(" Adds a function to the handler to be called when the connection is closed.\n").
+-spec with_close(builder(GRI, GRJ), fun((GRI) -> nil)) -> builder(GRI, GRJ).
+with_close(Builder, On_close) ->
+    {builder,
+        erlang:element(2, Builder),
+        erlang:element(3, Builder),
+        erlang:element(4, Builder),
         {some, On_close},
-        erlang:element(6, _record),
-        erlang:element(7, _record),
-        erlang:element(8, _record)}.
+        erlang:element(6, Builder),
+        erlang:element(7, Builder),
+        erlang:element(8, Builder),
+        erlang:element(9, Builder)}.
 
--file("/home/alex/gleams/glisten/src/glisten.gleam", 267).
--spec with_pool_size(handler(ISL, ISM), integer()) -> handler(ISL, ISM).
-with_pool_size(Handler, Size) ->
-    _record = Handler,
-    {handler,
-        erlang:element(2, _record),
-        erlang:element(3, _record),
-        erlang:element(4, _record),
-        erlang:element(5, _record),
+-file("src/glisten.gleam", 294).
+?DOC(" Modify the size of the acceptor pool\n").
+-spec with_pool_size(builder(GRO, GRP), integer()) -> builder(GRO, GRP).
+with_pool_size(Builder, Size) ->
+    {builder,
+        erlang:element(2, Builder),
+        erlang:element(3, Builder),
+        erlang:element(4, Builder),
+        erlang:element(5, Builder),
         Size,
-        erlang:element(7, _record),
-        erlang:element(8, _record)}.
+        erlang:element(7, Builder),
+        erlang:element(8, Builder),
+        erlang:element(9, Builder)}.
 
--file("/home/alex/gleams/glisten/src/glisten.gleam", 277).
--spec with_http2(handler(ISR, ISS)) -> handler(ISR, ISS).
-with_http2(Handler) ->
-    _record = Handler,
-    {handler,
-        erlang:element(2, _record),
-        erlang:element(3, _record),
-        erlang:element(4, _record),
-        erlang:element(5, _record),
-        erlang:element(6, _record),
+-file("src/glisten.gleam", 305).
+?DOC(false).
+-spec with_http2(builder(GRU, GRV)) -> builder(GRU, GRV).
+with_http2(Builder) ->
+    {builder,
+        erlang:element(2, Builder),
+        erlang:element(3, Builder),
+        erlang:element(4, Builder),
+        erlang:element(5, Builder),
+        erlang:element(6, Builder),
         true,
-        erlang:element(8, _record)}.
+        erlang:element(8, Builder),
+        erlang:element(9, Builder)}.
 
--file("/home/alex/gleams/glisten/src/glisten.gleam", 305).
--spec with_ipv6(handler(ITD, ITE)) -> handler(ITD, ITE).
-with_ipv6(Handler) ->
-    _record = Handler,
-    {handler,
-        erlang:element(2, _record),
-        erlang:element(3, _record),
-        erlang:element(4, _record),
-        erlang:element(5, _record),
-        erlang:element(6, _record),
-        erlang:element(7, _record),
-        true}.
+-file("src/glisten.gleam", 333).
+?DOC(
+    " By default, `glisten` listens on `localhost` only over IPv4.  With an IPv4\n"
+    " address, you can call this builder method to also serve over IPv6 on that\n"
+    " interface.  If it is not supported, your application will crash.  If you\n"
+    " call this with an IPv6 interface specified, it will have no effect.\n"
+).
+-spec with_ipv6(builder(GSG, GSH)) -> builder(GSG, GSH).
+with_ipv6(Builder) ->
+    {builder,
+        erlang:element(2, Builder),
+        erlang:element(3, Builder),
+        erlang:element(4, Builder),
+        erlang:element(5, Builder),
+        erlang:element(6, Builder),
+        erlang:element(7, Builder),
+        true,
+        erlang:element(9, Builder)}.
 
--file("/home/alex/gleams/glisten/src/glisten.gleam", 335).
--spec start_server(handler(any(), any()), integer()) -> {ok, server()} |
-    {error, start_error()}.
-start_server(Handler, Port) ->
-    Return = gleam@erlang@process:new_subject(),
-    Selector = begin
-        _pipe = gleam_erlang_ffi:new_selector(),
-        gleam@erlang@process:selecting(_pipe, Return, fun(Subj) -> Subj end)
+-file("src/glisten.gleam", 340).
+?DOC(" To use TLS, provide a path to a certficate and key file.\n").
+-spec with_tls(builder(GSM, GSN), binary(), binary()) -> builder(GSM, GSN).
+with_tls(Builder, Cert, Key) ->
+    {builder,
+        erlang:element(2, Builder),
+        erlang:element(3, Builder),
+        erlang:element(4, Builder),
+        erlang:element(5, Builder),
+        erlang:element(6, Builder),
+        erlang:element(7, Builder),
+        erlang:element(8, Builder),
+        {some, {cert_key_files, Cert, Key}}}.
+
+-file("src/glisten.gleam", 359).
+?DOC(false).
+-spec start_with_listener_name(
+    builder(any(), any()),
+    integer(),
+    gleam@erlang@process:name(glisten@internal@listener:message())
+) -> {ok, gleam@otp@actor:started(gleam@otp@static_supervisor:supervisor())} |
+    {error, gleam@otp@actor:start_error()}.
+start_with_listener_name(Builder, Port, Listener_name) ->
+    Options = begin
+        _pipe = [{ip, erlang:element(2, Builder)}],
+        _pipe@1 = lists:append(_pipe, case erlang:element(8, Builder) of
+                true ->
+                    [ipv6];
+
+                false ->
+                    []
+            end),
+        _pipe@2 = lists:append(_pipe@1, case erlang:element(9, Builder) of
+                {some, Opts} ->
+                    [{cert_key_config, Opts}];
+
+                _ ->
+                    []
+            end),
+        lists:append(
+            _pipe@2,
+            case {erlang:element(9, Builder), erlang:element(7, Builder)} of
+                {{some, _}, true} ->
+                    [{alpn_preferred_protocols,
+                            [<<"h2"/utf8>>, <<"http/1.1"/utf8>>]}];
+
+                {{some, _}, false} ->
+                    [{alpn_preferred_protocols, [<<"http/1.1"/utf8>>]}];
+
+                {none, _} ->
+                    []
+            end
+        )
     end,
-    Options = case erlang:element(8, Handler) of
-        true ->
-            [{ip, erlang:element(2, Handler)}, ipv6];
+    Transport = case erlang:element(9, Builder) of
+        {some, _} ->
+            ssl;
 
-        false ->
-            [{ip, erlang:element(2, Handler)}]
+        _ ->
+            tcp
     end,
-    _pipe@1 = {pool,
-        convert_loop(erlang:element(4, Handler)),
-        erlang:element(6, Handler),
-        convert_on_init(erlang:element(3, Handler)),
-        erlang:element(5, Handler),
-        tcp},
-    _pipe@2 = glisten@internal@acceptor:start_pool(
-        _pipe@1,
-        tcp,
+    _pipe@3 = {pool,
+        convert_loop(erlang:element(4, Builder)),
+        erlang:element(6, Builder),
+        convert_on_init(erlang:element(3, Builder)),
+        erlang:element(5, Builder),
+        Transport},
+    glisten@internal@acceptor:start_pool(
+        _pipe@3,
+        Transport,
         Port,
         Options,
-        Return
-    ),
-    _pipe@3 = gleam@result:map_error(_pipe@2, fun(Err) -> case Err of
-                init_timeout ->
-                    acceptor_timeout;
-
-                {init_failed, Reason} ->
-                    {acceptor_failed, Reason};
-
-                {init_crashed, Reason@1} ->
-                    {acceptor_crashed, Reason@1}
-            end end),
-    gleam@result:then(
-        _pipe@3,
-        fun(Pool) -> _pipe@4 = gleam_erlang_ffi:select(Selector, 1500),
-            _pipe@5 = gleam@result:map(
-                _pipe@4,
-                fun(Listener) -> {server, Listener, Pool, tcp} end
-            ),
-            gleam@result:replace_error(_pipe@5, acceptor_timeout) end
+        Listener_name
     ).
 
--file("/home/alex/gleams/glisten/src/glisten.gleam", 312).
--spec serve(handler(any(), any()), integer()) -> {ok,
-        gleam@erlang@process:subject(gleam@otp@supervisor:message())} |
-    {error, start_error()}.
-serve(Handler, Port) ->
-    _pipe = start_server(Handler, Port),
-    gleam@result:map(_pipe, fun get_supervisor/1).
+-file("src/glisten.gleam", 349).
+?DOC(" Start the TCP server with the given handler on the provided port\n").
+-spec start(builder(any(), any()), integer()) -> {ok,
+        gleam@otp@actor:started(gleam@otp@static_supervisor:supervisor())} |
+    {error, gleam@otp@actor:start_error()}.
+start(Builder, Port) ->
+    Listener_name = gleam_erlang_ffi:new_name(<<"glisten_listener"/utf8>>),
+    start_with_listener_name(Builder, Port, Listener_name).
 
--file("/home/alex/gleams/glisten/src/glisten.gleam", 377).
--spec start_ssl_server(handler(any(), any()), integer(), binary(), binary()) -> {ok,
-        server()} |
-    {error, start_error()}.
-start_ssl_server(Handler, Port, Certfile, Keyfile) ->
-    Base_options = [{ip, erlang:element(2, Handler)},
-        {certfile, Certfile},
-        {keyfile, Keyfile}],
-    Default_options = case erlang:element(8, Handler) of
-        true ->
-            [ipv6 | Base_options];
-
-        false ->
-            Base_options
-    end,
-    Protocol_options = case erlang:element(7, Handler) of
-        true ->
-            [{alpn_preferred_protocols, [<<"h2"/utf8>>, <<"http/1.1"/utf8>>]}];
-
-        false ->
-            [{alpn_preferred_protocols, [<<"http/1.1"/utf8>>]}]
-    end,
-    Return = gleam@erlang@process:new_subject(),
-    Selector = begin
-        _pipe = gleam_erlang_ffi:new_selector(),
-        gleam@erlang@process:selecting(_pipe, Return, fun(Subj) -> Subj end)
-    end,
-    _pipe@1 = {pool,
-        convert_loop(erlang:element(4, Handler)),
-        erlang:element(6, Handler),
-        convert_on_init(erlang:element(3, Handler)),
-        erlang:element(5, Handler),
-        ssl},
-    _pipe@2 = glisten@internal@acceptor:start_pool(
-        _pipe@1,
-        ssl,
-        Port,
-        gleam@list:flatten([Default_options, Protocol_options]),
-        Return
-    ),
-    _pipe@3 = gleam@result:map_error(_pipe@2, fun(Err) -> case Err of
-                init_timeout ->
-                    acceptor_timeout;
-
-                {init_failed, Reason} ->
-                    {acceptor_failed, Reason};
-
-                {init_crashed, Reason@1} ->
-                    {acceptor_crashed, Reason@1}
-            end end),
-    gleam@result:then(
-        _pipe@3,
-        fun(Pool) -> _pipe@4 = gleam_erlang_ffi:select(Selector, 1500),
-            _pipe@5 = gleam@result:map(
-                _pipe@4,
-                fun(Listener) -> {server, Listener, Pool, tcp} end
-            ),
-            gleam@result:replace_error(_pipe@5, acceptor_timeout) end
-    ).
-
--file("/home/alex/gleams/glisten/src/glisten.gleam", 322).
--spec serve_ssl(handler(any(), any()), integer(), binary(), binary()) -> {ok,
-        gleam@erlang@process:subject(gleam@otp@supervisor:message())} |
-    {error, start_error()}.
-serve_ssl(Handler, Port, Certfile, Keyfile) ->
-    _pipe = start_ssl_server(Handler, Port, Certfile, Keyfile),
-    gleam@result:map(_pipe, fun get_supervisor/1).
-
--file("/home/alex/gleams/glisten/src/glisten.gleam", 287).
--spec bind(handler(ISX, ISY), binary()) -> handler(ISX, ISY).
-bind(Handler, Interface) ->
+-file("src/glisten.gleam", 315).
+?DOC(
+    " This sets the interface for `glisten` to listen on. It accepts the following\n"
+    " strings:  \"localhost\", valid IPv4 addresses (i.e. \"127.0.0.1\"), and valid\n"
+    " IPv6 addresses (i.e. \"::1\"). If an invalid value is provided, this will\n"
+    " panic.\n"
+).
+-spec bind(builder(GSA, GSB), binary()) -> builder(GSA, GSB).
+bind(Builder, Interface) ->
     Address@1 = case {Interface,
         glisten_ffi:parse_address(unicode:characters_to_list(Interface))} of
         {<<"0.0.0.0"/utf8>>, _} ->
@@ -432,16 +488,26 @@ bind(Handler, Interface) ->
         {_, {error, _}} ->
             erlang:error(#{gleam_error => panic,
                     message => <<"Invalid interface provided:  must be a valid IPv4/IPv6 address, or \"localhost\""/utf8>>,
+                    file => <<?FILEPATH/utf8>>,
                     module => <<"glisten"/utf8>>,
                     function => <<"bind"/utf8>>,
-                    line => 296})
+                    line => 324})
     end,
-    _record = Handler,
-    {handler,
+    {builder,
         Address@1,
-        erlang:element(3, _record),
-        erlang:element(4, _record),
-        erlang:element(5, _record),
-        erlang:element(6, _record),
-        erlang:element(7, _record),
-        erlang:element(8, _record)}.
+        erlang:element(3, Builder),
+        erlang:element(4, Builder),
+        erlang:element(5, Builder),
+        erlang:element(6, Builder),
+        erlang:element(7, Builder),
+        erlang:element(8, Builder),
+        erlang:element(9, Builder)}.
+
+-file("src/glisten.gleam", 400).
+?DOC(
+    " Helper method for building a child specification for use in a supervision\n"
+    " tree.\n"
+).
+-spec supervised(builder(any(), any()), integer()) -> gleam@otp@supervision:child_specification(gleam@otp@static_supervisor:supervisor()).
+supervised(Handler, Port) ->
+    gleam@otp@supervision:supervisor(fun() -> start(Handler, Port) end).

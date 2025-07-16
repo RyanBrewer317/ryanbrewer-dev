@@ -1,6 +1,6 @@
 -module(gramps@http).
 -compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch]).
-
+-define(FILEPATH, "src/gramps/http.gleam").
 -export([read_response/1, read_request/1, status_to_bit_array/1, encode_headers/1, response_builder/2, to_bytes_tree/1]).
 -export_type([packet_type/0, decode_packet_error/0, uri_packet/0, decoded_packet/0]).
 

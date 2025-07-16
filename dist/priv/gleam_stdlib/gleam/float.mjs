@@ -1,4 +1,4 @@
-import { Ok, Error, divideFloat } from "../gleam.mjs";
+import { Ok, Error, Empty as $Empty, divideFloat } from "../gleam.mjs";
 import * as $order from "../gleam/order.mjs";
 import {
   parse_float as parse,
@@ -120,13 +120,13 @@ function sum_loop(loop$numbers, loop$initial) {
   while (true) {
     let numbers = loop$numbers;
     let initial = loop$initial;
-    if (numbers.atLeastLength(1)) {
+    if (numbers instanceof $Empty) {
+      return initial;
+    } else {
       let first = numbers.head;
       let rest = numbers.tail;
       loop$numbers = rest;
       loop$initial = first + initial;
-    } else {
-      return initial;
     }
   }
 }
@@ -139,13 +139,13 @@ function product_loop(loop$numbers, loop$initial) {
   while (true) {
     let numbers = loop$numbers;
     let initial = loop$initial;
-    if (numbers.atLeastLength(1)) {
+    if (numbers instanceof $Empty) {
+      return initial;
+    } else {
       let first = numbers.head;
       let rest = numbers.tail;
       loop$numbers = rest;
       loop$initial = first * initial;
-    } else {
-      return initial;
     }
   }
 }

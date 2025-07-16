@@ -1,6 +1,7 @@
 import {
   Ok,
   Error,
+  Empty as $Empty,
   prepend as listPrepend,
   CustomType as $CustomType,
   remainderInt,
@@ -125,13 +126,13 @@ function concat_loop(loop$strings, loop$accumulator) {
   while (true) {
     let strings = loop$strings;
     let accumulator = loop$accumulator;
-    if (strings.atLeastLength(1)) {
+    if (strings instanceof $Empty) {
+      return accumulator;
+    } else {
       let string = strings.head;
       let strings$1 = strings.tail;
       loop$strings = strings$1;
       loop$accumulator = accumulator + string;
-    } else {
-      return accumulator;
     }
   }
 }
@@ -165,7 +166,7 @@ function join_loop(loop$strings, loop$separator, loop$accumulator) {
     let strings = loop$strings;
     let separator = loop$separator;
     let accumulator = loop$accumulator;
-    if (strings.hasLength(0)) {
+    if (strings instanceof $Empty) {
       return accumulator;
     } else {
       let string = strings.head;
@@ -178,7 +179,7 @@ function join_loop(loop$strings, loop$separator, loop$accumulator) {
 }
 
 export function join(strings, separator) {
-  if (strings.hasLength(0)) {
+  if (strings instanceof $Empty) {
     return "";
   } else {
     let first$1 = strings.head;
@@ -227,17 +228,17 @@ export function drop_start(loop$string, loop$num_graphemes) {
     let string = loop$string;
     let num_graphemes = loop$num_graphemes;
     let $ = num_graphemes > 0;
-    if (!$) {
-      return string;
-    } else {
+    if ($) {
       let $1 = pop_grapheme(string);
-      if ($1.isOk()) {
+      if ($1 instanceof Ok) {
         let string$1 = $1[0][1];
         loop$string = string$1;
         loop$num_graphemes = num_graphemes - 1;
       } else {
         return string;
       }
+    } else {
+      return string;
     }
   }
 }
@@ -247,7 +248,7 @@ function to_graphemes_loop(loop$string, loop$acc) {
     let string = loop$string;
     let acc = loop$acc;
     let $ = pop_grapheme(string);
-    if ($.isOk()) {
+    if ($ instanceof Ok) {
       let grapheme = $[0][0];
       let rest = $[0][1];
       loop$string = rest;
@@ -280,18 +281,22 @@ export function to_utf_codepoints(string) {
 }
 
 export function utf_codepoint(value) {
-  if (value > 1_114_111) {
-    let i = value;
-    return new Error(undefined);
-  } else if ((value >= 55_296) && (value <= 57_343)) {
-    let i = value;
-    return new Error(undefined);
-  } else if (value < 0) {
-    let i = value;
+  let i = value;
+  if (i > 1_114_111) {
     return new Error(undefined);
   } else {
-    let i = value;
-    return new Ok(unsafe_int_to_utf_codepoint(i));
+    let i$1 = value;
+    if ((i$1 >= 55_296) && (i$1 <= 57_343)) {
+      return new Error(undefined);
+    } else {
+      let i$2 = value;
+      if (i$2 < 0) {
+        return new Error(undefined);
+      } else {
+        let i$3 = value;
+        return new Ok(unsafe_int_to_utf_codepoint(i$3));
+      }
+    }
   }
 }
 
@@ -305,7 +310,7 @@ export function to_option(string) {
 
 export function first(string) {
   let $ = pop_grapheme(string);
-  if ($.isOk()) {
+  if ($ instanceof Ok) {
     let first$1 = $[0][0];
     return new Ok(first$1);
   } else {
@@ -316,12 +321,15 @@ export function first(string) {
 
 export function last(string) {
   let $ = pop_grapheme(string);
-  if ($.isOk() && $[0][1] === "") {
-    let first$1 = $[0][0];
-    return new Ok(first$1);
-  } else if ($.isOk()) {
-    let rest = $[0][1];
-    return new Ok(slice(rest, -1, 1));
+  if ($ instanceof Ok) {
+    let $1 = $[0][1];
+    if ($1 === "") {
+      let first$1 = $[0][0];
+      return new Ok(first$1);
+    } else {
+      let rest = $1;
+      return new Ok(slice(rest, -1, 1));
+    }
   } else {
     let e = $[0];
     return new Error(e);
@@ -330,7 +338,7 @@ export function last(string) {
 
 export function capitalise(string) {
   let $ = pop_grapheme(string);
-  if ($.isOk()) {
+  if ($ instanceof Ok) {
     let first$1 = $[0][0];
     let rest = $[0][1];
     return append(uppercase(first$1), lowercase(rest));

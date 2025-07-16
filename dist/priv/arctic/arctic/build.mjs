@@ -18,7 +18,16 @@ import * as $simplifile from "../../simplifile/simplifile.mjs";
 import * as $snag from "../../snag/snag.mjs";
 import * as $arctic from "../arctic.mjs";
 import { CachedPage, NewPage, ProcessedCollection } from "../arctic.mjs";
-import { Ok, toList, prepend as listPrepend, makeError, isEqual } from "../gleam.mjs";
+import {
+  Ok,
+  toList,
+  Empty as $Empty,
+  prepend as listPrepend,
+  makeError,
+  isEqual,
+} from "../gleam.mjs";
+
+const FILEPATH = "src/arctic/build.gleam";
 
 function lift_ordering(ordering) {
   return (a, b) => {
@@ -30,14 +39,15 @@ function get_id(p) {
   if (p instanceof CachedPage) {
     let metadata = p.metadata;
     let $ = $dict.get(metadata, "id");
-    if (!$.isOk()) {
+    if (!($ instanceof Ok)) {
       throw makeError(
         "let_assert",
+        FILEPATH,
         "arctic/build",
         35,
         "get_id",
         "Pattern match failed, no pattern matched the value.",
-        { value: $ }
+        { value: $, start: 904, end: 948, pattern_start: 915, pattern_end: 921 }
       )
     }
     let id = $[0];
@@ -49,13 +59,13 @@ function get_id(p) {
 }
 
 function to_metadata(csv) {
-  if (csv.hasLength(0)) {
+  if (csv instanceof $Empty) {
     return new Ok($dict.new$());
   } else {
     let pair_str = csv.head;
     let rest = csv.tail;
     let $ = $string.split(pair_str, ":");
-    if ($.hasLength(0)) {
+    if ($ instanceof $Empty) {
       return $snag.error("malformed cache (metadata item with no colon)");
     } else {
       let key = $.head;
@@ -71,44 +81,57 @@ function to_metadata(csv) {
 }
 
 function to_cache(csv) {
-  if (csv.hasLength(0)) {
+  if (csv instanceof $Empty) {
     return new Ok($dict.new$());
-  } else if (csv.atLeastLength(1) && csv.head.atLeastLength(2)) {
-    let id = csv.head.head;
-    let hash = csv.head.tail.head;
-    let metadata = csv.head.tail.tail;
-    let rest = csv.tail;
-    return $result.try$(
-      to_cache(rest),
-      (rest2) => {
+  } else {
+    let $ = csv.head;
+    if ($ instanceof $Empty) {
+      let malformed_row = $;
+      return $snag.error(
+        ("malformed cache (row `" + $string.join(malformed_row, ", ")) + "`)",
+      );
+    } else {
+      let $1 = $.tail;
+      if ($1 instanceof $Empty) {
+        let malformed_row = $;
+        return $snag.error(
+          ("malformed cache (row `" + $string.join(malformed_row, ", ")) + "`)",
+        );
+      } else {
+        let rest = csv.tail;
+        let id = $.head;
+        let hash = $1.head;
+        let metadata = $1.tail;
         return $result.try$(
-          to_metadata(metadata),
-          (metadata2) => {
+          to_cache(rest),
+          (rest2) => {
             return $result.try$(
-              (() => {
-                let _pipe = $bit_array.base64_decode(hash);
-                return map_error(
-                  _pipe,
-                  (_) => {
-                    return $snag.new$(
-                      ("malformed cache (`" + hash) + "` is not a valid base-64 hash)",
+              to_metadata(metadata),
+              (metadata2) => {
+                return $result.try$(
+                  (() => {
+                    let _pipe = $bit_array.base64_decode(hash);
+                    return map_error(
+                      _pipe,
+                      (_) => {
+                        return $snag.new$(
+                          ("malformed cache (`" + hash) + "` is not a valid base-64 hash)",
+                        );
+                      },
+                    );
+                  })(),
+                  (hash_str) => {
+                    return new Ok(
+                      $dict.insert(rest2, id, [hash_str, metadata2]),
                     );
                   },
                 );
-              })(),
-              (hash_str) => {
-                return new Ok($dict.insert(rest2, id, [hash_str, metadata2]));
               },
             );
           },
         );
-      },
-    );
-  } else {
-    let malformed_row = csv.head;
-    return $snag.error(
-      ("malformed cache (row `" + $string.join(malformed_row, ", ")) + "`)",
-    );
+      }
+    }
   }
 }
 
@@ -203,12 +226,86 @@ function read_collection(collection, cache) {
                 $bit_array.from_string(content),
               );
               let $ = $dict.get(cache, path);
-              if ($.isOk() && (isEqual($[0][0], new_hash))) {
+              if ($ instanceof Ok) {
                 let current_hash = $[0][0];
-                let metadata = $[0][1];
-                return new Ok(
-                  listPrepend(new CachedPage(path, metadata), so_far),
-                );
+                if (isEqual(current_hash, new_hash)) {
+                  let metadata = $[0][1];
+                  return new Ok(
+                    listPrepend(new CachedPage(path, metadata), so_far),
+                  );
+                } else {
+                  return $result.try$(
+                    collection.parse(path, content),
+                    (p) => {
+                      return $result.try$(
+                        (() => {
+                          let _pipe = $simplifile.append(
+                            ".arctic_cache.csv",
+                            ((((((((((((((("\"" + $string.replace(
+                              path,
+                              "\"",
+                              "\"\"",
+                            )) + "\",\"") + $bit_array.base64_encode(
+                              new_hash,
+                              false,
+                            )) + "\",\"id:") + $string.replace(
+                              p.id,
+                              "\"",
+                              "\"\"",
+                            )) + "\",\"title:") + $string.replace(
+                              p.title,
+                              "\"",
+                              "\"\"",
+                            )) + "\"") + $option.unwrap(
+                              $option.map(
+                                p.date,
+                                (d) => {
+                                  return (",\"date:" + $arctic.date_to_string(d)) + "\"";
+                                },
+                              ),
+                              "",
+                            )) + ",\"tags:") + $string.join(
+                              $list.map(
+                                p.tags,
+                                (_capture) => {
+                                  return $string.replace(_capture, "\"", "\"\"");
+                                },
+                              ),
+                              ",",
+                            )) + "\",\"blerb:") + $string.replace(
+                              p.blerb,
+                              "\"",
+                              "\"\"",
+                            )) + "\"") + $dict.fold(
+                              p.metadata,
+                              "",
+                              (b, k, v) => {
+                                return ((((b + ",\"") + $string.replace(
+                                  k,
+                                  "\"",
+                                  "\"\"",
+                                )) + ":") + $string.replace(v, "\"", "\"\"")) + "\"";
+                              },
+                            )) + "\n",
+                          );
+                          return map_error(
+                            _pipe,
+                            (err) => {
+                              return $snag.new$(
+                                ("couldn't write to cache (" + $simplifile.describe_error(
+                                  err,
+                                )) + ")",
+                              );
+                            },
+                          );
+                        })(),
+                        (_) => {
+                          return new Ok(listPrepend(new NewPage(p), so_far));
+                        },
+                      );
+                    },
+                  );
+                }
               } else {
                 return $result.try$(
                   collection.parse(path, content),
@@ -359,20 +456,20 @@ function make_ssg_config(processed_collections, config, k) {
         processed_collections,
         _pipe$3,
         (ssg_config, processed) => {
-          let ssg_config2 = (() => {
-            let $ = processed.collection.index;
-            if ($ instanceof Some) {
-              let render = $[0];
-              return add_route(
-                ssg_config,
-                config,
-                processed.collection.directory,
-                render(processed.pages),
-              );
-            } else {
-              return ssg_config;
-            }
-          })();
+          let _block;
+          let $ = processed.collection.index;
+          if ($ instanceof Some) {
+            let render = $[0];
+            _block = add_route(
+              ssg_config,
+              config,
+              processed.collection.directory,
+              render(processed.pages),
+            );
+          } else {
+            _block = ssg_config;
+          }
+          let ssg_config2 = _block;
           let ssg_config3 = $list.fold(
             processed.collection.raw_pages,
             ssg_config2,
@@ -389,64 +486,65 @@ function make_ssg_config(processed_collections, config, k) {
             processed.pages,
             ssg_config3,
             (s, p) => {
-              if (p instanceof NewPage) {
-                let new_page = p[0];
-                return add_route(
-                  s,
-                  config,
-                  (processed.collection.directory + "/") + new_page.id,
-                  processed.collection.render(new_page),
-                );
-              } else {
+              if (p instanceof CachedPage) {
                 let path = p.path;
-                let $ = $string.split(path, ".txt");
-                if (!$.atLeastLength(1)) {
+                let $1 = $string.split(path, ".txt");
+                if ($1 instanceof $Empty) {
                   throw makeError(
                     "let_assert",
+                    FILEPATH,
                     "arctic/build",
                     402,
-                    "",
+                    "make_ssg_config",
                     "Pattern match failed, no pattern matched the value.",
-                    { value: $ }
+                    {
+                      value: $1,
+                      start: 12886,
+                      end: 12937,
+                      pattern_start: 12897,
+                      pattern_end: 12908
+                    }
                   )
                 }
-                let start = $.head;
+                let start = $1.head;
                 let cached_path = ("arctic_build/" + start) + "/index.html";
                 let res = $simplifile.read(cached_path);
-                let content = (() => {
-                  if (res.isOk()) {
-                    let c = res[0];
-                    return c;
+                let _block$1;
+                if (res instanceof Ok) {
+                  let c = res[0];
+                  _block$1 = c;
+                } else {
+                  throw makeError(
+                    "panic",
+                    FILEPATH,
+                    "arctic/build",
+                    407,
+                    "make_ssg_config",
+                    cached_path,
+                    {}
+                  )
+                }
+                let content = _block$1;
+                let $2 = config.render_spa;
+                if ($2 instanceof Some) {
+                  let spa_content_path = ("arctic_build/__pages/" + start) + "/index.html";
+                  let res$1 = $simplifile.read(spa_content_path);
+                  let _block$2;
+                  if (res$1 instanceof Ok) {
+                    let c = res$1[0];
+                    _block$2 = c;
                   } else {
                     throw makeError(
                       "panic",
+                      FILEPATH,
                       "arctic/build",
-                      407,
-                      "",
+                      419,
+                      "make_ssg_config",
                       cached_path,
                       {}
                     )
                   }
-                })();
-                let $1 = config.render_spa;
-                if ($1 instanceof Some) {
-                  let spa_content_path = ("arctic_build/__pages/" + start) + "/index.html";
-                  let res$1 = $simplifile.read(spa_content_path);
-                  let spa_content = (() => {
-                    if (res$1.isOk()) {
-                      let c = res$1[0];
-                      return c;
-                    } else {
-                      throw makeError(
-                        "panic",
-                        "arctic/build",
-                        419,
-                        "",
-                        cached_path,
-                        {}
-                      )
-                    }
-                  })();
+                  let spa_content = _block$2;
                   let _pipe$4 = s;
                   let _pipe$5 = $ssg.add_static_asset(
                     _pipe$4,
@@ -465,6 +563,14 @@ function make_ssg_config(processed_collections, config, k) {
                     content,
                   );
                 }
+              } else {
+                let new_page = p[0];
+                return add_route(
+                  s,
+                  config,
+                  (processed.collection.directory + "/") + new_page.id,
+                  processed.collection.render(new_page),
+                );
               }
             },
           );

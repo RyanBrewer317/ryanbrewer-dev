@@ -15,6 +15,8 @@ import {
   bitArraySlice,
 } from "../gleam.mjs";
 
+const FILEPATH = "src/gleam/http.gleam";
+
 export class Get extends $CustomType {}
 
 export class Post extends $CustomType {}
@@ -34,9 +36,9 @@ export class Options extends $CustomType {}
 export class Patch extends $CustomType {}
 
 export class Other extends $CustomType {
-  constructor(x0) {
+  constructor($0) {
     super();
-    this[0] = x0;
+    this[0] = $0;
   }
 }
 
@@ -77,9 +79,9 @@ export class MoreRequiredForBody extends $CustomType {
 }
 
 export class ContentDisposition extends $CustomType {
-  constructor(x0, parameters) {
+  constructor($0, parameters) {
     super();
-    this[0] = x0;
+    this[0] = $0;
     this.parameters = parameters;
   }
 }
@@ -115,14 +117,18 @@ function is_valid_tchar(ch) {
     return true;
   } else if (ch === 126) {
     return true;
-  } else if ((ch >= 0x30) && (ch <= 0x39)) {
-    let ch$1 = ch;
-    return true;
-  } else if (((ch >= 0x41) && (ch <= 0x5A)) || ((ch >= 0x61) && (ch <= 0x7A))) {
-    let ch$1 = ch;
-    return true;
   } else {
-    return false;
+    let ch$1 = ch;
+    if ((ch$1 >= 0x30) && (ch$1 <= 0x39)) {
+      return true;
+    } else {
+      let ch$2 = ch;
+      if (((ch$2 >= 0x41) && (ch$2 <= 0x5A)) || ((ch$2 >= 0x61) && (ch$2 <= 0x7A))) {
+        return true;
+      } else {
+        return false;
+      }
+    }
   }
 }
 
@@ -130,11 +136,19 @@ function do_is_valid_token(loop$bytes, loop$acc) {
   while (true) {
     let bytes = loop$bytes;
     let acc = loop$acc;
-    if ((bytes.bitSize >= 8 && (bytes.bitSize - 8) % 8 === 0) && acc) {
-      let char = bytes.byteAt(0);
-      let rest = bitArraySlice(bytes, 8);
-      loop$bytes = rest;
-      loop$acc = is_valid_tchar(char);
+    if (acc) {
+      if (bytes.bitSize >= 8) {
+        if ((bytes.bitSize - 8) % 8 === 0) {
+          let char = bytes.byteAt(0);
+          let rest = bitArraySlice(bytes, 8);
+          loop$bytes = rest;
+          loop$acc = is_valid_tchar(char);
+        } else {
+          return acc;
+        }
+      } else {
+        return acc;
+      }
     } else {
       return acc;
     }
@@ -177,24 +191,24 @@ export function parse_method(s) {
 }
 
 export function method_to_string(method) {
-  if (method instanceof Connect) {
-    return "CONNECT";
-  } else if (method instanceof Delete) {
-    return "DELETE";
-  } else if (method instanceof Get) {
+  if (method instanceof Get) {
     return "GET";
+  } else if (method instanceof Post) {
+    return "POST";
   } else if (method instanceof Head) {
     return "HEAD";
+  } else if (method instanceof Put) {
+    return "PUT";
+  } else if (method instanceof Delete) {
+    return "DELETE";
+  } else if (method instanceof Trace) {
+    return "TRACE";
+  } else if (method instanceof Connect) {
+    return "CONNECT";
   } else if (method instanceof Options) {
     return "OPTIONS";
   } else if (method instanceof Patch) {
     return "PATCH";
-  } else if (method instanceof Post) {
-    return "POST";
-  } else if (method instanceof Put) {
-    return "PUT";
-  } else if (method instanceof Trace) {
-    return "TRACE";
   } else {
     let s = method[0];
     return s;
@@ -223,14 +237,24 @@ export function scheme_from_string(scheme) {
 function skip_whitespace(loop$data) {
   while (true) {
     let data = loop$data;
-    if (data.byteAt(0) === 32 &&
-    (data.bitSize >= 8 && (data.bitSize - 8) % 8 === 0)) {
-      let data$1 = bitArraySlice(data, 8);
-      loop$data = data$1;
-    } else if (data.byteAt(0) === 9 &&
-    (data.bitSize >= 8 && (data.bitSize - 8) % 8 === 0)) {
-      let data$1 = bitArraySlice(data, 8);
-      loop$data = data$1;
+    if (data.bitSize >= 8) {
+      if (data.byteAt(0) === 32) {
+        if ((data.bitSize - 8) % 8 === 0) {
+          let data$1 = bitArraySlice(data, 8);
+          loop$data = data$1;
+        } else {
+          return data;
+        }
+      } else if (data.byteAt(0) === 9) {
+        if ((data.bitSize - 8) % 8 === 0) {
+          let data$1 = bitArraySlice(data, 8);
+          loop$data = data$1;
+        } else {
+          return data;
+        }
+      } else {
+        return data;
+      }
     } else {
       return data;
     }
@@ -261,31 +285,34 @@ function parse_rfc_2045_parameter_quoted_value(
     let name = loop$name;
     let value = loop$value;
     let $ = $string.pop_grapheme(header);
-    if (!$.isOk() && !$[0]) {
-      return new Error(undefined);
-    } else if ($.isOk() && $[0][0] === "\"") {
-      let rest = $[0][1];
-      return new Ok([[name, value], rest]);
-    } else if ($.isOk() && $[0][0] === "\\") {
-      let rest = $[0][1];
-      return $result.try$(
-        $string.pop_grapheme(rest),
-        (_use0) => {
-          let grapheme = _use0[0];
-          let rest$1 = _use0[1];
-          return parse_rfc_2045_parameter_quoted_value(
-            rest$1,
-            name,
-            value + grapheme,
-          );
-        },
-      );
+    if ($ instanceof Ok) {
+      let $1 = $[0][0];
+      if ($1 === "\"") {
+        let rest = $[0][1];
+        return new Ok([[name, value], rest]);
+      } else if ($1 === "\\") {
+        let rest = $[0][1];
+        return $result.try$(
+          $string.pop_grapheme(rest),
+          (_use0) => {
+            let grapheme = _use0[0];
+            let rest$1 = _use0[1];
+            return parse_rfc_2045_parameter_quoted_value(
+              rest$1,
+              name,
+              value + grapheme,
+            );
+          },
+        );
+      } else {
+        let grapheme = $1;
+        let rest = $[0][1];
+        loop$header = rest;
+        loop$name = name;
+        loop$value = value + grapheme;
+      }
     } else {
-      let grapheme = $[0][0];
-      let rest = $[0][1];
-      loop$header = rest;
-      loop$name = name;
-      loop$value = value + grapheme;
+      return new Error(undefined);
     }
   }
 }
@@ -300,38 +327,46 @@ function parse_rfc_2045_parameter_unquoted_value(
     let name = loop$name;
     let value = loop$value;
     let $ = $string.pop_grapheme(header);
-    if (!$.isOk() && !$[0]) {
-      return [[name, value], header];
-    } else if ($.isOk() && $[0][0] === ";") {
-      let rest = $[0][1];
-      return [[name, value], rest];
-    } else if ($.isOk() && $[0][0] === " ") {
-      let rest = $[0][1];
-      return [[name, value], rest];
-    } else if ($.isOk() && $[0][0] === "\t") {
-      let rest = $[0][1];
-      return [[name, value], rest];
+    if ($ instanceof Ok) {
+      let $1 = $[0][0];
+      if ($1 === ";") {
+        let rest = $[0][1];
+        return [[name, value], rest];
+      } else if ($1 === " ") {
+        let rest = $[0][1];
+        return [[name, value], rest];
+      } else if ($1 === "\t") {
+        let rest = $[0][1];
+        return [[name, value], rest];
+      } else {
+        let grapheme = $1;
+        let rest = $[0][1];
+        loop$header = rest;
+        loop$name = name;
+        loop$value = value + grapheme;
+      }
     } else {
-      let grapheme = $[0][0];
-      let rest = $[0][1];
-      loop$header = rest;
-      loop$name = name;
-      loop$value = value + grapheme;
+      return [[name, value], header];
     }
   }
 }
 
 function parse_rfc_2045_parameter_value(header, name) {
   let $ = $string.pop_grapheme(header);
-  if (!$.isOk() && !$[0]) {
-    return new Error(undefined);
-  } else if ($.isOk() && $[0][0] === "\"") {
-    let rest = $[0][1];
-    return parse_rfc_2045_parameter_quoted_value(rest, name, "");
+  if ($ instanceof Ok) {
+    let $1 = $[0][0];
+    if ($1 === "\"") {
+      let rest = $[0][1];
+      return parse_rfc_2045_parameter_quoted_value(rest, name, "");
+    } else {
+      let grapheme = $1;
+      let rest = $[0][1];
+      return new Ok(
+        parse_rfc_2045_parameter_unquoted_value(rest, name, grapheme),
+      );
+    }
   } else {
-    let grapheme = $[0][0];
-    let rest = $[0][1];
-    return new Ok(parse_rfc_2045_parameter_unquoted_value(rest, name, grapheme));
+    return new Error(undefined);
   }
 }
 
@@ -358,35 +393,38 @@ function parse_rfc_2045_parameters(loop$header, loop$parameters) {
     let header = loop$header;
     let parameters = loop$parameters;
     let $ = $string.pop_grapheme(header);
-    if (!$.isOk() && !$[0]) {
-      return new Ok($list.reverse(parameters));
-    } else if ($.isOk() && $[0][0] === ";") {
-      let rest = $[0][1];
-      loop$header = rest;
-      loop$parameters = parameters;
-    } else if ($.isOk() && $[0][0] === " ") {
-      let rest = $[0][1];
-      loop$header = rest;
-      loop$parameters = parameters;
-    } else if ($.isOk() && $[0][0] === "\t") {
-      let rest = $[0][1];
-      loop$header = rest;
-      loop$parameters = parameters;
+    if ($ instanceof Ok) {
+      let $1 = $[0][0];
+      if ($1 === ";") {
+        let rest = $[0][1];
+        loop$header = rest;
+        loop$parameters = parameters;
+      } else if ($1 === " ") {
+        let rest = $[0][1];
+        loop$header = rest;
+        loop$parameters = parameters;
+      } else if ($1 === "\t") {
+        let rest = $[0][1];
+        loop$header = rest;
+        loop$parameters = parameters;
+      } else {
+        let grapheme = $1;
+        let rest = $[0][1];
+        let acc = $string.lowercase(grapheme);
+        return $result.try$(
+          parse_rfc_2045_parameter(rest, acc),
+          (_use0) => {
+            let parameter = _use0[0];
+            let rest$1 = _use0[1];
+            return parse_rfc_2045_parameters(
+              rest$1,
+              listPrepend(parameter, parameters),
+            );
+          },
+        );
+      }
     } else {
-      let grapheme = $[0][0];
-      let rest = $[0][1];
-      let acc = $string.lowercase(grapheme);
-      return $result.try$(
-        parse_rfc_2045_parameter(rest, acc),
-        (_use0) => {
-          let parameter = _use0[0];
-          let rest$1 = _use0[1];
-          return parse_rfc_2045_parameters(
-            rest$1,
-            listPrepend(parameter, parameters),
-          );
-        },
-      );
+      return new Ok($list.reverse(parameters));
     }
   }
 }
@@ -396,34 +434,37 @@ function parse_content_disposition_type(loop$header, loop$name) {
     let header = loop$header;
     let name = loop$name;
     let $ = $string.pop_grapheme(header);
-    if (!$.isOk() && !$[0]) {
-      return new Ok(new ContentDisposition(name, toList([])));
-    } else if ($.isOk() && $[0][0] === " ") {
-      let rest = $[0][1];
-      let result = parse_rfc_2045_parameters(rest, toList([]));
-      return $result.map(
-        result,
-        (parameters) => { return new ContentDisposition(name, parameters); },
-      );
-    } else if ($.isOk() && $[0][0] === "\t") {
-      let rest = $[0][1];
-      let result = parse_rfc_2045_parameters(rest, toList([]));
-      return $result.map(
-        result,
-        (parameters) => { return new ContentDisposition(name, parameters); },
-      );
-    } else if ($.isOk() && $[0][0] === ";") {
-      let rest = $[0][1];
-      let result = parse_rfc_2045_parameters(rest, toList([]));
-      return $result.map(
-        result,
-        (parameters) => { return new ContentDisposition(name, parameters); },
-      );
+    if ($ instanceof Ok) {
+      let $1 = $[0][0];
+      if ($1 === " ") {
+        let rest = $[0][1];
+        let result = parse_rfc_2045_parameters(rest, toList([]));
+        return $result.map(
+          result,
+          (parameters) => { return new ContentDisposition(name, parameters); },
+        );
+      } else if ($1 === "\t") {
+        let rest = $[0][1];
+        let result = parse_rfc_2045_parameters(rest, toList([]));
+        return $result.map(
+          result,
+          (parameters) => { return new ContentDisposition(name, parameters); },
+        );
+      } else if ($1 === ";") {
+        let rest = $[0][1];
+        let result = parse_rfc_2045_parameters(rest, toList([]));
+        return $result.map(
+          result,
+          (parameters) => { return new ContentDisposition(name, parameters); },
+        );
+      } else {
+        let grapheme = $1;
+        let rest = $[0][1];
+        loop$header = rest;
+        loop$name = name + $string.lowercase(grapheme);
+      }
     } else {
-      let grapheme = $[0][0];
-      let rest = $[0][1];
-      loop$header = rest;
-      loop$name = name + $string.lowercase(grapheme);
+      return new Ok(new ContentDisposition(name, toList([])));
     }
   }
 }
@@ -462,51 +503,162 @@ function parse_body_loop(loop$data, loop$boundary, loop$body) {
         body,
         data,
       );
-    } else if (data.byteAt(0) === 13 &&
-    data.byteAt(1) === 10 &&
-    (data.bitSize >= 16 && (data.bitSize - 16) % 8 === 0)) {
-      let data$1 = bitArraySlice(data, 16);
-      let desired = toBitArray([45, 45, boundary]);
-      let size = $bit_array.byte_size(desired);
-      let dsize$1 = $bit_array.byte_size(data$1);
-      let prefix = $bit_array.slice(data$1, 0, size);
-      let rest = $bit_array.slice(data$1, size, dsize$1 - size);
-      let $ = isEqual(prefix, new Ok(desired));
-      if ($ &&
-      rest.isOk() &&
-      rest[0].byteAt(0) === 13 &&
-      rest[0].byteAt(1) === 10 &&
-      (rest[0].bitSize >= 16 && (rest[0].bitSize - 16) % 8 === 0)) {
-        return new Ok(new MultipartBody(body, false, data$1));
-      } else if ($ &&
-      rest.isOk() &&
-      rest[0].byteAt(0) === 45 &&
-      rest[0].byteAt(1) === 45 &&
-      (rest[0].bitSize >= 16 && (rest[0].bitSize - 16) % 8 === 0)) {
-        let data$2 = bitArraySlice(rest[0], 16);
-        return new Ok(new MultipartBody(body, true, data$2));
-      } else if (!$) {
-        loop$data = data$1;
-        loop$boundary = boundary;
-        loop$body = toBitArray([body, 13, 10]);
-      } else {
-        return new Error(undefined);
-      }
-    } else if ((data.bitSize >= 8 && (data.bitSize - 8) % 8 === 0)) {
-      let char = data.byteAt(0);
-      let data$1 = bitArraySlice(data, 8);
-      loop$data = data$1;
-      loop$boundary = boundary;
-      loop$body = toBitArray([body, char]);
     } else {
-      throw makeError(
-        "panic",
-        "gleam/http",
-        296,
-        "parse_body_loop",
-        "unreachable",
-        {}
-      )
+      if (data.bitSize >= 8) {
+        if (data.byteAt(0) === 13) {
+          if (data.bitSize >= 16) {
+            if (data.byteAt(1) === 10) {
+              if ((data.bitSize - 16) % 8 === 0) {
+                let data$1 = bitArraySlice(data, 16);
+                let desired = toBitArray([45, 45, boundary]);
+                let size = $bit_array.byte_size(desired);
+                let dsize$1 = $bit_array.byte_size(data$1);
+                let prefix = $bit_array.slice(data$1, 0, size);
+                let rest = $bit_array.slice(data$1, size, dsize$1 - size);
+                let $ = isEqual(prefix, new Ok(desired));
+                if ($) {
+                  if (rest instanceof Ok) {
+                    let $1 = rest[0];
+                    if ($1.bitSize >= 8) {
+                      if ($1.byteAt(0) === 13) {
+                        if ($1.bitSize >= 16) {
+                          if ($1.byteAt(1) === 10) {
+                            if (($1.bitSize - 16) % 8 === 0) {
+                              return new Ok(
+                                new MultipartBody(body, false, data$1),
+                              );
+                            } else {
+                              return new Error(undefined);
+                            }
+                          } else if ($1.byteAt(0) === 45) {
+                            if ($1.byteAt(1) === 45) {
+                              if (($1.bitSize - 16) % 8 === 0) {
+                                let data$2 = bitArraySlice($1, 16);
+                                return new Ok(
+                                  new MultipartBody(body, true, data$2),
+                                );
+                              } else {
+                                return new Error(undefined);
+                              }
+                            } else {
+                              return new Error(undefined);
+                            }
+                          } else {
+                            return new Error(undefined);
+                          }
+                        } else {
+                          return new Error(undefined);
+                        }
+                      } else if ($1.byteAt(0) === 45) {
+                        if ($1.bitSize >= 16) {
+                          if ($1.byteAt(1) === 45) {
+                            if (($1.bitSize - 16) % 8 === 0) {
+                              let data$2 = bitArraySlice($1, 16);
+                              return new Ok(
+                                new MultipartBody(body, true, data$2),
+                              );
+                            } else {
+                              return new Error(undefined);
+                            }
+                          } else {
+                            return new Error(undefined);
+                          }
+                        } else {
+                          return new Error(undefined);
+                        }
+                      } else {
+                        return new Error(undefined);
+                      }
+                    } else {
+                      return new Error(undefined);
+                    }
+                  } else {
+                    return new Error(undefined);
+                  }
+                } else {
+                  loop$data = data$1;
+                  loop$boundary = boundary;
+                  loop$body = toBitArray([body, 13, 10]);
+                }
+              } else if ((data.bitSize - 8) % 8 === 0) {
+                let char = data.byteAt(0);
+                let data$1 = bitArraySlice(data, 8);
+                loop$data = data$1;
+                loop$boundary = boundary;
+                loop$body = toBitArray([body, char]);
+              } else {
+                throw makeError(
+                  "panic",
+                  FILEPATH,
+                  "gleam/http",
+                  296,
+                  "parse_body_loop",
+                  "unreachable",
+                  {}
+                )
+              }
+            } else if ((data.bitSize - 8) % 8 === 0) {
+              let char = data.byteAt(0);
+              let data$1 = bitArraySlice(data, 8);
+              loop$data = data$1;
+              loop$boundary = boundary;
+              loop$body = toBitArray([body, char]);
+            } else {
+              throw makeError(
+                "panic",
+                FILEPATH,
+                "gleam/http",
+                296,
+                "parse_body_loop",
+                "unreachable",
+                {}
+              )
+            }
+          } else if ((data.bitSize - 8) % 8 === 0) {
+            let char = data.byteAt(0);
+            let data$1 = bitArraySlice(data, 8);
+            loop$data = data$1;
+            loop$boundary = boundary;
+            loop$body = toBitArray([body, char]);
+          } else {
+            throw makeError(
+              "panic",
+              FILEPATH,
+              "gleam/http",
+              296,
+              "parse_body_loop",
+              "unreachable",
+              {}
+            )
+          }
+        } else if ((data.bitSize - 8) % 8 === 0) {
+          let char = data.byteAt(0);
+          let data$1 = bitArraySlice(data, 8);
+          loop$data = data$1;
+          loop$boundary = boundary;
+          loop$body = toBitArray([body, char]);
+        } else {
+          throw makeError(
+            "panic",
+            FILEPATH,
+            "gleam/http",
+            296,
+            "parse_body_loop",
+            "unreachable",
+            {}
+          )
+        }
+      } else {
+        throw makeError(
+          "panic",
+          FILEPATH,
+          "gleam/http",
+          296,
+          "parse_body_loop",
+          "unreachable",
+          {}
+        )
+      }
     }
   }
 }
@@ -544,73 +696,542 @@ function parse_header_value(loop$data, loop$headers, loop$name, loop$value) {
         return parse_header_value(_pipe$1, headers, name, value);
       };
       return more_please_headers(_pipe, data);
-    } else if (data.byteAt(0) === 13 &&
-    data.byteAt(1) === 10 &&
-    data.byteAt(2) === 13 &&
-    data.byteAt(3) === 10 &&
-    (data.bitSize >= 32 && (data.bitSize - 32) % 8 === 0)) {
-      let data$1 = bitArraySlice(data, 32);
-      return $result.try$(
-        $bit_array.to_string(name),
-        (name) => {
-          return $result.map(
-            $bit_array.to_string(value),
-            (value) => {
-              let headers$1 = $list.reverse(
-                listPrepend([$string.lowercase(name), value], headers),
-              );
-              return new MultipartHeaders(headers$1, data$1);
-            },
-          );
-        },
-      );
-    } else if (data.byteAt(0) === 13 &&
-    data.byteAt(1) === 10 &&
-    data.byteAt(2) === 32 &&
-    (data.bitSize >= 24 && (data.bitSize - 24) % 8 === 0)) {
-      let data$1 = bitArraySlice(data, 24);
-      loop$data = data$1;
-      loop$headers = headers;
-      loop$name = name;
-      loop$value = value;
-    } else if (data.byteAt(0) === 13 &&
-    data.byteAt(1) === 10 &&
-    data.byteAt(2) === 9 &&
-    (data.bitSize >= 24 && (data.bitSize - 24) % 8 === 0)) {
-      let data$1 = bitArraySlice(data, 24);
-      loop$data = data$1;
-      loop$headers = headers;
-      loop$name = name;
-      loop$value = value;
-    } else if (data.byteAt(0) === 13 &&
-    data.byteAt(1) === 10 &&
-    (data.bitSize >= 16 && (data.bitSize - 16) % 8 === 0)) {
-      let data$1 = bitArraySlice(data, 16);
-      return $result.try$(
-        $bit_array.to_string(name),
-        (name) => {
-          return $result.try$(
-            $bit_array.to_string(value),
-            (value) => {
-              let headers$1 = listPrepend(
-                [$string.lowercase(name), value],
-                headers,
-              );
-              return parse_header_name(data$1, headers$1, toBitArray([]));
-            },
-          );
-        },
-      );
-    } else if ((data.bitSize >= 8 && (data.bitSize - 8) % 8 === 0)) {
-      let char = data.byteAt(0);
-      let rest = bitArraySlice(data, 8);
-      let value$1 = toBitArray([value, char]);
-      loop$data = rest;
-      loop$headers = headers;
-      loop$name = name;
-      loop$value = value$1;
     } else {
-      return new Error(undefined);
+      if (data.bitSize >= 8) {
+        if (data.byteAt(0) === 13) {
+          if (data.bitSize >= 16) {
+            if (data.byteAt(1) === 10) {
+              if (data.bitSize >= 24) {
+                if (data.byteAt(2) === 13) {
+                  if (data.bitSize >= 32) {
+                    if (data.byteAt(3) === 10) {
+                      if ((data.bitSize - 32) % 8 === 0) {
+                        let data$1 = bitArraySlice(data, 32);
+                        return $result.try$(
+                          $bit_array.to_string(name),
+                          (name) => {
+                            return $result.map(
+                              $bit_array.to_string(value),
+                              (value) => {
+                                let headers$1 = $list.reverse(
+                                  listPrepend(
+                                    [$string.lowercase(name), value],
+                                    headers,
+                                  ),
+                                );
+                                return new MultipartHeaders(headers$1, data$1);
+                              },
+                            );
+                          },
+                        );
+                      } else if (data.byteAt(2) === 32) {
+                        if ((data.bitSize - 24) % 8 === 0) {
+                          let data$1 = bitArraySlice(data, 24);
+                          loop$data = data$1;
+                          loop$headers = headers;
+                          loop$name = name;
+                          loop$value = value;
+                        } else if ((data.bitSize - 16) % 8 === 0) {
+                          let data$1 = bitArraySlice(data, 16);
+                          return $result.try$(
+                            $bit_array.to_string(name),
+                            (name) => {
+                              return $result.try$(
+                                $bit_array.to_string(value),
+                                (value) => {
+                                  let headers$1 = listPrepend(
+                                    [$string.lowercase(name), value],
+                                    headers,
+                                  );
+                                  return parse_header_name(
+                                    data$1,
+                                    headers$1,
+                                    toBitArray([]),
+                                  );
+                                },
+                              );
+                            },
+                          );
+                        } else if ((data.bitSize - 8) % 8 === 0) {
+                          let char = data.byteAt(0);
+                          let rest = bitArraySlice(data, 8);
+                          let value$1 = toBitArray([value, char]);
+                          loop$data = rest;
+                          loop$headers = headers;
+                          loop$name = name;
+                          loop$value = value$1;
+                        } else {
+                          return new Error(undefined);
+                        }
+                      } else if (data.byteAt(2) === 9) {
+                        if ((data.bitSize - 24) % 8 === 0) {
+                          let data$1 = bitArraySlice(data, 24);
+                          loop$data = data$1;
+                          loop$headers = headers;
+                          loop$name = name;
+                          loop$value = value;
+                        } else if ((data.bitSize - 16) % 8 === 0) {
+                          let data$1 = bitArraySlice(data, 16);
+                          return $result.try$(
+                            $bit_array.to_string(name),
+                            (name) => {
+                              return $result.try$(
+                                $bit_array.to_string(value),
+                                (value) => {
+                                  let headers$1 = listPrepend(
+                                    [$string.lowercase(name), value],
+                                    headers,
+                                  );
+                                  return parse_header_name(
+                                    data$1,
+                                    headers$1,
+                                    toBitArray([]),
+                                  );
+                                },
+                              );
+                            },
+                          );
+                        } else if ((data.bitSize - 8) % 8 === 0) {
+                          let char = data.byteAt(0);
+                          let rest = bitArraySlice(data, 8);
+                          let value$1 = toBitArray([value, char]);
+                          loop$data = rest;
+                          loop$headers = headers;
+                          loop$name = name;
+                          loop$value = value$1;
+                        } else {
+                          return new Error(undefined);
+                        }
+                      } else if ((data.bitSize - 16) % 8 === 0) {
+                        let data$1 = bitArraySlice(data, 16);
+                        return $result.try$(
+                          $bit_array.to_string(name),
+                          (name) => {
+                            return $result.try$(
+                              $bit_array.to_string(value),
+                              (value) => {
+                                let headers$1 = listPrepend(
+                                  [$string.lowercase(name), value],
+                                  headers,
+                                );
+                                return parse_header_name(
+                                  data$1,
+                                  headers$1,
+                                  toBitArray([]),
+                                );
+                              },
+                            );
+                          },
+                        );
+                      } else if ((data.bitSize - 8) % 8 === 0) {
+                        let char = data.byteAt(0);
+                        let rest = bitArraySlice(data, 8);
+                        let value$1 = toBitArray([value, char]);
+                        loop$data = rest;
+                        loop$headers = headers;
+                        loop$name = name;
+                        loop$value = value$1;
+                      } else {
+                        return new Error(undefined);
+                      }
+                    } else if (data.byteAt(2) === 32) {
+                      if ((data.bitSize - 24) % 8 === 0) {
+                        let data$1 = bitArraySlice(data, 24);
+                        loop$data = data$1;
+                        loop$headers = headers;
+                        loop$name = name;
+                        loop$value = value;
+                      } else if ((data.bitSize - 16) % 8 === 0) {
+                        let data$1 = bitArraySlice(data, 16);
+                        return $result.try$(
+                          $bit_array.to_string(name),
+                          (name) => {
+                            return $result.try$(
+                              $bit_array.to_string(value),
+                              (value) => {
+                                let headers$1 = listPrepend(
+                                  [$string.lowercase(name), value],
+                                  headers,
+                                );
+                                return parse_header_name(
+                                  data$1,
+                                  headers$1,
+                                  toBitArray([]),
+                                );
+                              },
+                            );
+                          },
+                        );
+                      } else if ((data.bitSize - 8) % 8 === 0) {
+                        let char = data.byteAt(0);
+                        let rest = bitArraySlice(data, 8);
+                        let value$1 = toBitArray([value, char]);
+                        loop$data = rest;
+                        loop$headers = headers;
+                        loop$name = name;
+                        loop$value = value$1;
+                      } else {
+                        return new Error(undefined);
+                      }
+                    } else if (data.byteAt(2) === 9) {
+                      if ((data.bitSize - 24) % 8 === 0) {
+                        let data$1 = bitArraySlice(data, 24);
+                        loop$data = data$1;
+                        loop$headers = headers;
+                        loop$name = name;
+                        loop$value = value;
+                      } else if ((data.bitSize - 16) % 8 === 0) {
+                        let data$1 = bitArraySlice(data, 16);
+                        return $result.try$(
+                          $bit_array.to_string(name),
+                          (name) => {
+                            return $result.try$(
+                              $bit_array.to_string(value),
+                              (value) => {
+                                let headers$1 = listPrepend(
+                                  [$string.lowercase(name), value],
+                                  headers,
+                                );
+                                return parse_header_name(
+                                  data$1,
+                                  headers$1,
+                                  toBitArray([]),
+                                );
+                              },
+                            );
+                          },
+                        );
+                      } else if ((data.bitSize - 8) % 8 === 0) {
+                        let char = data.byteAt(0);
+                        let rest = bitArraySlice(data, 8);
+                        let value$1 = toBitArray([value, char]);
+                        loop$data = rest;
+                        loop$headers = headers;
+                        loop$name = name;
+                        loop$value = value$1;
+                      } else {
+                        return new Error(undefined);
+                      }
+                    } else if ((data.bitSize - 16) % 8 === 0) {
+                      let data$1 = bitArraySlice(data, 16);
+                      return $result.try$(
+                        $bit_array.to_string(name),
+                        (name) => {
+                          return $result.try$(
+                            $bit_array.to_string(value),
+                            (value) => {
+                              let headers$1 = listPrepend(
+                                [$string.lowercase(name), value],
+                                headers,
+                              );
+                              return parse_header_name(
+                                data$1,
+                                headers$1,
+                                toBitArray([]),
+                              );
+                            },
+                          );
+                        },
+                      );
+                    } else if ((data.bitSize - 8) % 8 === 0) {
+                      let char = data.byteAt(0);
+                      let rest = bitArraySlice(data, 8);
+                      let value$1 = toBitArray([value, char]);
+                      loop$data = rest;
+                      loop$headers = headers;
+                      loop$name = name;
+                      loop$value = value$1;
+                    } else {
+                      return new Error(undefined);
+                    }
+                  } else if (data.byteAt(2) === 32) {
+                    if ((data.bitSize - 24) % 8 === 0) {
+                      let data$1 = bitArraySlice(data, 24);
+                      loop$data = data$1;
+                      loop$headers = headers;
+                      loop$name = name;
+                      loop$value = value;
+                    } else if ((data.bitSize - 16) % 8 === 0) {
+                      let data$1 = bitArraySlice(data, 16);
+                      return $result.try$(
+                        $bit_array.to_string(name),
+                        (name) => {
+                          return $result.try$(
+                            $bit_array.to_string(value),
+                            (value) => {
+                              let headers$1 = listPrepend(
+                                [$string.lowercase(name), value],
+                                headers,
+                              );
+                              return parse_header_name(
+                                data$1,
+                                headers$1,
+                                toBitArray([]),
+                              );
+                            },
+                          );
+                        },
+                      );
+                    } else if ((data.bitSize - 8) % 8 === 0) {
+                      let char = data.byteAt(0);
+                      let rest = bitArraySlice(data, 8);
+                      let value$1 = toBitArray([value, char]);
+                      loop$data = rest;
+                      loop$headers = headers;
+                      loop$name = name;
+                      loop$value = value$1;
+                    } else {
+                      return new Error(undefined);
+                    }
+                  } else if (data.byteAt(2) === 9) {
+                    if ((data.bitSize - 24) % 8 === 0) {
+                      let data$1 = bitArraySlice(data, 24);
+                      loop$data = data$1;
+                      loop$headers = headers;
+                      loop$name = name;
+                      loop$value = value;
+                    } else if ((data.bitSize - 16) % 8 === 0) {
+                      let data$1 = bitArraySlice(data, 16);
+                      return $result.try$(
+                        $bit_array.to_string(name),
+                        (name) => {
+                          return $result.try$(
+                            $bit_array.to_string(value),
+                            (value) => {
+                              let headers$1 = listPrepend(
+                                [$string.lowercase(name), value],
+                                headers,
+                              );
+                              return parse_header_name(
+                                data$1,
+                                headers$1,
+                                toBitArray([]),
+                              );
+                            },
+                          );
+                        },
+                      );
+                    } else if ((data.bitSize - 8) % 8 === 0) {
+                      let char = data.byteAt(0);
+                      let rest = bitArraySlice(data, 8);
+                      let value$1 = toBitArray([value, char]);
+                      loop$data = rest;
+                      loop$headers = headers;
+                      loop$name = name;
+                      loop$value = value$1;
+                    } else {
+                      return new Error(undefined);
+                    }
+                  } else if ((data.bitSize - 16) % 8 === 0) {
+                    let data$1 = bitArraySlice(data, 16);
+                    return $result.try$(
+                      $bit_array.to_string(name),
+                      (name) => {
+                        return $result.try$(
+                          $bit_array.to_string(value),
+                          (value) => {
+                            let headers$1 = listPrepend(
+                              [$string.lowercase(name), value],
+                              headers,
+                            );
+                            return parse_header_name(
+                              data$1,
+                              headers$1,
+                              toBitArray([]),
+                            );
+                          },
+                        );
+                      },
+                    );
+                  } else if ((data.bitSize - 8) % 8 === 0) {
+                    let char = data.byteAt(0);
+                    let rest = bitArraySlice(data, 8);
+                    let value$1 = toBitArray([value, char]);
+                    loop$data = rest;
+                    loop$headers = headers;
+                    loop$name = name;
+                    loop$value = value$1;
+                  } else {
+                    return new Error(undefined);
+                  }
+                } else if (data.byteAt(2) === 32) {
+                  if ((data.bitSize - 24) % 8 === 0) {
+                    let data$1 = bitArraySlice(data, 24);
+                    loop$data = data$1;
+                    loop$headers = headers;
+                    loop$name = name;
+                    loop$value = value;
+                  } else if ((data.bitSize - 16) % 8 === 0) {
+                    let data$1 = bitArraySlice(data, 16);
+                    return $result.try$(
+                      $bit_array.to_string(name),
+                      (name) => {
+                        return $result.try$(
+                          $bit_array.to_string(value),
+                          (value) => {
+                            let headers$1 = listPrepend(
+                              [$string.lowercase(name), value],
+                              headers,
+                            );
+                            return parse_header_name(
+                              data$1,
+                              headers$1,
+                              toBitArray([]),
+                            );
+                          },
+                        );
+                      },
+                    );
+                  } else if ((data.bitSize - 8) % 8 === 0) {
+                    let char = data.byteAt(0);
+                    let rest = bitArraySlice(data, 8);
+                    let value$1 = toBitArray([value, char]);
+                    loop$data = rest;
+                    loop$headers = headers;
+                    loop$name = name;
+                    loop$value = value$1;
+                  } else {
+                    return new Error(undefined);
+                  }
+                } else if (data.byteAt(2) === 9) {
+                  if ((data.bitSize - 24) % 8 === 0) {
+                    let data$1 = bitArraySlice(data, 24);
+                    loop$data = data$1;
+                    loop$headers = headers;
+                    loop$name = name;
+                    loop$value = value;
+                  } else if ((data.bitSize - 16) % 8 === 0) {
+                    let data$1 = bitArraySlice(data, 16);
+                    return $result.try$(
+                      $bit_array.to_string(name),
+                      (name) => {
+                        return $result.try$(
+                          $bit_array.to_string(value),
+                          (value) => {
+                            let headers$1 = listPrepend(
+                              [$string.lowercase(name), value],
+                              headers,
+                            );
+                            return parse_header_name(
+                              data$1,
+                              headers$1,
+                              toBitArray([]),
+                            );
+                          },
+                        );
+                      },
+                    );
+                  } else if ((data.bitSize - 8) % 8 === 0) {
+                    let char = data.byteAt(0);
+                    let rest = bitArraySlice(data, 8);
+                    let value$1 = toBitArray([value, char]);
+                    loop$data = rest;
+                    loop$headers = headers;
+                    loop$name = name;
+                    loop$value = value$1;
+                  } else {
+                    return new Error(undefined);
+                  }
+                } else if ((data.bitSize - 16) % 8 === 0) {
+                  let data$1 = bitArraySlice(data, 16);
+                  return $result.try$(
+                    $bit_array.to_string(name),
+                    (name) => {
+                      return $result.try$(
+                        $bit_array.to_string(value),
+                        (value) => {
+                          let headers$1 = listPrepend(
+                            [$string.lowercase(name), value],
+                            headers,
+                          );
+                          return parse_header_name(
+                            data$1,
+                            headers$1,
+                            toBitArray([]),
+                          );
+                        },
+                      );
+                    },
+                  );
+                } else if ((data.bitSize - 8) % 8 === 0) {
+                  let char = data.byteAt(0);
+                  let rest = bitArraySlice(data, 8);
+                  let value$1 = toBitArray([value, char]);
+                  loop$data = rest;
+                  loop$headers = headers;
+                  loop$name = name;
+                  loop$value = value$1;
+                } else {
+                  return new Error(undefined);
+                }
+              } else if ((data.bitSize - 16) % 8 === 0) {
+                let data$1 = bitArraySlice(data, 16);
+                return $result.try$(
+                  $bit_array.to_string(name),
+                  (name) => {
+                    return $result.try$(
+                      $bit_array.to_string(value),
+                      (value) => {
+                        let headers$1 = listPrepend(
+                          [$string.lowercase(name), value],
+                          headers,
+                        );
+                        return parse_header_name(
+                          data$1,
+                          headers$1,
+                          toBitArray([]),
+                        );
+                      },
+                    );
+                  },
+                );
+              } else if ((data.bitSize - 8) % 8 === 0) {
+                let char = data.byteAt(0);
+                let rest = bitArraySlice(data, 8);
+                let value$1 = toBitArray([value, char]);
+                loop$data = rest;
+                loop$headers = headers;
+                loop$name = name;
+                loop$value = value$1;
+              } else {
+                return new Error(undefined);
+              }
+            } else if ((data.bitSize - 8) % 8 === 0) {
+              let char = data.byteAt(0);
+              let rest = bitArraySlice(data, 8);
+              let value$1 = toBitArray([value, char]);
+              loop$data = rest;
+              loop$headers = headers;
+              loop$name = name;
+              loop$value = value$1;
+            } else {
+              return new Error(undefined);
+            }
+          } else if ((data.bitSize - 8) % 8 === 0) {
+            let char = data.byteAt(0);
+            let rest = bitArraySlice(data, 8);
+            let value$1 = toBitArray([value, char]);
+            loop$data = rest;
+            loop$headers = headers;
+            loop$name = name;
+            loop$value = value$1;
+          } else {
+            return new Error(undefined);
+          }
+        } else if ((data.bitSize - 8) % 8 === 0) {
+          let char = data.byteAt(0);
+          let rest = bitArraySlice(data, 8);
+          let value$1 = toBitArray([value, char]);
+          loop$data = rest;
+          loop$headers = headers;
+          loop$name = name;
+          loop$value = value$1;
+        } else {
+          return new Error(undefined);
+        }
+      } else {
+        return new Error(undefined);
+      }
     }
   }
 }
@@ -621,17 +1242,31 @@ function parse_header_name(loop$data, loop$headers, loop$name) {
     let headers = loop$headers;
     let name = loop$name;
     let $ = skip_whitespace(data);
-    if ($.byteAt(0) === 58 && ($.bitSize >= 8 && ($.bitSize - 8) % 8 === 0)) {
-      let data$1 = bitArraySlice($, 8);
-      let _pipe = data$1;
-      let _pipe$1 = skip_whitespace(_pipe);
-      return parse_header_value(_pipe$1, headers, name, toBitArray([]));
-    } else if (($.bitSize >= 8 && ($.bitSize - 8) % 8 === 0)) {
-      let char = $.byteAt(0);
-      let data$1 = bitArraySlice($, 8);
-      loop$data = data$1;
-      loop$headers = headers;
-      loop$name = toBitArray([name, char]);
+    if ($.bitSize >= 8) {
+      if ($.byteAt(0) === 58) {
+        if (($.bitSize - 8) % 8 === 0) {
+          let data$1 = bitArraySlice($, 8);
+          let _pipe = data$1;
+          let _pipe$1 = skip_whitespace(_pipe);
+          return parse_header_value(_pipe$1, headers, name, toBitArray([]));
+        } else {
+          return more_please_headers(
+            (_capture) => { return parse_header_name(_capture, headers, name); },
+            data,
+          );
+        }
+      } else if (($.bitSize - 8) % 8 === 0) {
+        let char = $.byteAt(0);
+        let data$1 = bitArraySlice($, 8);
+        loop$data = data$1;
+        loop$headers = headers;
+        loop$name = toBitArray([name, char]);
+      } else {
+        return more_please_headers(
+          (_capture) => { return parse_header_name(_capture, headers, name); },
+          data,
+        );
+      }
     } else {
       return more_please_headers(
         (_capture) => { return parse_header_name(_capture, headers, name); },
@@ -642,21 +1277,59 @@ function parse_header_name(loop$data, loop$headers, loop$name) {
 }
 
 function do_parse_headers(data) {
-  if (data.byteAt(0) === 13 &&
-  data.byteAt(1) === 10 &&
-  data.byteAt(2) === 13 &&
-  data.byteAt(3) === 10 &&
-  (data.bitSize >= 32 && (data.bitSize - 32) % 8 === 0)) {
-    let data$1 = bitArraySlice(data, 32);
-    return new Ok(new MultipartHeaders(toList([]), data$1));
-  } else if (data.byteAt(0) === 13 &&
-  data.byteAt(1) === 10 &&
-  (data.bitSize >= 16 && (data.bitSize - 16) % 8 === 0)) {
-    let data$1 = bitArraySlice(data, 16);
-    return parse_header_name(data$1, toList([]), toBitArray([]));
-  } else if (data.byteAt(0) === 13 && data.bitSize == 8) {
-    return more_please_headers(do_parse_headers, data);
-  } else if (data.bitSize == 0) {
+  if (data.bitSize >= 8) {
+    if (data.byteAt(0) === 13) {
+      if (data.bitSize >= 16) {
+        if (data.byteAt(1) === 10) {
+          if (data.bitSize >= 24) {
+            if (data.byteAt(2) === 13) {
+              if (data.bitSize >= 32) {
+                if (data.byteAt(3) === 10) {
+                  if ((data.bitSize - 32) % 8 === 0) {
+                    let data$1 = bitArraySlice(data, 32);
+                    return new Ok(new MultipartHeaders(toList([]), data$1));
+                  } else if ((data.bitSize - 16) % 8 === 0) {
+                    let data$1 = bitArraySlice(data, 16);
+                    return parse_header_name(data$1, toList([]), toBitArray([]));
+                  } else {
+                    return new Error(undefined);
+                  }
+                } else if ((data.bitSize - 16) % 8 === 0) {
+                  let data$1 = bitArraySlice(data, 16);
+                  return parse_header_name(data$1, toList([]), toBitArray([]));
+                } else {
+                  return new Error(undefined);
+                }
+              } else if ((data.bitSize - 16) % 8 === 0) {
+                let data$1 = bitArraySlice(data, 16);
+                return parse_header_name(data$1, toList([]), toBitArray([]));
+              } else {
+                return new Error(undefined);
+              }
+            } else if ((data.bitSize - 16) % 8 === 0) {
+              let data$1 = bitArraySlice(data, 16);
+              return parse_header_name(data$1, toList([]), toBitArray([]));
+            } else {
+              return new Error(undefined);
+            }
+          } else if ((data.bitSize - 16) % 8 === 0) {
+            let data$1 = bitArraySlice(data, 16);
+            return parse_header_name(data$1, toList([]), toBitArray([]));
+          } else {
+            return new Error(undefined);
+          }
+        } else {
+          return new Error(undefined);
+        }
+      } else if (data.bitSize === 8) {
+        return more_please_headers(do_parse_headers, data);
+      } else {
+        return new Error(undefined);
+      }
+    } else {
+      return new Error(undefined);
+    }
+  } else if (data.bitSize === 0) {
     return more_please_headers(do_parse_headers, data);
   } else {
     return new Error(undefined);
@@ -724,40 +1397,165 @@ function skip_preamble(loop$data, loop$boundary) {
         (_capture) => { return skip_preamble(_capture, boundary); },
         data,
       );
-    } else if (data.byteAt(0) === 13 &&
-    data.byteAt(1) === 10 &&
-    data.byteAt(2) === 45 &&
-    data.byteAt(3) === 45 &&
-    (data.bitSize >= 32 && (data.bitSize - 32) % 8 === 0)) {
-      let data$1 = bitArraySlice(data, 32);
-      let $ = $bit_array.slice(data$1, 0, boundary_size);
-      if ($.isOk() && (isEqual($[0], boundary))) {
-        let prefix = $[0];
-        let start = boundary_size;
-        let length = $bit_array.byte_size(data$1) - boundary_size;
-        return $result.try$(
-          $bit_array.slice(data$1, start, length),
-          (rest) => { return do_parse_headers(rest); },
-        );
-      } else if ($.isOk()) {
-        loop$data = data$1;
-        loop$boundary = boundary;
-      } else {
-        return new Error(undefined);
-      }
-    } else if ((data.bitSize >= 8 && (data.bitSize - 8) % 8 === 0)) {
-      let data$1 = bitArraySlice(data, 8);
-      loop$data = data$1;
-      loop$boundary = boundary;
     } else {
-      throw makeError(
-        "panic",
-        "gleam/http",
-        372,
-        "skip_preamble",
-        "unreachable",
-        {}
-      )
+      if (data.bitSize >= 8) {
+        if (data.byteAt(0) === 13) {
+          if (data.bitSize >= 16) {
+            if (data.byteAt(1) === 10) {
+              if (data.bitSize >= 24) {
+                if (data.byteAt(2) === 45) {
+                  if (data.bitSize >= 32) {
+                    if (data.byteAt(3) === 45) {
+                      if ((data.bitSize - 32) % 8 === 0) {
+                        let data$1 = bitArraySlice(data, 32);
+                        let $ = $bit_array.slice(data$1, 0, boundary_size);
+                        if ($ instanceof Ok) {
+                          let prefix = $[0];
+                          if (isEqual(prefix, boundary)) {
+                            let start = boundary_size;
+                            let length = $bit_array.byte_size(data$1) - boundary_size;
+                            return $result.try$(
+                              $bit_array.slice(data$1, start, length),
+                              (rest) => { return do_parse_headers(rest); },
+                            );
+                          } else {
+                            loop$data = data$1;
+                            loop$boundary = boundary;
+                          }
+                        } else {
+                          return new Error(undefined);
+                        }
+                      } else if ((data.bitSize - 8) % 8 === 0) {
+                        let data$1 = bitArraySlice(data, 8);
+                        loop$data = data$1;
+                        loop$boundary = boundary;
+                      } else {
+                        throw makeError(
+                          "panic",
+                          FILEPATH,
+                          "gleam/http",
+                          372,
+                          "skip_preamble",
+                          "unreachable",
+                          {}
+                        )
+                      }
+                    } else if ((data.bitSize - 8) % 8 === 0) {
+                      let data$1 = bitArraySlice(data, 8);
+                      loop$data = data$1;
+                      loop$boundary = boundary;
+                    } else {
+                      throw makeError(
+                        "panic",
+                        FILEPATH,
+                        "gleam/http",
+                        372,
+                        "skip_preamble",
+                        "unreachable",
+                        {}
+                      )
+                    }
+                  } else if ((data.bitSize - 8) % 8 === 0) {
+                    let data$1 = bitArraySlice(data, 8);
+                    loop$data = data$1;
+                    loop$boundary = boundary;
+                  } else {
+                    throw makeError(
+                      "panic",
+                      FILEPATH,
+                      "gleam/http",
+                      372,
+                      "skip_preamble",
+                      "unreachable",
+                      {}
+                    )
+                  }
+                } else if ((data.bitSize - 8) % 8 === 0) {
+                  let data$1 = bitArraySlice(data, 8);
+                  loop$data = data$1;
+                  loop$boundary = boundary;
+                } else {
+                  throw makeError(
+                    "panic",
+                    FILEPATH,
+                    "gleam/http",
+                    372,
+                    "skip_preamble",
+                    "unreachable",
+                    {}
+                  )
+                }
+              } else if ((data.bitSize - 8) % 8 === 0) {
+                let data$1 = bitArraySlice(data, 8);
+                loop$data = data$1;
+                loop$boundary = boundary;
+              } else {
+                throw makeError(
+                  "panic",
+                  FILEPATH,
+                  "gleam/http",
+                  372,
+                  "skip_preamble",
+                  "unreachable",
+                  {}
+                )
+              }
+            } else if ((data.bitSize - 8) % 8 === 0) {
+              let data$1 = bitArraySlice(data, 8);
+              loop$data = data$1;
+              loop$boundary = boundary;
+            } else {
+              throw makeError(
+                "panic",
+                FILEPATH,
+                "gleam/http",
+                372,
+                "skip_preamble",
+                "unreachable",
+                {}
+              )
+            }
+          } else if ((data.bitSize - 8) % 8 === 0) {
+            let data$1 = bitArraySlice(data, 8);
+            loop$data = data$1;
+            loop$boundary = boundary;
+          } else {
+            throw makeError(
+              "panic",
+              FILEPATH,
+              "gleam/http",
+              372,
+              "skip_preamble",
+              "unreachable",
+              {}
+            )
+          }
+        } else if ((data.bitSize - 8) % 8 === 0) {
+          let data$1 = bitArraySlice(data, 8);
+          loop$data = data$1;
+          loop$boundary = boundary;
+        } else {
+          throw makeError(
+            "panic",
+            FILEPATH,
+            "gleam/http",
+            372,
+            "skip_preamble",
+            "unreachable",
+            {}
+          )
+        }
+      } else {
+        throw makeError(
+          "panic",
+          FILEPATH,
+          "gleam/http",
+          372,
+          "skip_preamble",
+          "unreachable",
+          {}
+        )
+      }
     }
   }
 }

@@ -15,15 +15,15 @@ function wrap_mist_chunk(chunk) {
   return $result.map(
     _pipe$1,
     (chunk) => {
-      if (chunk instanceof $mist.Done) {
-        return new $internal.ReadingFinished();
-      } else {
+      if (chunk instanceof $mist.Chunk) {
         let data = chunk.data;
         let consume = chunk.consume;
         return new $internal.Chunk(
           data,
           (size) => { return wrap_mist_chunk(consume(size)); },
         );
+      } else {
+        return new $internal.ReadingFinished();
       }
     },
   );

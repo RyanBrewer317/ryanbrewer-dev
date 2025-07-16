@@ -32,20 +32,20 @@ function ensure_post(req) {
 }
 
 function get_override_method(request) {
-  return $result.then$(
+  return $result.try$(
     $request.get_query(request),
     (query_params) => {
-      return $result.then$(
+      return $result.try$(
         $list.key_find(query_params, "_method"),
         (method) => {
-          return $result.then$(
+          return $result.try$(
             $http.parse_method(method),
             (method) => {
               if (method instanceof Put) {
                 return new Ok(method);
-              } else if (method instanceof Patch) {
-                return new Ok(method);
               } else if (method instanceof Delete) {
+                return new Ok(method);
+              } else if (method instanceof Patch) {
                 return new Ok(method);
               } else {
                 return new Error(undefined);
@@ -62,7 +62,7 @@ export function method_override(service) {
   return (request) => {
     let _pipe = request;
     let _pipe$1 = ensure_post(_pipe);
-    let _pipe$2 = $result.then$(_pipe$1, get_override_method);
+    let _pipe$2 = $result.try$(_pipe$1, get_override_method);
     let _pipe$3 = $result.map(
       _pipe$2,
       (_capture) => { return $request.set_method(request, _capture); },

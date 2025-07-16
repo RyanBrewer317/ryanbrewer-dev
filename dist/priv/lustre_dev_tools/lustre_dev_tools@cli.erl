@@ -1,6 +1,6 @@
 -module(lustre_dev_tools@cli).
 -compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch]).
-
+-define(FILEPATH, "src/lustre_dev_tools/cli.gleam").
 -export([run/2, return/1, throw/1, from_result/1, do/2, in/1, map/2, 'try'/2, log/2, success/2, notify/2, mute/0, unmute/0, template/2, get_config/0, get_name/0, get_flags/0, get_config_value/5, get_int/4, get_string/4, get_bool/4]).
 -export_type([cli/1, env/0, spinner_status/0]).
 
@@ -14,9 +14,9 @@
 
 ?MODULEDOC(false).
 
--opaque cli(AFRY) :: {cli,
+-opaque cli(WBZ) :: {cli,
         fun((env()) -> {env(),
-            {ok, AFRY} | {error, lustre_dev_tools@error:error()}})}.
+            {ok, WBZ} | {error, lustre_dev_tools@error:error()}})}.
 
 -type env() :: {env,
         boolean(),
@@ -31,7 +31,7 @@
 
 -file("src/lustre_dev_tools/cli.gleam", 40).
 ?DOC(false).
--spec run(cli(AFRZ), glint:flags()) -> {ok, AFRZ} |
+-spec run(cli(WCA), glint:flags()) -> {ok, WCA} |
     {error, lustre_dev_tools@error:error()}.
 run(Step, Flags) ->
     gleam@result:'try'(
@@ -65,7 +65,7 @@ run(Step, Flags) ->
 
 -file("src/lustre_dev_tools/cli.gleam", 64).
 ?DOC(false).
--spec return(AFSD) -> cli(AFSD).
+-spec return(WCE) -> cli(WCE).
 return(Value) ->
     {cli, fun(Env) -> {Env, {ok, Value}} end}.
 
@@ -77,13 +77,13 @@ throw(Error) ->
 
 -file("src/lustre_dev_tools/cli.gleam", 78).
 ?DOC(false).
--spec from_result({ok, AFSH} | {error, lustre_dev_tools@error:error()}) -> cli(AFSH).
+-spec from_result({ok, WCI} | {error, lustre_dev_tools@error:error()}) -> cli(WCI).
 from_result(Result) ->
     {cli, fun(Env) -> {Env, Result} end}.
 
 -file("src/lustre_dev_tools/cli.gleam", 88).
 ?DOC(false).
--spec do(cli(AFSL), fun((AFSL) -> cli(AFSN))) -> cli(AFSN).
+-spec do(cli(WCM), fun((WCM) -> cli(WCO))) -> cli(WCO).
 do(Step, Next) ->
     {cli,
         fun(Env) ->
@@ -106,13 +106,13 @@ do(Step, Next) ->
 
 -file("src/lustre_dev_tools/cli.gleam", 105).
 ?DOC(false).
--spec in(fun(() -> AFSQ)) -> cli(AFSQ).
+-spec in(fun(() -> WCR)) -> cli(WCR).
 in(Value) ->
     {cli, fun(Env) -> {Env, {ok, Value()}} end}.
 
 -file("src/lustre_dev_tools/cli.gleam", 111).
 ?DOC(false).
--spec map(cli(AFSS), fun((AFSS) -> AFSU)) -> cli(AFSU).
+-spec map(cli(WCT), fun((WCT) -> WCV)) -> cli(WCV).
 map(Step, Next) ->
     {cli,
         fun(Env) ->
@@ -124,9 +124,9 @@ map(Step, Next) ->
 -file("src/lustre_dev_tools/cli.gleam", 121).
 ?DOC(false).
 -spec 'try'(
-    {ok, AFSW} | {error, lustre_dev_tools@error:error()},
-    fun((AFSW) -> cli(AFSZ))
-) -> cli(AFSZ).
+    {ok, WCX} | {error, lustre_dev_tools@error:error()},
+    fun((WCX) -> cli(WDA))
+) -> cli(WDA).
 'try'(Result, Next) ->
     {cli, fun(Env) -> case Result of
                 {ok, A} ->
@@ -145,7 +145,7 @@ map(Step, Next) ->
 
 -file("src/lustre_dev_tools/cli.gleam", 141).
 ?DOC(false).
--spec log(binary(), fun(() -> cli(AFTC))) -> cli(AFTC).
+-spec log(binary(), fun(() -> cli(WDD))) -> cli(WDD).
 log(Message, Next) ->
     {cli,
         fun(Env) ->
@@ -202,7 +202,7 @@ log(Message, Next) ->
 
 -file("src/lustre_dev_tools/cli.gleam", 166).
 ?DOC(false).
--spec success(binary(), fun(() -> cli(AFTF))) -> cli(AFTF).
+-spec success(binary(), fun(() -> cli(WDG))) -> cli(WDG).
 success(Message, Next) ->
     {cli,
         fun(Env) ->
@@ -232,7 +232,7 @@ success(Message, Next) ->
 
 -file("src/lustre_dev_tools/cli.gleam", 185).
 ?DOC(false).
--spec notify(binary(), fun(() -> cli(AFTI))) -> cli(AFTI).
+-spec notify(binary(), fun(() -> cli(WDJ))) -> cli(WDJ).
 notify(Message, Next) ->
     {cli,
         fun(Env) ->
@@ -295,25 +295,29 @@ unmute() ->
 
 -file("src/lustre_dev_tools/cli.gleam", 218).
 ?DOC(false).
--spec template(binary(), fun((binary()) -> cli(AFTN))) -> cli(AFTN).
+-spec template(binary(), fun((binary()) -> cli(WDO))) -> cli(WDO).
 template(Name, Next) ->
     {cli,
         fun(Env) ->
-            _assert_subject = gleam_erlang_ffi:priv_directory(
+            Priv@1 = case gleam_erlang_ffi:priv_directory(
                 <<"lustre_dev_tools"/utf8>>
-            ),
-            {ok, Priv} = case _assert_subject of
-                {ok, _} -> _assert_subject;
+            ) of
+                {ok, Priv} -> Priv;
                 _assert_fail ->
                     erlang:error(#{gleam_error => let_assert,
                                 message => <<"Pattern match failed, no pattern matched the value."/utf8>>,
-                                value => _assert_fail,
+                                file => <<?FILEPATH/utf8>>,
                                 module => <<"lustre_dev_tools/cli"/utf8>>,
                                 function => <<"template"/utf8>>,
-                                line => 220})
+                                line => 220,
+                                value => _assert_fail,
+                                start => 4719,
+                                'end' => 4787,
+                                pattern_start => 4730,
+                                pattern_end => 4738})
             end,
             case simplifile:read(
-                <<<<Priv/binary, "/template/"/utf8>>/binary, Name/binary>>
+                <<<<Priv@1/binary, "/template/"/utf8>>/binary, Name/binary>>
             ) of
                 {ok, Template} ->
                     (erlang:element(2, Next(Template)))(Env);
@@ -346,12 +350,12 @@ get_flags() ->
 ?DOC(false).
 -spec get_config_value(
     binary(),
-    AFTT,
+    WDU,
     list(binary()),
-    fun((gleam@dict:dict(binary(), tom:toml()), list(binary())) -> {ok, AFTT} |
+    fun((gleam@dict:dict(binary(), tom:toml()), list(binary())) -> {ok, WDU} |
         {error, any()}),
-    fun((glint:flags()) -> {ok, AFTT} | {error, any()})
-) -> cli(AFTT).
+    fun((glint:flags()) -> {ok, WDU} | {error, any()})
+) -> cli(WDU).
 get_config_value(Name, Fallback, Namespace, Toml, Flag) ->
     {cli,
         fun(Env) ->

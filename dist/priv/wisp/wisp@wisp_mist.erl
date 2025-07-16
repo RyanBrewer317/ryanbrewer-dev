@@ -1,6 +1,6 @@
 -module(wisp@wisp_mist).
 -compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch]).
-
+-define(FILEPATH, "src/wisp/wisp_mist.gleam").
 -export([handler/2]).
 
 -if(?OTP_RELEASE >= 27).
@@ -11,7 +11,7 @@
 -define(DOC(Str), -compile([])).
 -endif.
 
--file("src/wisp/wisp_mist.gleam", 62).
+-file("src/wisp/wisp_mist.gleam", 68).
 -spec wrap_mist_chunk({ok, mist:chunk()} | {error, mist:read_error()}) -> {ok,
         wisp@internal:read()} |
     {error, nil}.
@@ -28,7 +28,7 @@ wrap_mist_chunk(Chunk) ->
                         fun(Size) -> wrap_mist_chunk(Consume(Size)) end}
             end end).
 
--file("src/wisp/wisp_mist.gleam", 55).
+-file("src/wisp/wisp_mist.gleam", 61).
 -spec mist_body_reader(
     gleam@http@request:request(mist@internal@http:connection())
 ) -> fun((integer()) -> {ok, wisp@internal:read()} | {error, nil}).
@@ -41,7 +41,7 @@ mist_body_reader(Request) ->
             fun(Size) -> wrap_mist_chunk(Stream(Size)) end
     end.
 
--file("src/wisp/wisp_mist.gleam", 87).
+-file("src/wisp/wisp_mist.gleam", 93).
 -spec mist_send_file(binary()) -> mist:response_data().
 mist_send_file(Path) ->
     case mist:send_file(Path, 0, none) of
@@ -53,7 +53,7 @@ mist_send_file(Path) ->
             {bytes, gleam@bytes_tree:new()}
     end.
 
--file("src/wisp/wisp_mist.gleam", 76).
+-file("src/wisp/wisp_mist.gleam", 82).
 -spec mist_response(gleam@http@response:response(wisp:body())) -> gleam@http@response:response(mist:response_data()).
 mist_response(Response) ->
     Body = case erlang:element(4, Response) of
@@ -72,7 +72,7 @@ mist_response(Response) ->
     _pipe = Response,
     gleam@http@response:set_body(_pipe, Body).
 
--file("src/wisp/wisp_mist.gleam", 33).
+-file("src/wisp/wisp_mist.gleam", 39).
 ?DOC(
     " Convert a Wisp request handler into a function that can be run with the Mist\n"
     " web server.\n"
@@ -91,6 +91,11 @@ mist_response(Response) ->
     "   process.sleep_forever()\n"
     " }\n"
     " ```\n"
+    "\n"
+    " The secret key base is used for signing and encryption. To be able to\n"
+    " verify and decrypt messages you will need to use the same key each time\n"
+    " your program is run. Keep this value secret! Malicious people with this\n"
+    " value will likely be able to hack your application.\n"
 ).
 -spec handler(
     fun((gleam@http@request:request(wisp@internal:connection())) -> gleam@http@response:response(wisp:body())),
@@ -105,15 +110,20 @@ handler(Handler, Secret_key_base) ->
         Request@1 = gleam@http@request:set_body(Request, Connection),
         exception_ffi:defer(
             fun() -> _assert_subject = wisp:delete_temporary_files(Request@1),
-                {ok, _} = case _assert_subject of
+                case _assert_subject of
                     {ok, _} -> _assert_subject;
                     _assert_fail ->
                         erlang:error(#{gleam_error => let_assert,
                                     message => <<"Pattern match failed, no pattern matched the value."/utf8>>,
-                                    value => _assert_fail,
+                                    file => <<?FILEPATH/utf8>>,
                                     module => <<"wisp/wisp_mist"/utf8>>,
                                     function => <<"handler"/utf8>>,
-                                    line => 43})
+                                    line => 49,
+                                    value => _assert_fail,
+                                    start => 1369,
+                                    'end' => 1424,
+                                    pattern_start => 1380,
+                                    pattern_end => 1385})
                 end end,
             fun() ->
                 Response = begin

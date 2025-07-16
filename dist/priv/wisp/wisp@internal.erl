@@ -1,6 +1,6 @@
 -module(wisp@internal).
 -compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch]).
-
+-define(FILEPATH, "src/wisp/internal.gleam").
 -export([remove_preceeding_slashes/1, join_path/2, random_string/1, random_slug/0, make_connection/2, generate_etag/2]).
 -export_type([connection/0, read/0]).
 

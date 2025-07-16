@@ -1,6 +1,6 @@
 -module(gramps@websocket@compression).
 -compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch]).
-
+-define(FILEPATH, "src/gramps/websocket/compression.gleam").
 -export([init/0, inflate/2, deflate/2, set_controlling_process/2, close/1]).
 -export_type([context/0, flush/0, deflated/0, default/0, compression/0]).
 

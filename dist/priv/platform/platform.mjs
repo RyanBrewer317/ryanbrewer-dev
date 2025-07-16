@@ -12,9 +12,9 @@ export class Deno extends $CustomType {}
 export class Browser extends $CustomType {}
 
 export class OtherRuntime extends $CustomType {
-  constructor(x0) {
+  constructor($0) {
     super();
-    this[0] = x0;
+    this[0] = $0;
   }
 }
 
@@ -33,9 +33,9 @@ export class SunOs extends $CustomType {}
 export class Win32 extends $CustomType {}
 
 export class OtherOs extends $CustomType {
-  constructor(x0) {
+  constructor($0) {
     super();
-    this[0] = x0;
+    this[0] = $0;
   }
 }
 
@@ -64,9 +64,9 @@ export class S390 extends $CustomType {}
 export class S390X extends $CustomType {}
 
 export class OtherArch extends $CustomType {
-  constructor(x0) {
+  constructor($0) {
     super();
-    this[0] = x0;
+    this[0] = $0;
   }
 }
 

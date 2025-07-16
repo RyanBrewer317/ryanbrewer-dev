@@ -36,14 +36,14 @@ export function to_uri(request) {
 }
 
 export function from_uri(uri) {
-  return $result.then$(
+  return $result.try$(
     (() => {
       let _pipe = uri.scheme;
       let _pipe$1 = $option.unwrap(_pipe, "");
       return $http.scheme_from_string(_pipe$1);
     })(),
     (scheme) => {
-      return $result.then$(
+      return $result.try$(
         (() => {
           let _pipe = uri.host;
           return $option.to_result(_pipe, undefined);
@@ -136,13 +136,13 @@ export function set_query(req, query) {
   let pair = (t) => {
     return ($uri.percent_encode(t[0]) + "=") + $uri.percent_encode(t[1]);
   };
-  let query$1 = (() => {
-    let _pipe = query;
-    let _pipe$1 = $list.map(_pipe, pair);
-    let _pipe$2 = $list.intersperse(_pipe$1, "&");
-    let _pipe$3 = $string.concat(_pipe$2);
-    return new $option.Some(_pipe$3);
-  })();
+  let _block;
+  let _pipe = query;
+  let _pipe$1 = $list.map(_pipe, pair);
+  let _pipe$2 = $list.intersperse(_pipe$1, "&");
+  let _pipe$3 = $string.concat(_pipe$2);
+  _block = new $option.Some(_pipe$3);
+  let query$1 = _block;
   let _record = req;
   return new Request(
     _record.method,
@@ -186,7 +186,7 @@ export function new$() {
 export function to(url) {
   let _pipe = url;
   let _pipe$1 = $uri.parse(_pipe);
-  return $result.then$(_pipe$1, from_uri);
+  return $result.try$(_pipe$1, from_uri);
 }
 
 export function set_scheme(req, scheme) {
@@ -247,20 +247,20 @@ export function set_path(req, path) {
 
 export function set_cookie(req, name, value) {
   let new_cookie_string = $string.join(toList([name, value]), "=");
-  let $ = (() => {
-    let $1 = $list.key_pop(req.headers, "cookie");
-    if ($1.isOk()) {
-      let cookies_string = $1[0][0];
-      let headers = $1[0][1];
-      let cookies_string$1 = $string.join(
-        toList([cookies_string, new_cookie_string]),
-        "; ",
-      );
-      return [cookies_string$1, headers];
-    } else {
-      return [new_cookie_string, req.headers];
-    }
-  })();
+  let _block;
+  let $1 = $list.key_pop(req.headers, "cookie");
+  if ($1 instanceof Ok) {
+    let cookies_string = $1[0][0];
+    let headers = $1[0][1];
+    let cookies_string$1 = $string.join(
+      toList([cookies_string, new_cookie_string]),
+      "; ",
+    );
+    _block = [cookies_string$1, headers];
+  } else {
+    _block = [new_cookie_string, req.headers];
+  }
+  let $ = _block;
   let cookies_string = $[0];
   let headers = $[1];
   let _record = req;
@@ -296,25 +296,22 @@ export function get_cookies(req) {
 
 export function remove_cookie(req, name) {
   let $ = $list.key_pop(req.headers, "cookie");
-  if ($.isOk()) {
+  if ($ instanceof Ok) {
     let cookies_string = $[0][0];
     let headers = $[0][1];
-    let new_cookies_string = (() => {
-      let _pipe = $string.split(cookies_string, ";");
-      let _pipe$1 = $list.filter(
-        _pipe,
-        (str) => {
-          let _pipe$1 = $string.trim(str);
-          let _pipe$2 = $string.split_once(_pipe$1, "=");
-          let _pipe$3 = $result.map(
-            _pipe$2,
-            (tup) => { return tup[0] !== name; },
-          );
-          return $result.unwrap(_pipe$3, true);
-        },
-      );
-      return $string.join(_pipe$1, ";");
-    })();
+    let _block;
+    let _pipe = $string.split(cookies_string, ";");
+    let _pipe$1 = $list.filter(
+      _pipe,
+      (str) => {
+        let _pipe$1 = $string.trim(str);
+        let _pipe$2 = $string.split_once(_pipe$1, "=");
+        let _pipe$3 = $result.map(_pipe$2, (tup) => { return tup[0] !== name; });
+        return $result.unwrap(_pipe$3, true);
+      },
+    );
+    _block = $string.join(_pipe$1, ";");
+    let new_cookies_string = _block;
     let _record = req;
     return new Request(
       _record.method,

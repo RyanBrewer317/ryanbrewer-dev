@@ -1,6 +1,6 @@
 -module(gleam@http@response).
 -compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch]).
-
+-define(FILEPATH, "src/gleam/http/response.gleam").
 -export([new/1, get_header/2, set_header/3, prepend_header/3, set_body/2, try_map/2, map/2, redirect/1, get_cookies/1, set_cookie/4, expire_cookie/3]).
 -export_type([response/1]).
 
@@ -12,7 +12,7 @@
 -define(DOC(Str), -compile([])).
 -endif.
 
--type response(GXK) :: {response, integer(), list({binary(), binary()}), GXK}.
+-type response(EQL) :: {response, integer(), list({binary(), binary()}), EQL}.
 
 -file("src/gleam/http/response.gleam", 40).
 ?DOC(
@@ -44,15 +44,17 @@ get_header(Response, Key) ->
     " Header keys are always lowercase in `gleam_http`. To use any uppercase\n"
     " letter is invalid.\n"
 ).
--spec set_header(response(GXZ), binary(), binary()) -> response(GXZ).
+-spec set_header(response(ERA), binary(), binary()) -> response(ERA).
 set_header(Response, Key, Value) ->
     Headers = gleam@list:key_set(
         erlang:element(3, Response),
         string:lowercase(Key),
         Value
     ),
-    _record = Response,
-    {response, erlang:element(2, _record), Headers, erlang:element(4, _record)}.
+    {response,
+        erlang:element(2, Response),
+        Headers,
+        erlang:element(4, Response)}.
 
 -file("src/gleam/http/response.gleam", 76).
 ?DOC(
@@ -64,15 +66,17 @@ set_header(Response, Key, Value) ->
     " Header keys are always lowercase in `gleam_http`. To use any uppercase\n"
     " letter is invalid.\n"
 ).
--spec prepend_header(response(GYC), binary(), binary()) -> response(GYC).
+-spec prepend_header(response(ERD), binary(), binary()) -> response(ERD).
 prepend_header(Response, Key, Value) ->
     Headers = [{string:lowercase(Key), Value} | erlang:element(3, Response)],
-    _record = Response,
-    {response, erlang:element(2, _record), Headers, erlang:element(4, _record)}.
+    {response,
+        erlang:element(2, Response),
+        Headers,
+        erlang:element(4, Response)}.
 
 -file("src/gleam/http/response.gleam", 87).
 ?DOC(" Set the body of the response, overwriting any existing body.\n").
--spec set_body(response(any()), GYH) -> response(GYH).
+-spec set_body(response(any()), ERI) -> response(ERI).
 set_body(Response, Body) ->
     {response, Status, Headers, _} = Response,
     {response, Status, Headers, Body}.
@@ -84,18 +88,18 @@ set_body(Response, Body) ->
     " If the given function returns an `Ok` value the body is set, if it returns\n"
     " an `Error` value then the error is returned.\n"
 ).
--spec try_map(response(GXL), fun((GXL) -> {ok, GXN} | {error, GXO})) -> {ok,
-        response(GXN)} |
-    {error, GXO}.
+-spec try_map(response(EQM), fun((EQM) -> {ok, EQO} | {error, EQP})) -> {ok,
+        response(EQO)} |
+    {error, EQP}.
 try_map(Response, Transform) ->
-    gleam@result:then(
+    gleam@result:'try'(
         Transform(erlang:element(4, Response)),
         fun(Body) -> {ok, set_body(Response, Body)} end
     ).
 
 -file("src/gleam/http/response.gleam", 97).
 ?DOC(" Update the body of a response using a given function.\n").
--spec map(response(GYJ), fun((GYJ) -> GYL)) -> response(GYL).
+-spec map(response(ERK), fun((ERK) -> ERM)) -> response(ERM).
 map(Response, Transform) ->
     _pipe = erlang:element(4, Response),
     _pipe@1 = Transform(_pipe),
@@ -112,7 +116,7 @@ redirect(Uri) ->
 
 -file("src/gleam/http/response.gleam", 120).
 ?DOC(
-    " Fetch the cookies sent in a response. \n"
+    " Fetch the cookies sent in a response.\n"
     "\n"
     " Badly formed cookies will be discarded.\n"
 ).
@@ -138,11 +142,11 @@ get_cookies(Resp) ->
 -file("src/gleam/http/response.gleam", 135).
 ?DOC(" Set a cookie value for a client\n").
 -spec set_cookie(
-    response(GYQ),
+    response(ERR),
     binary(),
     binary(),
     gleam@http@cookie:attributes()
-) -> response(GYQ).
+) -> response(ERR).
 set_cookie(Response, Name, Value, Attributes) ->
     prepend_header(
         Response,
@@ -156,16 +160,13 @@ set_cookie(Response, Name, Value, Attributes) ->
     "\n"
     " Note: The attributes value should be the same as when the response cookie was set.\n"
 ).
--spec expire_cookie(response(GYT), binary(), gleam@http@cookie:attributes()) -> response(GYT).
+-spec expire_cookie(response(ERU), binary(), gleam@http@cookie:attributes()) -> response(ERU).
 expire_cookie(Response, Name, Attributes) ->
-    Attrs = begin
-        _record = Attributes,
-        {attributes,
-            {some, 0},
-            erlang:element(3, _record),
-            erlang:element(4, _record),
-            erlang:element(5, _record),
-            erlang:element(6, _record),
-            erlang:element(7, _record)}
-    end,
+    Attrs = {attributes,
+        {some, 0},
+        erlang:element(3, Attributes),
+        erlang:element(4, Attributes),
+        erlang:element(5, Attributes),
+        erlang:element(6, Attributes),
+        erlang:element(7, Attributes)},
     set_cookie(Response, Name, <<""/utf8>>, Attrs).

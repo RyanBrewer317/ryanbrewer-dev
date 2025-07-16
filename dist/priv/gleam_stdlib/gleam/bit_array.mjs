@@ -1,4 +1,4 @@
-import { toList, remainderInt, bitArraySlice } from "../gleam.mjs";
+import { Ok, toList, remainderInt, bitArraySlice } from "../gleam.mjs";
 import * as $int from "../gleam/int.mjs";
 import * as $order from "../gleam/order.mjs";
 import * as $string from "../gleam/string.mjs";
@@ -38,15 +38,15 @@ export function append(first, second) {
 }
 
 export function base64_decode(encoded) {
-  let padded = (() => {
-    let $ = remainderInt(byte_size(from_string(encoded)), 4);
-    if ($ === 0) {
-      return encoded;
-    } else {
-      let n = $;
-      return $string.append(encoded, $string.repeat("=", 4 - n));
-    }
-  })();
+  let _block;
+  let $ = remainderInt(byte_size(from_string(encoded)), 4);
+  if ($ === 0) {
+    _block = encoded;
+  } else {
+    let n = $;
+    _block = $string.append(encoded, $string.repeat("=", 4 - n));
+  }
+  let padded = _block;
   return decode64(padded);
 }
 
@@ -71,52 +71,96 @@ export function compare(loop$a, loop$b) {
   while (true) {
     let a = loop$a;
     let b = loop$b;
-    if (a.bitSize >= 8 && b.bitSize >= 8) {
-      let first_byte = a.byteAt(0);
-      let first_rest = bitArraySlice(a, 8);
-      let second_byte = b.byteAt(0);
-      let second_rest = bitArraySlice(b, 8);
-      if (first_byte > second_byte) {
+    if (b.bitSize >= 8) {
+      if (a.bitSize >= 8) {
+        let second_byte = b.byteAt(0);
+        let second_rest = bitArraySlice(b, 8);
+        let first_byte = a.byteAt(0);
+        let first_rest = bitArraySlice(a, 8);
         let f = first_byte;
         let s = second_byte;
-        return new $order.Gt();
-      } else if (first_byte < second_byte) {
-        let f = first_byte;
-        let s = second_byte;
+        if (f > s) {
+          return new $order.Gt();
+        } else {
+          let f$1 = first_byte;
+          let s$1 = second_byte;
+          if (f$1 < s$1) {
+            return new $order.Lt();
+          } else {
+            loop$a = first_rest;
+            loop$b = second_rest;
+          }
+        }
+      } else if (a.bitSize === 0) {
         return new $order.Lt();
       } else {
-        loop$a = first_rest;
-        loop$b = second_rest;
+        let first = a;
+        let second = b;
+        let $ = bit_array_to_int_and_size(first);
+        let $1 = bit_array_to_int_and_size(second);
+        let b$1 = $1[0];
+        let a$1 = $[0];
+        if (a$1 > b$1) {
+          return new $order.Gt();
+        } else {
+          let b$2 = $1[0];
+          let a$2 = $[0];
+          if (a$2 < b$2) {
+            return new $order.Lt();
+          } else {
+            let size_b = $1[1];
+            let size_a = $[1];
+            if (size_a > size_b) {
+              return new $order.Gt();
+            } else {
+              let size_b$1 = $1[1];
+              let size_a$1 = $[1];
+              if (size_a$1 < size_b$1) {
+                return new $order.Lt();
+              } else {
+                return new $order.Eq();
+              }
+            }
+          }
+        }
       }
-    } else if (a.bitSize == 0 && b.bitSize == 0) {
-      return new $order.Eq();
-    } else if (b.bitSize == 0) {
-      return new $order.Gt();
-    } else if (a.bitSize == 0) {
+    } else if (b.bitSize === 0) {
+      if (a.bitSize === 0) {
+        return new $order.Eq();
+      } else {
+        return new $order.Gt();
+      }
+    } else if (a.bitSize === 0) {
       return new $order.Lt();
     } else {
       let first = a;
       let second = b;
       let $ = bit_array_to_int_and_size(first);
       let $1 = bit_array_to_int_and_size(second);
-      if ($[0] > $1[0]) {
-        let a$1 = $[0];
-        let b$1 = $1[0];
+      let b$1 = $1[0];
+      let a$1 = $[0];
+      if (a$1 > b$1) {
         return new $order.Gt();
-      } else if ($[0] < $1[0]) {
-        let a$1 = $[0];
-        let b$1 = $1[0];
-        return new $order.Lt();
-      } else if ($[1] > $1[1]) {
-        let size_a = $[1];
-        let size_b = $1[1];
-        return new $order.Gt();
-      } else if ($[1] < $1[1]) {
-        let size_a = $[1];
-        let size_b = $1[1];
-        return new $order.Lt();
       } else {
-        return new $order.Eq();
+        let b$2 = $1[0];
+        let a$2 = $[0];
+        if (a$2 < b$2) {
+          return new $order.Lt();
+        } else {
+          let size_b = $1[1];
+          let size_a = $[1];
+          if (size_a > size_b) {
+            return new $order.Gt();
+          } else {
+            let size_b$1 = $1[1];
+            let size_a$1 = $[1];
+            if (size_a$1 < size_b$1) {
+              return new $order.Lt();
+            } else {
+              return new $order.Eq();
+            }
+          }
+        }
       }
     }
   }
@@ -128,7 +172,7 @@ export function is_utf8(bits) {
 
 function is_utf8_loop(bits) {
   let $ = to_string(bits);
-  if ($.isOk()) {
+  if ($ instanceof Ok) {
     return true;
   } else {
     return false;

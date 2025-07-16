@@ -27,16 +27,22 @@ export function to_int(order) {
 }
 
 export function compare(a, b) {
-  if (isEqual(a, b)) {
-    let x = a;
-    let y = b;
+  let x = a;
+  let y = b;
+  if (isEqual(x, y)) {
     return new Eq();
-  } else if (a instanceof Lt) {
-    return new Lt();
-  } else if (a instanceof Eq && b instanceof Gt) {
-    return new Lt();
   } else {
-    return new Gt();
+    if (a instanceof Lt) {
+      return new Lt();
+    } else if (a instanceof Eq) {
+      if (b instanceof Gt) {
+        return new Lt();
+      } else {
+        return new Gt();
+      }
+    } else {
+      return new Gt();
+    }
   }
 }
 
@@ -47,19 +53,19 @@ export function reverse(orderer) {
 export function break_tie(order, other) {
   if (order instanceof Lt) {
     return order;
-  } else if (order instanceof Gt) {
-    return order;
-  } else {
+  } else if (order instanceof Eq) {
     return other;
+  } else {
+    return order;
   }
 }
 
 export function lazy_break_tie(order, comparison) {
   if (order instanceof Lt) {
     return order;
-  } else if (order instanceof Gt) {
-    return order;
-  } else {
+  } else if (order instanceof Eq) {
     return comparison();
+  } else {
+    return order;
   }
 }

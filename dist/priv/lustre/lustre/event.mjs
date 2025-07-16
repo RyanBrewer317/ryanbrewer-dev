@@ -1,143 +1,298 @@
 import * as $json from "../../gleam_json/gleam/json.mjs";
-import * as $dynamic from "../../gleam_stdlib/gleam/dynamic.mjs";
+import * as $decode from "../../gleam_stdlib/gleam/dynamic/decode.mjs";
+import * as $int from "../../gleam_stdlib/gleam/int.mjs";
+import * as $pair from "../../gleam_stdlib/gleam/pair.mjs";
 import * as $result from "../../gleam_stdlib/gleam/result.mjs";
-import { Ok } from "../gleam.mjs";
-import { prevent_default, stop_propagation } from "../lustre.ffi.mjs";
+import { Ok, Error, toList } from "../gleam.mjs";
 import * as $attribute from "../lustre/attribute.mjs";
 import * as $effect from "../lustre/effect.mjs";
-
-export { prevent_default, stop_propagation };
+import * as $constants from "../lustre/internals/constants.mjs";
+import * as $vattr from "../lustre/vdom/vattr.mjs";
+import { Event, Handler } from "../lustre/vdom/vattr.mjs";
 
 export function emit(event, data) {
   return $effect.event(event, data);
 }
 
+export function handler(message, prevent_default, stop_propagation) {
+  return new Handler(prevent_default, stop_propagation, message);
+}
+
+function is_immediate_event(name) {
+  if (name === "input") {
+    return true;
+  } else if (name === "change") {
+    return true;
+  } else if (name === "focus") {
+    return true;
+  } else if (name === "focusin") {
+    return true;
+  } else if (name === "focusout") {
+    return true;
+  } else if (name === "blur") {
+    return true;
+  } else if (name === "select") {
+    return true;
+  } else {
+    return false;
+  }
+}
+
 export function on(name, handler) {
-  return $attribute.on(name, handler);
+  return $vattr.event(
+    name,
+    $decode.map(handler, (msg) => { return new Handler(false, false, msg); }),
+    $constants.empty_list,
+    $vattr.never,
+    $vattr.never,
+    is_immediate_event(name),
+    0,
+    0,
+  );
+}
+
+export function advanced(name, handler) {
+  return $vattr.event(
+    name,
+    handler,
+    $constants.empty_list,
+    $vattr.possible,
+    $vattr.possible,
+    is_immediate_event(name),
+    0,
+    0,
+  );
+}
+
+export function prevent_default(event) {
+  if (event instanceof Event) {
+    let _record = event;
+    return new Event(
+      _record.kind,
+      _record.name,
+      _record.handler,
+      _record.include,
+      $vattr.always,
+      _record.stop_propagation,
+      _record.immediate,
+      _record.debounce,
+      _record.throttle,
+    );
+  } else {
+    return event;
+  }
+}
+
+export function stop_propagation(event) {
+  if (event instanceof Event) {
+    let _record = event;
+    return new Event(
+      _record.kind,
+      _record.name,
+      _record.handler,
+      _record.include,
+      _record.prevent_default,
+      $vattr.always,
+      _record.immediate,
+      _record.debounce,
+      _record.throttle,
+    );
+  } else {
+    return event;
+  }
+}
+
+export function debounce(event, delay) {
+  if (event instanceof Event) {
+    let _record = event;
+    return new Event(
+      _record.kind,
+      _record.name,
+      _record.handler,
+      _record.include,
+      _record.prevent_default,
+      _record.stop_propagation,
+      _record.immediate,
+      $int.max(0, delay),
+      _record.throttle,
+    );
+  } else {
+    return event;
+  }
+}
+
+export function throttle(event, delay) {
+  if (event instanceof Event) {
+    let _record = event;
+    return new Event(
+      _record.kind,
+      _record.name,
+      _record.handler,
+      _record.include,
+      _record.prevent_default,
+      _record.stop_propagation,
+      _record.immediate,
+      _record.debounce,
+      $int.max(0, delay),
+    );
+  } else {
+    return event;
+  }
 }
 
 export function on_click(msg) {
-  return on("click", (_) => { return new Ok(msg); });
+  return on("click", $decode.success(msg));
 }
 
 export function on_mouse_down(msg) {
-  return on("mousedown", (_) => { return new Ok(msg); });
+  return on("mousedown", $decode.success(msg));
 }
 
 export function on_mouse_up(msg) {
-  return on("mouseup", (_) => { return new Ok(msg); });
+  return on("mouseup", $decode.success(msg));
 }
 
 export function on_mouse_enter(msg) {
-  return on("mouseenter", (_) => { return new Ok(msg); });
+  return on("mouseenter", $decode.success(msg));
 }
 
 export function on_mouse_leave(msg) {
-  return on("mouseleave", (_) => { return new Ok(msg); });
+  return on("mouseleave", $decode.success(msg));
 }
 
 export function on_mouse_over(msg) {
-  return on("mouseover", (_) => { return new Ok(msg); });
+  return on("mouseover", $decode.success(msg));
 }
 
 export function on_mouse_out(msg) {
-  return on("mouseout", (_) => { return new Ok(msg); });
+  return on("mouseout", $decode.success(msg));
 }
 
 export function on_keypress(msg) {
   return on(
     "keypress",
-    (event) => {
-      let _pipe = event;
-      let _pipe$1 = $dynamic.field("key", $dynamic.string)(_pipe);
-      return $result.map(_pipe$1, msg);
-    },
+    $decode.field(
+      "key",
+      $decode.string,
+      (key) => {
+        let _pipe = key;
+        let _pipe$1 = msg(_pipe);
+        return $decode.success(_pipe$1);
+      },
+    ),
   );
 }
 
 export function on_keydown(msg) {
   return on(
     "keydown",
-    (event) => {
-      let _pipe = event;
-      let _pipe$1 = $dynamic.field("key", $dynamic.string)(_pipe);
-      return $result.map(_pipe$1, msg);
-    },
+    $decode.field(
+      "key",
+      $decode.string,
+      (key) => {
+        let _pipe = key;
+        let _pipe$1 = msg(_pipe);
+        return $decode.success(_pipe$1);
+      },
+    ),
   );
 }
 
 export function on_keyup(msg) {
   return on(
     "keyup",
-    (event) => {
-      let _pipe = event;
-      let _pipe$1 = $dynamic.field("key", $dynamic.string)(_pipe);
-      return $result.map(_pipe$1, msg);
-    },
-  );
-}
-
-export function on_focus(msg) {
-  return on("focus", (_) => { return new Ok(msg); });
-}
-
-export function on_blur(msg) {
-  return on("blur", (_) => { return new Ok(msg); });
-}
-
-export function value(event) {
-  let _pipe = event;
-  return $dynamic.field("target", $dynamic.field("value", $dynamic.string))(
-    _pipe,
+    $decode.field(
+      "key",
+      $decode.string,
+      (key) => {
+        let _pipe = key;
+        let _pipe$1 = msg(_pipe);
+        return $decode.success(_pipe$1);
+      },
+    ),
   );
 }
 
 export function on_input(msg) {
   return on(
     "input",
-    (event) => {
-      let _pipe = value(event);
-      return $result.map(_pipe, msg);
-    },
+    $decode.subfield(
+      toList(["target", "value"]),
+      $decode.string,
+      (value) => { return $decode.success(msg(value)); },
+    ),
   );
 }
 
-export function checked(event) {
-  let _pipe = event;
-  return $dynamic.field("target", $dynamic.field("checked", $dynamic.bool))(
-    _pipe,
+export function on_change(msg) {
+  return on(
+    "change",
+    $decode.subfield(
+      toList(["target", "value"]),
+      $decode.string,
+      (value) => { return $decode.success(msg(value)); },
+    ),
   );
 }
 
 export function on_check(msg) {
   return on(
     "change",
-    (event) => {
-      let _pipe = checked(event);
-      return $result.map(_pipe, msg);
-    },
+    $decode.subfield(
+      toList(["target", "checked"]),
+      $decode.bool,
+      (checked) => { return $decode.success(msg(checked)); },
+    ),
   );
 }
 
-export function mouse_position(event) {
-  return $result.then$(
-    $dynamic.field("clientX", $dynamic.float)(event),
-    (x) => {
-      return $result.then$(
-        $dynamic.field("clientY", $dynamic.float)(event),
-        (y) => { return new Ok([x, y]); },
+function formdata_decoder() {
+  let string_value_decoder = $decode.field(
+    0,
+    $decode.string,
+    (key) => {
+      return $decode.field(
+        1,
+        $decode.one_of(
+          $decode.map($decode.string, (var0) => { return new Ok(var0); }),
+          toList([$decode.success(new Error(undefined))]),
+        ),
+        (value) => {
+          let _pipe = value;
+          let _pipe$1 = $result.map(
+            _pipe,
+            (_capture) => { return $pair.new$(key, _capture); },
+          );
+          return $decode.success(_pipe$1);
+        },
       );
     },
   );
+  let _pipe = string_value_decoder;
+  let _pipe$1 = $decode.list(_pipe);
+  return $decode.map(_pipe$1, $result.values);
 }
 
 export function on_submit(msg) {
-  return on(
+  let _pipe = on(
     "submit",
-    (event) => {
-      let $ = prevent_default(event);
-      
-      return new Ok(msg);
-    },
+    $decode.subfield(
+      toList(["detail", "formData"]),
+      formdata_decoder(),
+      (formdata) => {
+        let _pipe = formdata;
+        let _pipe$1 = msg(_pipe);
+        return $decode.success(_pipe$1);
+      },
+    ),
   );
+  return prevent_default(_pipe);
+}
+
+export function on_focus(msg) {
+  return on("focus", $decode.success(msg));
+}
+
+export function on_blur(msg) {
+  return on("blur", $decode.success(msg));
 }

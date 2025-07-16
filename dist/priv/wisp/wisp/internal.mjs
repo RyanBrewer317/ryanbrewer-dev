@@ -3,7 +3,7 @@ import * as $crypto from "../../gleam_crypto/gleam/crypto.mjs";
 import * as $bit_array from "../../gleam_stdlib/gleam/bit_array.mjs";
 import * as $int from "../../gleam_stdlib/gleam/int.mjs";
 import * as $string from "../../gleam_stdlib/gleam/string.mjs";
-import { CustomType as $CustomType } from "../gleam.mjs";
+import { Ok, CustomType as $CustomType } from "../gleam.mjs";
 
 export class Connection extends $CustomType {
   constructor(reader, max_body_size, max_files_size, read_chunk_size, secret_key_base, temporary_directory) {
@@ -18,9 +18,9 @@ export class Connection extends $CustomType {
 }
 
 export class Chunk extends $CustomType {
-  constructor(x0, next) {
+  constructor($0, next) {
     super();
-    this[0] = x0;
+    this[0] = $0;
     this.next = next;
   }
 }
@@ -60,15 +60,15 @@ export function random_slug() {
 }
 
 export function make_connection(body_reader, secret_key_base) {
-  let prefix = (() => {
-    let $ = $directories.tmp_dir();
-    if ($.isOk()) {
-      let tmp_dir = $[0];
-      return tmp_dir + "/gleam-wisp/";
-    } else {
-      return "./tmp/";
-    }
-  })();
+  let _block;
+  let $ = $directories.tmp_dir();
+  if ($ instanceof Ok) {
+    let tmp_dir = $[0];
+    _block = tmp_dir + "/gleam-wisp/";
+  } else {
+    _block = "./tmp/";
+  }
+  let prefix = _block;
   let temporary_directory = join_path(prefix, random_slug());
   return new Connection(
     body_reader,

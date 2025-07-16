@@ -1,12 +1,11 @@
-import * as $erlang from "../gleam_erlang/gleam/erlang.mjs";
-import { rescue } from "../gleam_erlang/gleam/erlang.mjs";
 import * as $process from "../gleam_erlang/gleam/erlang/process.mjs";
 import * as $gleam_http from "../gleam_http/gleam/http.mjs";
 import { Http, Https } from "../gleam_http/gleam/http.mjs";
 import * as $request from "../gleam_http/gleam/http/request.mjs";
 import * as $response from "../gleam_http/gleam/http/response.mjs";
 import * as $actor from "../gleam_otp/gleam/otp/actor.mjs";
-import * as $supervisor from "../gleam_otp/gleam/otp/supervisor.mjs";
+import * as $static_supervisor from "../gleam_otp/gleam/otp/static_supervisor.mjs";
+import * as $supervision from "../gleam_otp/gleam/otp/supervision.mjs";
 import * as $bit_array from "../gleam_stdlib/gleam/bit_array.mjs";
 import * as $bytes_tree from "../gleam_stdlib/gleam/bytes_tree.mjs";
 import * as $function from "../gleam_stdlib/gleam/function.mjs";
@@ -38,30 +37,48 @@ import {
   ServerSentEvents as InternalServerSentEvents,
   Websocket as InternalWebsocket,
 } from "./mist/internal/http.mjs";
+import * as $next from "./mist/internal/next.mjs";
 import * as $websocket from "./mist/internal/websocket.mjs";
 import { Internal, User } from "./mist/internal/websocket.mjs";
 
-export class IpV4 extends $CustomType {
-  constructor(x0, x1, x2, x3) {
+class Continue extends $CustomType {
+  constructor($0, $1) {
     super();
-    this[0] = x0;
-    this[1] = x1;
-    this[2] = x2;
-    this[3] = x3;
+    this[0] = $0;
+    this[1] = $1;
+  }
+}
+
+class NormalStop extends $CustomType {}
+
+class AbnormalStop extends $CustomType {
+  constructor(reason) {
+    super();
+    this.reason = reason;
+  }
+}
+
+export class IpV4 extends $CustomType {
+  constructor($0, $1, $2, $3) {
+    super();
+    this[0] = $0;
+    this[1] = $1;
+    this[2] = $2;
+    this[3] = $3;
   }
 }
 
 export class IpV6 extends $CustomType {
-  constructor(x0, x1, x2, x3, x4, x5, x6, x7) {
+  constructor($0, $1, $2, $3, $4, $5, $6, $7) {
     super();
-    this[0] = x0;
-    this[1] = x1;
-    this[2] = x2;
-    this[3] = x3;
-    this[4] = x4;
-    this[5] = x5;
-    this[6] = x6;
-    this[7] = x7;
+    this[0] = $0;
+    this[1] = $1;
+    this[2] = $2;
+    this[3] = $3;
+    this[4] = $4;
+    this[5] = $5;
+    this[6] = $6;
+    this[7] = $7;
   }
 }
 
@@ -74,23 +91,23 @@ export class ConnectionInfo extends $CustomType {
 }
 
 export class Websocket extends $CustomType {
-  constructor(x0) {
+  constructor($0) {
     super();
-    this[0] = x0;
+    this[0] = $0;
   }
 }
 
 export class Bytes extends $CustomType {
-  constructor(x0) {
+  constructor($0) {
     super();
-    this[0] = x0;
+    this[0] = $0;
   }
 }
 
 export class Chunked extends $CustomType {
-  constructor(x0) {
+  constructor($0) {
     super();
-    this[0] = x0;
+    this[0] = $0;
   }
 }
 
@@ -104,9 +121,9 @@ export class File extends $CustomType {
 }
 
 export class ServerSentEvents extends $CustomType {
-  constructor(x0) {
+  constructor($0) {
     super();
-    this[0] = x0;
+    this[0] = $0;
   }
 }
 
@@ -141,66 +158,46 @@ class ChunkState extends $CustomType {
   }
 }
 
+class CertKeyFiles extends $CustomType {
+  constructor(certfile, keyfile) {
+    super();
+    this.certfile = certfile;
+    this.keyfile = keyfile;
+  }
+}
+
 class Builder extends $CustomType {
-  constructor(port, handler, after_start, interface$, ipv6_support) {
+  constructor(port, handler, after_start, interface$, ipv6_support, tls_options) {
     super();
     this.port = port;
     this.handler = handler;
     this.after_start = after_start;
     this.interface = interface$;
     this.ipv6_support = ipv6_support;
+    this.tls_options = tls_options;
   }
 }
 
 export class Assigned extends $CustomType {}
 
 export class Provided extends $CustomType {
-  constructor(x0) {
+  constructor($0) {
     super();
-    this[0] = x0;
-  }
-}
-
-class Server extends $CustomType {
-  constructor(supervisor, port, ip_address) {
-    super();
-    this.supervisor = supervisor;
-    this.port = port;
-    this.ip_address = ip_address;
-  }
-}
-
-export class NoCertificate extends $CustomType {}
-
-export class NoKey extends $CustomType {}
-
-export class NoKeyOrCertificate extends $CustomType {}
-
-export class GlistenError extends $CustomType {
-  constructor(x0) {
-    super();
-    this[0] = x0;
-  }
-}
-
-export class CertificateError extends $CustomType {
-  constructor(x0) {
-    super();
-    this[0] = x0;
+    this[0] = $0;
   }
 }
 
 export class Text extends $CustomType {
-  constructor(x0) {
+  constructor($0) {
     super();
-    this[0] = x0;
+    this[0] = $0;
   }
 }
 
 export class Binary extends $CustomType {
-  constructor(x0) {
+  constructor($0) {
     super();
-    this[0] = x0;
+    this[0] = $0;
   }
 }
 
@@ -209,16 +206,16 @@ export class Closed extends $CustomType {}
 export class Shutdown extends $CustomType {}
 
 export class Custom extends $CustomType {
-  constructor(x0) {
+  constructor($0) {
     super();
-    this[0] = x0;
+    this[0] = $0;
   }
 }
 
 class SSEConnection extends $CustomType {
-  constructor(x0) {
+  constructor($0) {
     super();
-    this[0] = x0;
+    this[0] = $0;
   }
 }
 
@@ -229,6 +226,40 @@ class SSEEvent extends $CustomType {
     this.event = event;
     this.retry = retry;
     this.data = data;
+  }
+}
+
+export function continue$(state) {
+  return new Continue(state, new None());
+}
+
+export function with_selector(next, selector) {
+  if (next instanceof Continue) {
+    let state = next[0];
+    return new Continue(state, new Some(selector));
+  } else {
+    return next;
+  }
+}
+
+export function stop() {
+  return new NormalStop();
+}
+
+export function stop_abnormal(reason) {
+  return new AbnormalStop(reason);
+}
+
+function convert_next(next) {
+  if (next instanceof Continue) {
+    let state = next[0];
+    let selector = next[1];
+    return new $next.Continue(state, selector);
+  } else if (next instanceof NormalStop) {
+    return new $next.NormalStop();
+  } else {
+    let reason = next.reason;
+    return new $next.AbnormalStop(reason);
   }
 }
 
@@ -293,13 +324,13 @@ export function new$(handler) {
     4000,
     handler,
     (port, scheme, interface$) => {
-      let address = (() => {
-        if (interface$ instanceof IpV6) {
-          return ("[" + ip_address_to_string(interface$)) + "]";
-        } else {
-          return ip_address_to_string(interface$);
-        }
-      })();
+      let _block;
+      if (interface$ instanceof IpV6) {
+        _block = ("[" + ip_address_to_string(interface$)) + "]";
+      } else {
+        _block = ip_address_to_string(interface$);
+      }
+      let address = _block;
       let message = (((("Listening on " + $gleam_http.scheme_to_string(scheme)) + "://") + address) + ":") + $int.to_string(
         port,
       );
@@ -307,6 +338,7 @@ export function new$(handler) {
     },
     "localhost",
     false,
+    new None(),
   );
 }
 
@@ -318,6 +350,7 @@ export function port(builder, port) {
     _record.after_start,
     _record.interface,
     _record.ipv6_support,
+    _record.tls_options,
   );
 }
 
@@ -329,6 +362,7 @@ export function after_start(builder, after_start) {
     after_start,
     _record.interface,
     _record.ipv6_support,
+    _record.tls_options,
   );
 }
 
@@ -340,6 +374,7 @@ export function bind(builder, interface$) {
     _record.after_start,
     interface$,
     _record.ipv6_support,
+    _record.tls_options,
   );
 }
 
@@ -351,60 +386,55 @@ export function with_ipv6(builder) {
     _record.after_start,
     _record.interface,
     true,
+    _record.tls_options,
   );
 }
 
 function convert_body_types(resp) {
-  let new_body = (() => {
-    let $ = resp.body;
-    if ($ instanceof Websocket) {
-      let selector = $[0];
-      return new InternalWebsocket(selector);
-    } else if ($ instanceof Bytes) {
-      let data = $[0];
-      return new InternalBytes(data);
-    } else if ($ instanceof File) {
-      let descriptor = $.descriptor;
-      let offset = $.offset;
-      let length = $.length;
-      return new InternalFile(descriptor, offset, length);
-    } else if ($ instanceof Chunked) {
-      let iter = $[0];
-      return new InternalChunked(iter);
-    } else {
-      let selector = $[0];
-      return new InternalServerSentEvents(selector);
-    }
-  })();
+  let _block;
+  let $ = resp.body;
+  if ($ instanceof Websocket) {
+    let selector = $[0];
+    _block = new InternalWebsocket(selector);
+  } else if ($ instanceof Bytes) {
+    let data = $[0];
+    _block = new InternalBytes(data);
+  } else if ($ instanceof Chunked) {
+    let iter = $[0];
+    _block = new InternalChunked(iter);
+  } else if ($ instanceof File) {
+    let descriptor = $.descriptor;
+    let offset = $.offset;
+    let length = $.length;
+    _block = new InternalFile(descriptor, offset, length);
+  } else {
+    let selector = $[0];
+    _block = new InternalServerSentEvents(selector);
+  }
+  let new_body = _block;
   return $response.set_body(resp, new_body);
 }
 
-export function get_supervisor(server) {
-  return server.supervisor;
-}
-
-export function get_port(server) {
-  return server.port;
-}
-
 function internal_to_public_ws_message(msg) {
-  if (msg instanceof Internal &&
-  msg[0] instanceof Data &&
-  msg[0][0] instanceof TextFrame) {
-    let data = msg[0][0].payload;
-    let _pipe = data;
-    let _pipe$1 = $bit_array.to_string(_pipe);
-    return $result.map(_pipe$1, (var0) => { return new Text(var0); });
-  } else if (msg instanceof Internal &&
-  msg[0] instanceof Data &&
-  msg[0][0] instanceof BinaryFrame) {
-    let data = msg[0][0].payload;
-    return new Ok(new Binary(data));
-  } else if (msg instanceof User) {
+  if (msg instanceof Internal) {
+    let $ = msg[0];
+    if ($ instanceof Data) {
+      let $1 = $[0];
+      if ($1 instanceof TextFrame) {
+        let data = $1.payload;
+        let _pipe = data;
+        let _pipe$1 = $bit_array.to_string(_pipe);
+        return $result.map(_pipe$1, (var0) => { return new Text(var0); });
+      } else {
+        let data = $1.payload;
+        return new Ok(new Binary(data));
+      }
+    } else {
+      return new Error(undefined);
+    }
+  } else {
     let msg$1 = msg[0];
     return new Ok(new Custom(msg$1));
-  } else {
-    return new Error(undefined);
   }
 }
 

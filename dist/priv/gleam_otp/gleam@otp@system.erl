@@ -1,6 +1,6 @@
 -module(gleam@otp@system).
 -compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch]).
-
+-define(FILEPATH, "src/gleam/otp/system.gleam").
 -export([debug_state/1, get_state/1, suspend/1, resume/1]).
 -export_type([mode/0, debug_option/0, debug_state/0, status_info/0, system_message/0, do_not_leak/0]).
 
@@ -32,12 +32,12 @@
 
 -type do_not_leak() :: any().
 
--file("/Users/louis/src/gleam/otp/src/gleam/otp/system.gleam", 19).
+-file("src/gleam/otp/system.gleam", 19).
 -spec debug_state(list(debug_option())) -> debug_state().
 debug_state(A) ->
     sys:debug_options(A).
 
--file("/Users/louis/src/gleam/otp/src/gleam/otp/system.gleam", 65).
+-file("src/gleam/otp/system.gleam", 65).
 ?DOC(
     " Get the state of a given OTP compatible process. This function is only\n"
     " intended for debugging.\n"
@@ -54,7 +54,7 @@ debug_state(A) ->
 get_state(From) ->
     sys:get_state(From).
 
--file("/Users/louis/src/gleam/otp/src/gleam/otp/system.gleam", 77).
+-file("src/gleam/otp/system.gleam", 77).
 ?DOC(
     " Request an OTP compatible process to suspend, causing it to only handle\n"
     " system messages.\n"
@@ -68,7 +68,7 @@ suspend(Pid) ->
     sys:suspend(Pid),
     nil.
 
--file("/Users/louis/src/gleam/otp/src/gleam/otp/system.gleam", 92).
+-file("src/gleam/otp/system.gleam", 92).
 ?DOC(
     " Request a suspended OTP compatible process to result, causing it to handle\n"
     " all messages rather than only system messages.\n"

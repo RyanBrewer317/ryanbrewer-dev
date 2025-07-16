@@ -90,11 +90,13 @@ export class Deprecation extends $CustomType {
 }
 
 export class Implementations extends $CustomType {
-  constructor(gleam, uses_erlang_externals, uses_javascript_externals) {
+  constructor(gleam, uses_erlang_externals, uses_javascript_externals, can_run_on_erlang, can_run_on_javascript) {
     super();
     this.gleam = gleam;
     this.uses_erlang_externals = uses_erlang_externals;
     this.uses_javascript_externals = uses_javascript_externals;
+    this.can_run_on_erlang = can_run_on_erlang;
+    this.can_run_on_javascript = can_run_on_javascript;
   }
 }
 
@@ -151,12 +153,36 @@ export function implementations_decoder() {
             "uses-javascript-externals",
             $decode.bool,
             (uses_javascript_externals) => {
-              return $decode.success(
-                new Implementations(
-                  gleam,
-                  uses_erlang_externals,
-                  uses_javascript_externals,
-                ),
+              return $decode.optional_field(
+                "can-run-on-erlang",
+                new $option.None(),
+                $decode.optional($decode.bool),
+                (can_run_on_erlang) => {
+                  return $decode.optional_field(
+                    "can-run-on-javascript",
+                    new $option.None(),
+                    $decode.optional($decode.bool),
+                    (can_run_on_javascript) => {
+                      let _block;
+                      let _pipe = can_run_on_erlang;
+                      _block = $option.unwrap(_pipe, gleam);
+                      let can_run_on_erlang$1 = _block;
+                      let _block$1;
+                      let _pipe$1 = can_run_on_javascript;
+                      _block$1 = $option.unwrap(_pipe$1, gleam);
+                      let can_run_on_javascript$1 = _block$1;
+                      return $decode.success(
+                        new Implementations(
+                          gleam,
+                          uses_erlang_externals,
+                          uses_javascript_externals,
+                          can_run_on_erlang$1,
+                          can_run_on_javascript$1,
+                        ),
+                      );
+                    },
+                  );
+                },
               );
             },
           );

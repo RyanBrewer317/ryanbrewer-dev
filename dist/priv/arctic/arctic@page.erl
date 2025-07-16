@@ -1,6 +1,6 @@
 -module(arctic@page).
 -compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch]).
-
+-define(FILEPATH, "src/arctic/page.gleam").
 -export([new/1, with_body/2, with_metadata/3, replace_metadata/2, with_title/2, with_blerb/2, with_tags/2, with_date/2]).
 
 -if(?OTP_RELEASE >= 27).
@@ -22,7 +22,7 @@ new(Id) ->
     " Add a \"body\" to a page. \n"
     " A body is the list of elements that will appear when the page is loaded.\n"
 ).
--spec with_body(arctic:page(), list(lustre@internals@vdom:element(nil))) -> arctic:page().
+-spec with_body(arctic:page(), list(lustre@vdom@vnode:element(nil))) -> arctic:page().
 with_body(P, Body) ->
     _record = P,
     {page,

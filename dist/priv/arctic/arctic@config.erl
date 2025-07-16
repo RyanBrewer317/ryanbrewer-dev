@@ -1,6 +1,6 @@
 -module(arctic@config).
 -compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch]).
-
+-define(FILEPATH, "src/arctic/config.gleam").
 -export([new/0, home_renderer/2, add_main_page/3, add_collection/2, add_spa_frame/2, turn_off_spa/1]).
 
 -if(?OTP_RELEASE >= 27).
@@ -42,7 +42,7 @@ new() ->
 ).
 -spec home_renderer(
     arctic:config(),
-    fun((list(arctic:processed_collection())) -> lustre@internals@vdom:element(nil))
+    fun((list(arctic:processed_collection())) -> lustre@vdom@vnode:element(nil))
 ) -> arctic:config().
 home_renderer(Config, Renderer) ->
     _record = Config,
@@ -58,11 +58,7 @@ home_renderer(Config, Renderer) ->
     " Main pages are pages that aren't a part of any collection, like \"Contact\" or \"About.\"\n"
     " Note that the home page (`/index.html`) is handled via `home_renderer` instead.\n"
 ).
--spec add_main_page(
-    arctic:config(),
-    binary(),
-    lustre@internals@vdom:element(nil)
-) -> arctic:config().
+-spec add_main_page(arctic:config(), binary(), lustre@vdom@vnode:element(nil)) -> arctic:config().
 add_main_page(Config, Id, Body) ->
     _record = Config,
     {config,
@@ -95,7 +91,7 @@ add_collection(Config, Collection) ->
 ).
 -spec add_spa_frame(
     arctic:config(),
-    fun((lustre@internals@vdom:element(nil)) -> lustre@internals@vdom:element(nil))
+    fun((lustre@vdom@vnode:element(nil)) -> lustre@vdom@vnode:element(nil))
 ) -> arctic:config().
 add_spa_frame(Config, Frame) ->
     _record = Config,

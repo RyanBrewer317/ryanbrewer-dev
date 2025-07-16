@@ -1,6 +1,6 @@
 -module(lustre_dev_tools@cli@start).
 -compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch]).
-
+-define(FILEPATH, "src/lustre_dev_tools/cli/start.gleam").
 -export([run/0]).
 
 -if(?OTP_RELEASE >= 27).
@@ -46,31 +46,39 @@ write_html(Path, Source) ->
 ?DOC(false).
 -spec prepare_html() -> lustre_dev_tools@cli:cli(nil).
 prepare_html() ->
-    _assert_subject = lustre_dev_tools_ffi:get_cwd(),
-    {ok, Cwd} = case _assert_subject of
-        {ok, _} -> _assert_subject;
+    Cwd@1 = case lustre_dev_tools_ffi:get_cwd() of
+        {ok, Cwd} -> Cwd;
         _assert_fail ->
             erlang:error(#{gleam_error => let_assert,
                         message => <<"Pattern match failed, no pattern matched the value."/utf8>>,
-                        value => _assert_fail,
+                        file => <<?FILEPATH/utf8>>,
                         module => <<"lustre_dev_tools/cli/start"/utf8>>,
                         function => <<"prepare_html"/utf8>>,
-                        line => 74})
+                        line => 74,
+                        value => _assert_fail,
+                        start => 2257,
+                        'end' => 2287,
+                        pattern_start => 2268,
+                        pattern_end => 2275})
     end,
-    _assert_subject@1 = filepath:expand(
-        filepath:join(Cwd, lustre_dev_tools@project:root())
-    ),
-    {ok, Root} = case _assert_subject@1 of
-        {ok, _} -> _assert_subject@1;
+    Root@1 = case filepath:expand(
+        filepath:join(Cwd@1, lustre_dev_tools@project:root())
+    ) of
+        {ok, Root} -> Root;
         _assert_fail@1 ->
             erlang:error(#{gleam_error => let_assert,
                         message => <<"Pattern match failed, no pattern matched the value."/utf8>>,
-                        value => _assert_fail@1,
+                        file => <<?FILEPATH/utf8>>,
                         module => <<"lustre_dev_tools/cli/start"/utf8>>,
                         function => <<"prepare_html"/utf8>>,
-                        line => 75})
+                        line => 75,
+                        value => _assert_fail@1,
+                        start => 2290,
+                        'end' => 2363,
+                        pattern_start => 2301,
+                        pattern_end => 2309})
     end,
-    Index = filepath:join(Root, <<"index.html"/utf8>>),
+    Index = filepath:join(Root@1, <<"index.html"/utf8>>),
     case simplifile_erl:is_file(Index) of
         {ok, true} ->
             lustre_dev_tools@cli:return(nil);

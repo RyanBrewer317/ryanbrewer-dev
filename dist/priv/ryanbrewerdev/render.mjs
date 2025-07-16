@@ -2,7 +2,6 @@ import * as $arctic from "../arctic/arctic.mjs";
 import * as $option from "../gleam_stdlib/gleam/option.mjs";
 import { Some } from "../gleam_stdlib/gleam/option.mjs";
 import * as $attribute from "../lustre/lustre/attribute.mjs";
-import { attribute } from "../lustre/lustre/attribute.mjs";
 import * as $element from "../lustre/lustre/element.mjs";
 import { text } from "../lustre/lustre/element.mjs";
 import * as $html from "../lustre/lustre/element/html.mjs";
@@ -13,6 +12,8 @@ import * as $tail from "./components/tail.mjs";
 import { tail } from "./components/tail.mjs";
 import { toList, prepend as listPrepend, makeError } from "./gleam.mjs";
 import * as $helpers from "./helpers.mjs";
+
+const FILEPATH = "src/render.gleam";
 
 function do$(el, k) {
   return listPrepend(el, k());
@@ -30,11 +31,18 @@ function render_post_as_list(post) {
       if (!($ instanceof Some)) {
         throw makeError(
           "let_assert",
+          FILEPATH,
           "render",
           25,
-          "",
+          "render_post_as_list",
           "Pattern match failed, no pattern matched the value.",
-          { value: $ }
+          {
+            value: $,
+            start: 670,
+            end: 703,
+            pattern_start: 681,
+            pattern_end: 691
+          }
         )
       }
       let date = $[0];

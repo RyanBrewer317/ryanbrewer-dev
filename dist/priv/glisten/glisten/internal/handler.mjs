@@ -1,12 +1,10 @@
-import * as $erlang from "../../../gleam_erlang/gleam/erlang.mjs";
-import { rescue } from "../../../gleam_erlang/gleam/erlang.mjs";
 import * as $atom from "../../../gleam_erlang/gleam/erlang/atom.mjs";
 import * as $process from "../../../gleam_erlang/gleam/erlang/process.mjs";
 import * as $actor from "../../../gleam_otp/gleam/otp/actor.mjs";
+import * as $dynamic from "../../../gleam_stdlib/gleam/dynamic.mjs";
 import * as $decode from "../../../gleam_stdlib/gleam/dynamic/decode.mjs";
-import * as $function from "../../../gleam_stdlib/gleam/function.mjs";
 import * as $option from "../../../gleam_stdlib/gleam/option.mjs";
-import { Some } from "../../../gleam_stdlib/gleam/option.mjs";
+import { None, Some } from "../../../gleam_stdlib/gleam/option.mjs";
 import * as $result from "../../../gleam_stdlib/gleam/result.mjs";
 import * as $string from "../../../gleam_stdlib/gleam/string.mjs";
 import * as $logging from "../../../logging/logging.mjs";
@@ -20,9 +18,9 @@ export class Close extends $CustomType {}
 export class Ready extends $CustomType {}
 
 export class ReceiveMessage extends $CustomType {
-  constructor(x0) {
+  constructor($0) {
     super();
-    this[0] = x0;
+    this[0] = $0;
   }
 }
 
@@ -31,41 +29,41 @@ export class SslClosed extends $CustomType {}
 export class TcpClosed extends $CustomType {}
 
 export class Internal extends $CustomType {
-  constructor(x0) {
+  constructor($0) {
     super();
-    this[0] = x0;
+    this[0] = $0;
   }
 }
 
 export class User extends $CustomType {
-  constructor(x0) {
+  constructor($0) {
     super();
-    this[0] = x0;
+    this[0] = $0;
   }
 }
 
 export class Packet extends $CustomType {
-  constructor(x0) {
+  constructor($0) {
     super();
-    this[0] = x0;
+    this[0] = $0;
   }
 }
 
 export class Custom extends $CustomType {
-  constructor(x0) {
+  constructor($0) {
     super();
-    this[0] = x0;
+    this[0] = $0;
   }
 }
 
 export class LoopState extends $CustomType {
-  constructor(client_ip, socket, sender, transport, data) {
+  constructor(client_ip, socket, sender, transport, state) {
     super();
     this.client_ip = client_ip;
     this.socket = socket;
     this.sender = sender;
     this.transport = transport;
-    this.data = data;
+    this.state = state;
   }
 }
 
@@ -79,6 +77,23 @@ export class Connection extends $CustomType {
   }
 }
 
+export class Continue extends $CustomType {
+  constructor(state, selector) {
+    super();
+    this.state = state;
+    this.selector = selector;
+  }
+}
+
+export class NormalStop extends $CustomType {}
+
+export class AbnormalStop extends $CustomType {
+  constructor(reason) {
+    super();
+    this.reason = reason;
+  }
+}
+
 export class Handler extends $CustomType {
   constructor(socket, loop, on_init, on_close, transport) {
     super();
@@ -88,4 +103,26 @@ export class Handler extends $CustomType {
     this.on_close = on_close;
     this.transport = transport;
   }
+}
+
+export function continue$(state) {
+  return new Continue(state, new None());
+}
+
+export function with_selector(next, selector) {
+  if (next instanceof Continue) {
+    let state = next.state;
+    return new Continue(state, new Some(selector));
+  } else {
+    let stop$1 = next;
+    return stop$1;
+  }
+}
+
+export function stop() {
+  return new NormalStop();
+}
+
+export function stop_abnormal(reason) {
+  return new AbnormalStop(reason);
 }

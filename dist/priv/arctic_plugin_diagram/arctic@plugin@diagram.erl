@@ -1,33 +1,37 @@
 -module(arctic@plugin@diagram).
 -compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch]).
-
+-define(FILEPATH, "src/arctic/plugin/diagram.gleam").
 -export([parse/3]).
 
 -file("src/arctic/plugin/diagram.gleam", 12).
--spec parse(binary(), fun((YWK) -> integer()), fun((integer()) -> YWK)) -> fun((list(binary()), binary(), arctic@parse:parse_data(YWK)) -> {ok,
-        {lustre@internals@vdom:element(any()), YWK}} |
+-spec parse(binary(), fun((AAIX) -> integer()), fun((integer()) -> AAIX)) -> fun((list(binary()), binary(), arctic@parse:parse_data(AAIX)) -> {ok,
+        {lustre@vdom@vnode:element(any()), AAIX}} |
     {error, snag:snag()}).
 parse(Dir, Get_id, To_state) ->
     fun(_, Body, Data) ->
         Counter = Get_id(arctic@parse:get_state(Data)),
-        _assert_subject = gleam_stdlib:map_get(
+        Id@1 = case gleam_stdlib:map_get(
             arctic@parse:get_metadata(Data),
             <<"id"/utf8>>
-        ),
-        {ok, Id} = case _assert_subject of
-            {ok, _} -> _assert_subject;
+        ) of
+            {ok, Id} -> Id;
             _assert_fail ->
                 erlang:error(#{gleam_error => let_assert,
                             message => <<"Pattern match failed, no pattern matched the value."/utf8>>,
-                            value => _assert_fail,
+                            file => <<?FILEPATH/utf8>>,
                             module => <<"arctic/plugin/diagram"/utf8>>,
                             function => <<"parse"/utf8>>,
-                            line => 16})
+                            line => 16,
+                            value => _assert_fail,
+                            start => 437,
+                            'end' => 497,
+                            pattern_start => 448,
+                            pattern_end => 454})
         end,
         Img_filename = <<<<<<<<"image-"/utf8,
                         (erlang:integer_to_binary(Counter))/binary>>/binary,
                     "-"/utf8>>/binary,
-                Id/binary>>/binary,
+                Id@1/binary>>/binary,
             ".svg"/utf8>>,
         Out = {lustre@element@html:'div'(
                 [lustre@attribute:class(<<"diagram"/utf8>>)],

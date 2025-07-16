@@ -3,7 +3,9 @@ import * as $regexp from "../../gleam_regexp/gleam/regexp.mjs";
 import * as $int from "../../gleam_stdlib/gleam/int.mjs";
 import * as $list from "../../gleam_stdlib/gleam/list.mjs";
 import * as $string from "../../gleam_stdlib/gleam/string.mjs";
-import { toList, CustomType as $CustomType, makeError } from "../gleam.mjs";
+import { Ok, toList, CustomType as $CustomType, makeError } from "../gleam.mjs";
+
+const FILEPATH = "src/gleam_community/ansi.gleam";
 
 class Code extends $CustomType {
   constructor(open, close, regexp) {
@@ -21,14 +23,21 @@ function run(text, code) {
 export function strip(text) {
   let regexp_options = new $regexp.Options(false, true);
   let $ = $regexp.compile("(?:\\[(?:\\d+;?)+m)+", regexp_options);
-  if (!$.isOk()) {
+  if (!($ instanceof Ok)) {
     throw makeError(
       "let_assert",
+      FILEPATH,
       "gleam_community/ansi",
       2346,
       "strip",
       "Pattern match failed, no pattern matched the value.",
-      { value: $ }
+      {
+        value: $,
+        start: 68014,
+        end: 68098,
+        pattern_start: 68025,
+        pattern_end: 68030
+      }
     )
   }
   let r = $[0];

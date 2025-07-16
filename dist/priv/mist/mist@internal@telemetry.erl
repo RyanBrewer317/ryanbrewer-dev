@@ -1,6 +1,6 @@
 -module(mist@internal@telemetry).
 -compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch]).
-
+-define(FILEPATH, "src/mist/internal/telemetry.gleam").
 -export([log/4, span/3, attach_many/3, attach/4, configure_logger/0]).
 -export_type([event/0, time_unit/0]).
 
@@ -50,7 +50,7 @@ log(Path, Measurements, _, _) ->
             Measurements,
             erlang:binary_to_atom(<<"duration"/utf8>>)
         ),
-        _pipe@3 = gleam@result:then(_pipe, fun(Val) -> _pipe@1 = Val,
+        _pipe@3 = gleam@result:'try'(_pipe, fun(Val) -> _pipe@1 = Val,
                 _pipe@2 = gleam@dynamic@decode:run(
                     _pipe@1,
                     {decoder, fun gleam@dynamic@decode:decode_int/1}
@@ -82,8 +82,8 @@ log(Path, Measurements, _, _) ->
 -spec span(
     list(event()),
     gleam@dict:dict(binary(), gleam@dynamic:dynamic_()),
-    fun(() -> QBT)
-) -> QBT.
+    fun(() -> OBY)
+) -> OBY.
 span(Path, Metadata, Wrapping) ->
     telemetry:span(
         Path,

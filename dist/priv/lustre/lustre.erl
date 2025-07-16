@@ -1,8 +1,8 @@
 -module(lustre).
 -compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch]).
-
--export([application/3, element/1, simple/3, component/4, start_actor/2, start_server_component/2, register/2, dispatch/1, shutdown/0, is_browser/0, start/3, is_registered/1]).
--export_type([app/3, client_spa/0, server_component/0, error/0]).
+-define(FILEPATH, "src/lustre.gleam").
+-export([component/4, application/3, element/1, simple/3, register/2, send/2, dispatch/1, shutdown/0, is_browser/0, start/3, is_registered/1, start_server_component/2]).
+-export_type([app/3, error/0, runtime/1]).
 
 -if(?OTP_RELEASE >= 27).
 -define(MODULEDOC(Str), -moduledoc(Str)).
@@ -27,8 +27,7 @@
     "\n"
     " 2. A client-side component: an encapsulated Lustre application that can be\n"
     "    rendered inside another Lustre application as a Web Component. Communication\n"
-    "    happens via attributes and event listeners, like any other encapsulated\n"
-    "    HTML element.\n"
+    "    happens via attributes and event listeners, like any other HTML element.\n"
     "\n"
     " 3. A server component. These are applications that run anywhere Gleam runs\n"
     "    and communicate with any number of connected clients by sending them\n"
@@ -39,9 +38,9 @@
     "    that listens for patches over a WebSocket and applies them to the DOM.\n"
     "\n"
     "    The server component runtime can run anywhere Gleam does, but the\n"
-    "    client-side runtime must be run in a browser. To use it either render the\n"
-    "    [provided script element](./lustre/server_component.html#script) or use the script files\n"
-    "    from Lustre's `priv/` directory directly.\n"
+    "    client-side runtime must be run in a browser. To use it, either render the\n"
+    "    [provided script element](./lustre/server_component.html#script) or serve\n"
+    "    the pre-bundled scripts found in Lustre's `priv/` directory directly.\n"
     "\n"
     " No matter where a Lustre application runs, it will always follow the same\n"
     " Model-View-Update architecture. Popularised by Elm (where it is known as The\n"
@@ -105,7 +104,15 @@
     " different kinds of applications. If you're just getting started with Lustre\n"
     " or frontend development, we recommend reading through them in order:\n"
     "\n"
-    " - [`01-quickstart`](/guide/01-quickstart.html)\n"
+    " - [`01-quickstart`](./guide/01-quickstart.html)\n"
+    " - [`02-state-management`](./guide/02-state-management.html)\n"
+    " - [`03-side-effects`](./guide/03-side-effects.html)\n"
+    " - [`04-spa-deployments`](./guide/04-spa-deployments.html)\n"
+    " - [`05-server-side-rendering`](./guide/05-server-side-rendering.html)\n"
+    " - [`06-full-stack-applications`](./guide/06-full-stack-applications.html)\n"
+    " - [`07-full-stack-deployments`](./guide/07-full-stack-deployments.html)\n"
+    " - [`08-components`](./guide/08-components.html)\n"
+    " - [`09-server-components`](./guide/09-server-components.html)\n"
     "\n"
     " This list of guides is likely to grow over time, so be sure to check back\n"
     " every now and then to see what's new!\n"
@@ -114,17 +121,15 @@
     "\n"
     " If you prefer to learn by seeing and adapting existing code, there are also\n"
     " a number of examples in the [Lustre GitHub repository](https://github.com/lustre-labs/lustre)\n"
-    " that each demonstrate a different concept or idea:\n"
+    " that each demonstrate a different concept or idea. While we can't list them\n"
+    " all here, some of the more important ones are:\n"
     "\n"
-    " - [`01-hello-world`](https://github.com/lustre-labs/lustre/tree/main/examples/01-hello-world)\n"
-    " - [`02-interactivity`](https://github.com/lustre-labs/lustre/tree/main/examples/02-interactivity)\n"
-    " - [`03-controlled-inputs`](https://github.com/lustre-labs/lustre/tree/main/examples/03-controlled-inputs)\n"
-    " - [`04-custom-event-handlers`](https://github.com/lustre-labs/lustre/tree/main/examples/04-custom-event-handlers)\n"
-    " - [`05-http-requests`](https://github.com/lustre-labs/lustre/tree/main/examples/05-http-requests)\n"
-    " - [`06-custom-effects`](https://github.com/lustre-labs/lustre/tree/main/examples/06-custom-effects)\n"
-    "\n"
-    " This list of examples is likely to grow over time, so be sure to check back\n"
-    " every now and then to see what's new!\n"
+    " - [`Controlled inputs`](https://github.com/lustre-labs/lustre/tree/main/examples/02-inputs/01-controlled-inputs)\n"
+    " - [`Handling forms`](https://github.com/lustre-labs/lustre/tree/main/examples/02-inputs/04-forms)\n"
+    " - [`Making HTTP requests`](https://github.com/lustre-labs/lustre/tree/main/examples/03-effects/01-http-requests)\n"
+    " - [`Routing`](https://github.com/lustre-labs/lustre/tree/main/examples/04-applications/01-routing)\n"
+    " - [`Creating components`](https://github.com/lustre-labs/lustre/tree/main/examples/05-components/01-basic-setup)\n"
+    " - [`Creating server components`](https://github.com/lustre-labs/lustre/tree/main/examples/06-server-components/01-basic-setup)\n"
     "\n"
     " ## Companion libraries\n"
     "\n"
@@ -142,24 +147,18 @@
     " Both of these packages are heavy works in progress: any feedback or contributions\n"
     " are very welcome!\n"
     "\n"
-    "\n"
     " ## Getting help\n"
     "\n"
     " If you're having trouble with Lustre or not sure what the right way to do\n"
     " something is, the best place to get help is the [Gleam Discord server](https://discord.gg/Fm8Pwmy).\n"
     " You could also open an issue on the [Lustre GitHub repository](https://github.com/lustre-labs/lustre/issues).\n"
     "\n"
-    " While our docs are still a work in progress, the official [Elm guide](https://guide.elm-lang.org)\n"
-    " is also a great resource for learning about the Model-View-Update architecture\n"
-    " and the kinds of patterns that Lustre is built around.\n"
-    "\n"
     " ## Contributing\n"
     "\n"
     " The best way to contribute to Lustre is by building things! If you've built\n"
     " something cool with Lustre you want to share then please share it on the\n"
     " `#sharing` channel in the  [Gleam Discord server](https://discord.gg/Fm8Pwmy).\n"
-    " You can also tag Hayleigh on Twitter [@hayleigh-dot-dev](https://twitter.com/hayleighdotdev)\n"
-    " or on BlueSky [@hayleigh.dev](https://bsky.app/profile/hayleigh.dev).\n"
+    " You can also tag Hayleigh on BlueSky [@hayleigh.dev](https://bsky.app/profile/hayleigh.dev).\n"
     "\n"
     " If you run into any issues or have ideas for how to improve Lustre, please\n"
     " open an issue on the [Lustre GitHub repository](https://github.com/lustre-labs/lustre/issues).\n"
@@ -172,85 +171,21 @@
     "\n"
 ).
 
--opaque app(QST, QSU, QSV) :: {app,
-        fun((QST) -> {QSU, lustre@effect:effect(QSV)}),
-        fun((QSU, QSV) -> {QSU, lustre@effect:effect(QSV)}),
-        fun((QSU) -> lustre@internals@vdom:element(QSV)),
-        gleam@option:option(gleam@dict:dict(binary(), fun((gleam@dynamic:dynamic_()) -> {ok,
-                QSV} |
-            {error, list(gleam@dynamic:decode_error())})))}.
-
--type client_spa() :: any().
-
--type server_component() :: any().
+-opaque app(SHI, SHJ, SHK) :: {app,
+        fun((SHI) -> {SHJ, lustre@effect:effect(SHK)}),
+        fun((SHJ, SHK) -> {SHJ, lustre@effect:effect(SHK)}),
+        fun((SHJ) -> lustre@vdom@vnode:element(SHK)),
+        lustre@component:config(SHK)}.
 
 -type error() :: {actor_error, gleam@otp@actor:start_error()} |
     {bad_component_name, binary()} |
     {component_already_registered, binary()} |
     {element_not_found, binary()} |
-    not_a_browser |
-    not_erlang.
+    not_a_browser.
 
--file("src/lustre.gleam", 328).
-?DOC(
-    " A complete Lustre application that follows the Model-View-Update architecture\n"
-    " and can handle side effects like HTTP requests or querying the DOM. Most real\n"
-    " Lustre applications will use this constructor.\n"
-    "\n"
-    " To learn more about effects and their purpose, take a look at the\n"
-    " [`effect`](./lustre/effect.html) module or the\n"
-    " [HTTP requests example](https://github.com/lustre-labs/lustre/tree/main/examples/05-http-requests).\n"
-).
--spec application(
-    fun((QTO) -> {QTP, lustre@effect:effect(QTQ)}),
-    fun((QTP, QTQ) -> {QTP, lustre@effect:effect(QTQ)}),
-    fun((QTP) -> lustre@internals@vdom:element(QTQ))
-) -> app(QTO, QTP, QTQ).
-application(Init, Update, View) ->
-    {app, Init, Update, View, none}.
+-type runtime(SHL) :: any() | {gleam_phantom, SHL}.
 
--file("src/lustre.gleam", 293).
-?DOC(
-    " An element is the simplest type of Lustre application. It renders its contents\n"
-    " once and does not handle any messages or effects. Often this type of application\n"
-    " is used for folks just getting started with Lustre on the frontend and want a\n"
-    " quick way to get something on the screen.\n"
-    "\n"
-    " Take a look at the [`simple`](#simple) application constructor if you want to\n"
-    " build something interactive.\n"
-    "\n"
-    " > **Note**: Just because an element doesn't have its own update loop, doesn't\n"
-    " > mean its content is always static! An element application may render a client\n"
-    " > or server component that has its own encapsulated update loop!\n"
-).
--spec element(lustre@internals@vdom:element(QTC)) -> app(nil, nil, QTC).
-element(Html) ->
-    Init = fun(_) -> {nil, lustre@effect:none()} end,
-    Update = fun(_, _) -> {nil, lustre@effect:none()} end,
-    View = fun(_) -> Html end,
-    application(Init, Update, View).
-
--file("src/lustre.gleam", 309).
-?DOC(
-    " A `simple` application has the basic Model-View-Update building blocks present\n"
-    " in all Lustre applications, but it cannot handle effects. This is a great way\n"
-    " to learn the basics of Lustre and its architecture.\n"
-    "\n"
-    " Once you're comfortable with the Model-View-Update loop and want to start\n"
-    " building more complex applications that can communicate with the outside world,\n"
-    " you'll want to use the [`application`](#application) constructor instead.\n"
-).
--spec simple(
-    fun((QTH) -> QTI),
-    fun((QTI, QTJ) -> QTI),
-    fun((QTI) -> lustre@internals@vdom:element(QTJ))
-) -> app(QTH, QTI, QTJ).
-simple(Init, Update, View) ->
-    Init@1 = fun(Flags) -> {Init(Flags), lustre@effect:none()} end,
-    Update@1 = fun(Model, Msg) -> {Update(Model, Msg), lustre@effect:none()} end,
-    application(Init@1, Update@1, View).
-
--file("src/lustre.gleam", 354).
+-file("src/lustre.gleam", 307).
 ?DOC(
     " A `component` is a type of Lustre application designed to be embedded within\n"
     " another application and has its own encapsulated update loop. This constructor\n"
@@ -262,99 +197,87 @@ simple(Init, Update, View) ->
     " other HTML element. This dictionary of decoders allows you to specify how to\n"
     " decode those attributes into messages your component's update loop can handle.\n"
     "\n"
-    " **Note**: Lustre components are conceptually a lot \"heavier\" than components\n"
-    " in frameworks like React. They should be used for more complex UI widgets\n"
-    " like a combobox with complex keyboard interactions rather than simple things\n"
-    " like buttons or text inputs. Where possible try to think about how to build\n"
-    " your UI with simple view functions (functions that return [Elements](./lustre/element.html#Element))\n"
-    " and only reach for components when you really need to encapsulate that update\n"
-    " loop.\n"
+    " > **Note**: Lustre components are conceptually a lot \"heavier\" than components\n"
+    " > in frameworks like React. They should be used for more complex UI widgets\n"
+    " > like a combobox with complex keyboard interactions rather than simple things\n"
+    " > like buttons or text inputs. Where possible try to think about how to build\n"
+    " > your UI with simple view functions (functions that return [Elements](./lustre/element.html#Element))\n"
+    " > and only reach for components when you really need to encapsulate that update\n"
+    " > loop.\n"
 ).
 -spec component(
-    fun((QTX) -> {QTY, lustre@effect:effect(QTZ)}),
-    fun((QTY, QTZ) -> {QTY, lustre@effect:effect(QTZ)}),
-    fun((QTY) -> lustre@internals@vdom:element(QTZ)),
-    gleam@dict:dict(binary(), fun((gleam@dynamic:dynamic_()) -> {ok, QTZ} |
-        {error, list(gleam@dynamic:decode_error())}))
-) -> app(QTX, QTY, QTZ).
-component(Init, Update, View, On_attribute_change) ->
-    {app, Init, Update, View, {some, On_attribute_change}}.
+    fun((SIK) -> {SIL, lustre@effect:effect(SIM)}),
+    fun((SIL, SIM) -> {SIL, lustre@effect:effect(SIM)}),
+    fun((SIL) -> lustre@vdom@vnode:element(SIM)),
+    list(lustre@component:option(SIM))
+) -> app(SIK, SIL, SIM).
+component(Init, Update, View, Options) ->
+    {app, Init, Update, View, lustre@component:new(Options)}.
 
--file("src/lustre.gleam", 387).
--spec do_start(app(QUT, any(), QUV), binary(), QUT) -> {ok,
-        fun((lustre@internals@runtime:action(QUV, client_spa())) -> nil)} |
+-file("src/lustre.gleam", 281).
+?DOC(
+    " A complete Lustre application that follows the Model-View-Update architecture\n"
+    " and can handle side effects like HTTP requests or querying the DOM. Most real\n"
+    " Lustre applications will use this constructor.\n"
+    "\n"
+    " To learn more about effects and their purpose, take a look at the\n"
+    " [`effect`](./lustre/effect.html) module or the\n"
+    " [HTTP requests example](https://github.com/lustre-labs/lustre/tree/main/examples/05-http-requests).\n"
+).
+-spec application(
+    fun((SIB) -> {SIC, lustre@effect:effect(SID)}),
+    fun((SIC, SID) -> {SIC, lustre@effect:effect(SID)}),
+    fun((SIC) -> lustre@vdom@vnode:element(SID))
+) -> app(SIB, SIC, SID).
+application(Init, Update, View) ->
+    {app, Init, Update, View, lustre@component:new([])}.
+
+-file("src/lustre.gleam", 246).
+?DOC(
+    " The simplest type of Lustre application. The `element` application is\n"
+    " primarily used for demonstration purposes. It renders a static Lustre `Element`\n"
+    " on the page and does not have any state or update logic.\n"
+).
+-spec element(lustre@vdom@vnode:element(SHO)) -> app(any(), nil, SHO).
+element(View) ->
+    application(
+        fun(_) -> {nil, lustre@effect:none()} end,
+        fun(_, _) -> {nil, lustre@effect:none()} end,
+        fun(_) -> View end
+    ).
+
+-file("src/lustre.gleam", 262).
+?DOC(
+    " A `simple` application has the basic Model-View-Update building blocks present\n"
+    " in all Lustre applications, but it cannot handle effects. This is a great way\n"
+    " to learn the basics of Lustre and its architecture.\n"
+    "\n"
+    " Once you're comfortable with the Model-View-Update loop and want to start\n"
+    " building more complex applications that can communicate with the outside world,\n"
+    " you'll want to use the [`application`](#application) constructor instead.\n"
+).
+-spec simple(
+    fun((SHU) -> SHV),
+    fun((SHV, SHW) -> SHV),
+    fun((SHV) -> lustre@vdom@vnode:element(SHW))
+) -> app(SHU, SHV, SHW).
+simple(Init, Update, View) ->
+    Init@1 = fun(Start_args) -> {Init(Start_args), lustre@effect:none()} end,
+    Update@1 = fun(Model, Msg) -> {Update(Model, Msg), lustre@effect:none()} end,
+    application(Init@1, Update@1, View).
+
+-file("src/lustre.gleam", 341).
+-spec do_start(app(SJE, any(), SJG), binary(), SJE) -> {ok, runtime(SJG)} |
     {error, error()}.
 do_start(_, _, _) ->
     {error, not_a_browser}.
 
--file("src/lustre.gleam", 444).
--spec do_start_actor(app(QVY, any(), QWA), QVY) -> {ok,
-        gleam@erlang@process:subject(lustre@internals@runtime:action(QWA, server_component()))} |
-    {error, error()}.
-do_start_actor(App, Flags) ->
-    On_attribute_change = gleam@option:unwrap(
-        erlang:element(5, App),
-        maps:new()
-    ),
-    _pipe = (erlang:element(2, App))(Flags),
-    _pipe@1 = lustre@internals@runtime:start(
-        _pipe,
-        erlang:element(3, App),
-        erlang:element(4, App),
-        On_attribute_change
-    ),
-    gleam@result:map_error(_pipe@1, fun(Field@0) -> {actor_error, Field@0} end).
-
--file("src/lustre.gleam", 431).
-?DOC(
-    " Start an application as a server component specifically for the Erlang target.\n"
-    " Instead of receiving a callback on successful start, this function returns\n"
-    " a [`Subject`](https://hexdocs.pm/gleam_erlang/gleam/erlang/process.html#Subject)\n"
-    "\n"
-    "\n"
-    " **Note**: This function is only meaningful on the Erlang target. Attempts to\n"
-    " call it on the JavaScript will result in the `NotErlang` error. If you're running\n"
-    " a Lustre server component on Node or Deno, use [`start_server_component`](#start_server_component)\n"
-    " instead.\n"
-).
--spec start_actor(app(QVN, any(), QVP), QVN) -> {ok,
-        gleam@erlang@process:subject(lustre@internals@runtime:action(QVP, server_component()))} |
-    {error, error()}.
-start_actor(App, Flags) ->
-    do_start_actor(App, Flags).
-
--file("src/lustre.gleam", 413).
-?DOC(
-    " Start an application as a server component. This runs in a headless mode and\n"
-    " doesn't render anything to the DOM. Instead, multiple clients can be attached\n"
-    " using the [`add_renderer`](#add_renderer) action.\n"
-    "\n"
-    " If a server component starts successfully, this function will return a callback\n"
-    " that can be used to send actions to the component runtime.\n"
-    "\n"
-    " A server component will keep running until the program is terminated or the\n"
-    " [`shutdown`](#shutdown) action is sent to it.\n"
-    "\n"
-    " **Note**: Users running their application on the BEAM should use [`start_actor`](#start_actor)\n"
-    " instead to make use of Gleam's OTP abstractions.\n"
-).
--spec start_server_component(app(QVD, any(), QVF), QVD) -> {ok,
-        fun((lustre@internals@runtime:action(QVF, server_component())) -> nil)} |
-    {error, error()}.
-start_server_component(App, Flags) ->
-    gleam@result:map(
-        start_actor(App, Flags),
-        fun(Runtime) ->
-            fun(_capture) -> gleam@otp@actor:send(Runtime, _capture) end
-        end
-    ).
-
--file("src/lustre.gleam", 477).
+-file("src/lustre.gleam", 396).
 ?DOC(
     " Register a Lustre application as a Web Component. This lets you render that\n"
     " application in another Lustre application's view or use it as a Custom Element\n"
-    " outside of Lustre entirely.The provided application can only have `Nil` flags\n"
-    " because there is no way to provide an initial value for flags when using a\n"
+    " outside of Lustre entirely.The provided application can only have `Nil` start_args\n"
+    " because there is no way to provide an initial value for start_args when using a\n"
     " Custom Element!\n"
     "\n"
     " The second argument is the name of the Custom Element. This is the name you'd\n"
@@ -362,45 +285,52 @@ start_server_component(App, Flags) ->
     " with the name `my-component`, you'd use it in HTML by writing `<my-component>`\n"
     " or in Lustre by rendering `element(\"my-component\", [], [])`.\n"
     "\n"
-    " **Note**: There are [some rules](https://developer.mozilla.org/en-US/docs/Web/API/CustomElementRegistry/define#valid_custom_element_names)\n"
-    " for what names are valid for a Custom Element. The most important one is that\n"
-    " the name *must* contain a hypen so that it can be distinguished from standard\n"
-    " HTML elements.\n"
+    " > **Note**: There are [some rules](https://developer.mozilla.org/en-US/docs/Web/API/CustomElementRegistry/define#valid_custom_element_names)\n"
+    " > for what names are valid for a Custom Element. The most important one is that\n"
+    " > the name *must* contain a hypen so that it can be distinguished from standard\n"
+    " > HTML elements.\n"
     "\n"
-    " **Note**: This function is only meaningful when running in the browser and will\n"
-    " produce a `NotABrowser` error if called anywhere else. For server contexts,\n"
-    " you can render a Lustre server component using [`start_server_component`](#start_server_component)\n"
-    " or [`start_actor`](#start_actor) instead.\n"
+    " > **Note**: This function is only meaningful when running in the browser and will\n"
+    " > produce a `NotABrowser` error if called anywhere else. For server contexts,\n"
+    " > you can render a Lustre server component using [`start_server_component`](#start_server_component)\n"
+    " > or [`start_actor`](#start_actor) instead.\n"
 ).
 -spec register(app(nil, any(), any()), binary()) -> {ok, nil} | {error, error()}.
 register(_, _) ->
     {error, not_a_browser}.
 
--file("src/lustre.gleam", 490).
+-file("src/lustre.gleam", 408).
+?DOC(
+    " Send a message to a running application's runtime directly. This function is\n"
+    " primarily used for sending decoded client messages to a server component's\n"
+    " runtime.\n"
+).
+-spec send(runtime(SKD), lustre@runtime@server@runtime:message(SKD)) -> nil.
+send(Runtime, Message) ->
+    gleam@erlang@process:send(Runtime, Message).
+
+-file("src/lustre.gleam", 417).
 ?DOC(
     " Dispatch a message to a running application's `update` function. This can be\n"
     " used as a way for the outside world to communicate with a Lustre app without\n"
     " the app needing to initiate things with an effect.\n"
-    "\n"
-    " Both client SPAs and server components can have messages sent to them using\n"
-    " the `dispatch` action.\n"
 ).
--spec dispatch(QWQ) -> lustre@internals@runtime:action(QWQ, any()).
+-spec dispatch(SKG) -> lustre@runtime@server@runtime:message(SKG).
 dispatch(Msg) ->
-    {dispatch, Msg}.
+    {effect_dispatched_message, Msg}.
 
--file("src/lustre.gleam", 499).
+-file("src/lustre.gleam", 426).
 ?DOC(
     " Instruct a running application to shut down. For client SPAs this will stop\n"
     " the runtime and unmount the app from the DOM. For server components, this will\n"
     " stop the runtime and prevent any further patches from being sent to connected\n"
     " clients.\n"
 ).
--spec shutdown() -> lustre@internals@runtime:action(any(), any()).
+-spec shutdown() -> lustre@runtime@server@runtime:message(any()).
 shutdown() ->
-    shutdown.
+    system_requested_shutdown.
 
--file("src/lustre.gleam", 514).
+-file("src/lustre.gleam", 441).
 ?DOC(
     " Gleam's conditional compilation makes it possible to have different implementations\n"
     " of a function for different targets, but it's not possible to know what runtime\n"
@@ -414,7 +344,7 @@ shutdown() ->
 is_browser() ->
     false.
 
--file("src/lustre.gleam", 377).
+-file("src/lustre.gleam", 330).
 ?DOC(
     " Start a constructed application as a client-side single-page application (SPA).\n"
     " This is the most typical way to start a Lustre application and will *only* work\n"
@@ -428,17 +358,16 @@ is_browser() ->
     " The third argument is the starting data for the application. This is passed\n"
     " to the application's `init` function.\n"
 ).
--spec start(app(QUJ, any(), QUL), binary(), QUJ) -> {ok,
-        fun((lustre@internals@runtime:action(QUL, client_spa())) -> nil)} |
+-spec start(app(SIV, any(), SIX), binary(), SIV) -> {ok, runtime(SIX)} |
     {error, error()}.
-start(App, Selector, Flags) ->
+start(App, Selector, Start_args) ->
     gleam@bool:guard(
         not is_browser(),
         {error, not_a_browser},
-        fun() -> do_start(App, Selector, Flags) end
+        fun() -> do_start(App, Selector, Start_args) end
     ).
 
--file("src/lustre.gleam", 523).
+-file("src/lustre.gleam", 450).
 ?DOC(
     " Check if the given component name has already been registered as a Custom\n"
     " Element. This is particularly useful in contexts where _other web components_\n"
@@ -447,3 +376,28 @@ start(App, Selector, Flags) ->
 -spec is_registered(binary()) -> boolean().
 is_registered(_) ->
     false.
+
+-file("src/lustre.gleam", 360).
+?DOC(
+    " Start an application as a server component. This runs in a headless mode and\n"
+    " doesn't render anything to the DOM. Instead, multiple clients can be attached\n"
+    " using the [`add_renderer`](#add_renderer) action.\n"
+    "\n"
+    " If a server component starts successfully, this function will return a callback\n"
+    " that can be used to send actions to the component runtime.\n"
+    "\n"
+    " A server component will keep running until the program is terminated or the\n"
+    " [`shutdown`](#shutdown) action is sent to it.\n"
+).
+-spec start_server_component(app(SJN, any(), SJP), SJN) -> {ok, runtime(SJP)} |
+    {error, error()}.
+start_server_component(App, Start_args) ->
+    _pipe = (erlang:element(2, App))(Start_args),
+    _pipe@1 = lustre@runtime@server@runtime:start(
+        _pipe,
+        erlang:element(3, App),
+        erlang:element(4, App),
+        lustre@component:to_server_component_config(erlang:element(5, App))
+    ),
+    _pipe@2 = gleam@result:map(_pipe@1, fun gleam@function:identity/1),
+    gleam@result:map_error(_pipe@2, fun(Field@0) -> {actor_error, Field@0} end).

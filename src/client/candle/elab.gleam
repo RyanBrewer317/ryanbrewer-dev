@@ -1,4 +1,3 @@
-import gleam/result
 import client/candle/header.{
   type BinderMode, type Index, type Level, type Neutral, type Pos, type Syntax,
   type Term, type Value, App, AppSyntax, Binder, Cast, CastSyntax, Ctor0, Ctor1,
@@ -11,6 +10,7 @@ import client/candle/header.{
   VNeutral, VPi, VPsi, VRefl, VSnd, VSort, ZeroMode, inc, pretty_mode,
   pretty_pos, pretty_term, pretty_value,
 }
+import gleam/result
 
 fn erase(t: Value) -> Value {
   case t {

@@ -51,14 +51,19 @@
 
 -type deprecation() :: {deprecation, binary()}.
 
--type implementations() :: {implementations, boolean(), boolean(), boolean()}.
+-type implementations() :: {implementations,
+        boolean(),
+        boolean(),
+        boolean(),
+        boolean(),
+        boolean()}.
 
 -type type() :: {tuple, list(type())} |
     {fn, list(type()), type()} |
     {variable, integer()} |
     {named, binary(), binary(), binary(), list(type())}.
 
--file("/Users/louis/src/gleam/package-interface/src/gleam/package_interface.gleam", 453).
+-file("src/gleam/package_interface.gleam", 461).
 -spec deprecation_decoder() -> gleam@dynamic@decode:decoder(deprecation()).
 deprecation_decoder() ->
     gleam@dynamic@decode:field(
@@ -67,7 +72,7 @@ deprecation_decoder() ->
         fun(Message) -> gleam@dynamic@decode:success({deprecation, Message}) end
     ).
 
--file("/Users/louis/src/gleam/package-interface/src/gleam/package_interface.gleam", 468).
+-file("src/gleam/package_interface.gleam", 476).
 -spec implementations_decoder() -> gleam@dynamic@decode:decoder(implementations()).
 implementations_decoder() ->
     gleam@dynamic@decode:field(
@@ -82,11 +87,47 @@ implementations_decoder() ->
                         <<"uses-javascript-externals"/utf8>>,
                         {decoder, fun gleam@dynamic@decode:decode_bool/1},
                         fun(Uses_javascript_externals) ->
-                            gleam@dynamic@decode:success(
-                                {implementations,
-                                    Gleam,
-                                    Uses_erlang_externals,
-                                    Uses_javascript_externals}
+                            gleam@dynamic@decode:optional_field(
+                                <<"can-run-on-erlang"/utf8>>,
+                                none,
+                                gleam@dynamic@decode:optional(
+                                    {decoder,
+                                        fun gleam@dynamic@decode:decode_bool/1}
+                                ),
+                                fun(Can_run_on_erlang) ->
+                                    gleam@dynamic@decode:optional_field(
+                                        <<"can-run-on-javascript"/utf8>>,
+                                        none,
+                                        gleam@dynamic@decode:optional(
+                                            {decoder,
+                                                fun gleam@dynamic@decode:decode_bool/1}
+                                        ),
+                                        fun(Can_run_on_javascript) ->
+                                            Can_run_on_erlang@1 = begin
+                                                _pipe = Can_run_on_erlang,
+                                                gleam@option:unwrap(
+                                                    _pipe,
+                                                    Gleam
+                                                )
+                                            end,
+                                            Can_run_on_javascript@1 = begin
+                                                _pipe@1 = Can_run_on_javascript,
+                                                gleam@option:unwrap(
+                                                    _pipe@1,
+                                                    Gleam
+                                                )
+                                            end,
+                                            gleam@dynamic@decode:success(
+                                                {implementations,
+                                                    Gleam,
+                                                    Uses_erlang_externals,
+                                                    Uses_javascript_externals,
+                                                    Can_run_on_erlang@1,
+                                                    Can_run_on_javascript@1}
+                                            )
+                                        end
+                                    )
+                                end
                             )
                         end
                     )
@@ -95,7 +136,7 @@ implementations_decoder() ->
         end
     ).
 
--file("/Users/louis/src/gleam/package-interface/src/gleam/package_interface.gleam", 491).
+-file("src/gleam/package_interface.gleam", 513).
 -spec type_decoder() -> gleam@dynamic@decode:decoder(type()).
 type_decoder() ->
     gleam@dynamic@decode:field(
@@ -182,7 +223,7 @@ type_decoder() ->
             end end
     ).
 
--file("/Users/louis/src/gleam/package-interface/src/gleam/package_interface.gleam", 383).
+-file("src/gleam/package_interface.gleam", 391).
 -spec type_alias_decoder() -> gleam@dynamic@decode:decoder(type_alias()).
 type_alias_decoder() ->
     gleam@dynamic@decode:field(
@@ -218,7 +259,7 @@ type_alias_decoder() ->
         end
     ).
 
--file("/Users/louis/src/gleam/package-interface/src/gleam/package_interface.gleam", 416).
+-file("src/gleam/package_interface.gleam", 424).
 -spec constant_decoder() -> gleam@dynamic@decode:decoder(constant()).
 constant_decoder() ->
     gleam@dynamic@decode:field(
@@ -254,7 +295,7 @@ constant_decoder() ->
         end
     ).
 
--file("/Users/louis/src/gleam/package-interface/src/gleam/package_interface.gleam", 485).
+-file("src/gleam/package_interface.gleam", 507).
 -spec parameter_decoder() -> gleam@dynamic@decode:decoder(parameter()).
 parameter_decoder() ->
     gleam@dynamic@decode:field(
@@ -273,7 +314,7 @@ parameter_decoder() ->
         end
     ).
 
--file("/Users/louis/src/gleam/package-interface/src/gleam/package_interface.gleam", 434).
+-file("src/gleam/package_interface.gleam", 442).
 -spec function_decoder() -> gleam@dynamic@decode:decoder(function_()).
 function_decoder() ->
     gleam@dynamic@decode:field(
@@ -316,7 +357,7 @@ function_decoder() ->
         end
     ).
 
--file("/Users/louis/src/gleam/package-interface/src/gleam/package_interface.gleam", 458).
+-file("src/gleam/package_interface.gleam", 466).
 -spec constructor_decoder() -> gleam@dynamic@decode:decoder(type_constructor()).
 constructor_decoder() ->
     gleam@dynamic@decode:field(
@@ -346,7 +387,7 @@ constructor_decoder() ->
         end
     ).
 
--file("/Users/louis/src/gleam/package-interface/src/gleam/package_interface.gleam", 398).
+-file("src/gleam/package_interface.gleam", 406).
 -spec type_definition_decoder() -> gleam@dynamic@decode:decoder(type_definition()).
 type_definition_decoder() ->
     gleam@dynamic@decode:field(
@@ -382,7 +423,7 @@ type_definition_decoder() ->
         end
     ).
 
--file("/Users/louis/src/gleam/package-interface/src/gleam/package_interface.gleam", 361).
+-file("src/gleam/package_interface.gleam", 369).
 -spec module_decoder() -> gleam@dynamic@decode:decoder(module_()).
 module_decoder() ->
     gleam@dynamic@decode:field(
@@ -439,7 +480,7 @@ module_decoder() ->
         end
     ).
 
--file("/Users/louis/src/gleam/package-interface/src/gleam/package_interface.gleam", 346).
+-file("src/gleam/package_interface.gleam", 354).
 -spec decoder() -> gleam@dynamic@decode:decoder(package()).
 decoder() ->
     gleam@dynamic@decode:field(

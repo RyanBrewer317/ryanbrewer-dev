@@ -1,4 +1,6 @@
 -module(wisp_ffi).
--export([coerce/1]).
 
-coerce(X) -> X.
+-export([atom_from_dynamic/1]).
+
+atom_from_dynamic(Atom) when is_atom(Atom) -> {ok, Atom};
+atom_from_dynamic(_) -> {error, nil}.

@@ -1,4 +1,3 @@
-import * as $process from "../../gleam_erlang/gleam/erlang/process.mjs";
 import * as $actor from "../../gleam_otp/gleam/otp/actor.mjs";
 import * as $package_interface from "../../gleam_package_interface/gleam/package_interface.mjs";
 import { Fn, Named, Tuple, Variable } from "../../gleam_package_interface/gleam/package_interface.mjs";
@@ -7,15 +6,18 @@ import * as $dynamic from "../../gleam_stdlib/gleam/dynamic.mjs";
 import * as $int from "../../gleam_stdlib/gleam/int.mjs";
 import * as $list from "../../gleam_stdlib/gleam/list.mjs";
 import * as $string from "../../gleam_stdlib/gleam/string.mjs";
-import * as $glisten from "../../glisten/glisten.mjs";
 import * as $simplifile from "../../simplifile/simplifile.mjs";
 import {
+  Ok,
+  Empty as $Empty,
   CustomType as $CustomType,
   makeError,
   remainderInt,
   divideInt,
   toBitArray,
 } from "../gleam.mjs";
+
+const FILEPATH = "src/lustre_dev_tools/error.gleam";
 
 export class BuildError extends $CustomType {
   constructor(reason) {
@@ -154,9 +156,9 @@ export class NameMissing extends $CustomType {
 }
 
 export class NetworkError extends $CustomType {
-  constructor(x0) {
+  constructor($0) {
     super();
-    this[0] = x0;
+    this[0] = $0;
   }
 }
 
@@ -169,9 +171,9 @@ export class TemplateMissing extends $CustomType {
 }
 
 export class UnknownFileError extends $CustomType {
-  constructor(x0) {
+  constructor($0) {
     super();
-    this[0] = x0;
+    this[0] = $0;
   }
 }
 
@@ -192,9 +194,9 @@ export class OtpTooOld extends $CustomType {
 }
 
 export class UnzipError extends $CustomType {
-  constructor(x0) {
+  constructor($0) {
     super();
-    this[0] = x0;
+    this[0] = $0;
   }
 }
 
@@ -248,9 +250,8 @@ function cannot_start_dev_server_port_in_use_message(port) {
 }
 
 function cannot_start_dev_server(reason, port) {
-  if (reason instanceof $glisten.AcceptorFailed &&
-  reason[0] instanceof $process.Abnormal) {
-    let message = reason[0].reason;
+  if (reason instanceof $actor.InitFailed) {
+    let message = reason[0];
     let $ = $string.contains(message, "Eaddrinuse");
     if ($) {
       return cannot_start_dev_server_port_in_use_message(port);
@@ -375,14 +376,21 @@ function pretty_var(id) {
   } else {
     let id$1 = id + 97;
     let $1 = $bit_array.to_string(toBitArray([id$1]));
-    if (!$1.isOk()) {
+    if (!($1 instanceof Ok)) {
       throw makeError(
         "let_assert",
+        FILEPATH,
         "lustre_dev_tools/error",
-        658,
+        656,
         "pretty_var",
         "Pattern match failed, no pattern matched the value.",
-        { value: $1 }
+        {
+          value: $1,
+          start: 18306,
+          end: 18358,
+          pattern_start: 18317,
+          pattern_end: 18324
+        }
       )
     }
     let var$ = $1[0];
@@ -410,20 +418,23 @@ function pretty_type(t) {
       $string.join(params$1, ", "),
     );
     return $string.replace(_pipe$1, "{return}", return$1);
-  } else if (t instanceof Named && t.parameters.hasLength(0)) {
-    let name = t.name;
-    return name;
-  } else if (t instanceof Named) {
-    let name = t.name;
-    let params = t.parameters;
-    let message = "{name}({params})";
-    let params$1 = $list.map(params, pretty_type);
-    let _pipe = message;
-    let _pipe$1 = $string.replace(_pipe, "{name}", name);
-    return $string.replace(_pipe$1, "{params}", $string.join(params$1, ", "));
-  } else {
+  } else if (t instanceof Variable) {
     let id = t.id;
     return pretty_var(id);
+  } else {
+    let $ = t.parameters;
+    if ($ instanceof $Empty) {
+      let name = t.name;
+      return name;
+    } else {
+      let name = t.name;
+      let params = $;
+      let message = "{name}({params})";
+      let params$1 = $list.map(params, pretty_type);
+      let _pipe = message;
+      let _pipe$1 = $string.replace(_pipe, "{name}", name);
+      return $string.replace(_pipe$1, "{params}", $string.join(params$1, ", "));
+    }
   }
 }
 

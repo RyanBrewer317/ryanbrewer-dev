@@ -1,6 +1,6 @@
 -module(lustre_dev_tools@server@live_reload).
 -compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch]).
-
+-define(FILEPATH, "src/lustre_dev_tools/server/live_reload.gleam").
 -export([inject/1, start/3]).
 -export_type([watcher_msg/0, socket_msg/0, live_reloading_error/0, event/0]).
 
@@ -30,33 +30,39 @@
 ?DOC(false).
 -spec inject(binary()) -> binary().
 inject(Html) ->
-    _assert_subject = gleam_erlang_ffi:priv_directory(
-        <<"lustre_dev_tools"/utf8>>
-    ),
-    {ok, Priv} = case _assert_subject of
-        {ok, _} -> _assert_subject;
+    Priv@1 = case gleam_erlang_ffi:priv_directory(<<"lustre_dev_tools"/utf8>>) of
+        {ok, Priv} -> Priv;
         _assert_fail ->
             erlang:error(#{gleam_error => let_assert,
                         message => <<"Pattern match failed, no pattern matched the value."/utf8>>,
-                        value => _assert_fail,
+                        file => <<?FILEPATH/utf8>>,
                         module => <<"lustre_dev_tools/server/live_reload"/utf8>>,
                         function => <<"inject"/utf8>>,
-                        line => 72})
+                        line => 72,
+                        value => _assert_fail,
+                        start => 1739,
+                        'end' => 1807,
+                        pattern_start => 1750,
+                        pattern_end => 1758})
     end,
-    _assert_subject@1 = simplifile:read(
-        <<Priv/binary, "/server/live-reload.js"/utf8>>
-    ),
-    {ok, Source} = case _assert_subject@1 of
-        {ok, _} -> _assert_subject@1;
+    Source@1 = case simplifile:read(
+        <<Priv@1/binary, "/server/live-reload.js"/utf8>>
+    ) of
+        {ok, Source} -> Source;
         _assert_fail@1 ->
             erlang:error(#{gleam_error => let_assert,
                         message => <<"Pattern match failed, no pattern matched the value."/utf8>>,
-                        value => _assert_fail@1,
+                        file => <<?FILEPATH/utf8>>,
                         module => <<"lustre_dev_tools/server/live_reload"/utf8>>,
                         function => <<"inject"/utf8>>,
-                        line => 73})
+                        line => 73,
+                        value => _assert_fail@1,
+                        start => 1810,
+                        'end' => 1883,
+                        pattern_start => 1821,
+                        pattern_end => 1831})
     end,
-    Script = <<<<"<script>"/utf8, Source/binary>>/binary, "</script>"/utf8>>,
+    Script = <<<<"<script>"/utf8, Source@1/binary>>/binary, "</script>"/utf8>>,
     _pipe = Html,
     gleam@string:replace(
         _pipe,
@@ -76,31 +82,31 @@ init_socket(Watcher, _) ->
     Self = gleam@erlang@process:new_subject(),
     Selector = begin
         _pipe = gleam_erlang_ffi:new_selector(),
-        gleam@erlang@process:selecting(_pipe, Self, fun(Msg) -> Msg end)
+        gleam@erlang@process:select(_pipe, Self)
     end,
     State = {Self, Watcher},
     gleam@erlang@process:send(Watcher, {add, Self}),
     {State, {some, Selector}}.
 
--file("src/lustre_dev_tools/server/live_reload.gleam", 97).
+-file("src/lustre_dev_tools/server/live_reload.gleam", 95).
 ?DOC(false).
 -spec loop_socket(
     {gleam@erlang@process:subject(socket_msg()),
         gleam@erlang@process:subject(watcher_msg())},
-    mist@internal@websocket:websocket_connection(),
-    mist:websocket_message(socket_msg())
-) -> gleam@otp@actor:next(socket_msg(), {gleam@erlang@process:subject(socket_msg()),
-    gleam@erlang@process:subject(watcher_msg())}).
-loop_socket(State, Connection, Msg) ->
+    mist:websocket_message(socket_msg()),
+    mist@internal@websocket:websocket_connection()
+) -> mist:next({gleam@erlang@process:subject(socket_msg()),
+    gleam@erlang@process:subject(watcher_msg())}, socket_msg()).
+loop_socket(State, Msg, Connection) ->
     case Msg of
         {text, _} ->
-            gleam@otp@actor:continue(State);
+            mist:continue(State);
 
         {binary, _} ->
-            gleam@otp@actor:continue(State);
+            mist:continue(State);
 
         {custom, reload} ->
-            _assert_subject = mist:send_text_frame(
+            case mist:send_text_frame(
                 Connection,
                 begin
                     _pipe = gleam@json:object(
@@ -108,21 +114,25 @@ loop_socket(State, Connection, Msg) ->
                     ),
                     gleam@json:to_string(_pipe)
                 end
-            ),
-            {ok, _} = case _assert_subject of
-                {ok, _} -> _assert_subject;
+            ) of
+                {ok, _} -> nil;
                 _assert_fail ->
                     erlang:error(#{gleam_error => let_assert,
                                 message => <<"Pattern match failed, no pattern matched the value."/utf8>>,
-                                value => _assert_fail,
+                                file => <<?FILEPATH/utf8>>,
                                 module => <<"lustre_dev_tools/server/live_reload"/utf8>>,
                                 function => <<"loop_socket"/utf8>>,
-                                line => 106})
+                                line => 104,
+                                value => _assert_fail,
+                                start => 2691,
+                                'end' => 2845,
+                                pattern_start => 2702,
+                                pattern_end => 2707})
             end,
-            gleam@otp@actor:continue(State);
+            mist:continue(State);
 
         {custom, {show_error, Error}} ->
-            _assert_subject@1 = mist:send_text_frame(
+            case mist:send_text_frame(
                 Connection,
                 begin
                     _pipe@1 = gleam@json:object(
@@ -134,32 +144,36 @@ loop_socket(State, Connection, Msg) ->
                     ),
                     gleam@json:to_string(_pipe@1)
                 end
-            ),
-            {ok, _} = case _assert_subject@1 of
-                {ok, _} -> _assert_subject@1;
+            ) of
+                {ok, _} -> nil;
                 _assert_fail@1 ->
                     erlang:error(#{gleam_error => let_assert,
                                 message => <<"Pattern match failed, no pattern matched the value."/utf8>>,
-                                value => _assert_fail@1,
+                                file => <<?FILEPATH/utf8>>,
                                 module => <<"lustre_dev_tools/server/live_reload"/utf8>>,
                                 function => <<"loop_socket"/utf8>>,
-                                line => 115})
+                                line => 114,
+                                value => _assert_fail@1,
+                                start => 2926,
+                                'end' => 3175,
+                                pattern_start => 2937,
+                                pattern_end => 2942})
             end,
-            gleam@otp@actor:continue(State);
+            mist:continue(State);
 
         closed ->
             gleam@erlang@process:send(
                 erlang:element(2, State),
                 {remove, erlang:element(1, State)}
             ),
-            {stop, normal};
+            mist:stop();
 
         shutdown ->
             gleam@erlang@process:send(
                 erlang:element(2, State),
                 {remove, erlang:element(1, State)}
             ),
-            {stop, normal}
+            mist:stop()
     end.
 
 -file("src/lustre_dev_tools/server/live_reload.gleam", 134).
@@ -174,15 +188,15 @@ close_socket(State) ->
         {remove, erlang:element(1, State)}
     ).
 
--file("src/lustre_dev_tools/server/live_reload.gleam", 198).
+-file("src/lustre_dev_tools/server/live_reload.gleam", 204).
 ?DOC(false).
 -spec loop_watcher(
-    watcher_msg(),
     gleam@set:set(gleam@erlang@process:subject(socket_msg())),
+    watcher_msg(),
     binary(),
     glint:flags()
-) -> gleam@otp@actor:next(watcher_msg(), gleam@set:set(gleam@erlang@process:subject(socket_msg()))).
-loop_watcher(Msg, State, Entry, Flags) ->
+) -> gleam@otp@actor:next(gleam@set:set(gleam@erlang@process:subject(socket_msg())), watcher_msg()).
+loop_watcher(State, Msg, Entry, Flags) ->
     case Msg of
         {add, Client} ->
             _pipe = Client,
@@ -266,16 +280,16 @@ loop_watcher(Msg, State, Entry, Flags) ->
             gleam@otp@actor:continue(State)
     end.
 
--file("src/lustre_dev_tools/server/live_reload.gleam", 268).
+-file("src/lustre_dev_tools/server/live_reload.gleam", 274).
 ?DOC(false).
 -spec is_interesting_event(gleam@dynamic:dynamic_()) -> boolean().
 is_interesting_event(Event) ->
-    ((Event =:= gleam_stdlib:identity(created)) orelse (Event =:= gleam_stdlib:identity(
+    ((Event =:= gleam@function:identity(created)) orelse (Event =:= gleam@function:identity(
         modified
     )))
-    orelse (Event =:= gleam_stdlib:identity(deleted)).
+    orelse (Event =:= gleam@function:identity(deleted)).
 
--file("src/lustre_dev_tools/server/live_reload.gleam", 252).
+-file("src/lustre_dev_tools/server/live_reload.gleam", 258).
 ?DOC(false).
 -spec change_decoder() -> gleam@dynamic@decode:decoder(watcher_msg()).
 change_decoder() ->
@@ -299,10 +313,12 @@ change_decoder() ->
         end
     ).
 
--file("src/lustre_dev_tools/server/live_reload.gleam", 153).
+-file("src/lustre_dev_tools/server/live_reload.gleam", 152).
 ?DOC(false).
--spec init_watcher(binary()) -> gleam@otp@actor:init_result(gleam@set:set(gleam@erlang@process:subject(socket_msg())), watcher_msg()).
-init_watcher(Root) ->
+-spec init_watcher(gleam@erlang@process:subject(watcher_msg()), binary()) -> {ok,
+        gleam@otp@actor:initialised(gleam@set:set(gleam@erlang@process:subject(socket_msg())), watcher_msg(), gleam@erlang@process:subject(watcher_msg()))} |
+    {error, binary()}.
+init_watcher(Self, Root) ->
     Src = filepath:join(Root, <<"src"/utf8>>),
     Id = erlang:binary_to_atom(Src),
     case lustre_dev_tools_ffi:check_live_reloading() of
@@ -323,33 +339,31 @@ init_watcher(Root) ->
     end,
     case lustre_dev_tools_ffi:fs_start_link(Id, Src) of
         {ok, _} ->
-            Self = gleam@erlang@process:new_subject(),
             Selector = begin
                 _pipe@4 = gleam_erlang_ffi:new_selector(),
-                _pipe@5 = gleam@erlang@process:selecting(
-                    _pipe@4,
-                    Self,
-                    fun(Msg) -> Msg end
-                ),
-                gleam@erlang@process:selecting_anything(
+                _pipe@5 = gleam@erlang@process:select(_pipe@4, Self),
+                gleam@erlang@process:select_other(
                     _pipe@5,
-                    fun(Msg@1) ->
-                        case gleam@dynamic@decode:run(Msg@1, change_decoder()) of
+                    fun(Msg) ->
+                        case gleam@dynamic@decode:run(Msg, change_decoder()) of
                             {ok, Broadcast} ->
                                 Broadcast;
 
                             {error, _} ->
-                                {unknown, Msg@1}
+                                {unknown, Msg}
                         end
                     end
                 )
             end,
             State = gleam@set:new(),
             fs:subscribe(Id),
-            {ready, State, Selector};
+            _pipe@6 = gleam@otp@actor:initialised(State),
+            _pipe@7 = gleam@otp@actor:selecting(_pipe@6, Selector),
+            _pipe@8 = gleam@otp@actor:returning(_pipe@7, Self),
+            {ok, _pipe@8};
 
         {error, Err} ->
-            {failed,
+            {error,
                 <<"Failed to start watcher: "/utf8,
                     (gleam@string:inspect(Err))/binary>>}
     end.
@@ -360,14 +374,21 @@ init_watcher(Root) ->
         gleam@erlang@process:subject(watcher_msg())} |
     {error, lustre_dev_tools@error:error()}.
 start_watcher(Entry, Root, Flags) ->
-    _pipe = gleam@otp@actor:start_spec(
-        {spec,
-            fun() -> init_watcher(Root) end,
-            1000,
-            fun(Msg, State) -> loop_watcher(Msg, State, Entry, Flags) end}
+    _pipe = gleam@otp@actor:new_with_initialiser(
+        1000,
+        fun(_capture) -> init_watcher(_capture, Root) end
+    ),
+    _pipe@1 = gleam@otp@actor:on_message(
+        _pipe,
+        fun(State, Msg) -> loop_watcher(State, Msg, Entry, Flags) end
+    ),
+    _pipe@2 = gleam@otp@actor:start(_pipe@1),
+    _pipe@3 = gleam@result:map(
+        _pipe@2,
+        fun(Start) -> erlang:element(3, Start) end
     ),
     gleam@result:map_error(
-        _pipe,
+        _pipe@3,
         fun(Field@0) -> {cannot_start_file_watcher, Field@0} end
     ).
 

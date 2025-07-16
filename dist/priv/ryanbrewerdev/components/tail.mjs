@@ -1,5 +1,4 @@
 import * as $attribute from "../../lustre/lustre/attribute.mjs";
-import { attribute } from "../../lustre/lustre/attribute.mjs";
 import * as $element from "../../lustre/lustre/element.mjs";
 import { text } from "../../lustre/lustre/element.mjs";
 import * as $html from "../../lustre/lustre/element/html.mjs";

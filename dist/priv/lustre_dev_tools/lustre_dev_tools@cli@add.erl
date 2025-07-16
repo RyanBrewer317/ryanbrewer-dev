@@ -1,6 +1,6 @@
 -module(lustre_dev_tools@cli@add).
 -compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch]).
-
+-define(FILEPATH, "src/lustre_dev_tools/cli/add.gleam").
 -export([esbuild/0, tailwind/0]).
 
 -if(?OTP_RELEASE >= 27).

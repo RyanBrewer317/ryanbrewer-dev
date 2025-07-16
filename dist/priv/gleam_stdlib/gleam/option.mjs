@@ -2,36 +2,57 @@ import {
   Ok,
   Error,
   toList,
+  Empty as $Empty,
   prepend as listPrepend,
   CustomType as $CustomType,
   isEqual,
 } from "../gleam.mjs";
 
 export class Some extends $CustomType {
-  constructor(x0) {
+  constructor($0) {
     super();
-    this[0] = x0;
+    this[0] = $0;
   }
 }
 
 export class None extends $CustomType {}
 
-function all_loop(list, acc) {
-  if (list.hasLength(0)) {
-    return new Some(acc);
-  } else {
-    let first = list.head;
-    let rest = list.tail;
-    let accumulate = (acc, item) => {
-      if (acc instanceof Some && item instanceof Some) {
-        let values$1 = acc[0];
-        let value = item[0];
-        return new Some(listPrepend(value, values$1));
+function reverse_and_prepend(loop$prefix, loop$suffix) {
+  while (true) {
+    let prefix = loop$prefix;
+    let suffix = loop$suffix;
+    if (prefix instanceof $Empty) {
+      return suffix;
+    } else {
+      let first = prefix.head;
+      let rest = prefix.tail;
+      loop$prefix = rest;
+      loop$suffix = listPrepend(first, suffix);
+    }
+  }
+}
+
+function reverse(list) {
+  return reverse_and_prepend(list, toList([]));
+}
+
+function all_loop(loop$list, loop$acc) {
+  while (true) {
+    let list = loop$list;
+    let acc = loop$acc;
+    if (list instanceof $Empty) {
+      return new Some(reverse(acc));
+    } else {
+      let $ = list.head;
+      if ($ instanceof Some) {
+        let rest = list.tail;
+        let first = $[0];
+        loop$list = rest;
+        loop$acc = listPrepend(first, acc);
       } else {
         return new None();
       }
-    };
-    return accumulate(all_loop(rest, acc), first);
+    }
   }
 }
 
@@ -57,7 +78,7 @@ export function to_result(option, e) {
 }
 
 export function from_result(result) {
-  if (result.isOk()) {
+  if (result instanceof Ok) {
     let a = result[0];
     return new Some(a);
   } else {
@@ -126,21 +147,25 @@ export function lazy_or(first, second) {
   }
 }
 
-function values_loop(list, acc) {
-  if (list.hasLength(0)) {
-    return acc;
-  } else {
-    let first = list.head;
-    let rest = list.tail;
-    let accumulate = (acc, item) => {
-      if (item instanceof Some) {
-        let value = item[0];
-        return listPrepend(value, acc);
+function values_loop(loop$list, loop$acc) {
+  while (true) {
+    let list = loop$list;
+    let acc = loop$acc;
+    if (list instanceof $Empty) {
+      return reverse(acc);
+    } else {
+      let $ = list.head;
+      if ($ instanceof Some) {
+        let rest = list.tail;
+        let first = $[0];
+        loop$list = rest;
+        loop$acc = listPrepend(first, acc);
       } else {
-        return acc;
+        let rest = list.tail;
+        loop$list = rest;
+        loop$acc = acc;
       }
-    };
-    return accumulate(values_loop(rest, acc), first);
+    }
   }
 }
 

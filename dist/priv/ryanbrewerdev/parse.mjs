@@ -6,12 +6,11 @@ import * as $result from "../gleam_stdlib/gleam/result.mjs";
 import { map_error } from "../gleam_stdlib/gleam/result.mjs";
 import * as $string from "../gleam_stdlib/gleam/string.mjs";
 import * as $attribute from "../lustre/lustre/attribute.mjs";
-import { attribute } from "../lustre/lustre/attribute.mjs";
 import * as $element from "../lustre/lustre/element.mjs";
 import { text } from "../lustre/lustre/element.mjs";
 import * as $html from "../lustre/lustre/element/html.mjs";
 import * as $snag from "../snag/snag.mjs";
-import { Ok, toList } from "./gleam.mjs";
+import { Ok, toList, Empty as $Empty } from "./gleam.mjs";
 
 export function parse(path, content) {
   let _pipe = $parse.new$(0);
@@ -66,23 +65,7 @@ export function parse(path, content) {
     "code",
     (args, body, data) => {
       let body2 = $string.replace(body, "\\n", "\n");
-      if (args.hasLength(1)) {
-        let lang = args.head;
-        return new Ok(
-          [
-            $html.pre(
-              toList([]),
-              toList([
-                $html.code(
-                  toList([$attribute.class$("language-" + lang)]),
-                  toList([text(body2)]),
-                ),
-              ]),
-            ),
-            $parse.get_state(data),
-          ],
-        );
-      } else {
+      if (args instanceof $Empty) {
         return new Ok(
           [
             $html.pre(
@@ -92,6 +75,35 @@ export function parse(path, content) {
             $parse.get_state(data),
           ],
         );
+      } else {
+        let $ = args.tail;
+        if ($ instanceof $Empty) {
+          let lang = args.head;
+          return new Ok(
+            [
+              $html.pre(
+                toList([]),
+                toList([
+                  $html.code(
+                    toList([$attribute.class$("language-" + lang)]),
+                    toList([text(body2)]),
+                  ),
+                ]),
+              ),
+              $parse.get_state(data),
+            ],
+          );
+        } else {
+          return new Ok(
+            [
+              $html.pre(
+                toList([]),
+                toList([$html.code(toList([]), toList([text(body2)]))]),
+              ),
+              $parse.get_state(data),
+            ],
+          );
+        }
       }
     },
   );

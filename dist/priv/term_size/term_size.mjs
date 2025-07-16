@@ -5,7 +5,7 @@ export { get };
 
 export function rows() {
   let $ = get();
-  if ($.isOk()) {
+  if ($ instanceof Ok) {
     let rows$1 = $[0][0];
     return new Ok(rows$1);
   } else {
@@ -15,7 +15,7 @@ export function rows() {
 
 export function columns() {
   let $ = get();
-  if ($.isOk()) {
+  if ($ instanceof Ok) {
     let columns$1 = $[0][1];
     return new Ok(columns$1);
   } else {

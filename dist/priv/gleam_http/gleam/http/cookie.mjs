@@ -57,21 +57,24 @@ function check_token(loop$token) {
   while (true) {
     let token = loop$token;
     let $ = $string.pop_grapheme(token);
-    if (!$.isOk() && !$[0]) {
-      return new Ok(undefined);
-    } else if ($.isOk() && $[0][0] === " ") {
-      return new Error(undefined);
-    } else if ($.isOk() && $[0][0] === "\t") {
-      return new Error(undefined);
-    } else if ($.isOk() && $[0][0] === "\r") {
-      return new Error(undefined);
-    } else if ($.isOk() && $[0][0] === "\n") {
-      return new Error(undefined);
-    } else if ($.isOk() && $[0][0] === "\f") {
-      return new Error(undefined);
+    if ($ instanceof Ok) {
+      let $1 = $[0][0];
+      if ($1 === " ") {
+        return new Error(undefined);
+      } else if ($1 === "\t") {
+        return new Error(undefined);
+      } else if ($1 === "\r") {
+        return new Error(undefined);
+      } else if ($1 === "\n") {
+        return new Error(undefined);
+      } else if ($1 === "\f") {
+        return new Error(undefined);
+      } else {
+        let rest = $[0][1];
+        loop$token = rest;
+      }
     } else {
-      let rest = $[0][1];
-      loop$token = rest;
+      return new Ok(undefined);
     }
   }
 }
@@ -87,22 +90,25 @@ export function parse(cookie_string) {
     _pipe$2,
     (pair) => {
       let $ = $string.split_once($string.trim(pair), "=");
-      if ($.isOk() && $[0][0] === "") {
-        return new Error(undefined);
-      } else if ($.isOk()) {
-        let key = $[0][0];
-        let value = $[0][1];
-        let key$1 = $string.trim(key);
-        let value$1 = $string.trim(value);
-        return $result.then$(
-          check_token(key$1),
-          (_) => {
-            return $result.then$(
-              check_token(value$1),
-              (_) => { return new Ok([key$1, value$1]); },
-            );
-          },
-        );
+      if ($ instanceof Ok) {
+        let $1 = $[0][0];
+        if ($1 === "") {
+          return new Error(undefined);
+        } else {
+          let key = $1;
+          let value = $[0][1];
+          let key$1 = $string.trim(key);
+          let value$1 = $string.trim(value);
+          return $result.try$(
+            check_token(key$1),
+            (_) => {
+              return $result.try$(
+                check_token(value$1),
+                (_) => { return new Ok([key$1, value$1]); },
+              );
+            },
+          );
+        }
       } else {
         return new Error(undefined);
       }
@@ -121,8 +127,13 @@ function cookie_attributes_to_list(attributes) {
   let same_site = attributes.same_site;
   let _pipe = toList([
     (() => {
-      if (max_age instanceof $option.Some && max_age[0] === 0) {
-        return new $option.Some(toList([epoch]));
+      if (max_age instanceof $option.Some) {
+        let $ = max_age[0];
+        if ($ === 0) {
+          return new $option.Some(toList([epoch]));
+        } else {
+          return new $option.None();
+        }
       } else {
         return new $option.None();
       }

@@ -1,8 +1,8 @@
 -module(mist@internal@http2@stream).
 -compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch]).
-
--export([make_request/2, new/5, receive_data/2]).
--export_type([message/0, stream_state/0, state/0, internal_state/0]).
+-define(FILEPATH, "src/mist/internal/http2/stream.gleam").
+-export([make_request/2, new/6, receive_data/2]).
+-export_type([message/0, send_message/0, stream_state/0, state/0, internal_state/0]).
 
 -if(?OTP_RELEASE >= 27).
 -define(MODULEDOC(Str), -moduledoc(Str)).
@@ -15,6 +15,10 @@
 ?MODULEDOC(false).
 
 -type message() :: ready | {data, bitstring(), boolean()} | done.
+
+-type send_message() :: {send,
+        mist@internal@http2@frame:stream_identifier(mist@internal@http2@frame:frame()),
+        gleam@http@response:response(mist@internal@http:response_data())}.
 
 -type stream_state() :: open | remote_closed | local_closed | closed.
 
@@ -33,7 +37,7 @@
         gleam@option:option(gleam@http@response:response(mist@internal@http:response_data())),
         bitstring()}.
 
--file("src/mist/internal/http2/stream.gleam", 146).
+-file("src/mist/internal/http2/stream.gleam", 140).
 ?DOC(false).
 -spec make_request(
     list({binary(), binary()}),
@@ -55,7 +59,7 @@ make_request(Headers, Req) ->
                     gleam@http@request:set_method(Req, _capture)
                 end
             ),
-            gleam@result:then(
+            gleam@result:'try'(
                 _pipe@3,
                 fun(_capture@1) -> make_request(Rest, _capture@1) end
             );
@@ -70,7 +74,7 @@ make_request(Headers, Req) ->
                     gleam@http@request:set_scheme(Req, _capture@2)
                 end
             ),
-            gleam@result:then(
+            gleam@result:'try'(
                 _pipe@7,
                 fun(_capture@3) -> make_request(Rest@1, _capture@3) end
             );
@@ -114,164 +118,174 @@ make_request(Headers, Req) ->
             make_request(Rest@4, _pipe@19)
     end.
 
--file("src/mist/internal/http2/stream.gleam", 55).
+-file("src/mist/internal/http2/stream.gleam", 57).
 ?DOC(false).
 -spec new(
+    mist@internal@http2@frame:stream_identifier(mist@internal@http2@frame:frame()),
     fun((gleam@http@request:request(mist@internal@http:connection())) -> gleam@http@response:response(mist@internal@http:response_data())),
     list({binary(), binary()}),
     mist@internal@http:connection(),
-    fun((gleam@http@response:response(mist@internal@http:response_data())) -> any()),
+    gleam@erlang@process:subject(send_message()),
     boolean()
-) -> {ok, gleam@erlang@process:subject(message())} |
+) -> {ok, gleam@otp@actor:started(gleam@erlang@process:subject(message()))} |
     {error, gleam@otp@actor:start_error()}.
-new(Handler, Headers, Connection, Send, End) ->
-    gleam@otp@actor:start_spec(
-        {spec,
-            fun() ->
-                Data_subj = gleam@erlang@process:new_subject(),
-                Data_selector = begin
-                    _pipe = gleam_erlang_ffi:new_selector(),
-                    gleam@erlang@process:selecting(
-                        _pipe,
-                        Data_subj,
-                        fun gleam@function:identity/1
-                    )
-                end,
-                {ready,
-                    {internal_state, Data_selector, Data_subj, End, none, <<>>},
-                    Data_selector}
+new(Identifier, Handler, Headers, Connection, Sender, End) ->
+    _pipe@5 = gleam@otp@actor:new_with_initialiser(
+        1000,
+        fun(Subject) ->
+            Data_selector = begin
+                _pipe = gleam_erlang_ffi:new_selector(),
+                gleam@erlang@process:select(_pipe, Subject)
             end,
-            1000,
-            fun(Msg, State) -> case {Msg, erlang:element(4, State)} of
-                    {ready, _} ->
-                        Content_length = begin
-                            _pipe@1 = Headers,
-                            _pipe@2 = gleam@list:key_find(
-                                _pipe@1,
-                                <<"content-length"/utf8>>
-                            ),
-                            _pipe@3 = gleam@result:then(
-                                _pipe@2,
-                                fun gleam_stdlib:parse_int/1
-                            ),
-                            gleam@result:unwrap(_pipe@3, 0)
-                        end,
-                        Conn = begin
-                            _record = Connection,
-                            {connection,
-                                {stream,
-                                    gleam_erlang_ffi:map_selector(
-                                        erlang:element(2, State),
-                                        fun(Val) ->
-                                            {data, Bits, _} = case Val of
-                                                {data, _, _} -> Val;
-                                                _assert_fail ->
-                                                    erlang:error(
-                                                            #{gleam_error => let_assert,
-                                                                message => <<"Pattern match failed, no pattern matched the value."/utf8>>,
-                                                                value => _assert_fail,
-                                                                module => <<"mist/internal/http2/stream"/utf8>>,
-                                                                function => <<"new"/utf8>>,
-                                                                line => 88}
-                                                        )
-                                            end,
-                                            Bits
-                                        end
-                                    ),
-                                    <<>>,
-                                    Content_length,
-                                    0},
-                                erlang:element(3, _record),
-                                erlang:element(4, _record)}
-                        end,
-                        _pipe@4 = gleam@http@request:new(),
-                        _pipe@5 = gleam@http@request:set_body(_pipe@4, Conn),
-                        _pipe@6 = make_request(Headers, _pipe@5),
-                        _pipe@7 = gleam@result:map(_pipe@6, Handler),
-                        _pipe@8 = gleam@result:map(
+            _pipe@1 = {internal_state, Data_selector, Subject, End, none, <<>>},
+            _pipe@2 = gleam@otp@actor:initialised(_pipe@1),
+            _pipe@3 = gleam@otp@actor:selecting(_pipe@2, Data_selector),
+            _pipe@4 = gleam@otp@actor:returning(_pipe@3, Subject),
+            {ok, _pipe@4}
+        end
+    ),
+    _pipe@15 = gleam@otp@actor:on_message(
+        _pipe@5,
+        fun(State, Msg) -> case {Msg, erlang:element(4, State)} of
+                {ready, _} ->
+                    Content_length = begin
+                        _pipe@6 = Headers,
+                        _pipe@7 = gleam@list:key_find(
+                            _pipe@6,
+                            <<"content-length"/utf8>>
+                        ),
+                        _pipe@8 = gleam@result:'try'(
                             _pipe@7,
-                            fun(Resp) ->
-                                gleam@erlang@process:send(
-                                    erlang:element(3, State),
-                                    done
-                                ),
-                                gleam@otp@actor:continue(
-                                    begin
-                                        _record@1 = State,
-                                        {internal_state,
-                                            erlang:element(2, _record@1),
-                                            erlang:element(3, _record@1),
-                                            erlang:element(4, _record@1),
-                                            {some, Resp},
-                                            erlang:element(6, _record@1)}
+                            fun gleam_stdlib:parse_int/1
+                        ),
+                        gleam@result:unwrap(_pipe@8, 0)
+                    end,
+                    Conn = begin
+                        _record = Connection,
+                        {connection,
+                            {stream,
+                                gleam_erlang_ffi:map_selector(
+                                    erlang:element(2, State),
+                                    fun(Val) ->
+                                        Bits@1 = case Val of
+                                            {data, Bits, _} -> Bits;
+                                            _assert_fail ->
+                                                erlang:error(
+                                                        #{gleam_error => let_assert,
+                                                            message => <<"Pattern match failed, no pattern matched the value."/utf8>>,
+                                                            file => <<?FILEPATH/utf8>>,
+                                                            module => <<"mist/internal/http2/stream"/utf8>>,
+                                                            function => <<"new"/utf8>>,
+                                                            line => 88,
+                                                            value => _assert_fail,
+                                                            start => 2215,
+                                                            'end' => 2246,
+                                                            pattern_start => 2226,
+                                                            pattern_end => 2240}
+                                                    )
+                                        end,
+                                        Bits@1
                                     end
-                                )
-                            end
-                        ),
-                        _pipe@9 = gleam@result:map_error(
-                            _pipe@8,
-                            fun(Err) ->
-                                {stop,
-                                    {abnormal,
-                                        <<"Failed to respond to request: "/utf8,
-                                            (gleam@erlang:format(Err))/binary>>}}
-                            end
-                        ),
-                        gleam@result:unwrap_both(_pipe@9);
+                                ),
+                                <<>>,
+                                Content_length,
+                                0},
+                            erlang:element(3, _record),
+                            erlang:element(4, _record)}
+                    end,
+                    _pipe@9 = gleam@http@request:new(),
+                    _pipe@10 = gleam@http@request:set_body(_pipe@9, Conn),
+                    _pipe@11 = make_request(Headers, _pipe@10),
+                    _pipe@12 = gleam@result:map(_pipe@11, Handler),
+                    _pipe@13 = gleam@result:map(
+                        _pipe@12,
+                        fun(Resp) ->
+                            gleam@erlang@process:send(
+                                erlang:element(3, State),
+                                done
+                            ),
+                            gleam@otp@actor:continue(
+                                begin
+                                    _record@1 = State,
+                                    {internal_state,
+                                        erlang:element(2, _record@1),
+                                        erlang:element(3, _record@1),
+                                        erlang:element(4, _record@1),
+                                        {some, Resp},
+                                        erlang:element(6, _record@1)}
+                                end
+                            )
+                        end
+                    ),
+                    _pipe@14 = gleam@result:map_error(
+                        _pipe@13,
+                        fun(Err) ->
+                            gleam@otp@actor:stop_abnormal(
+                                <<"Failed to respond to request: "/utf8,
+                                    (gleam@string:inspect(Err))/binary>>
+                            )
+                        end
+                    ),
+                    gleam@result:unwrap_both(_pipe@14);
 
-                    {done, true} ->
-                        _assert_subject = erlang:element(5, State),
-                        {some, Resp@1} = case _assert_subject of
-                            {some, _} -> _assert_subject;
-                            _assert_fail@1 ->
-                                erlang:error(#{gleam_error => let_assert,
-                                            message => <<"Pattern match failed, no pattern matched the value."/utf8>>,
-                                            value => _assert_fail@1,
-                                            module => <<"mist/internal/http2/stream"/utf8>>,
-                                            function => <<"new"/utf8>>,
-                                            line => 115})
-                        end,
-                        Send(Resp@1),
-                        gleam@otp@actor:continue(State);
+                {done, true} ->
+                    Resp@2 = case erlang:element(5, State) of
+                        {some, Resp@1} -> Resp@1;
+                        _assert_fail@1 ->
+                            erlang:error(#{gleam_error => let_assert,
+                                        message => <<"Pattern match failed, no pattern matched the value."/utf8>>,
+                                        file => <<?FILEPATH/utf8>>,
+                                        module => <<"mist/internal/http2/stream"/utf8>>,
+                                        function => <<"new"/utf8>>,
+                                        line => 113,
+                                        value => _assert_fail@1,
+                                        start => 2932,
+                                        'end' => 2978,
+                                        pattern_start => 2943,
+                                        pattern_end => 2953})
+                    end,
+                    gleam@erlang@process:send(
+                        Sender,
+                        {send, Identifier, Resp@2}
+                    ),
+                    gleam@otp@actor:continue(State);
 
-                    {{data, Bits@1, true}, _} ->
-                        gleam@erlang@process:send(
-                            erlang:element(3, State),
-                            done
-                        ),
-                        gleam@otp@actor:continue(
-                            begin
-                                _record@2 = State,
-                                {internal_state,
-                                    erlang:element(2, _record@2),
-                                    erlang:element(3, _record@2),
-                                    true,
-                                    erlang:element(5, _record@2),
-                                    <<(erlang:element(6, State))/bitstring,
-                                        Bits@1/bitstring>>}
-                            end
-                        );
+                {{data, Bits@2, true}, _} ->
+                    gleam@erlang@process:send(erlang:element(3, State), done),
+                    gleam@otp@actor:continue(
+                        begin
+                            _record@2 = State,
+                            {internal_state,
+                                erlang:element(2, _record@2),
+                                erlang:element(3, _record@2),
+                                true,
+                                erlang:element(5, _record@2),
+                                <<(erlang:element(6, State))/bitstring,
+                                    Bits@2/bitstring>>}
+                        end
+                    );
 
-                    {{data, Bits@2, _}, _} ->
-                        gleam@otp@actor:continue(
-                            begin
-                                _record@3 = State,
-                                {internal_state,
-                                    erlang:element(2, _record@3),
-                                    erlang:element(3, _record@3),
-                                    erlang:element(4, _record@3),
-                                    erlang:element(5, _record@3),
-                                    <<(erlang:element(6, State))/bitstring,
-                                        Bits@2/bitstring>>}
-                            end
-                        );
+                {{data, Bits@3, _}, _} ->
+                    gleam@otp@actor:continue(
+                        begin
+                            _record@3 = State,
+                            {internal_state,
+                                erlang:element(2, _record@3),
+                                erlang:element(3, _record@3),
+                                erlang:element(4, _record@3),
+                                erlang:element(5, _record@3),
+                                <<(erlang:element(6, State))/bitstring,
+                                    Bits@3/bitstring>>}
+                        end
+                    );
 
-                    {_, _} ->
-                        gleam@otp@actor:continue(State)
-                end end}
-    ).
+                {_, _} ->
+                    gleam@otp@actor:continue(State)
+            end end
+    ),
+    gleam@otp@actor:start(_pipe@15).
 
--file("src/mist/internal/http2/stream.gleam", 198).
+-file("src/mist/internal/http2/stream.gleam", 192).
 ?DOC(false).
 -spec receive_data(state(), integer()) -> {state(), integer()}.
 receive_data(State, Size) ->

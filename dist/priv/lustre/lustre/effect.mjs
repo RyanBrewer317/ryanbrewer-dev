@@ -5,9 +5,11 @@ import * as $list from "../../gleam_stdlib/gleam/list.mjs";
 import { toList, CustomType as $CustomType } from "../gleam.mjs";
 
 class Effect extends $CustomType {
-  constructor(all) {
+  constructor(synchronous, before_paint, after_paint) {
     super();
-    this.all = all;
+    this.synchronous = synchronous;
+    this.before_paint = before_paint;
+    this.after_paint = after_paint;
   }
 }
 
@@ -21,62 +23,100 @@ class Actions extends $CustomType {
   }
 }
 
-export function custom(run) {
-  return new Effect(
-    toList([
-      (actions) => {
-        return run(actions.dispatch, actions.emit, actions.select, actions.root);
-      },
-    ]),
+function do_comap_select(_, _1, _2) {
+  return undefined;
+}
+
+function do_comap_actions(actions, f) {
+  return new Actions(
+    (msg) => { return actions.dispatch(f(msg)); },
+    actions.emit,
+    (selector) => { return do_comap_select(actions, selector, f); },
+    actions.root,
   );
 }
 
-export function from(effect) {
-  return custom((dispatch, _, _1, _2) => { return effect(dispatch); });
-}
-
-export function event(name, data) {
-  return custom((_, emit, _1, _2) => { return emit(name, data); });
-}
-
-export function none() {
-  return new Effect(toList([]));
-}
-
-export function batch(effects) {
-  return new Effect(
-    $list.fold(
-      effects,
-      toList([]),
-      (b, _use1) => {
-        let a = _use1.all;
-        return $list.append(b, a);
-      },
-    ),
+function do_map(effects, f) {
+  return $list.map(
+    effects,
+    (effect) => {
+      return (actions) => { return effect(do_comap_actions(actions, f)); };
+    },
   );
 }
 
 export function map(effect, f) {
   return new Effect(
-    $list.map(
-      effect.all,
-      (eff) => {
-        return (actions) => {
-          return eff(
-            new Actions(
-              (msg) => { return actions.dispatch(f(msg)); },
-              actions.emit,
-              (_) => { return undefined; },
-              actions.root,
-            ),
-          );
-        };
-      },
-    ),
+    do_map(effect.synchronous, f),
+    do_map(effect.before_paint, f),
+    do_map(effect.after_paint, f),
   );
 }
 
 export function perform(effect, dispatch, emit, select, root) {
   let actions = new Actions(dispatch, emit, select, root);
-  return $list.each(effect.all, (eff) => { return eff(actions); });
+  return $list.each(effect.synchronous, (run) => { return run(actions); });
+}
+
+const empty = /* @__PURE__ */ new Effect(
+  /* @__PURE__ */ toList([]),
+  /* @__PURE__ */ toList([]),
+  /* @__PURE__ */ toList([]),
+);
+
+export function none() {
+  return empty;
+}
+
+export function from(effect) {
+  let task = (actions) => {
+    let dispatch = actions.dispatch;
+    return effect(dispatch);
+  };
+  let _record = empty;
+  return new Effect(toList([task]), _record.before_paint, _record.after_paint);
+}
+
+export function before_paint(effect) {
+  let task = (actions) => {
+    let root = actions.root();
+    let dispatch = actions.dispatch;
+    return effect(dispatch, root);
+  };
+  let _record = empty;
+  return new Effect(_record.synchronous, toList([task]), _record.after_paint);
+}
+
+export function after_paint(effect) {
+  let task = (actions) => {
+    let root = actions.root();
+    let dispatch = actions.dispatch;
+    return effect(dispatch, root);
+  };
+  let _record = empty;
+  return new Effect(_record.synchronous, _record.before_paint, toList([task]));
+}
+
+export function event(name, data) {
+  let task = (actions) => { return actions.emit(name, data); };
+  let _record = empty;
+  return new Effect(toList([task]), _record.before_paint, _record.after_paint);
+}
+
+export function select(_) {
+  return empty;
+}
+
+export function batch(effects) {
+  return $list.fold(
+    effects,
+    empty,
+    (acc, eff) => {
+      return new Effect(
+        $list.fold(eff.synchronous, acc.synchronous, $list.prepend),
+        $list.fold(eff.before_paint, acc.before_paint, $list.prepend),
+        $list.fold(eff.after_paint, acc.after_paint, $list.prepend),
+      );
+    },
+  );
 }

@@ -6,6 +6,7 @@ import {
   Ok,
   Error,
   toList,
+  Empty as $Empty,
   prepend as listPrepend,
   CustomType as $CustomType,
   divideInt,
@@ -42,65 +43,95 @@ function do_shorten(
       } else {
         return new Error(undefined);
       }
-    } else if (left.hasLength(0) && right.hasLength(1)) {
-      if (shortened) {
-        return new Ok([left, right]);
+    } else if (right instanceof $Empty) {
+      if (left instanceof $Empty) {
+        if (shortened) {
+          return new Ok([left, right]);
+        } else {
+          return new Error(undefined);
+        }
+      } else if (from instanceof Left) {
+        let right$1 = right;
+        let dropped = left.head;
+        let left$1 = left.tail;
+        let new_length = current_length - $string.length(dropped);
+        loop$left = left$1;
+        loop$right = right$1;
+        loop$shortened = true;
+        loop$from = new Right();
+        loop$current_length = new_length;
+        loop$max_length = max_length;
       } else {
-        return new Error(undefined);
+        let left$1 = left;
+        loop$left = left$1;
+        loop$right = toList([]);
+        loop$shortened = shortened;
+        loop$from = new Left();
+        loop$current_length = current_length;
+        loop$max_length = max_length;
       }
-    } else if (left.hasLength(0) && right.hasLength(0)) {
-      if (shortened) {
-        return new Ok([left, right]);
+    } else if (left instanceof $Empty) {
+      let $1 = right.tail;
+      if ($1 instanceof $Empty) {
+        if (shortened) {
+          return new Ok([left, right]);
+        } else {
+          return new Error(undefined);
+        }
+      } else if (from instanceof Left) {
+        let right$1 = right;
+        loop$left = toList([]);
+        loop$right = right$1;
+        loop$shortened = shortened;
+        loop$from = new Right();
+        loop$current_length = current_length;
+        loop$max_length = max_length;
       } else {
-        return new Error(undefined);
+        let left$1 = left;
+        let dropped = right.head;
+        let right$1 = $1;
+        let new_length = current_length - $string.length(dropped);
+        loop$left = left$1;
+        loop$right = right$1;
+        loop$shortened = true;
+        loop$from = new Left();
+        loop$current_length = new_length;
+        loop$max_length = max_length;
       }
-    } else if (right.hasLength(1) && from instanceof Right) {
-      let left$1 = left;
+    } else if (from instanceof Left) {
       let right$1 = right;
-      loop$left = left$1;
-      loop$right = right$1;
-      loop$shortened = shortened;
-      loop$from = new Left();
-      loop$current_length = current_length;
-      loop$max_length = max_length;
-    } else if (left.atLeastLength(1) && from instanceof Left) {
       let dropped = left.head;
       let left$1 = left.tail;
-      let right$1 = right;
       let new_length = current_length - $string.length(dropped);
       loop$left = left$1;
       loop$right = right$1;
       loop$shortened = true;
       loop$from = new Right();
       loop$current_length = new_length;
-      loop$max_length = max_length;
-    } else if (right.atLeastLength(1) && from instanceof Right) {
-      let left$1 = left;
-      let dropped = right.head;
-      let right$1 = right.tail;
-      let new_length = current_length - $string.length(dropped);
-      loop$left = left$1;
-      loop$right = right$1;
-      loop$shortened = true;
-      loop$from = new Left();
-      loop$current_length = new_length;
-      loop$max_length = max_length;
-    } else if (left.hasLength(0) && from instanceof Left) {
-      let right$1 = right;
-      loop$left = toList([]);
-      loop$right = right$1;
-      loop$shortened = shortened;
-      loop$from = new Right();
-      loop$current_length = current_length;
       loop$max_length = max_length;
     } else {
-      let left$1 = left;
-      loop$left = left$1;
-      loop$right = toList([]);
-      loop$shortened = shortened;
-      loop$from = new Left();
-      loop$current_length = current_length;
-      loop$max_length = max_length;
+      let $1 = right.tail;
+      if ($1 instanceof $Empty) {
+        let left$1 = left;
+        let right$1 = right;
+        loop$left = left$1;
+        loop$right = right$1;
+        loop$shortened = shortened;
+        loop$from = new Left();
+        loop$current_length = current_length;
+        loop$max_length = max_length;
+      } else {
+        let left$1 = left;
+        let dropped = right.head;
+        let right$1 = $1;
+        let new_length = current_length - $string.length(dropped);
+        loop$left = left$1;
+        loop$right = right$1;
+        loop$shortened = true;
+        loop$from = new Left();
+        loop$current_length = new_length;
+        loop$max_length = max_length;
+      }
     }
   }
 }
@@ -124,7 +155,7 @@ function shorten(strings, max_length) {
     initial_length,
     max_length,
   );
-  if ($1.isOk()) {
+  if ($1 instanceof Ok) {
     let new_left = $1[0][0];
     let new_right = $1[0][1];
     return new Ok([$list.reverse(new_left), new_right]);
@@ -134,21 +165,21 @@ function shorten(strings, max_length) {
 }
 
 export function shorten_url(url, max_length) {
-  let chunks = (() => {
-    if (url.startsWith("https://")) {
-      let rest = url.slice(8);
-      return listPrepend("https:/", $string.split(rest, "/"));
-    } else {
-      return $string.split(url, "/");
-    }
-  })();
+  let _block;
+  if (url.startsWith("https://")) {
+    let rest = url.slice(8);
+    _block = listPrepend("https:/", $string.split(rest, "/"));
+  } else {
+    _block = $string.split(url, "/");
+  }
+  let chunks = _block;
   let max_length$1 = max_length - $list.length(chunks);
   let $ = shorten(chunks, max_length$1);
-  if (!$.isOk()) {
-    return url;
-  } else {
+  if ($ instanceof Ok) {
     let left = $[0][0];
     let right = $[0][1];
     return ($string.join(left, "/") + "/.../") + $string.join(right, "/");
+  } else {
+    return url;
   }
 }

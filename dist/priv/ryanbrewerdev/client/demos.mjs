@@ -6,43 +6,60 @@ import { text } from "../../lustre/lustre/element.mjs";
 import * as $html from "../../lustre/lustre/element/html.mjs";
 import { a, br, code, div, h3, p, strong, textarea } from "../../lustre/lustre/element/html.mjs";
 import * as $event from "../../lustre/lustre/event.mjs";
+import * as $candle from "../client/candle/main.mjs";
 import * as $tinylang from "../client/tinylang.mjs";
 import * as $tinytypedlang from "../client/tinytypedlang.mjs";
-import { toList, CustomType as $CustomType, makeError } from "../gleam.mjs";
+import { Ok, toList, CustomType as $CustomType, makeError } from "../gleam.mjs";
+
+const FILEPATH = "src/client/demos.gleam";
 
 class Model extends $CustomType {
-  constructor(untyped_code, deptyped_code) {
+  constructor(untyped_code, deptyped_code, candle_code) {
     super();
     this.untyped_code = untyped_code;
     this.deptyped_code = deptyped_code;
+    this.candle_code = candle_code;
   }
 }
 
 export class NewUntypedCode extends $CustomType {
-  constructor(x0) {
+  constructor($0) {
     super();
-    this[0] = x0;
+    this[0] = $0;
   }
 }
 
 export class NewDepTypedCode extends $CustomType {
-  constructor(x0) {
+  constructor($0) {
     super();
-    this[0] = x0;
+    this[0] = $0;
+  }
+}
+
+export class NewCandleCode extends $CustomType {
+  constructor($0) {
+    super();
+    this[0] = $0;
   }
 }
 
 function init(_) {
-  return new Model("", "");
+  return new Model("", "", "");
 }
 
 function update(model, msg) {
   if (msg instanceof NewUntypedCode) {
     let code$1 = msg[0];
-    return new Model(code$1, model.deptyped_code);
+    let _record = model;
+    return new Model(code$1, _record.deptyped_code, _record.candle_code);
+  } else if (msg instanceof NewDepTypedCode) {
+    let code$1 = msg[0];
+    let _record = model;
+    return new Model(_record.untyped_code, code$1, _record.candle_code);
   } else {
     let code$1 = msg[0];
-    return new Model(model.untyped_code, code$1);
+    let _record = model;
+    return new Model(_record.untyped_code, _record.deptyped_code, code$1);
   }
 }
 
@@ -51,7 +68,7 @@ function view(model) {
     toList([]),
     toList([
       h3(
-        toList([style(toList([["padding-top", "50pt"]]))]),
+        toList([style("padding-top", "50pt")]),
         toList([text("Lambda Calculus in Gleam")]),
       ),
       p(
@@ -94,10 +111,11 @@ function view(model) {
       ),
       br(toList([])),
       (() => {
-        if (model instanceof Model && model.untyped_code === "") {
+        let $ = model.untyped_code;
+        if ($ === "") {
           return text("");
         } else {
-          let code$1 = model.untyped_code;
+          let code$1 = $;
           let _pipe = $tinylang.go(code$1);
           return ((s) => {
             return div(
@@ -173,11 +191,52 @@ function view(model) {
       ),
       br(toList([])),
       (() => {
-        if (model instanceof Model && model.deptyped_code === "") {
+        let $ = model.deptyped_code;
+        if ($ === "") {
           return text("");
         } else {
-          let code$1 = model.deptyped_code;
+          let code$1 = $;
           let _pipe = $tinytypedlang.go(code$1);
+          return ((s) => {
+            return div(
+              toList([]),
+              toList([
+                strong(toList([]), toList([text("output")])),
+                text(": "),
+                div(
+                  toList([id("deptyped-code-output"), class$("code-output")]),
+                  toList([text(s)]),
+                ),
+              ]),
+            );
+          })(_pipe);
+        }
+      })(),
+      p(
+        toList([]),
+        toList([
+          text(
+            "Lastly, here's a simple proof assistant, implementing Andrew Marmaduke's ",
+          ),
+          a(
+            toList([
+              href(
+                "https://iro.uiowa.edu/esploro/outputs/doctoral/A-proof-theoretic-redesign-of-the/9984697941302771",
+              ),
+            ]),
+            toList([text("PhD thesis")]),
+          ),
+          text("."),
+        ]),
+      ),
+      br(toList([])),
+      (() => {
+        let $ = model.candle_code;
+        if ($ === "") {
+          return text("");
+        } else {
+          let code$1 = $;
+          let _pipe = $candle.go(code$1);
           return ((s) => {
             return div(
               toList([]),
@@ -200,14 +259,21 @@ function view(model) {
 export function main() {
   let app = $lustre.simple(init, update, view);
   let $ = $lustre.start(app, "[data-lustre-app]", undefined);
-  if (!$.isOk()) {
+  if (!($ instanceof Ok)) {
     throw makeError(
       "let_assert",
+      FILEPATH,
       "client/demos",
-      37,
+      38,
       "main",
       "Pattern match failed, no pattern matched the value.",
-      { value: $ }
+      {
+        value: $,
+        start: 1048,
+        end: 1117,
+        pattern_start: 1059,
+        pattern_end: 1071
+      }
     )
   }
   let dispatch = $[0];

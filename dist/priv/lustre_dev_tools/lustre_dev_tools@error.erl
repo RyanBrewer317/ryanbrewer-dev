@@ -1,6 +1,6 @@
 -module(lustre_dev_tools@error).
 -compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch]).
-
+-define(FILEPATH, "src/lustre_dev_tools/error.gleam").
 -export([invalid_proxy_target/1, explain/1]).
 -export_type([error/0]).
 
@@ -19,7 +19,7 @@
     {cannot_create_directory, simplifile:file_error(), binary()} |
     {cannot_read_file, simplifile:file_error(), binary()} |
     {cannot_set_permissions, simplifile:file_error(), binary()} |
-    {cannot_start_dev_server, glisten:start_error(), integer()} |
+    {cannot_start_dev_server, gleam@otp@actor:start_error(), integer()} |
     {cannot_start_file_watcher, gleam@otp@actor:start_error()} |
     {cannot_write_file, simplifile:file_error(), binary()} |
     {component_missing, binary()} |
@@ -45,7 +45,7 @@
     invalid_esbuild_binary |
     invalid_tailwind_binary.
 
--file("src/lustre_dev_tools/error.gleam", 79).
+-file("src/lustre_dev_tools/error.gleam", 77).
 ?DOC(false).
 -spec build_error(binary()) -> binary().
 build_error(Reason) ->
@@ -58,7 +58,7 @@ before I can do anything. Here's the error message I got:
     _pipe = Message,
     gleam@string:replace(_pipe, <<"{reason}"/utf8>>, Reason).
 
--file("src/lustre_dev_tools/error.gleam", 92).
+-file("src/lustre_dev_tools/error.gleam", 90).
 ?DOC(false).
 -spec bundle_error(binary()) -> binary().
 bundle_error(Reason) ->
@@ -75,7 +75,7 @@ you were trying to do when you ran into this issue.
     _pipe = Message,
     gleam@string:replace(_pipe, <<"{reason}"/utf8>>, Reason).
 
--file("src/lustre_dev_tools/error.gleam", 109).
+-file("src/lustre_dev_tools/error.gleam", 107).
 ?DOC(false).
 -spec cannot_create_directory(simplifile:file_error(), binary()) -> binary().
 cannot_create_directory(Reason, Path) ->
@@ -100,7 +100,7 @@ you were trying to do when you ran into this issue.
         gleam@string:inspect(Reason)
     ).
 
--file("src/lustre_dev_tools/error.gleam", 130).
+-file("src/lustre_dev_tools/error.gleam", 128).
 ?DOC(false).
 -spec cannot_read_file(simplifile:file_error(), binary()) -> binary().
 cannot_read_file(Reason, Path) ->
@@ -125,7 +125,7 @@ you were trying to do when you ran into this issue.
         gleam@string:inspect(Reason)
     ).
 
--file("src/lustre_dev_tools/error.gleam", 151).
+-file("src/lustre_dev_tools/error.gleam", 149).
 ?DOC(false).
 -spec cannot_set_permissions(simplifile:file_error(), binary()) -> binary().
 cannot_set_permissions(Reason, Path) ->
@@ -150,9 +150,9 @@ you were trying to do when you ran into this issue.
         gleam@string:inspect(Reason)
     ).
 
--file("src/lustre_dev_tools/error.gleam", 183).
+-file("src/lustre_dev_tools/error.gleam", 181).
 ?DOC(false).
--spec cannot_start_dev_server_default_message(glisten:start_error()) -> binary().
+-spec cannot_start_dev_server_default_message(gleam@otp@actor:start_error()) -> binary().
 cannot_start_dev_server_default_message(Reason) ->
     Message = <<"
 I ran into an error while trying to start the development server. Here's the
@@ -170,7 +170,7 @@ some details about what you were trying to do when you ran into this issue.
         gleam@string:inspect(Reason)
     ).
 
--file("src/lustre_dev_tools/error.gleam", 199).
+-file("src/lustre_dev_tools/error.gleam", 197).
 ?DOC(false).
 -spec cannot_start_dev_server_port_in_use_message(integer()) -> binary().
 cannot_start_dev_server_port_in_use_message(Port) ->
@@ -186,12 +186,12 @@ You can change the port to start the dev server on using the `--port` flag.
         erlang:integer_to_binary(Port)
     ).
 
--file("src/lustre_dev_tools/error.gleam", 172).
+-file("src/lustre_dev_tools/error.gleam", 170).
 ?DOC(false).
--spec cannot_start_dev_server(glisten:start_error(), integer()) -> binary().
+-spec cannot_start_dev_server(gleam@otp@actor:start_error(), integer()) -> binary().
 cannot_start_dev_server(Reason, Port) ->
     case Reason of
-        {acceptor_failed, {abnormal, Message}} ->
+        {init_failed, Message} ->
             case gleam_stdlib:contains_string(Message, <<"Eaddrinuse"/utf8>>) of
                 true ->
                     cannot_start_dev_server_port_in_use_message(Port);
@@ -204,7 +204,7 @@ cannot_start_dev_server(Reason, Port) ->
             cannot_start_dev_server_default_message(Reason)
     end.
 
--file("src/lustre_dev_tools/error.gleam", 211).
+-file("src/lustre_dev_tools/error.gleam", 209).
 ?DOC(false).
 -spec cannot_start_file_watcher(gleam@otp@actor:start_error()) -> binary().
 cannot_start_file_watcher(Reason) ->
@@ -224,7 +224,7 @@ some details about what you were trying to do when you ran into this issue.
         gleam@string:inspect(Reason)
     ).
 
--file("src/lustre_dev_tools/error.gleam", 227).
+-file("src/lustre_dev_tools/error.gleam", 225).
 ?DOC(false).
 -spec cannot_write_file(simplifile:file_error(), binary()) -> binary().
 cannot_write_file(Reason, Path) ->
@@ -249,7 +249,7 @@ you were trying to do when you ran into this issue.
         gleam@string:inspect(Reason)
     ).
 
--file("src/lustre_dev_tools/error.gleam", 248).
+-file("src/lustre_dev_tools/error.gleam", 246).
 ?DOC(false).
 -spec component_missing(binary()) -> binary().
 component_missing(Module) ->
@@ -270,7 +270,7 @@ Lustre `App`. Try adding a function like this:
     _pipe = Message,
     gleam@string:replace(_pipe, <<"{module}"/utf8>>, Module).
 
--file("src/lustre_dev_tools/error.gleam", 269).
+-file("src/lustre_dev_tools/error.gleam", 267).
 ?DOC(false).
 -spec incomplete_proxy(list(binary())) -> binary().
 incomplete_proxy(Missing) ->
@@ -302,7 +302,7 @@ this:
         gleam@string:join(Missing, <<", "/utf8>>)
     ).
 
--file("src/lustre_dev_tools/error.gleam", 297).
+-file("src/lustre_dev_tools/error.gleam", 295).
 ?DOC(false).
 -spec internal_error(binary()) -> binary().
 internal_error(Info) ->
@@ -316,7 +316,7 @@ the following message:
     _pipe = Message,
     gleam@string:replace(_pipe, <<"{info}"/utf8>>, Info).
 
--file("src/lustre_dev_tools/error.gleam", 311).
+-file("src/lustre_dev_tools/error.gleam", 309).
 ?DOC(false).
 -spec invalid_proxy_target(binary()) -> binary().
 invalid_proxy_target(To) ->
@@ -332,7 +332,7 @@ please open an issue at https://github.com/lustre-labs/dev-tools/issues/new
     _pipe = Message,
     gleam@string:replace(_pipe, <<"{to}"/utf8>>, To).
 
--file("src/lustre_dev_tools/error.gleam", 371).
+-file("src/lustre_dev_tools/error.gleam", 369).
 ?DOC(false).
 -spec main_missing(binary()) -> binary().
 main_missing(Module) ->
@@ -351,7 +351,7 @@ to build and start your app. It should look something like this:
     _pipe = Message,
     gleam@string:replace(_pipe, <<"{module}"/utf8>>, Module).
 
--file("src/lustre_dev_tools/error.gleam", 414).
+-file("src/lustre_dev_tools/error.gleam", 412).
 ?DOC(false).
 -spec module_missing(binary()) -> binary().
 module_missing(Module) ->
@@ -377,7 +377,7 @@ some details about what you were trying to do when you ran into this issue:
     _pipe = Message,
     gleam@string:replace(_pipe, <<"{module}"/utf8>>, Module).
 
--file("src/lustre_dev_tools/error.gleam", 466).
+-file("src/lustre_dev_tools/error.gleam", 464).
 ?DOC(false).
 -spec name_missing(binary()) -> binary().
 name_missing(Module) ->
@@ -398,7 +398,7 @@ Lustre `App`. Try adding a function like this:
     _pipe = Message,
     gleam@string:replace(_pipe, <<"{module}"/utf8>>, Module).
 
--file("src/lustre_dev_tools/error.gleam", 487).
+-file("src/lustre_dev_tools/error.gleam", 485).
 ?DOC(false).
 -spec network_error(gleam@dynamic:dynamic_()) -> binary().
 network_error(Error) ->
@@ -415,7 +415,7 @@ some details about what you were trying to do when you ran into this issue.
     _pipe = Message,
     gleam@string:replace(_pipe, <<"{error}"/utf8>>, gleam@string:inspect(Error)).
 
--file("src/lustre_dev_tools/error.gleam", 504).
+-file("src/lustre_dev_tools/error.gleam", 502).
 ?DOC(false).
 -spec template_missing(binary(), simplifile:file_error()) -> binary().
 template_missing(Name, Reason) ->
@@ -442,7 +442,7 @@ ran into this issue.
         gleam@string:inspect(Reason)
     ).
 
--file("src/lustre_dev_tools/error.gleam", 527).
+-file("src/lustre_dev_tools/error.gleam", 525).
 ?DOC(false).
 -spec unknown_file_error(simplifile:file_error()) -> binary().
 unknown_file_error(Error) ->
@@ -459,7 +459,7 @@ you were trying to do when you ran into this issue.
     _pipe = Message,
     gleam@string:replace(_pipe, <<"{error}"/utf8>>, gleam@string:inspect(Error)).
 
--file("src/lustre_dev_tools/error.gleam", 544).
+-file("src/lustre_dev_tools/error.gleam", 542).
 ?DOC(false).
 -spec unknown_platform(binary(), binary(), binary()) -> binary().
 unknown_platform(Binary, Os, Cpu) ->
@@ -486,7 +486,7 @@ you were trying to do when you ran into this issue.
     _pipe@3 = gleam@string:replace(_pipe@2, <<"{cpu}"/utf8>>, Cpu),
     gleam@string:replace(_pipe@3, <<"{path}"/utf8>>, Path).
 
--file("src/lustre_dev_tools/error.gleam", 571).
+-file("src/lustre_dev_tools/error.gleam", 569).
 ?DOC(false).
 -spec otp_too_old(integer()) -> binary().
 otp_too_old(Version) ->
@@ -504,7 +504,7 @@ https://gleam.run/getting-started/installing/#installing-erlang
         erlang:integer_to_binary(Version)
     ).
 
--file("src/lustre_dev_tools/error.gleam", 585).
+-file("src/lustre_dev_tools/error.gleam", 583).
 ?DOC(false).
 -spec unzip_error(gleam@dynamic:dynamic_()) -> binary().
 unzip_error(Error) ->
@@ -521,7 +521,7 @@ you were trying to do when you ran into this issue.
     _pipe = Message,
     gleam@string:replace(_pipe, <<"{error}"/utf8>>, gleam@string:inspect(Error)).
 
--file("src/lustre_dev_tools/error.gleam", 602).
+-file("src/lustre_dev_tools/error.gleam", 600).
 ?DOC(false).
 -spec invalid_esbuild_binary() -> binary().
 invalid_esbuild_binary() ->
@@ -530,7 +530,7 @@ It looks like the downloaded Esbuild tarball has a different hash from what I
 expected.
 "/utf8>>.
 
--file("src/lustre_dev_tools/error.gleam", 609).
+-file("src/lustre_dev_tools/error.gleam", 607).
 ?DOC(false).
 -spec invalid_tailwind_binary() -> binary().
 invalid_tailwind_binary() ->
@@ -539,7 +539,7 @@ It looks like the downloaded Tailwind binary has a different hash from what I
 expected.
 "/utf8>>.
 
--file("src/lustre_dev_tools/error.gleam", 652).
+-file("src/lustre_dev_tools/error.gleam", 650).
 ?DOC(false).
 -spec pretty_var(integer()) -> binary().
 pretty_var(Id) ->
@@ -550,21 +550,25 @@ pretty_var(Id) ->
 
         false ->
             Id@1 = Id + 97,
-            _assert_subject = gleam@bit_array:to_string(<<Id@1/integer>>),
-            {ok, Var} = case _assert_subject of
-                {ok, _} -> _assert_subject;
+            Var@1 = case gleam@bit_array:to_string(<<Id@1/integer>>) of
+                {ok, Var} -> Var;
                 _assert_fail ->
                     erlang:error(#{gleam_error => let_assert,
                                 message => <<"Pattern match failed, no pattern matched the value."/utf8>>,
-                                value => _assert_fail,
+                                file => <<?FILEPATH/utf8>>,
                                 module => <<"lustre_dev_tools/error"/utf8>>,
                                 function => <<"pretty_var"/utf8>>,
-                                line => 658})
+                                line => 656,
+                                value => _assert_fail,
+                                start => 18306,
+                                'end' => 18358,
+                                pattern_start => 18317,
+                                pattern_end => 18324})
             end,
-            Var
+            Var@1
     end.
 
--file("src/lustre_dev_tools/error.gleam", 618).
+-file("src/lustre_dev_tools/error.gleam", 616).
 ?DOC(false).
 -spec pretty_type(gleam@package_interface:type()) -> binary().
 pretty_type(T) ->
@@ -609,7 +613,7 @@ pretty_type(T) ->
             pretty_var(Id)
     end.
 
--file("src/lustre_dev_tools/error.gleam", 327).
+-file("src/lustre_dev_tools/error.gleam", 325).
 ?DOC(false).
 -spec main_bad_app_type(
     binary(),
@@ -661,7 +665,7 @@ like this:
     ),
     gleam@string:replace(_pipe@3, <<"{msg}"/utf8>>, pretty_type(Msg)).
 
--file("src/lustre_dev_tools/error.gleam", 390).
+-file("src/lustre_dev_tools/error.gleam", 388).
 ?DOC(false).
 -spec main_takes_an_argument(binary(), gleam@package_interface:type()) -> binary().
 main_takes_an_argument(Module, Got) ->
@@ -685,7 +689,7 @@ provide them! Your `main` function should look something like this:
     _pipe@1 = gleam@string:replace(_pipe, <<"{module}"/utf8>>, Module),
     gleam@string:replace(_pipe@1, <<"{got}"/utf8>>, pretty_type(Got)).
 
--file("src/lustre_dev_tools/error.gleam", 440).
+-file("src/lustre_dev_tools/error.gleam", 438).
 ?DOC(false).
 -spec name_incorrect_type(binary(), gleam@package_interface:type()) -> binary().
 name_incorrect_type(Module, Got) ->
@@ -711,7 +715,7 @@ you were trying to do when you ran into this issue.
     _pipe@1 = gleam@string:replace(_pipe, <<"{module}"/utf8>>, Module),
     gleam@string:replace(_pipe@1, <<"{got}"/utf8>>, pretty_type(Got)).
 
--file("src/lustre_dev_tools/error.gleam", 47).
+-file("src/lustre_dev_tools/error.gleam", 45).
 ?DOC(false).
 -spec explain(error()) -> binary().
 explain(Error) ->

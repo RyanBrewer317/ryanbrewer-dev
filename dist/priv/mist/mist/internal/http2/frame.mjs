@@ -18,10 +18,12 @@ import {
   sizedInt,
 } from "../../../gleam.mjs";
 
+const FILEPATH = "src/mist/internal/http2/frame.gleam";
+
 class StreamIdentifier extends $CustomType {
-  constructor(x0) {
+  constructor($0) {
     super();
-    this[0] = x0;
+    this[0] = $0;
   }
 }
 
@@ -35,16 +37,16 @@ export class HeaderPriority extends $CustomType {
 }
 
 export class Complete extends $CustomType {
-  constructor(x0) {
+  constructor($0) {
     super();
-    this[0] = x0;
+    this[0] = $0;
   }
 }
 
 export class Continued extends $CustomType {
-  constructor(x0) {
+  constructor($0) {
     super();
-    this[0] = x0;
+    this[0] = $0;
   }
 }
 
@@ -53,44 +55,44 @@ export class Enabled extends $CustomType {}
 export class Disabled extends $CustomType {}
 
 export class HeaderTableSize extends $CustomType {
-  constructor(x0) {
+  constructor($0) {
     super();
-    this[0] = x0;
+    this[0] = $0;
   }
 }
 
 export class ServerPush extends $CustomType {
-  constructor(x0) {
+  constructor($0) {
     super();
-    this[0] = x0;
+    this[0] = $0;
   }
 }
 
 export class MaxConcurrentStreams extends $CustomType {
-  constructor(x0) {
+  constructor($0) {
     super();
-    this[0] = x0;
+    this[0] = $0;
   }
 }
 
 export class InitialWindowSize extends $CustomType {
-  constructor(x0) {
+  constructor($0) {
     super();
-    this[0] = x0;
+    this[0] = $0;
   }
 }
 
 export class MaxFrameSize extends $CustomType {
-  constructor(x0) {
+  constructor($0) {
     super();
-    this[0] = x0;
+    this[0] = $0;
   }
 }
 
 export class MaxHeaderListSize extends $CustomType {
-  constructor(x0) {
+  constructor($0) {
     super();
-    this[0] = x0;
+    this[0] = $0;
   }
 }
 
@@ -210,9 +212,9 @@ export class InadequateSecurity extends $CustomType {}
 export class Http11Required extends $CustomType {}
 
 export class Unsupported extends $CustomType {
-  constructor(x0) {
+  constructor($0) {
     super();
-    this[0] = x0;
+    this[0] = $0;
   }
 }
 
@@ -227,32 +229,62 @@ export function get_stream_identifier(identifier) {
 
 function parse_data(identifier, flags, length, payload) {
   let $ = toBitArray([flags, payload]);
-  if ($.bitSize >= padding + 8 && (identifier !== 0)) {
-    let padding = bitArraySliceToInt($, 4, 5, true, false);
-    let end_stream = bitArraySliceToInt($, 7, 8, true, false);
-    let pad_length = bitArraySliceToInt($, 8, padding + 8, true, false);
-    let data_and_padding = bitArraySlice($, padding + 8);
-    let data_length = (() => {
-      if (padding === 1) {
-        return length - pad_length;
-      } else if (padding === 0) {
-        return length;
+  if ($.bitSize >= 4) {
+    if ($.bitSize >= 5) {
+      if ($.bitSize >= 7) {
+        if ($.bitSize >= 8) {
+          let padding = bitArraySliceToInt($, 4, 5, true, false);
+          if ($.bitSize >= 8 + padding * 8) {
+            if (identifier !== 0) {
+              let padding$1 = padding;
+              let end_stream = bitArraySliceToInt($, 7, 8, true, false);
+              let pad_length = bitArraySliceToInt($, 8, 8 + padding$1 * 8, true, false);
+              let data_and_padding = bitArraySlice($, 8 + padding * 8);
+              let _block;
+              if (padding$1 === 1) {
+                _block = length - pad_length;
+              } else if (padding$1 === 0) {
+                _block = length;
+              } else {
+                throw makeError(
+                  "panic",
+                  FILEPATH,
+                  "mist/internal/http2/frame",
+                  168,
+                  "parse_data",
+                  "Somehow a bit was neither 0 nor 1",
+                  {}
+                )
+              }
+              let data_length = _block;
+              if (data_length >= 0) {
+                if (data_and_padding.bitSize >= data_length * 8) {
+                  let data = bitArraySlice(data_and_padding, 0, data_length * 8);
+                  return new Ok(
+                    new Data(
+                      data,
+                      end_stream === 1,
+                      stream_identifier(identifier),
+                    ),
+                  );
+                } else {
+                  return new Error(new ProtocolError());
+                }
+              } else {
+                return new Error(new ProtocolError());
+              }
+            } else {
+              return new Error(new ProtocolError());
+            }
+          } else {
+            return new Error(new ProtocolError());
+          }
+        } else {
+          return new Error(new ProtocolError());
+        }
       } else {
-        throw makeError(
-          "panic",
-          "mist/internal/http2/frame",
-          168,
-          "parse_data",
-          "Somehow a bit was neither 0 nor 1",
-          {}
-        )
+        return new Error(new ProtocolError());
       }
-    })();
-    if (data_and_padding.bitSize >= data_length * 8) {
-      let data = bitArraySlice(data_and_padding, 0, data_length * 8);
-      return new Ok(
-        new Data(data, end_stream === 1, stream_identifier(identifier)),
-      );
     } else {
       return new Error(new ProtocolError());
     }
@@ -263,20 +295,38 @@ function parse_data(identifier, flags, length, payload) {
 
 function parse_priority(identifier, flags, length, payload) {
   let $ = toBitArray([flags, payload]);
-  if (length === 5 && $.bitSize == 48 && (identifier !== 0)) {
-    let exclusive = bitArraySliceToInt($, 8, 9, true, false);
-    let dependency = bitArraySliceToInt($, 9, 40, true, false);
-    let weight = $.byteAt(5);
-    return new Ok(
-      new Priority(
-        exclusive === 1,
-        stream_identifier(identifier),
-        stream_identifier(dependency),
-        weight,
-      ),
-    );
-  } else if (length === 5) {
-    return new Error(new ProtocolError());
+  if (length === 5) {
+    if ($.bitSize >= 8) {
+      if ($.bitSize >= 9) {
+        if ($.bitSize >= 40) {
+          if ($.bitSize === 48) {
+            if (identifier !== 0) {
+              let exclusive = bitArraySliceToInt($, 8, 9, true, false);
+              let dependency = bitArraySliceToInt($, 9, 40, true, false);
+              let weight = $.byteAt(5);
+              return new Ok(
+                new Priority(
+                  exclusive === 1,
+                  stream_identifier(identifier),
+                  stream_identifier(dependency),
+                  weight,
+                ),
+              );
+            } else {
+              return new Error(new ProtocolError());
+            }
+          } else {
+            return new Error(new ProtocolError());
+          }
+        } else {
+          return new Error(new ProtocolError());
+        }
+      } else {
+        return new Error(new ProtocolError());
+      }
+    } else {
+      return new Error(new ProtocolError());
+    }
   } else {
     return new Error(new FrameSizeError());
   }
@@ -284,27 +334,68 @@ function parse_priority(identifier, flags, length, payload) {
 
 function parse_push_promise(identifier, flags, length, payload) {
   let $ = toBitArray([flags, payload]);
-  if ($.bitSize == padded + length * 8 + pad_length * 8 + 40 &&
-  (identifier !== 0)) {
-    let padded = bitArraySliceToInt($, 4, 5, true, false);
-    let end_headers = bitArraySliceToInt($, 5, 6, true, false);
-    let pad_length = bitArraySliceToInt($, 8, padded + 8, true, false);
-    let promised_identifier = bitArraySliceToInt($, padded + 9, padded + 40, true, false);
-    let data = bitArraySlice($, padded + 40, padded + length * 8 + 40);
-    return new Ok(
-      new PushPromise(
-        (() => {
-          let $1 = end_headers === 1;
-          if ($1) {
-            return new Complete(data);
+  if ($.bitSize >= 4) {
+    if ($.bitSize >= 5) {
+      if ($.bitSize >= 6) {
+        if ($.bitSize >= 8) {
+          let padded = bitArraySliceToInt($, 4, 5, true, false);
+          if ($.bitSize >= 8 + padded * 8) {
+            if ($.bitSize >= 9 + padded * 8) {
+              if ($.bitSize >= 40 + padded * 8) {
+                if (length >= 0) {
+                  if ($.bitSize >= 40 + length * 8 + padded * 8) {
+                    let pad_length = bitArraySliceToInt($, 8, 8 + padded * 8, true, false);
+                    if ($.bitSize === 40 + length * 8 + pad_length * 8 + padded * 8) {
+                      if (identifier !== 0) {
+                        let padded$1 = padded;
+                        let end_headers = bitArraySliceToInt($, 5, 6, true, false);
+                        let pad_length$1 = pad_length;
+                        let promised_identifier = bitArraySliceToInt($, 9 + padded * 8, 9 + padded * 8 + 31, true, false);
+                        let data = bitArraySlice($, 40 + padded * 8, 40 + padded * 8 + length * 8);
+                        return new Ok(
+                          new PushPromise(
+                            (() => {
+                              let $1 = end_headers === 1;
+                              if ($1) {
+                                return new Complete(data);
+                              } else {
+                                return new Continued(data);
+                              }
+                            })(),
+                            stream_identifier(identifier),
+                            stream_identifier(promised_identifier),
+                          ),
+                        );
+                      } else {
+                        return new Error(new ProtocolError());
+                      }
+                    } else {
+                      return new Error(new ProtocolError());
+                    }
+                  } else {
+                    return new Error(new ProtocolError());
+                  }
+                } else {
+                  return new Error(new ProtocolError());
+                }
+              } else {
+                return new Error(new ProtocolError());
+              }
+            } else {
+              return new Error(new ProtocolError());
+            }
           } else {
-            return new Continued(data);
+            return new Error(new ProtocolError());
           }
-        })(),
-        stream_identifier(identifier),
-        stream_identifier(promised_identifier),
-      ),
-    );
+        } else {
+          return new Error(new ProtocolError());
+        }
+      } else {
+        return new Error(new ProtocolError());
+      }
+    } else {
+      return new Error(new ProtocolError());
+    }
   } else {
     return new Error(new ProtocolError());
   }
@@ -312,12 +403,26 @@ function parse_push_promise(identifier, flags, length, payload) {
 
 function parse_ping(identifier, flags, length, payload) {
   let $ = toBitArray([flags, payload]);
-  if (length === 8 && $.bitSize == 72 && (identifier === 0)) {
-    let ack = bitArraySliceToInt($, 7, 8, true, false);
-    let data = bitArraySlice($, 8, 72);
-    return new Ok(new Ping(ack === 1, data));
-  } else if (length === 8) {
-    return new Error(new ProtocolError());
+  if (length === 8) {
+    if ($.bitSize >= 7) {
+      if ($.bitSize >= 8) {
+        if ($.bitSize === 72) {
+          if (identifier === 0) {
+            let ack = bitArraySliceToInt($, 7, 8, true, false);
+            let data = bitArraySlice($, 8, 72);
+            return new Ok(new Ping(ack === 1, data));
+          } else {
+            return new Error(new ProtocolError());
+          }
+        } else {
+          return new Error(new ProtocolError());
+        }
+      } else {
+        return new Error(new ProtocolError());
+      }
+    } else {
+      return new Error(new ProtocolError());
+    }
   } else {
     return new Error(new FrameSizeError());
   }
@@ -325,13 +430,27 @@ function parse_ping(identifier, flags, length, payload) {
 
 function parse_window_update(identifier, flags, length, payload) {
   let $ = toBitArray([flags, payload]);
-  if (length === 4 &&
-  $.bitSize == 40 &&
-  (bitArraySliceToInt($, 9, 40, true, false) !== 0)) {
-    let window_size = bitArraySliceToInt($, 9, 40, true, false);
-    return new Ok(new WindowUpdate(window_size, stream_identifier(identifier)));
-  } else if (length === 4) {
-    return new Error(new FrameSizeError());
+  if (length === 4) {
+    if ($.bitSize >= 8) {
+      if ($.bitSize >= 9) {
+        if ($.bitSize === 40) {
+          let window_size = bitArraySliceToInt($, 9, 40, true, false);
+          if (window_size !== 0) {
+            return new Ok(
+              new WindowUpdate(window_size, stream_identifier(identifier)),
+            );
+          } else {
+            return new Error(new FrameSizeError());
+          }
+        } else {
+          return new Error(new FrameSizeError());
+        }
+      } else {
+        return new Error(new FrameSizeError());
+      }
+    } else {
+      return new Error(new FrameSizeError());
+    }
   } else {
     return new Error(new ProtocolError());
   }
@@ -339,22 +458,42 @@ function parse_window_update(identifier, flags, length, payload) {
 
 function parse_continuation(identifier, flags, length, payload) {
   let $ = toBitArray([flags, payload]);
-  if ($.bitSize == length * 8 + 8 && (identifier !== 0)) {
-    let end_headers = bitArraySliceToInt($, 5, 6, true, false);
-    let data = bitArraySlice($, 8, length * 8 + 8);
-    return new Ok(
-      new Continuation(
-        (() => {
-          let $1 = end_headers === 1;
-          if ($1) {
-            return new Complete(data);
+  if ($.bitSize >= 5) {
+    if ($.bitSize >= 6) {
+      if ($.bitSize >= 8) {
+        if (length >= 0) {
+          if ($.bitSize === 8 + length * 8) {
+            if (identifier !== 0) {
+              let end_headers = bitArraySliceToInt($, 5, 6, true, false);
+              let data = bitArraySlice($, 8, 8 + length * 8);
+              return new Ok(
+                new Continuation(
+                  (() => {
+                    let $1 = end_headers === 1;
+                    if ($1) {
+                      return new Complete(data);
+                    } else {
+                      return new Continued(data);
+                    }
+                  })(),
+                  stream_identifier(identifier),
+                ),
+              );
+            } else {
+              return new Error(new ProtocolError());
+            }
           } else {
-            return new Continued(data);
+            return new Error(new ProtocolError());
           }
-        })(),
-        stream_identifier(identifier),
-      ),
-    );
+        } else {
+          return new Error(new ProtocolError());
+        }
+      } else {
+        return new Error(new ProtocolError());
+      }
+    } else {
+      return new Error(new ProtocolError());
+    }
   } else {
     return new Error(new ProtocolError());
   }
@@ -397,13 +536,23 @@ function get_error(value) {
 
 function parse_termination(identifier, flags, length, payload) {
   let $ = toBitArray([flags, payload]);
-  if (length === 4 && $.bitSize == 40 && (identifier !== 0)) {
-    let error = bitArraySliceToInt($, 8, 40, true, false);
-    return new Ok(
-      new Termination(get_error(error), stream_identifier(identifier)),
-    );
-  } else if (length === 4) {
-    return new Error(new ProtocolError());
+  if (length === 4) {
+    if ($.bitSize >= 8) {
+      if ($.bitSize === 40) {
+        if (identifier !== 0) {
+          let error = bitArraySliceToInt($, 8, 40, true, false);
+          return new Ok(
+            new Termination(get_error(error), stream_identifier(identifier)),
+          );
+        } else {
+          return new Error(new ProtocolError());
+        }
+      } else {
+        return new Error(new ProtocolError());
+      }
+    } else {
+      return new Error(new ProtocolError());
+    }
   } else {
     return new Error(new FrameSizeError());
   }
@@ -411,13 +560,41 @@ function parse_termination(identifier, flags, length, payload) {
 
 function parse_go_away(identifier, flags, length, payload) {
   let $ = toBitArray([flags, payload]);
-  if ($.bitSize == length * 8 + 72 && (identifier === 0)) {
-    let last_stream_id = bitArraySliceToInt($, 9, 40, true, false);
-    let error = bitArraySliceToInt($, 40, 72, true, false);
-    let data = bitArraySlice($, 72, length * 8 + 72);
-    return new Ok(
-      new GoAway(data, get_error(error), stream_identifier(last_stream_id)),
-    );
+  if ($.bitSize >= 8) {
+    if ($.bitSize >= 9) {
+      if ($.bitSize >= 40) {
+        if ($.bitSize >= 72) {
+          if (length >= 0) {
+            if ($.bitSize === 72 + length * 8) {
+              if (identifier === 0) {
+                let last_stream_id = bitArraySliceToInt($, 9, 40, true, false);
+                let error = bitArraySliceToInt($, 40, 72, true, false);
+                let data = bitArraySlice($, 72, 72 + length * 8);
+                return new Ok(
+                  new GoAway(
+                    data,
+                    get_error(error),
+                    stream_identifier(last_stream_id),
+                  ),
+                );
+              } else {
+                return new Error(new ProtocolError());
+              }
+            } else {
+              return new Error(new ProtocolError());
+            }
+          } else {
+            return new Error(new ProtocolError());
+          }
+        } else {
+          return new Error(new ProtocolError());
+        }
+      } else {
+        return new Error(new ProtocolError());
+      }
+    } else {
+      return new Error(new ProtocolError());
+    }
   } else {
     return new Error(new ProtocolError());
   }
@@ -437,6 +614,7 @@ function get_setting(identifier, value) {
           } else {
             throw makeError(
               "panic",
+              FILEPATH,
               "mist/internal/http2/frame",
               638,
               "get_setting",
@@ -450,15 +628,15 @@ function get_setting(identifier, value) {
   } else if (identifier === 3) {
     return new Ok(new MaxConcurrentStreams(value));
   } else if (identifier === 4) {
-    if (value > 2_147_483_647) {
-      let n = value;
+    let n = value;
+    if (n > 2_147_483_647) {
       return new Error(new FlowControlError());
     } else {
       return new Ok(new InitialWindowSize(value));
     }
   } else if (identifier === 5) {
-    if (value > 16_777_215) {
-      let n = value;
+    let n = value;
+    if (n > 16_777_215) {
       return new Error(new ProtocolError());
     } else {
       return new Ok(new MaxFrameSize(value));
@@ -474,20 +652,24 @@ function get_settings(loop$data, loop$acc) {
   while (true) {
     let data = loop$data;
     let acc = loop$acc;
-    if (data.bitSize == 0) {
+    if (data.bitSize === 0) {
       return new Ok(acc);
-    } else if (data.bitSize >= 48) {
-      let identifier = bitArraySliceToInt(data, 0, 16, true, false);
-      let value = bitArraySliceToInt(data, 16, 48, true, false);
-      let rest = bitArraySlice(data, 48);
-      let $ = get_setting(identifier, value);
-      if ($.isOk()) {
-        let setting = $[0];
-        loop$data = rest;
-        loop$acc = listPrepend(setting, acc);
+    } else if (data.bitSize >= 16) {
+      if (data.bitSize >= 48) {
+        let identifier = bitArraySliceToInt(data, 0, 16, true, false);
+        let value = bitArraySliceToInt(data, 16, 48, true, false);
+        let rest = bitArraySlice(data, 48);
+        let $ = get_setting(identifier, value);
+        if ($ instanceof Ok) {
+          let setting = $[0];
+          loop$data = rest;
+          loop$acc = listPrepend(setting, acc);
+        } else {
+          let err = $[0];
+          return new Error(err);
+        }
       } else {
-        let err = $[0];
-        return new Error(err);
+        return new Error(new ProtocolError());
       }
     } else {
       return new Error(new ProtocolError());
@@ -498,15 +680,35 @@ function get_settings(loop$data, loop$acc) {
 function parse_settings(identifier, flags, length, payload) {
   let $ = remainderInt(length, 6);
   let $1 = toBitArray([flags, payload]);
-  if ($ === 0 && $1.bitSize == length * 8 + 8 && (identifier === 0)) {
-    let ack = bitArraySliceToInt($1, 7, 8, true, false);
-    let settings = bitArraySlice($1, 8, length * 8 + 8);
-    return $result.try$(
-      get_settings(settings, toList([])),
-      (settings) => { return new Ok(new Settings(ack === 1, settings)); },
-    );
-  } else if ($ === 0) {
-    return new Error(new ProtocolError());
+  if ($ === 0) {
+    if ($1.bitSize >= 7) {
+      if ($1.bitSize >= 8) {
+        if (length >= 0) {
+          if ($1.bitSize === 8 + length * 8) {
+            if (identifier === 0) {
+              let ack = bitArraySliceToInt($1, 7, 8, true, false);
+              let settings = bitArraySlice($1, 8, 8 + length * 8);
+              return $result.try$(
+                get_settings(settings, toList([])),
+                (settings) => {
+                  return new Ok(new Settings(ack === 1, settings));
+                },
+              );
+            } else {
+              return new Error(new ProtocolError());
+            }
+          } else {
+            return new Error(new ProtocolError());
+          }
+        } else {
+          return new Error(new ProtocolError());
+        }
+      } else {
+        return new Error(new ProtocolError());
+      }
+    } else {
+      return new Error(new ProtocolError());
+    }
   } else {
     return new Error(new FrameSizeError());
   }
@@ -521,12 +723,10 @@ function from_bool(bool) {
 }
 
 function encode_priority(priority) {
-  if (priority instanceof Some &&
-  priority[0] instanceof HeaderPriority &&
-  priority[0].stream_dependency instanceof StreamIdentifier) {
+  if (priority instanceof Some) {
     let exclusive = priority[0].exclusive;
-    let dependency = priority[0].stream_dependency[0];
     let weight = priority[0].weight;
+    let dependency = priority[0].stream_dependency[0];
     let exclusive$1 = from_bool(exclusive);
     return toBitArray([
       sizedInt(exclusive$1, 1, true),
@@ -593,10 +793,13 @@ function encode_settings(settings) {
           acc,
           toBitArray([0, 1, sizedInt(value, 32, true)]),
         );
-      } else if (setting instanceof ServerPush && setting[0] instanceof Enabled) {
-        return $bit_array.append(acc, toBitArray([0, 2, 0, 0, 0, 1]));
-      } else if (setting instanceof ServerPush && setting[0] instanceof Disabled) {
-        return $bit_array.append(acc, toBitArray([0, 2, 0, 0, 0, 0]));
+      } else if (setting instanceof ServerPush) {
+        let $ = setting[0];
+        if ($ instanceof Enabled) {
+          return $bit_array.append(acc, toBitArray([0, 2, 0, 0, 0, 1]));
+        } else {
+          return $bit_array.append(acc, toBitArray([0, 2, 0, 0, 0, 0]));
+        }
       } else if (setting instanceof MaxConcurrentStreams) {
         let value = setting[0];
         return $bit_array.append(
@@ -627,7 +830,7 @@ function encode_settings(settings) {
 }
 
 export function encode(frame) {
-  if (frame instanceof Data && frame.identifier instanceof StreamIdentifier) {
+  if (frame instanceof Data) {
     let data = frame.data;
     let end_stream = frame.end_stream;
     let identifier = frame.identifier[0];
@@ -644,12 +847,11 @@ export function encode(frame) {
       sizedInt(identifier, 31, true),
       data,
     ]);
-  } else if (frame instanceof Header &&
-  frame.identifier instanceof StreamIdentifier) {
+  } else if (frame instanceof Header) {
     let data = frame.data;
     let end_stream = frame.end_stream;
-    let identifier = frame.identifier[0];
     let priority = frame.priority;
+    let identifier = frame.identifier[0];
     let $ = encode_data(data);
     let end_header = $[0];
     let data$1 = $[1];
@@ -672,13 +874,11 @@ export function encode(frame) {
       priority_flags,
       data$1,
     ]);
-  } else if (frame instanceof Priority &&
-  frame.identifier instanceof StreamIdentifier &&
-  frame.stream_dependency instanceof StreamIdentifier) {
+  } else if (frame instanceof Priority) {
     let exclusive = frame.exclusive;
-    let identifier = frame.identifier[0];
-    let dependency = frame.stream_dependency[0];
     let weight = frame.weight;
+    let dependency = frame.stream_dependency[0];
+    let identifier = frame.identifier[0];
     let exclusive$1 = from_bool(exclusive);
     return toBitArray([
       0, 0, 5,
@@ -690,8 +890,7 @@ export function encode(frame) {
       sizedInt(dependency, 31, true),
       weight,
     ]);
-  } else if (frame instanceof Termination &&
-  frame.identifier instanceof StreamIdentifier) {
+  } else if (frame instanceof Termination) {
     let error = frame.error;
     let identifier = frame.identifier[0];
     let error_code = encode_error(error);
@@ -718,12 +917,10 @@ export function encode(frame) {
       sizedInt(0, 31, true),
       settings$1,
     ]);
-  } else if (frame instanceof PushPromise &&
-  frame.identifier instanceof StreamIdentifier &&
-  frame.promised_stream_id instanceof StreamIdentifier) {
+  } else if (frame instanceof PushPromise) {
     let data = frame.data;
-    let identifier = frame.identifier[0];
     let promised_identifier = frame.promised_stream_id[0];
+    let identifier = frame.identifier[0];
     let $ = encode_data(data);
     let end_headers = $[0];
     let data$1 = $[1];
@@ -753,8 +950,7 @@ export function encode(frame) {
       sizedInt(0, 31, true),
       data,
     ]);
-  } else if (frame instanceof GoAway &&
-  frame.last_stream_id instanceof StreamIdentifier) {
+  } else if (frame instanceof GoAway) {
     let data = frame.data;
     let error = frame.error;
     let last_stream_id = frame.last_stream_id[0];
@@ -771,8 +967,7 @@ export function encode(frame) {
       sizedInt(error$1, 32, true),
       data,
     ]);
-  } else if (frame instanceof WindowUpdate &&
-  frame.identifier instanceof StreamIdentifier) {
+  } else if (frame instanceof WindowUpdate) {
     let amount = frame.amount;
     let identifier = frame.identifier[0];
     return toBitArray([

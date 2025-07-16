@@ -1,7 +1,7 @@
 -module(lustre@element).
 -compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch]).
-
--export([element/3, keyed/2, namespaced/4, advanced/6, text/1, none/0, fragment/1, map/2, get_root/1, to_string/1, to_document_string/1, to_string_builder/1, to_document_string_builder/1, to_readable_string/1]).
+-define(FILEPATH, "src/lustre/element.gleam").
+-export([element/3, namespaced/4, advanced/6, text/1, none/0, fragment/1, unsafe_raw_html/4, map/2, to_string/1, to_document_string/1, to_string_tree/1, to_document_string_tree/1, to_readable_string/1]).
 
 -if(?OTP_RELEASE >= 27).
 -define(MODULEDOC(Str), -moduledoc(Str)).
@@ -21,161 +21,56 @@
     "\n"
 ).
 
--file("src/lustre/element.gleam", 90).
+-file("src/lustre/element.gleam", 100).
 ?DOC(
     " A general function for constructing any kind of element. In most cases you\n"
     " will want to use the [`lustre/element/html`](./element/html.html) instead but this\n"
     " function is particularly handy when constructing custom elements, either\n"
     " from your own Lustre components or from external JavaScript libraries.\n"
     "\n"
-    " **Note**: Because Lustre is primarily used to create HTML, this function\n"
-    " special-cases the following tags which render as\n"
-    " [void elements](https://developer.mozilla.org/en-US/docs/Glossary/Void_element):\n"
-    "\n"
-    "   - area\n"
-    "   - base\n"
-    "   - br\n"
-    "   - col\n"
-    "   - embed\n"
-    "   - hr\n"
-    "   - img\n"
-    "   - input\n"
-    "   - link\n"
-    "   - meta\n"
-    "   - param\n"
-    "   - source\n"
-    "   - track\n"
-    "   - wbr\n"
-    "\n"
-    "  This will only affect the output of `to_string` and `to_string_builder`!\n"
-    "  If you need to render any of these tags with children, *or* you want to\n"
-    "  render some other tag as self-closing or void, use [`advanced`](#advanced)\n"
-    "  to construct the element instead.\n"
+    " > **Note**: Because Lustre is primarily used to create HTML, this function\n"
+    " > special-cases the following tags which render as\n"
+    " > [void elements](https://developer.mozilla.org/en-US/docs/Glossary/Void_element):\n"
+    " >\n"
+    " >   - area\n"
+    " >   - base\n"
+    " >   - br\n"
+    " >   - col\n"
+    " >   - embed\n"
+    " >   - hr\n"
+    " >   - img\n"
+    " >   - input\n"
+    " >   - link\n"
+    " >   - meta\n"
+    " >   - param\n"
+    " >   - source\n"
+    " >   - track\n"
+    " >   - wbr\n"
+    " >\n"
+    " > This will only affect the output of `to_string` and `to_string_builder`!\n"
+    " > If you need to render any of these tags with children, *or* you want to\n"
+    " > render some other tag as self-closing or void, use [`advanced`](#advanced)\n"
+    " > to construct the element instead.\n"
 ).
 -spec element(
     binary(),
-    list(lustre@internals@vdom:attribute(OXC)),
-    list(lustre@internals@vdom:element(OXC))
-) -> lustre@internals@vdom:element(OXC).
-element(Tag, Attrs, Children) ->
-    case Tag of
-        <<"area"/utf8>> ->
-            {element, <<""/utf8>>, <<""/utf8>>, Tag, Attrs, [], false, true};
-
-        <<"base"/utf8>> ->
-            {element, <<""/utf8>>, <<""/utf8>>, Tag, Attrs, [], false, true};
-
-        <<"br"/utf8>> ->
-            {element, <<""/utf8>>, <<""/utf8>>, Tag, Attrs, [], false, true};
-
-        <<"col"/utf8>> ->
-            {element, <<""/utf8>>, <<""/utf8>>, Tag, Attrs, [], false, true};
-
-        <<"embed"/utf8>> ->
-            {element, <<""/utf8>>, <<""/utf8>>, Tag, Attrs, [], false, true};
-
-        <<"hr"/utf8>> ->
-            {element, <<""/utf8>>, <<""/utf8>>, Tag, Attrs, [], false, true};
-
-        <<"img"/utf8>> ->
-            {element, <<""/utf8>>, <<""/utf8>>, Tag, Attrs, [], false, true};
-
-        <<"input"/utf8>> ->
-            {element, <<""/utf8>>, <<""/utf8>>, Tag, Attrs, [], false, true};
-
-        <<"link"/utf8>> ->
-            {element, <<""/utf8>>, <<""/utf8>>, Tag, Attrs, [], false, true};
-
-        <<"meta"/utf8>> ->
-            {element, <<""/utf8>>, <<""/utf8>>, Tag, Attrs, [], false, true};
-
-        <<"param"/utf8>> ->
-            {element, <<""/utf8>>, <<""/utf8>>, Tag, Attrs, [], false, true};
-
-        <<"source"/utf8>> ->
-            {element, <<""/utf8>>, <<""/utf8>>, Tag, Attrs, [], false, true};
-
-        <<"track"/utf8>> ->
-            {element, <<""/utf8>>, <<""/utf8>>, Tag, Attrs, [], false, true};
-
-        <<"wbr"/utf8>> ->
-            {element, <<""/utf8>>, <<""/utf8>>, Tag, Attrs, [], false, true};
-
-        _ ->
-            {element,
-                <<""/utf8>>,
-                <<""/utf8>>,
-                Tag,
-                Attrs,
-                Children,
-                false,
-                false}
-    end.
-
--file("src/lustre/element.gleam", 174).
--spec do_keyed(lustre@internals@vdom:element(OXP), binary()) -> lustre@internals@vdom:element(OXP).
-do_keyed(El, Key) ->
-    case El of
-        {element, _, Namespace, Tag, Attrs, Children, Self_closing, Void} ->
-            {element, Key, Namespace, Tag, Attrs, Children, Self_closing, Void};
-
-        {map, Subtree} ->
-            {map, fun() -> do_keyed(Subtree(), Key) end};
-
-        _ ->
-            El
-    end.
-
--file("src/lustre/element.gleam", 164).
-?DOC(
-    " Keying elements is an optimisation that helps the runtime reuse existing DOM\n"
-    " nodes in cases where children are reordered or removed from a list. Maybe you\n"
-    " have a list of elements that can be filtered or sorted in some way, or additions\n"
-    " to the front are common. In these cases, keying elements can help Lustre avoid\n"
-    " unecessary DOM manipulations by pairing the DOM nodes with the elements in the\n"
-    " list that share the same key.\n"
-    "\n"
-    " You can easily take an element from `lustre/element/html` and key its children\n"
-    " by making use of Gleam's [function capturing syntax](https://tour.gleam.run/functions/function-captures/):\n"
-    "\n"
-    " ```gleam\n"
-    " import gleam/list\n"
-    " import lustre/element\n"
-    " import lustre/element/html\n"
-    "\n"
-    " fn example() {\n"
-    "   element.keyed(html.ul([], _), {\n"
-    "     use item <- list.map(todo_list)\n"
-    "     let child = html.li([], [view_item(item)])\n"
-    "\n"
-    "     #(item.id, child)\n"
-    "   })\n"
-    " }\n"
-    " ```\n"
-    "\n"
-    " **Note**: The key must be unique within the list of children, but it doesn't\n"
-    " have to be unique across the whole application. It's fine to use the same key\n"
-    " in different lists. Lustre will display a warning in the browser console when\n"
-    " it detects duplicate keys in a list.\n"
-).
--spec keyed(
-    fun((list(lustre@internals@vdom:element(OXI))) -> lustre@internals@vdom:element(OXI)),
-    list({binary(), lustre@internals@vdom:element(OXI)})
-) -> lustre@internals@vdom:element(OXI).
-keyed(El, Children) ->
-    El(
-        begin
-            gleam@list:map(
-                Children,
-                fun(_use0) ->
-                    {Key, Child} = _use0,
-                    do_keyed(Child, Key)
-                end
-            )
-        end
+    list(lustre@vdom@vattr:attribute(OQA)),
+    list(lustre@vdom@vnode:element(OQA))
+) -> lustre@vdom@vnode:element(OQA).
+element(Tag, Attributes, Children) ->
+    lustre@vdom@vnode:element(
+        <<""/utf8>>,
+        fun gleam@function:identity/1,
+        <<""/utf8>>,
+        Tag,
+        Attributes,
+        Children,
+        gleam@dict:new(),
+        false,
+        false
     ).
 
--file("src/lustre/element.gleam", 195).
+-file("src/lustre/element.gleam", 121).
 ?DOC(
     " A function for constructing elements in a specific XML namespace. This can\n"
     " be used to construct SVG or MathML elements, for example.\n"
@@ -183,13 +78,23 @@ keyed(El, Children) ->
 -spec namespaced(
     binary(),
     binary(),
-    list(lustre@internals@vdom:attribute(OXS)),
-    list(lustre@internals@vdom:element(OXS))
-) -> lustre@internals@vdom:element(OXS).
-namespaced(Namespace, Tag, Attrs, Children) ->
-    {element, <<""/utf8>>, Namespace, Tag, Attrs, Children, false, false}.
+    list(lustre@vdom@vattr:attribute(OQG)),
+    list(lustre@vdom@vnode:element(OQG))
+) -> lustre@vdom@vnode:element(OQG).
+namespaced(Namespace, Tag, Attributes, Children) ->
+    lustre@vdom@vnode:element(
+        <<""/utf8>>,
+        fun gleam@function:identity/1,
+        Namespace,
+        Tag,
+        Attributes,
+        Children,
+        gleam@dict:new(),
+        false,
+        false
+    ).
 
--file("src/lustre/element.gleam", 217).
+-file("src/lustre/element.gleam", 145).
 ?DOC(
     " A function for constructing elements with more control over how the element\n"
     " is rendered when converted to a string. This is necessary because some HTML,\n"
@@ -199,51 +104,108 @@ namespaced(Namespace, Tag, Attrs, Children) ->
 -spec advanced(
     binary(),
     binary(),
-    list(lustre@internals@vdom:attribute(OXY)),
-    list(lustre@internals@vdom:element(OXY)),
+    list(lustre@vdom@vattr:attribute(OQM)),
+    list(lustre@vdom@vnode:element(OQM)),
     boolean(),
     boolean()
-) -> lustre@internals@vdom:element(OXY).
-advanced(Namespace, Tag, Attrs, Children, Self_closing, Void) ->
-    {element, <<""/utf8>>, Namespace, Tag, Attrs, Children, Self_closing, Void}.
+) -> lustre@vdom@vnode:element(OQM).
+advanced(Namespace, Tag, Attributes, Children, Self_closing, Void) ->
+    lustre@vdom@vnode:element(
+        <<""/utf8>>,
+        fun gleam@function:identity/1,
+        Namespace,
+        Tag,
+        Attributes,
+        Children,
+        gleam@dict:new(),
+        Self_closing,
+        Void
+    ).
 
--file("src/lustre/element.gleam", 241).
+-file("src/lustre/element.gleam", 171).
 ?DOC(
     " A function for turning a Gleam string into a text node. Gleam doesn't have\n"
     " union types like some other languages you may be familiar with, like TypeScript.\n"
     " Instead, we need a way to take a `String` and turn it into an `Element` somehow:\n"
     " this function is exactly that!\n"
 ).
--spec text(binary()) -> lustre@internals@vdom:element(any()).
+-spec text(binary()) -> lustre@vdom@vnode:element(any()).
 text(Content) ->
-    {text, Content}.
+    lustre@vdom@vnode:text(<<""/utf8>>, fun gleam@function:identity/1, Content).
 
--file("src/lustre/element.gleam", 249).
+-file("src/lustre/element.gleam", 179).
 ?DOC(
     " A function for rendering nothing. This is mostly useful for conditional\n"
     " rendering, where you might want to render something only if a certain\n"
     " condition is met.\n"
 ).
--spec none() -> lustre@internals@vdom:element(any()).
+-spec none() -> lustre@vdom@vnode:element(any()).
 none() ->
-    {text, <<""/utf8>>}.
-
--file("src/lustre/element.gleam", 258).
-?DOC(
-    " A function for wrapping elements to be rendered within a parent container without\n"
-    " specififying the container on definition. Allows the treatment of List(Element(msg))\n"
-    " as if it were Element(msg). Useful when generating a list of elements from data but\n"
-    " used downstream.\n"
-).
--spec fragment(list(lustre@internals@vdom:element(OYI))) -> lustre@internals@vdom:element(OYI).
-fragment(Elements) ->
-    element(
-        <<"lustre-fragment"/utf8>>,
-        [lustre@attribute:style([{<<"display"/utf8>>, <<"contents"/utf8>>}])],
-        Elements
+    lustre@vdom@vnode:text(
+        <<""/utf8>>,
+        fun gleam@function:identity/1,
+        <<""/utf8>>
     ).
 
--file("src/lustre/element.gleam", 275).
+-file("src/lustre/element.gleam", 198).
+-spec count_fragment_children(list(lustre@vdom@vnode:element(any())), integer()) -> integer().
+count_fragment_children(Children, Count) ->
+    case Children of
+        [Child | Rest] ->
+            count_fragment_children(
+                Rest,
+                Count + lustre@vdom@vnode:advance(Child)
+            );
+
+        [] ->
+            Count
+    end.
+
+-file("src/lustre/element.gleam", 188).
+?DOC(
+    " A function for constructing a wrapper element with no tag name. This is\n"
+    " useful for wrapping a list of elements together without adding an extra\n"
+    " `<div>` or other container element, or returning multiple elements in places\n"
+    " where only one `Element` is expected.\n"
+).
+-spec fragment(list(lustre@vdom@vnode:element(OQW))) -> lustre@vdom@vnode:element(OQW).
+fragment(Children) ->
+    lustre@vdom@vnode:fragment(
+        <<""/utf8>>,
+        fun gleam@function:identity/1,
+        Children,
+        gleam@dict:new(),
+        count_fragment_children(Children, 0)
+    ).
+
+-file("src/lustre/element.gleam", 216).
+?DOC(
+    " A function for constructing a wrapper element with custom raw HTML as its\n"
+    " content. Lustre will render the provided HTML verbatim, and will not touch\n"
+    " its children except when replacing the entire inner html on changes.\n"
+    "\n"
+    " > **Note:** The provided HTML will not be escaped automatically and may expose\n"
+    " > your applications to XSS attacks! Make sure you absolutely trust the HTML you\n"
+    " > pass to this function. In particular, never use this to display un-sanitised\n"
+    " > user HTML!\n"
+).
+-spec unsafe_raw_html(
+    binary(),
+    binary(),
+    list(lustre@vdom@vattr:attribute(ORD)),
+    binary()
+) -> lustre@vdom@vnode:element(ORD).
+unsafe_raw_html(Namespace, Tag, Attributes, Inner_html) ->
+    lustre@vdom@vnode:unsafe_inner_html(
+        <<""/utf8>>,
+        fun gleam@function:identity/1,
+        Namespace,
+        Tag,
+        Attributes,
+        Inner_html
+    ).
+
+-file("src/lustre/element.gleam", 241).
 ?DOC(
     " The `Element` type is parameterised by the type of messages it can produce\n"
     " from events. Sometimes you might end up with a fragment of HTML from another\n"
@@ -252,46 +214,55 @@ fragment(Elements) ->
     "\n"
     " Think of it like `list.map` or `result.map` but for HTML events!\n"
 ).
--spec map(lustre@internals@vdom:element(OYM), fun((OYM) -> OYO)) -> lustre@internals@vdom:element(OYO).
+-spec map(lustre@vdom@vnode:element(ORH), fun((ORH) -> ORJ)) -> lustre@vdom@vnode:element(ORJ).
 map(Element, F) ->
+    Mapper = gleam@function:identity(
+        lustre@vdom@events:compose_mapper(
+            gleam@function:identity(F),
+            erlang:element(4, Element)
+        )
+    ),
     case Element of
-        {text, Content} ->
-            {text, Content};
+        {fragment, _, _, _, Children, Keyed_children, _} ->
+            _record = Element,
+            {fragment,
+                erlang:element(2, _record),
+                erlang:element(3, _record),
+                Mapper,
+                gleam@function:identity(Children),
+                gleam@function:identity(Keyed_children),
+                erlang:element(7, _record)};
 
-        {map, Subtree} ->
-            {map, fun() -> map(Subtree(), F) end};
+        {element, _, _, _, _, _, Attributes, Children@1, Keyed_children@1, _, _} ->
+            _record@1 = Element,
+            {element,
+                erlang:element(2, _record@1),
+                erlang:element(3, _record@1),
+                Mapper,
+                erlang:element(5, _record@1),
+                erlang:element(6, _record@1),
+                gleam@function:identity(Attributes),
+                gleam@function:identity(Children@1),
+                gleam@function:identity(Keyed_children@1),
+                erlang:element(10, _record@1),
+                erlang:element(11, _record@1)};
 
-        {element, Key, Namespace, Tag, Attrs, Children, Self_closing, Void} ->
-            {map,
-                fun() ->
-                    {element,
-                        Key,
-                        Namespace,
-                        Tag,
-                        gleam@list:map(
-                            Attrs,
-                            fun(_capture) ->
-                                lustre@attribute:map(_capture, F)
-                            end
-                        ),
-                        gleam@list:map(
-                            Children,
-                            fun(_capture@1) -> map(_capture@1, F) end
-                        ),
-                        Self_closing,
-                        Void}
-                end}
+        {unsafe_inner_html, _, _, _, _, _, Attributes@1, _} ->
+            _record@2 = Element,
+            {unsafe_inner_html,
+                erlang:element(2, _record@2),
+                erlang:element(3, _record@2),
+                Mapper,
+                erlang:element(5, _record@2),
+                erlang:element(6, _record@2),
+                gleam@function:identity(Attributes@1),
+                erlang:element(8, _record@2)};
+
+        {text, _, _, _, _} ->
+            gleam@function:identity(Element)
     end.
 
--file("src/lustre/element.gleam", 297).
-?DOC(false).
--spec get_root(fun((fun((OYQ) -> nil), gleam@dynamic:dynamic_()) -> nil)) -> lustre@effect:effect(OYQ).
-get_root(Effect) ->
-    lustre@effect:custom(
-        fun(Dispatch, _, _, Root) -> Effect(Dispatch, Root) end
-    ).
-
--file("src/lustre/element.gleam", 311).
+-file("src/lustre/element.gleam", 281).
 ?DOC(
     " Convert a Lustre `Element` to a string. This is _not_ pretty-printed, so\n"
     " there are no newlines or indentation. If you need to pretty-print an element,\n"
@@ -299,11 +270,11 @@ get_root(Effect) ->
     " [open an issue](https://github.com/lustre-labs/lustre/issues/new) with your\n"
     " use case and we'll see what we can do!\n"
 ).
--spec to_string(lustre@internals@vdom:element(any())) -> binary().
+-spec to_string(lustre@vdom@vnode:element(any())) -> binary().
 to_string(Element) ->
-    lustre@internals@vdom:element_to_string(Element).
+    lustre@vdom@vnode:to_string(Element).
 
--file("src/lustre/element.gleam", 322).
+-file("src/lustre/element.gleam", 292).
 ?DOC(
     " Converts an element to a string like [`to_string`](#to_string), but prepends\n"
     " a `<!doctype html>` declaration to the string. This is useful for rendering\n"
@@ -312,20 +283,17 @@ to_string(Element) ->
     " If the provided element is not an `html` element, it will be wrapped in both\n"
     " a `html` and `body` element.\n"
 ).
--spec to_document_string(lustre@internals@vdom:element(any())) -> binary().
+-spec to_document_string(lustre@vdom@vnode:element(any())) -> binary().
 to_document_string(El) ->
-    _pipe = lustre@internals@vdom:element_to_string(case El of
-            {element, _, _, <<"html"/utf8>>, _, _, _, _} ->
+    _pipe = lustre@vdom@vnode:to_string(case El of
+            {element, _, _, _, _, <<"html"/utf8>>, _, _, _, _, _} ->
                 El;
 
-            {element, _, _, <<"head"/utf8>>, _, _, _, _} ->
+            {element, _, _, _, _, <<"head"/utf8>>, _, _, _, _, _} ->
                 element(<<"html"/utf8>>, [], [El]);
 
-            {element, _, _, <<"body"/utf8>>, _, _, _, _} ->
+            {element, _, _, _, _, <<"body"/utf8>>, _, _, _, _, _} ->
                 element(<<"html"/utf8>>, [], [El]);
-
-            {map, Subtree} ->
-                Subtree();
 
             _ ->
                 element(
@@ -336,7 +304,7 @@ to_document_string(El) ->
         end),
     gleam@string:append(<<"<!doctype html>\n"/utf8>>, _pipe).
 
--file("src/lustre/element.gleam", 340).
+-file("src/lustre/element.gleam", 308).
 ?DOC(
     " Convert a Lustre `Element` to a `StringTree`. This is _not_ pretty-printed,\n"
     " so there are no newlines or indentation. If you need to pretty-print an element,\n"
@@ -344,11 +312,11 @@ to_document_string(El) ->
     " [open an issue](https://github.com/lustre-labs/lustre/issues/new) with your\n"
     " use case and we'll see what we can do!\n"
 ).
--spec to_string_builder(lustre@internals@vdom:element(any())) -> gleam@string_tree:string_tree().
-to_string_builder(Element) ->
-    lustre@internals@vdom:element_to_string_builder(Element).
+-spec to_string_tree(lustre@vdom@vnode:element(any())) -> gleam@string_tree:string_tree().
+to_string_tree(Element) ->
+    lustre@vdom@vnode:to_string_tree(Element).
 
--file("src/lustre/element.gleam", 351).
+-file("src/lustre/element.gleam", 319).
 ?DOC(
     " Converts an element to a `StringTree` like [`to_string_builder`](#to_string_builder),\n"
     " but prepends a `<!doctype html>` declaration. This is useful for rendering\n"
@@ -357,20 +325,17 @@ to_string_builder(Element) ->
     " If the provided element is not an `html` element, it will be wrapped in both\n"
     " a `html` and `body` element.\n"
 ).
--spec to_document_string_builder(lustre@internals@vdom:element(any())) -> gleam@string_tree:string_tree().
-to_document_string_builder(El) ->
-    _pipe = lustre@internals@vdom:element_to_string_builder(case El of
-            {element, _, _, <<"html"/utf8>>, _, _, _, _} ->
+-spec to_document_string_tree(lustre@vdom@vnode:element(any())) -> gleam@string_tree:string_tree().
+to_document_string_tree(El) ->
+    _pipe = lustre@vdom@vnode:to_string_tree(case El of
+            {element, _, _, _, _, <<"html"/utf8>>, _, _, _, _, _} ->
                 El;
 
-            {element, _, _, <<"head"/utf8>>, _, _, _, _} ->
+            {element, _, _, _, _, <<"head"/utf8>>, _, _, _, _, _} ->
                 element(<<"html"/utf8>>, [], [El]);
 
-            {element, _, _, <<"body"/utf8>>, _, _, _, _} ->
+            {element, _, _, _, _, <<"body"/utf8>>, _, _, _, _, _} ->
                 element(<<"html"/utf8>>, [], [El]);
-
-            {map, Subtree} ->
-                Subtree();
 
             _ ->
                 element(
@@ -381,7 +346,7 @@ to_document_string_builder(El) ->
         end),
     gleam@string_tree:prepend(_pipe, <<"<!doctype html>\n"/utf8>>).
 
--file("src/lustre/element.gleam", 387).
+-file("src/lustre/element.gleam", 353).
 ?DOC(
     " Converts a Lustre `Element` to a human-readable string by inserting new lines\n"
     " and indentation where appropriate. This is useful for debugging and testing,\n"
@@ -407,6 +372,6 @@ to_document_string_builder(El) ->
     " </header>\n"
     " ```\n"
 ).
--spec to_readable_string(lustre@internals@vdom:element(any())) -> binary().
+-spec to_readable_string(lustre@vdom@vnode:element(any())) -> binary().
 to_readable_string(El) ->
-    lustre@internals@vdom:element_to_snapshot(El).
+    lustre@vdom@vnode:to_snapshot(El).

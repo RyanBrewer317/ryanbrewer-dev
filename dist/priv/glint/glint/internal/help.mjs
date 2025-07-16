@@ -6,20 +6,26 @@ import * as $list from "../../../gleam_stdlib/gleam/list.mjs";
 import * as $option from "../../../gleam_stdlib/gleam/option.mjs";
 import { None, Some } from "../../../gleam_stdlib/gleam/option.mjs";
 import * as $string from "../../../gleam_stdlib/gleam/string.mjs";
-import { toList, prepend as listPrepend, CustomType as $CustomType, isEqual } from "../../gleam.mjs";
+import {
+  toList,
+  Empty as $Empty,
+  prepend as listPrepend,
+  CustomType as $CustomType,
+  isEqual,
+} from "../../gleam.mjs";
 import * as $utils from "../../glint/internal/utils.mjs";
 
 export class MinArgs extends $CustomType {
-  constructor(x0) {
+  constructor($0) {
     super();
-    this[0] = x0;
+    this[0] = $0;
   }
 }
 
 export class EqArgs extends $CustomType {
-  constructor(x0) {
+  constructor($0) {
     super();
-    this[0] = x0;
+    this[0] = $0;
   }
 }
 
@@ -77,16 +83,19 @@ function heading_style(heading, colour) {
 }
 
 function args_count_to_usage_string(count) {
-  if (count instanceof EqArgs && count[0] === 0) {
-    return "";
-  } else if (count instanceof EqArgs && count[0] === 1) {
-    return "[ 1 argument ]";
-  } else if (count instanceof EqArgs) {
-    let n = count[0];
-    return ("[ " + $int.to_string(n)) + " arguments ]";
-  } else {
+  if (count instanceof MinArgs) {
     let n = count[0];
     return ("[ " + $int.to_string(n)) + " or more arguments ]";
+  } else {
+    let $ = count[0];
+    if ($ === 0) {
+      return "";
+    } else if ($ === 1) {
+      return "[ 1 argument ]";
+    } else {
+      let n = $;
+      return ("[ " + $int.to_string(n)) + " arguments ]";
+    }
   }
 }
 
@@ -115,11 +124,11 @@ function flags_help_to_usage_string(config, help) {
     isEqual(help, toList([])),
     "",
     () => {
-      let content = (() => {
-        let _pipe = help;
-        let _pipe$1 = flags_help_to_usage_strings(_pipe, config);
-        return $string.join(_pipe$1, " ");
-      })();
+      let _block;
+      let _pipe = help;
+      let _pipe$1 = flags_help_to_usage_strings(_pipe, config);
+      _block = $string.join(_pipe$1, " ");
+      let content = _block;
       return ("[ " + content) + " ]";
     },
   );
@@ -127,25 +136,28 @@ function flags_help_to_usage_string(config, help) {
 
 function format_content(left, right, left_length, config) {
   let left_formatted = $string.pad_end(left, left_length, " ");
-  let lines = (() => {
-    let _pipe = config.max_output_width;
-    let _pipe$1 = $int.subtract(_pipe, left_length + config.indent_width);
-    let _pipe$2 = $int.max(_pipe$1, config.min_first_column_width);
-    return ((_capture) => { return $utils.wordwrap(right, _capture); })(_pipe$2);
-  })();
+  let _block;
+  let _pipe = config.max_output_width;
+  let _pipe$1 = $int.subtract(_pipe, left_length + config.indent_width);
+  let _pipe$2 = $int.max(_pipe$1, config.min_first_column_width);
+  _block = ((_capture) => { return $utils.wordwrap(right, _capture); })(_pipe$2);
+  let lines = _block;
   let right_formatted = $string.join(
     lines,
     "\n" + $string.repeat(" ", config.indent_width + left_length),
   );
-  let wrapped = (() => {
-    if (lines.hasLength(0)) {
-      return false;
-    } else if (lines.hasLength(1)) {
-      return false;
+  let _block$1;
+  if (lines instanceof $Empty) {
+    _block$1 = false;
+  } else {
+    let $ = lines.tail;
+    if ($ instanceof $Empty) {
+      _block$1 = false;
     } else {
-      return true;
+      _block$1 = true;
     }
-  })();
+  }
+  let wrapped = _block$1;
   return [
     (("\n" + $string.repeat(" ", config.indent_width)) + left_formatted) + right_formatted,
     wrapped,
@@ -169,13 +181,13 @@ function to_spaced_indented_string(data, f, left_length, config) {
   );
   let content = $[0];
   let wrapped = $[1];
-  let joiner = (() => {
-    if (wrapped) {
-      return "\n";
-    } else {
-      return "";
-    }
-  })();
+  let _block;
+  if (wrapped) {
+    _block = "\n";
+  } else {
+    _block = "";
+  }
+  let joiner = _block;
   let _pipe = content;
   let _pipe$1 = $list.sort(_pipe, $string.compare);
   return $string.join(_pipe$1, joiner);
@@ -193,24 +205,24 @@ function flags_help_to_string(help, config) {
     isEqual(help, toList([])),
     "",
     () => {
-      let longest_flag_length = (() => {
-        let _pipe = help;
-        let _pipe$1 = $list.map(
-          _pipe,
-          (_capture) => { return flag_help_to_string(_capture, config); },
-        );
-        let _pipe$2 = $utils.max_string_length(_pipe$1);
-        return $int.max(_pipe$2, config.min_first_column_width);
-      })();
-      let heading = (() => {
-        let $ = config.flags_colour;
-        if ($ instanceof None) {
-          return flags_heading;
-        } else {
-          let pretty = $[0];
-          return heading_style(flags_heading, pretty);
-        }
-      })();
+      let _block;
+      let _pipe = help;
+      let _pipe$1 = $list.map(
+        _pipe,
+        (_capture) => { return flag_help_to_string(_capture, config); },
+      );
+      let _pipe$2 = $utils.max_string_length(_pipe$1);
+      _block = $int.max(_pipe$2, config.min_first_column_width);
+      let longest_flag_length = _block;
+      let _block$1;
+      let $ = config.flags_colour;
+      if ($ instanceof Some) {
+        let pretty = $[0];
+        _block$1 = heading_style(flags_heading, pretty);
+      } else {
+        _block$1 = flags_heading;
+      }
+      let heading = _block$1;
       let content = to_spaced_indented_string(
         listPrepend(help_flag, help),
         (help) => {
@@ -231,21 +243,21 @@ function subcommands_help_to_string(help, config) {
     isEqual(help, toList([])),
     "",
     () => {
-      let longest_subcommand_length = (() => {
-        let _pipe = help;
-        let _pipe$1 = $list.map(_pipe, (h) => { return h.name; });
-        let _pipe$2 = $utils.max_string_length(_pipe$1);
-        return $int.max(_pipe$2, config.min_first_column_width);
-      })();
-      let heading = (() => {
-        let $ = config.subcommands_colour;
-        if ($ instanceof None) {
-          return subcommands_heading;
-        } else {
-          let pretty = $[0];
-          return heading_style(subcommands_heading, pretty);
-        }
-      })();
+      let _block;
+      let _pipe = help;
+      let _pipe$1 = $list.map(_pipe, (h) => { return h.name; });
+      let _pipe$2 = $utils.max_string_length(_pipe$1);
+      _block = $int.max(_pipe$2, config.min_first_column_width);
+      let longest_subcommand_length = _block;
+      let _block$1;
+      let $ = config.subcommands_colour;
+      if ($ instanceof Some) {
+        let pretty = $[0];
+        _block$1 = heading_style(subcommands_heading, pretty);
+      } else {
+        _block$1 = subcommands_heading;
+      }
+      let heading = _block$1;
       let content = to_spaced_indented_string(
         help,
         (help) => { return [help.name, help.description]; },
@@ -260,89 +272,91 @@ function subcommands_help_to_string(help, config) {
 const usage_heading = "USAGE:";
 
 function command_help_to_usage_string(help, config) {
-  let app_name = (() => {
-    let $ = config.name;
-    if ($ instanceof Some && (config.as_module)) {
+  let _block;
+  let $ = config.name;
+  if ($ instanceof Some) {
+    if (config.as_module) {
       let name = $[0];
-      return "gleam run -m " + name;
-    } else if ($ instanceof Some) {
-      let name = $[0];
-      return name;
+      _block = "gleam run -m " + name;
     } else {
-      return "gleam run";
+      let name = $[0];
+      _block = name;
     }
-  })();
+  } else {
+    _block = "gleam run";
+  }
+  let app_name = _block;
   let flags = flags_help_to_usage_string(config, help.flags);
-  let subcommands = (() => {
-    let $ = (() => {
-      let _pipe = $list.map(help.subcommands, (sc) => { return sc.name; });
-      let _pipe$1 = $list.sort(_pipe, $string.compare);
-      return $string.join(_pipe$1, " | ");
-    })();
-    if ($ === "") {
-      return "";
-    } else {
-      let subcommands = $;
-      return ("( " + subcommands) + " )";
-    }
+  let _block$1;
+  let $1 = (() => {
+    let _pipe = $list.map(help.subcommands, (sc) => { return sc.name; });
+    let _pipe$1 = $list.sort(_pipe, $string.compare);
+    return $string.join(_pipe$1, " | ");
   })();
-  let named_args = (() => {
-    let _pipe = help.named_args;
-    let _pipe$1 = $list.map(_pipe, (s) => { return ("<" + s) + ">"; });
-    return $string.join(_pipe$1, " ");
-  })();
-  let unnamed_args = (() => {
-    let _pipe = $option.map(help.unnamed_args, args_count_to_usage_string);
-    return $option.unwrap(_pipe, "[ ARGS ]");
-  })();
+  if ($1 === "") {
+    _block$1 = "";
+  } else {
+    let subcommands = $1;
+    _block$1 = ("( " + subcommands) + " )";
+  }
+  let subcommands = _block$1;
+  let _block$2;
+  let _pipe = help.named_args;
+  let _pipe$1 = $list.map(_pipe, (s) => { return ("<" + s) + ">"; });
+  _block$2 = $string.join(_pipe$1, " ");
+  let named_args = _block$2;
+  let _block$3;
+  let _pipe$2 = $option.map(help.unnamed_args, args_count_to_usage_string);
+  _block$3 = $option.unwrap(_pipe$2, "[ ARGS ]");
+  let unnamed_args = _block$3;
   let max_usage_width = config.max_output_width - config.indent_width;
-  let content = (() => {
-    let _pipe = toList([
-      app_name,
-      help.meta.name,
-      subcommands,
-      named_args,
-      unnamed_args,
-      flags,
-    ]);
-    let _pipe$1 = $list.filter(_pipe, (s) => { return s !== ""; });
-    let _pipe$2 = $string.join(_pipe$1, " ");
-    let _pipe$3 = $utils.wordwrap(_pipe$2, max_usage_width);
-    return $string.join(
-      _pipe$3,
-      "\n" + $string.repeat(" ", config.indent_width * 2),
-    );
-  })();
+  let _block$4;
+  let _pipe$3 = toList([
+    app_name,
+    help.meta.name,
+    subcommands,
+    named_args,
+    unnamed_args,
+    flags,
+  ]);
+  let _pipe$4 = $list.filter(_pipe$3, (s) => { return s !== ""; });
+  let _pipe$5 = $string.join(_pipe$4, " ");
+  let _pipe$6 = $utils.wordwrap(_pipe$5, max_usage_width);
+  _block$4 = $string.join(
+    _pipe$6,
+    "\n" + $string.repeat(" ", config.indent_width * 2),
+  );
+  let content = _block$4;
   return (((() => {
-    let $ = config.usage_colour;
-    if ($ instanceof None) {
-      return usage_heading;
-    } else {
-      let pretty = $[0];
+    let $2 = config.usage_colour;
+    if ($2 instanceof Some) {
+      let pretty = $2[0];
       return heading_style(usage_heading, pretty);
+    } else {
+      return usage_heading;
     }
   })() + "\n") + $string.repeat(" ", config.indent_width)) + content;
 }
 
 export function command_help_to_string(help, config) {
-  let command = (() => {
-    let $ = help.meta.name;
-    if ($ === "") {
-      return "";
-    } else {
-      let s = $;
-      return "Command: " + s;
-    }
-  })();
-  let command_description = (() => {
-    let _pipe = help.meta.description;
-    let _pipe$1 = $utils.wordwrap(_pipe, config.max_output_width);
-    return $string.join(_pipe$1, "\n");
-  })();
-  let _pipe = toList([
+  let _block;
+  let $ = help.meta.name;
+  if ($ === "") {
+    _block = "";
+  } else {
+    let s = $;
+    _block = "Command: " + s;
+  }
+  let command = _block;
+  let _block$1;
+  let _pipe = help.meta.description;
+  let _pipe$1 = $utils.wordwrap(_pipe, config.max_output_width);
+  _block$1 = $string.join(_pipe$1, "\n");
+  let command_description = _block$1;
+  let _pipe$2 = toList([
     (() => {
-      let _pipe = config.description;
-      return $option.unwrap(_pipe, "");
+      let _pipe$2 = config.description;
+      return $option.unwrap(_pipe$2, "");
     })(),
     command,
     command_description,
@@ -350,6 +364,6 @@ export function command_help_to_string(help, config) {
     flags_help_to_string(help.flags, config),
     subcommands_help_to_string(help.subcommands, config),
   ]);
-  let _pipe$1 = $list.filter(_pipe, (s) => { return s !== ""; });
-  return $string.join(_pipe$1, "\n\n");
+  let _pipe$3 = $list.filter(_pipe$2, (s) => { return s !== ""; });
+  return $string.join(_pipe$3, "\n\n");
 }

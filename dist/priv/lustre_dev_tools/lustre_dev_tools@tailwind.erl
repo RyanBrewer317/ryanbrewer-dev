@@ -1,6 +1,6 @@
 -module(lustre_dev_tools@tailwind).
 -compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch]).
-
+-define(FILEPATH, "src/lustre_dev_tools/tailwind.gleam").
 -export([setup/2]).
 
 -if(?OTP_RELEASE >= 27).
@@ -15,106 +15,245 @@
 
 -file("src/lustre_dev_tools/tailwind.gleam", 62).
 ?DOC(false).
+-spec detect_legacy_config() -> lustre_dev_tools@cli:cli(boolean()).
+detect_legacy_config() ->
+    Root = lustre_dev_tools@project:root(),
+    lustre_dev_tools@cli:'try'(
+        lustre_dev_tools@project:config(),
+        fun(Config) ->
+            Old_config_path = filepath:join(Root, <<"tailwind.config.js"/utf8>>),
+            case simplifile_erl:is_file(Old_config_path) of
+                {ok, true} ->
+                    lustre_dev_tools@cli:notify(
+                        gleam_community@ansi:bold(
+                            <<"\nLegacy Tailwind config detected:"/utf8>>
+                        ),
+                        fun() ->
+                            lustre_dev_tools@cli:notify(
+                                begin
+                                    _pipe = <<"
+Lustre Dev Tools now only supports Tailwind CSS v4.0 and above. If you are not
+ready to migrate your config to the new format, you can continue using JavaScript
+config by including the `@config` directive in your `src/{app_name}.css` file.
+
+See: https://tailwindcss.com/docs/upgrade-guide#using-a-javascript-config-file
+
+You can supress this message by removing `tailwind.config.js` from your project.
+"/utf8>>,
+                                    _pipe@1 = gleam@string:trim(_pipe),
+                                    gleam@string:replace(
+                                        _pipe@1,
+                                        <<"{app_name}"/utf8>>,
+                                        erlang:element(2, Config)
+                                    )
+                                end,
+                                fun() -> lustre_dev_tools@cli:return(true) end
+                            )
+                        end
+                    );
+
+                {ok, false} ->
+                    lustre_dev_tools@cli:return(false);
+
+                {error, _} ->
+                    lustre_dev_tools@cli:return(false)
+            end
+        end
+    ).
+
+-file("src/lustre_dev_tools/tailwind.gleam", 127).
+?DOC(false).
 -spec display_next_steps() -> lustre_dev_tools@cli:cli(nil).
 display_next_steps() ->
-    lustre_dev_tools@cli:notify(
-        gleam_community@ansi:bold(<<"\nNext Steps:\n"/utf8>>),
-        fun() ->
+    lustre_dev_tools@cli:'try'(
+        lustre_dev_tools@project:config(),
+        fun(Config) ->
             lustre_dev_tools@cli:notify(
-                <<"1. Be sure to update your root `index.html` file to include \n   `<link rel='stylesheet' type='text/css' href='./priv/static/your_app.css' />`"/utf8>>,
-                fun() -> lustre_dev_tools@cli:return(nil) end
+                gleam_community@ansi:bold(<<"\nNext Steps:"/utf8>>),
+                fun() ->
+                    lustre_dev_tools@cli:notify(
+                        begin
+                            _pipe = <<"
+1. Be sure to update your root `index.html` file to include
+   <link rel=\"stylesheet\" type=\"text/css\" href=\"./priv/static/{app_name}.css\" />"/utf8>>,
+                            _pipe@1 = gleam@string:trim(_pipe),
+                            gleam@string:replace(
+                                _pipe@1,
+                                <<"{app_name}"/utf8>>,
+                                erlang:element(2, Config)
+                            )
+                        end,
+                        fun() -> lustre_dev_tools@cli:return(nil) end
+                    )
+                end
             )
         end
     ).
 
--file("src/lustre_dev_tools/tailwind.gleam", 89).
+-file("src/lustre_dev_tools/tailwind.gleam", 90).
 ?DOC(false).
--spec check_tailwind_exists(binary()) -> boolean().
-check_tailwind_exists(Path) ->
-    case simplifile_erl:is_file(Path) of
-        {ok, true} ->
-            true;
+-spec generate_config() -> lustre_dev_tools@cli:cli(nil).
+generate_config() ->
+    Root = lustre_dev_tools@project:root(),
+    lustre_dev_tools@cli:'try'(
+        lustre_dev_tools@project:config(),
+        fun(Config) ->
+            Entry_css_path = filepath:join(
+                Root,
+                <<<<"src/"/utf8, (erlang:element(2, Config))/binary>>/binary,
+                    ".css"/utf8>>
+            ),
+            case simplifile:read(Entry_css_path) of
+                {ok, Entry_css} ->
+                    case gleam_stdlib:contains_string(
+                        Entry_css,
+                        <<"@import \"tailwindcss"/utf8>>
+                    ) of
+                        true ->
+                            lustre_dev_tools@cli:return(nil);
 
-        {ok, false} ->
-            false;
+                        false ->
+                            Entry_css@1 = <<"@import \"tailwindcss\"\n"/utf8,
+                                Entry_css/binary>>,
+                            lustre_dev_tools@cli:log(
+                                <<"Adding Tailwind integration to "/utf8,
+                                    Entry_css_path/binary>>,
+                                fun() ->
+                                    lustre_dev_tools@cli:'try'(
+                                        begin
+                                            _pipe = simplifile:write(
+                                                Entry_css_path,
+                                                Entry_css@1
+                                            ),
+                                            gleam@result:map_error(
+                                                _pipe,
+                                                fun(_capture) ->
+                                                    {cannot_write_file,
+                                                        _capture,
+                                                        Entry_css_path}
+                                                end
+                                            )
+                                        end,
+                                        fun(_) ->
+                                            lustre_dev_tools@cli:success(
+                                                <<Entry_css_path/binary,
+                                                    " updated!"/utf8>>,
+                                                fun() ->
+                                                    lustre_dev_tools@cli:return(
+                                                        nil
+                                                    )
+                                                end
+                                            )
+                                        end
+                                    )
+                                end
+                            )
+                    end;
 
-        {error, _} ->
-            false
-    end.
+                {error, _} ->
+                    lustre_dev_tools@cli:log(
+                        <<"Generating Tailwind config"/utf8>>,
+                        fun() ->
+                            lustre_dev_tools@cli:'try'(
+                                begin
+                                    _pipe@1 = simplifile:write(
+                                        Entry_css_path,
+                                        <<"@import \"tailwindcss\"\n"/utf8>>
+                                    ),
+                                    gleam@result:map_error(
+                                        _pipe@1,
+                                        fun(_capture@1) ->
+                                            {cannot_write_file,
+                                                _capture@1,
+                                                Entry_css_path}
+                                        end
+                                    )
+                                end,
+                                fun(_) ->
+                                    lustre_dev_tools@cli:success(
+                                        <<"Tailwind succeessfully configured!"/utf8>>,
+                                        fun() ->
+                                            lustre_dev_tools@cli:do(
+                                                display_next_steps(),
+                                                fun(_) ->
+                                                    lustre_dev_tools@cli:return(
+                                                        nil
+                                                    )
+                                                end
+                                            )
+                                        end
+                                    )
+                                end
+                            )
+                        end
+                    )
+            end
+        end
+    ).
 
--file("src/lustre_dev_tools/tailwind.gleam", 99).
+-file("src/lustre_dev_tools/tailwind.gleam", 167).
 ?DOC(false).
 -spec get_download_url_and_hash(binary(), binary()) -> {ok,
         {binary(), binary()}} |
     {error, lustre_dev_tools@error:error()}.
 get_download_url_and_hash(Os, Cpu) ->
-    Base = <<"https://github.com/tailwindlabs/tailwindcss/releases/download/v3.4.1/tailwindcss-"/utf8>>,
+    Base = <<"https://github.com/tailwindlabs/tailwindcss/releases/download/v4.1.10/tailwindcss-"/utf8>>,
     case {Os, Cpu} of
-        {<<"linux"/utf8>>, <<"armv7"/utf8>>} ->
-            {ok,
-                {<<Base/binary, "linux-armv7"/utf8>>,
-                    <<"38E004B144004495CD148621ADB852C21D5D350E66308C8FF9E2FD90A15726F5"/utf8>>}};
-
         {<<"linux"/utf8>>, <<"arm64"/utf8>>} ->
             {ok,
                 {<<Base/binary, "linux-arm64"/utf8>>,
-                    <<"1178C3E8B44B9EB43F40E786EE25664C93D83F6D05B062C0D9CAF410D64D5587"/utf8>>}};
+                    <<"67EB620BB404C2046D3C127DBF2D7F9921595065475E7D2D528E39C1BB33C9B6"/utf8>>}};
 
         {<<"linux"/utf8>>, <<"aarch64"/utf8>>} ->
             {ok,
                 {<<Base/binary, "linux-arm64"/utf8>>,
-                    <<"1178C3E8B44B9EB43F40E786EE25664C93D83F6D05B062C0D9CAF410D64D5587"/utf8>>}};
+                    <<"67EB620BB404C2046D3C127DBF2D7F9921595065475E7D2D528E39C1BB33C9B6"/utf8>>}};
 
         {<<"linux"/utf8>>, <<"x64"/utf8>>} ->
             {ok,
                 {<<Base/binary, "linux-x64"/utf8>>,
-                    <<"A6814CC8FB6E573DD637352093F3B8E927C5C8628B1FF87826652935AF1430B1"/utf8>>}};
+                    <<"0A85A3E533F2E7983BDB91C08EA44F0EAB3BECC275E60B3BAADDF18F71D390BF"/utf8>>}};
 
         {<<"linux"/utf8>>, <<"x86_64"/utf8>>} ->
             {ok,
                 {<<Base/binary, "linux-x64"/utf8>>,
-                    <<"A6814CC8FB6E573DD637352093F3B8E927C5C8628B1FF87826652935AF1430B1"/utf8>>}};
-
-        {<<"win32"/utf8>>, <<"arm64"/utf8>>} ->
-            {ok,
-                {<<Base/binary, "windows-arm64.exe"/utf8>>,
-                    <<"AC06BC274FAED7A0C9C0C7E9058D87A428B574BCF8FCE85330F576DE4568BB81"/utf8>>}};
+                    <<"0A85A3E533F2E7983BDB91C08EA44F0EAB3BECC275E60B3BAADDF18F71D390BF"/utf8>>}};
 
         {<<"win32"/utf8>>, <<"x64"/utf8>>} ->
             {ok,
                 {<<Base/binary, "windows-x64.exe"/utf8>>,
-                    <<"EF2FE367DAA8204CB186796C1833FAEE81A5B20E4C80E533F7A3B3DCC7DB6C54"/utf8>>}};
+                    <<"5539346428771D8974AC63B68D1F477866BECECF615B3A14F2F197A36BDAAC33"/utf8>>}};
 
         {<<"win32"/utf8>>, <<"x86_64"/utf8>>} ->
             {ok,
                 {<<Base/binary, "windows-x64.exe"/utf8>>,
-                    <<"EF2FE367DAA8204CB186796C1833FAEE81A5B20E4C80E533F7A3B3DCC7DB6C54"/utf8>>}};
+                    <<"5539346428771D8974AC63B68D1F477866BECECF615B3A14F2F197A36BDAAC33"/utf8>>}};
 
         {<<"darwin"/utf8>>, <<"arm64"/utf8>>} ->
             {ok,
                 {<<Base/binary, "macos-arm64"/utf8>>,
-                    <<"40738E59ECEF06F955243154E7D1C6EAF11370037CBEEE4A32C3138387E2DA5D"/utf8>>}};
+                    <<"F34A85A75B1F2DE2C7E4A9FBC4FB976E64A2780980E843DF87D9C13F555F4A4C"/utf8>>}};
 
         {<<"darwin"/utf8>>, <<"aarch64"/utf8>>} ->
             {ok,
                 {<<Base/binary, "macos-arm64"/utf8>>,
-                    <<"40738E59ECEF06F955243154E7D1C6EAF11370037CBEEE4A32C3138387E2DA5D"/utf8>>}};
+                    <<"F34A85A75B1F2DE2C7E4A9FBC4FB976E64A2780980E843DF87D9C13F555F4A4C"/utf8>>}};
 
         {<<"darwin"/utf8>>, <<"x64"/utf8>>} ->
             {ok,
                 {<<Base/binary, "macos-x64"/utf8>>,
-                    <<"594D01B032125199DB105C661FE23DE4C069006921B96F7FEE98EE4FBC15F800"/utf8>>}};
+                    <<"47A130C5F639384456E0AC8A0D60B95D74906187314A4DBC37E7C1DDBEB713AE"/utf8>>}};
 
         {<<"darwin"/utf8>>, <<"x86_64"/utf8>>} ->
             {ok,
                 {<<Base/binary, "macos-x64"/utf8>>,
-                    <<"594D01B032125199DB105C661FE23DE4C069006921B96F7FEE98EE4FBC15F800"/utf8>>}};
+                    <<"47A130C5F639384456E0AC8A0D60B95D74906187314A4DBC37E7C1DDBEB713AE"/utf8>>}};
 
         {_, _} ->
             {error, {unknown_platform, <<"tailwind"/utf8>>, Os, Cpu}}
     end.
 
--file("src/lustre_dev_tools/tailwind.gleam", 151).
+-file("src/lustre_dev_tools/tailwind.gleam", 209).
 ?DOC(false).
 -spec check_tailwind_integrity(bitstring(), binary()) -> {ok, nil} |
     {error, lustre_dev_tools@error:error()}.
@@ -129,7 +268,47 @@ check_tailwind_integrity(Bin, Expected_hash) ->
             {error, invalid_tailwind_binary}
     end.
 
--file("src/lustre_dev_tools/tailwind.gleam", 160).
+-file("src/lustre_dev_tools/tailwind.gleam", 143).
+?DOC(false).
+-spec check_tailwind_exists(binary(), binary(), binary()) -> boolean().
+check_tailwind_exists(Path, Os, Cpu) ->
+    case simplifile_erl:is_file(Path) of
+        {ok, true} ->
+            gleam@result:unwrap(
+                begin
+                    gleam@result:'try'(
+                        get_download_url_and_hash(Os, Cpu),
+                        fun(_use0) ->
+                            {_, Hash} = _use0,
+                            gleam@result:'try'(
+                                begin
+                                    _pipe = simplifile_erl:read_bits(Path),
+                                    gleam@result:replace_error(
+                                        _pipe,
+                                        invalid_tailwind_binary
+                                    )
+                                end,
+                                fun(Bin) ->
+                                    gleam@result:'try'(
+                                        check_tailwind_integrity(Bin, Hash),
+                                        fun(_) -> {ok, true} end
+                                    )
+                                end
+                            )
+                        end
+                    )
+                end,
+                false
+            );
+
+        {ok, false} ->
+            false;
+
+        {error, _} ->
+            false
+    end.
+
+-file("src/lustre_dev_tools/tailwind.gleam", 218).
 ?DOC(false).
 -spec write_tailwind(bitstring(), binary(), binary()) -> {ok, nil} |
     {error, lustre_dev_tools@error:error()}.
@@ -143,7 +322,7 @@ write_tailwind(Bin, Outdir, Outfile) ->
         end
     ).
 
--file("src/lustre_dev_tools/tailwind.gleam", 171).
+-file("src/lustre_dev_tools/tailwind.gleam", 229).
 ?DOC(false).
 -spec set_file_permissions(binary()) -> {ok, nil} |
     {error, lustre_dev_tools@error:error()}.
@@ -158,62 +337,7 @@ set_file_permissions(File) ->
         fun(_capture) -> {cannot_set_permissions, _capture, File} end
     ).
 
--file("src/lustre_dev_tools/tailwind.gleam", 183).
-?DOC(false).
--spec write_config(binary(), binary()) -> {ok, nil} |
-    {error, lustre_dev_tools@error:error()}.
-write_config(Path, Content) ->
-    _pipe = simplifile:write(Path, Content),
-    gleam@result:map_error(
-        _pipe,
-        fun(_capture) -> {cannot_write_file, _capture, Path} end
-    ).
-
--file("src/lustre_dev_tools/tailwind.gleam", 70).
-?DOC(false).
--spec write_tailwind_config() -> lustre_dev_tools@cli:cli(nil).
-write_tailwind_config() ->
-    Config_filename = <<"tailwind.config.js"/utf8>>,
-    Config_outfile = filepath:join(
-        lustre_dev_tools@project:root(),
-        Config_filename
-    ),
-    Config_already_exists = begin
-        _pipe = simplifile_erl:is_file(Config_outfile),
-        gleam@result:unwrap(_pipe, false)
-    end,
-    gleam@bool:guard(
-        Config_already_exists,
-        lustre_dev_tools@cli:return(nil),
-        fun() ->
-            lustre_dev_tools@cli:log(
-                <<<<"Writing `"/utf8, Config_filename/binary>>/binary,
-                    "`"/utf8>>,
-                fun() ->
-                    lustre_dev_tools@cli:template(
-                        <<"tailwind.config.js"/utf8>>,
-                        fun(Config) ->
-                            lustre_dev_tools@cli:'try'(
-                                write_config(Config_outfile, Config),
-                                fun(_) ->
-                                    lustre_dev_tools@cli:success(
-                                        <<<<"Written `"/utf8,
-                                                Config_outfile/binary>>/binary,
-                                            "`"/utf8>>,
-                                        fun() ->
-                                            lustre_dev_tools@cli:return(nil)
-                                        end
-                                    )
-                                end
-                            )
-                        end
-                    )
-                end
-            )
-        end
-    ).
-
--file("src/lustre_dev_tools/tailwind.gleam", 146).
+-file("src/lustre_dev_tools/tailwind.gleam", 204).
 ?DOC(false).
 -spec get_tailwind(binary()) -> {ok, bitstring()} |
     {error, lustre_dev_tools@error:error()}.
@@ -231,7 +355,7 @@ download(Os, Cpu) ->
             Root = lustre_dev_tools@project:root(),
             Outdir = filepath:join(Root, <<"build/.lustre/bin"/utf8>>),
             Outfile = filepath:join(Outdir, <<"tailwind"/utf8>>),
-            case check_tailwind_exists(Outfile) of
+            case check_tailwind_exists(Outfile, Os, Cpu) of
                 true ->
                     lustre_dev_tools@cli:success(
                         <<"Tailwind already installed!"/utf8>>,
@@ -322,10 +446,10 @@ setup(Os, Cpu) ->
         download(Os, Cpu),
         fun(_) ->
             lustre_dev_tools@cli:do(
-                write_tailwind_config(),
+                generate_config(),
                 fun(_) ->
                     lustre_dev_tools@cli:do(
-                        display_next_steps(),
+                        detect_legacy_config(),
                         fun(_) -> lustre_dev_tools@cli:return(nil) end
                     )
                 end

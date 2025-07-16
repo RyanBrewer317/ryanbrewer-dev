@@ -20,31 +20,33 @@ import * as $yielder from "../../../gleam_yielder/gleam/yielder.mjs";
 import * as $glisten from "../../../glisten/glisten.mjs";
 import * as $transport from "../../../glisten/glisten/transport.mjs";
 import * as $websocket from "../../../gramps/gramps/websocket.mjs";
-import { CustomType as $CustomType, makeError, toBitArray } from "../../gleam.mjs";
+import { Ok, CustomType as $CustomType, makeError, toBitArray } from "../../gleam.mjs";
 import * as $buffer from "../../mist/internal/buffer.mjs";
 import { Buffer } from "../../mist/internal/buffer.mjs";
 import * as $clock from "../../mist/internal/clock.mjs";
 import * as $encoder from "../../mist/internal/encoder.mjs";
 import * as $file from "../../mist/internal/file.mjs";
 
+const FILEPATH = "src/mist/internal/http.gleam";
+
 export class Websocket extends $CustomType {
-  constructor(x0) {
+  constructor($0) {
     super();
-    this[0] = x0;
+    this[0] = $0;
   }
 }
 
 export class Bytes extends $CustomType {
-  constructor(x0) {
+  constructor($0) {
     super();
-    this[0] = x0;
+    this[0] = $0;
   }
 }
 
 export class Chunked extends $CustomType {
-  constructor(x0) {
+  constructor($0) {
     super();
-    this[0] = x0;
+    this[0] = $0;
   }
 }
 
@@ -58,9 +60,9 @@ export class File extends $CustomType {
 }
 
 export class ServerSentEvents extends $CustomType {
-  constructor(x0) {
+  constructor($0) {
     super();
-    this[0] = x0;
+    this[0] = $0;
   }
 }
 
@@ -80,57 +82,57 @@ export class HttphBin extends $CustomType {}
 export class HttpBin extends $CustomType {}
 
 export class AbsPath extends $CustomType {
-  constructor(x0) {
+  constructor($0) {
     super();
-    this[0] = x0;
+    this[0] = $0;
   }
 }
 
 export class HttpRequest extends $CustomType {
-  constructor(x0, x1, x2) {
+  constructor($0, $1, $2) {
     super();
-    this[0] = x0;
-    this[1] = x1;
-    this[2] = x2;
+    this[0] = $0;
+    this[1] = $1;
+    this[2] = $2;
   }
 }
 
 export class HttpHeader extends $CustomType {
-  constructor(x0, x1, x2, x3) {
+  constructor($0, $1, $2, $3) {
     super();
-    this[0] = x0;
-    this[1] = x1;
-    this[2] = x2;
-    this[3] = x3;
+    this[0] = $0;
+    this[1] = $1;
+    this[2] = $2;
+    this[3] = $3;
   }
 }
 
 export class BinaryData extends $CustomType {
-  constructor(x0, x1) {
+  constructor($0, $1) {
     super();
-    this[0] = x0;
-    this[1] = x1;
+    this[0] = $0;
+    this[1] = $1;
   }
 }
 
 export class EndOfHeaders extends $CustomType {
-  constructor(x0) {
+  constructor($0) {
     super();
-    this[0] = x0;
+    this[0] = $0;
   }
 }
 
 export class MoreData extends $CustomType {
-  constructor(x0) {
+  constructor($0) {
     super();
-    this[0] = x0;
+    this[0] = $0;
   }
 }
 
 export class Http2Upgrade extends $CustomType {
-  constructor(x0) {
+  constructor($0) {
     super();
-    this[0] = x0;
+    this[0] = $0;
   }
 }
 
@@ -175,16 +177,16 @@ export class Http1Request extends $CustomType {
 }
 
 export class Upgrade extends $CustomType {
-  constructor(x0) {
+  constructor($0) {
     super();
-    this[0] = x0;
+    this[0] = $0;
   }
 }
 
 export class Initial extends $CustomType {
-  constructor(x0) {
+  constructor($0) {
     super();
-    this[0] = x0;
+    this[0] = $0;
   }
 }
 
@@ -202,14 +204,21 @@ export class Sha extends $CustomType {}
 
 export function from_header(value) {
   let $ = $bit_array.to_string(value);
-  if (!$.isOk()) {
+  if (!($ instanceof Ok)) {
     throw makeError(
       "let_assert",
+      FILEPATH,
       "mist/internal/http",
       78,
       "from_header",
       "Pattern match failed, no pattern matched the value.",
-      { value: $ }
+      {
+        value: $,
+        start: 1766,
+        end: 1815,
+        pattern_start: 1777,
+        pattern_end: 1786
+      }
     )
   }
   let value$1 = $[0];
@@ -234,7 +243,7 @@ export function keep_alive(resp) {
 
 export function maybe_keep_alive(resp) {
   let $ = $response.get_header(resp, "connection");
-  if ($.isOk()) {
+  if ($ instanceof Ok) {
     return resp;
   } else {
     return $response.set_header(resp, "connection", "keep-alive");
@@ -252,21 +261,21 @@ function maybe_drop_body(resp, is_head_request) {
 export function add_content_length(when, length) {
   return (resp) => {
     if (when) {
-      let $ = (() => {
-        let _pipe = resp.headers;
-        let _pipe$1 = $list.key_pop(_pipe, "content-length");
-        return $result.lazy_unwrap(
-          _pipe$1,
-          () => { return ["", resp.headers]; },
-        );
-      })();
+      let _block;
+      let _pipe = resp.headers;
+      let _pipe$1 = $list.key_pop(_pipe, "content-length");
+      _block = $result.lazy_unwrap(
+        _pipe$1,
+        () => { return ["", resp.headers]; },
+      );
+      let $ = _block;
       let headers = $[1];
-      let _pipe = (() => {
-        let _record = resp;
-        return new Response(_record.status, headers, _record.body);
-      })();
+      let _block$1;
+      let _record = resp;
+      _block$1 = new Response(_record.status, headers, _record.body);
+      let _pipe$2 = _block$1;
       return $response.set_header(
-        _pipe,
+        _pipe$2,
         "content-length",
         $int.to_string(length),
       );

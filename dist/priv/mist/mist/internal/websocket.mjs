@@ -1,5 +1,3 @@
-import * as $erlang from "../../../gleam_erlang/gleam/erlang.mjs";
-import { rescue } from "../../../gleam_erlang/gleam/erlang.mjs";
 import * as $atom from "../../../gleam_erlang/gleam/erlang/atom.mjs";
 import * as $process from "../../../gleam_erlang/gleam/erlang/process.mjs";
 import * as $actor from "../../../gleam_otp/gleam/otp/actor.mjs";
@@ -8,6 +6,7 @@ import * as $list from "../../../gleam_stdlib/gleam/list.mjs";
 import * as $option from "../../../gleam_stdlib/gleam/option.mjs";
 import { None, Some } from "../../../gleam_stdlib/gleam/option.mjs";
 import * as $result from "../../../gleam_stdlib/gleam/result.mjs";
+import * as $string from "../../../gleam_stdlib/gleam/string.mjs";
 import * as $glisten from "../../../glisten/glisten.mjs";
 import * as $options from "../../../glisten/glisten/socket/options.mjs";
 import * as $transport from "../../../glisten/glisten/transport.mjs";
@@ -16,27 +15,29 @@ import { CloseFrame, Control, InvalidFrame, NeedMoreData, PingFrame, PongFrame }
 import * as $compression from "../../../gramps/gramps/websocket/compression.mjs";
 import * as $logging from "../../../logging/logging.mjs";
 import { CustomType as $CustomType } from "../../gleam.mjs";
+import * as $next from "../../mist/internal/next.mjs";
+import { AbnormalStop, Continue, NormalStop } from "../../mist/internal/next.mjs";
 
 export class SocketMessage extends $CustomType {
-  constructor(x0) {
+  constructor($0) {
     super();
-    this[0] = x0;
+    this[0] = $0;
   }
 }
 
 export class SocketClosedMessage extends $CustomType {}
 
 export class UserMessage extends $CustomType {
-  constructor(x0) {
+  constructor($0) {
     super();
-    this[0] = x0;
+    this[0] = $0;
   }
 }
 
 export class Valid extends $CustomType {
-  constructor(x0) {
+  constructor($0) {
     super();
-    this[0] = x0;
+    this[0] = $0;
   }
 }
 
@@ -52,16 +53,16 @@ export class WebsocketConnection extends $CustomType {
 }
 
 export class Internal extends $CustomType {
-  constructor(x0) {
+  constructor($0) {
     super();
-    this[0] = x0;
+    this[0] = $0;
   }
 }
 
 export class User extends $CustomType {
-  constructor(x0) {
+  constructor($0) {
     super();
-    this[0] = x0;
+    this[0] = $0;
   }
 }
 

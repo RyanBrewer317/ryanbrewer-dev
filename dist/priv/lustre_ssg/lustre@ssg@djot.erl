@@ -12,20 +12,22 @@
 -define(DOC(Str), -compile([])).
 -endif.
 
--type renderer(QYC) :: {renderer,
-        fun((gleam@dict:dict(binary(), binary()), gleam@option:option(binary()), binary()) -> QYC),
-        fun((list(QYC)) -> QYC),
-        fun((gleam@dict:dict(binary(), binary()), integer(), list(QYC)) -> QYC),
-        fun((jot:destination(), gleam@dict:dict(binary(), binary()), list(QYC)) -> QYC),
-        fun((gleam@dict:dict(binary(), binary()), list(QYC)) -> QYC),
-        fun((list(QYC)) -> QYC),
-        fun((binary()) -> QYC),
-        fun((binary()) -> QYC),
-        fun((jot:destination(), binary()) -> QYC),
-        QYC,
-        QYC}.
+-type renderer(SNJ) :: {renderer,
+        fun((gleam@dict:dict(binary(), binary()), gleam@option:option(binary()), binary()) -> SNJ),
+        fun((list(SNJ)) -> SNJ),
+        fun((gleam@dict:dict(binary(), binary()), integer(), list(SNJ)) -> SNJ),
+        fun((jot:destination(), gleam@dict:dict(binary(), binary()), list(SNJ)) -> SNJ),
+        fun((gleam@dict:dict(binary(), binary()), list(SNJ)) -> SNJ),
+        fun((jot:list_layout(), binary(), list(list(SNJ))) -> SNJ),
+        fun((binary()) -> SNJ),
+        fun((list(SNJ)) -> SNJ),
+        fun((binary()) -> SNJ),
+        fun((binary()) -> SNJ),
+        fun((jot:destination(), binary()) -> SNJ),
+        SNJ,
+        SNJ}.
 
--file("src/lustre/ssg/djot.gleam", 135).
+-file("src/lustre/ssg/djot.gleam", 155).
 ?DOC(
     " Extract the frontmatter string from a djot document. Frontmatter is anything\n"
     " between two lines of three dashes, like this:\n"
@@ -63,7 +65,7 @@ frontmatter(Document) ->
                                 value => _assert_fail,
                                 module => <<"lustre/ssg/djot"/utf8>>,
                                 function => <<"frontmatter"/utf8>>,
-                                line => 138})
+                                line => 158})
             end,
             case gleam@regexp:scan(Re, Document) of
                 [{match, Frontmatter, _} | _] ->
@@ -80,7 +82,7 @@ frontmatter(Document) ->
         end
     ).
 
--file("src/lustre/ssg/djot.gleam", 157).
+-file("src/lustre/ssg/djot.gleam", 177).
 ?DOC(
     " Extract the TOML metadata from a djot document. This takes the [`frontmatter`](#frontmatter)\n"
     " and parses it as TOML. If there is *no* frontmatter, this function returns\n"
@@ -99,7 +101,7 @@ metadata(Document) ->
             {ok, maps:new()}
     end.
 
--file("src/lustre/ssg/djot.gleam", 167).
+-file("src/lustre/ssg/djot.gleam", 187).
 ?DOC(
     " Extract the djot content from a document with optional frontmatter. If the\n"
     " document does not have frontmatter, this acts as an identity function.\n"
@@ -119,7 +121,7 @@ content(Document) ->
             Document
     end.
 
--file("src/lustre/ssg/djot.gleam", 292).
+-file("src/lustre/ssg/djot.gleam", 328).
 -spec linkify(binary()) -> binary().
 linkify(Text) ->
     _assert_subject = gleam@regexp:from_string(<<" +"/utf8>>),
@@ -131,19 +133,19 @@ linkify(Text) ->
                         value => _assert_fail,
                         module => <<"lustre/ssg/djot"/utf8>>,
                         function => <<"linkify"/utf8>>,
-                        line => 293})
+                        line => 329})
     end,
     _pipe = Text,
     _pipe@1 = gleam@regexp:split(Re, _pipe),
     gleam@string:join(_pipe@1, <<"-"/utf8>>).
 
--file("src/lustre/ssg/djot.gleam", 58).
+-file("src/lustre/ssg/djot.gleam", 60).
 ?DOC(
     " The default renderer generates some sensible Lustre elements from a djot\n"
     " document. You can use this if you need a quick drop-in renderer for some\n"
     " markup in a Lustre project.\n"
 ).
--spec default_renderer() -> renderer(lustre@internals@vdom:element(any())).
+-spec default_renderer() -> renderer(lustre@vdom@vnode:element(any())).
 default_renderer() ->
     To_attributes = fun(Attrs) ->
         gleam@dict:fold(
@@ -221,10 +223,46 @@ default_renderer() ->
         fun(Attrs@4, Content@3) ->
             lustre@element@html:p(To_attributes(Attrs@4), Content@3)
         end,
-        fun(Content@4) -> lustre@element@html:strong([], Content@4) end,
+        fun(Layout, Style, Items) ->
+            List_style_type = lustre@attribute:style(
+                <<"list-style-type"/utf8>>,
+                case Style of
+                    <<"-"/utf8>> ->
+                        <<"'-'"/utf8>>;
+
+                    <<"*"/utf8>> ->
+                        <<"disc"/utf8>>;
+
+                    _ ->
+                        <<"circle"/utf8>>
+                end
+            ),
+            lustre@element@html:ul(
+                [List_style_type],
+                (gleam@list:map(Items, fun(Item) -> case Layout of
+                            tight ->
+                                lustre@element@html:li([], Item);
+
+                            loose ->
+                                lustre@element@html:li(
+                                    [],
+                                    [lustre@element@html:p([], Item)]
+                                )
+                        end end))
+            )
+        end,
+        fun(Content@4) ->
+            lustre@element:unsafe_raw_html(
+                <<""/utf8>>,
+                <<"div"/utf8>>,
+                [],
+                Content@4
+            )
+        end,
+        fun(Content@5) -> lustre@element@html:strong([], Content@5) end,
         fun(Text) -> lustre@element@html:text(Text) end,
-        fun(Content@5) ->
-            lustre@element@html:code([], [lustre@element@html:text(Content@5)])
+        fun(Content@6) ->
+            lustre@element@html:code([], [lustre@element@html:text(Content@6)])
         end,
         fun(Destination@1, Alt) -> case Destination@1 of
                 {reference, Ref@1} ->
@@ -243,12 +281,15 @@ default_renderer() ->
         lustre@element@html:br([]),
         lustre@element@html:hr([])}.
 
--file("src/lustre/ssg/djot.gleam", 300).
+-file("src/lustre/ssg/djot.gleam", 336).
 -spec text_content(list(jot:inline())) -> binary().
 text_content(Segments) ->
     gleam@list:fold(Segments, <<""/utf8>>, fun(Text, Inline) -> case Inline of
                 {text, Content} ->
                     <<Text/binary, Content/binary>>;
+
+                non_breaking_space ->
+                    <<Text/binary, " "/utf8>>;
 
                 {link, Content@1, _} ->
                     <<Text/binary, (text_content(Content@1))/binary>>;
@@ -272,16 +313,19 @@ text_content(Segments) ->
                     Text
             end end).
 
--file("src/lustre/ssg/djot.gleam", 246).
+-file("src/lustre/ssg/djot.gleam", 278).
 -spec render_inline(
     jot:inline(),
     gleam@dict:dict(binary(), binary()),
-    renderer(QZC)
-) -> QZC.
+    renderer(SOJ)
+) -> SOJ.
 render_inline(Inline, References, Renderer) ->
     case Inline of
         {text, Text} ->
-            (erlang:element(8, Renderer))(Text);
+            (erlang:element(10, Renderer))(Text);
+
+        non_breaking_space ->
+            (erlang:element(10, Renderer))(<<" "/utf8>>);
 
         {link, Content, Destination} ->
             (erlang:element(5, Renderer))(
@@ -306,7 +350,7 @@ render_inline(Inline, References, Renderer) ->
             );
 
         {strong, Content@2} ->
-            (erlang:element(7, Renderer))(
+            (erlang:element(9, Renderer))(
                 gleam@list:map(
                     Content@2,
                     fun(_capture@2) ->
@@ -316,27 +360,27 @@ render_inline(Inline, References, Renderer) ->
             );
 
         {code, Content@3} ->
-            (erlang:element(9, Renderer))(Content@3);
+            (erlang:element(11, Renderer))(Content@3);
 
         {image, Content@4, Destination@1} ->
-            (erlang:element(10, Renderer))(
+            (erlang:element(12, Renderer))(
                 Destination@1,
                 text_content(Content@4)
             );
 
         linebreak ->
-            erlang:element(11, Renderer);
+            erlang:element(13, Renderer);
 
         {footnote, _} ->
-            (erlang:element(8, Renderer))(<<""/utf8>>)
+            (erlang:element(10, Renderer))(<<""/utf8>>)
     end.
 
--file("src/lustre/ssg/djot.gleam", 215).
+-file("src/lustre/ssg/djot.gleam", 235).
 -spec render_block(
     jot:container(),
     gleam@dict:dict(binary(), binary()),
-    renderer(QYY)
-) -> QYY.
+    renderer(SOF)
+) -> SOF.
 render_block(Block, References, Renderer) ->
     case Block of
         {paragraph, Attrs, Inline} ->
@@ -366,15 +410,35 @@ render_block(Block, References, Renderer) ->
             (erlang:element(2, Renderer))(Attrs@2, Language, Code);
 
         thematic_break ->
-            erlang:element(12, Renderer)
+            erlang:element(14, Renderer);
+
+        {raw_block, Content} ->
+            (erlang:element(8, Renderer))(Content);
+
+        {bullet_list, Layout, Style, Items} ->
+            (erlang:element(7, Renderer))(
+                Layout,
+                Style,
+                gleam@list:map(
+                    Items,
+                    fun(_capture@2) ->
+                        gleam@list:map(
+                            _capture@2,
+                            fun(_capture@3) ->
+                                render_block(_capture@3, References, Renderer)
+                            end
+                        )
+                    end
+                )
+            )
     end.
 
--file("src/lustre/ssg/djot.gleam", 181).
+-file("src/lustre/ssg/djot.gleam", 201).
 ?DOC(
     " Render a djot document using the given renderer. If the document contains\n"
     " [`frontmatter`](#frontmatter) it is stripped out before rendering.\n"
 ).
--spec render(binary(), renderer(QYM)) -> list(QYM).
+-spec render(binary(), renderer(SNT)) -> list(SNT).
 render(Document, Renderer) ->
     Content = content(Document),
     {document, Content@1, References, _} = jot:parse(Content),
@@ -384,7 +448,7 @@ render(Document, Renderer) ->
         fun(_capture) -> render_block(_capture, References, Renderer) end
     ).
 
--file("src/lustre/ssg/djot.gleam", 195).
+-file("src/lustre/ssg/djot.gleam", 215).
 ?DOC(
     " Render a djot document using the given renderer. TOML metadata is extracted\n"
     " from the document's frontmatter and passed to the renderer. If the frontmatter\n"
@@ -394,8 +458,8 @@ render(Document, Renderer) ->
 ).
 -spec render_with_metadata(
     binary(),
-    fun((gleam@dict:dict(binary(), tom:toml())) -> renderer(QYR))
-) -> {ok, list(QYR)} | {error, tom:parse_error()}.
+    fun((gleam@dict:dict(binary(), tom:toml())) -> renderer(SNY))
+) -> {ok, list(SNY)} | {error, tom:parse_error()}.
 render_with_metadata(Document, Renderer) ->
     Toml = frontmatter(Document),
     gleam@result:'try'(

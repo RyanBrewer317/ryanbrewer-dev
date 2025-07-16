@@ -9,6 +9,7 @@ import * as $string from "../../gleam_stdlib/gleam/string.mjs";
 import {
   Ok,
   Error,
+  Empty as $Empty,
   prepend as listPrepend,
   CustomType as $CustomType,
   toBitArray,
@@ -57,16 +58,16 @@ export class PongFrame extends $CustomType {
 }
 
 export class Data extends $CustomType {
-  constructor(x0) {
+  constructor($0) {
     super();
-    this[0] = x0;
+    this[0] = $0;
   }
 }
 
 export class Control extends $CustomType {
-  constructor(x0) {
+  constructor($0) {
     super();
-    this[0] = x0;
+    this[0] = $0;
   }
 }
 
@@ -79,52 +80,54 @@ export class Continuation extends $CustomType {
 }
 
 export class NeedMoreData extends $CustomType {
-  constructor(x0) {
+  constructor($0) {
     super();
-    this[0] = x0;
+    this[0] = $0;
   }
 }
 
 export class InvalidFrame extends $CustomType {}
 
 export class Complete extends $CustomType {
-  constructor(x0) {
+  constructor($0) {
     super();
-    this[0] = x0;
+    this[0] = $0;
   }
 }
 
 export class Incomplete extends $CustomType {
-  constructor(x0) {
+  constructor($0) {
     super();
-    this[0] = x0;
+    this[0] = $0;
   }
 }
 
 class Sha extends $CustomType {}
 
 function make_length(length) {
-  if (length > 65_535) {
-    let length$1 = length;
+  let length$1 = length;
+  if (length$1 > 65_535) {
     return toBitArray([sizedInt(127, 7, true), sizedInt(length$1, 64, true)]);
-  } else if (length >= 126) {
-    let length$1 = length;
-    return toBitArray([sizedInt(126, 7, true), sizedInt(length$1, 16, true)]);
   } else {
-    return toBitArray([sizedInt(length, 7, true)]);
+    let length$2 = length;
+    if (length$2 >= 126) {
+      return toBitArray([sizedInt(126, 7, true), sizedInt(length$2, 16, true)]);
+    } else {
+      return toBitArray([sizedInt(length$2, 7, true)]);
+    }
   }
 }
 
 function make_frame(opcode, length, payload, mask) {
   let length_section = make_length(length);
-  let masked = (() => {
-    let $ = $option.is_some(mask);
-    if ($) {
-      return 1;
-    } else {
-      return 0;
-    }
-  })();
+  let _block;
+  let $ = $option.is_some(mask);
+  if ($) {
+    _block = 1;
+  } else {
+    _block = 0;
+  }
+  let masked = _block;
   let mask_key = $option.unwrap(mask, toBitArray([]));
   let _pipe = toBitArray([
     sizedInt(1, 1, true),
@@ -139,26 +142,32 @@ function make_frame(opcode, length, payload, mask) {
 }
 
 export function frame_to_bytes_tree(frame, mask) {
-  if (frame instanceof Data && frame[0] instanceof TextFrame) {
-    let payload_length = frame[0].payload_length;
-    let payload = frame[0].payload;
-    return make_frame(1, payload_length, payload, mask);
-  } else if (frame instanceof Control && frame[0] instanceof CloseFrame) {
-    let payload_length = frame[0].payload_length;
-    let payload = frame[0].payload;
-    return make_frame(8, payload_length, payload, mask);
-  } else if (frame instanceof Data && frame[0] instanceof BinaryFrame) {
-    let payload_length = frame[0].payload_length;
-    let payload = frame[0].payload;
-    return make_frame(2, payload_length, payload, mask);
-  } else if (frame instanceof Control && frame[0] instanceof PongFrame) {
-    let payload_length = frame[0].payload_length;
-    let payload = frame[0].payload;
-    return make_frame(10, payload_length, payload, mask);
-  } else if (frame instanceof Control && frame[0] instanceof PingFrame) {
-    let payload_length = frame[0].payload_length;
-    let payload = frame[0].payload;
-    return make_frame(9, payload_length, payload, mask);
+  if (frame instanceof Data) {
+    let $ = frame[0];
+    if ($ instanceof TextFrame) {
+      let payload_length = $.payload_length;
+      let payload = $.payload;
+      return make_frame(1, payload_length, payload, mask);
+    } else {
+      let payload_length = $.payload_length;
+      let payload = $.payload;
+      return make_frame(2, payload_length, payload, mask);
+    }
+  } else if (frame instanceof Control) {
+    let $ = frame[0];
+    if ($ instanceof CloseFrame) {
+      let payload_length = $.payload_length;
+      let payload = $.payload;
+      return make_frame(8, payload_length, payload, mask);
+    } else if ($ instanceof PingFrame) {
+      let payload_length = $.payload_length;
+      let payload = $.payload;
+      return make_frame(9, payload_length, payload, mask);
+    } else {
+      let payload_length = $.payload_length;
+      let payload = $.payload;
+      return make_frame(10, payload_length, payload, mask);
+    }
   } else {
     let length = frame.length;
     let payload = frame.payload;
@@ -167,28 +176,40 @@ export function frame_to_bytes_tree(frame, mask) {
 }
 
 function append_frame(left, length, data) {
-  if (left instanceof Data && left[0] instanceof TextFrame) {
-    let len = left[0].payload_length;
-    let payload = left[0].payload;
-    return new Data(new TextFrame(len + length, toBitArray([payload, data])));
-  } else if (left instanceof Data && left[0] instanceof BinaryFrame) {
-    let len = left[0].payload_length;
-    let payload = left[0].payload;
-    return new Data(new BinaryFrame(len + length, toBitArray([payload, data])));
-  } else if (left instanceof Control && left[0] instanceof CloseFrame) {
-    let len = left[0].payload_length;
-    let payload = left[0].payload;
-    return new Control(
-      new CloseFrame(len + length, toBitArray([payload, data])),
-    );
-  } else if (left instanceof Control && left[0] instanceof PingFrame) {
-    let len = left[0].payload_length;
-    let payload = left[0].payload;
-    return new Control(new PingFrame(len + length, toBitArray([payload, data])));
-  } else if (left instanceof Control && left[0] instanceof PongFrame) {
-    let len = left[0].payload_length;
-    let payload = left[0].payload;
-    return new Control(new PongFrame(len + length, toBitArray([payload, data])));
+  if (left instanceof Data) {
+    let $ = left[0];
+    if ($ instanceof TextFrame) {
+      let len = $.payload_length;
+      let payload = $.payload;
+      return new Data(new TextFrame(len + length, toBitArray([payload, data])));
+    } else {
+      let len = $.payload_length;
+      let payload = $.payload;
+      return new Data(
+        new BinaryFrame(len + length, toBitArray([payload, data])),
+      );
+    }
+  } else if (left instanceof Control) {
+    let $ = left[0];
+    if ($ instanceof CloseFrame) {
+      let len = $.payload_length;
+      let payload = $.payload;
+      return new Control(
+        new CloseFrame(len + length, toBitArray([payload, data])),
+      );
+    } else if ($ instanceof PingFrame) {
+      let len = $.payload_length;
+      let payload = $.payload;
+      return new Control(
+        new PingFrame(len + length, toBitArray([payload, data])),
+      );
+    } else {
+      let len = $.payload_length;
+      let payload = $.payload;
+      return new Control(
+        new PongFrame(len + length, toBitArray([payload, data])),
+      );
+    }
   } else {
     return left;
   }
@@ -199,50 +220,53 @@ export function aggregate_frames(loop$frames, loop$previous, loop$joined) {
     let frames = loop$frames;
     let previous = loop$previous;
     let joined = loop$joined;
-    if (frames.hasLength(0)) {
+    if (frames instanceof $Empty) {
       return new Ok($list.reverse(joined));
-    } else if (frames.atLeastLength(1) &&
-    frames.head instanceof Complete &&
-    frames.head[0] instanceof Continuation &&
-    previous instanceof Some) {
-      let length = frames.head[0].length;
-      let data = frames.head[0].payload;
-      let rest = frames.tail;
-      let prev = previous[0];
-      let next = append_frame(prev, length, data);
-      loop$frames = rest;
-      loop$previous = new None();
-      loop$joined = listPrepend(next, joined);
-    } else if (frames.atLeastLength(1) &&
-    frames.head instanceof Incomplete &&
-    frames.head[0] instanceof Continuation &&
-    previous instanceof Some) {
-      let length = frames.head[0].length;
-      let data = frames.head[0].payload;
-      let rest = frames.tail;
-      let prev = previous[0];
-      let next = append_frame(prev, length, data);
-      loop$frames = rest;
-      loop$previous = new Some(next);
-      loop$joined = joined;
-    } else if (frames.atLeastLength(1) &&
-    frames.head instanceof Incomplete &&
-    previous instanceof None) {
-      let frame = frames.head[0];
-      let rest = frames.tail;
-      loop$frames = rest;
-      loop$previous = new Some(frame);
-      loop$joined = joined;
-    } else if (frames.atLeastLength(1) &&
-    frames.head instanceof Complete &&
-    previous instanceof None) {
-      let frame = frames.head[0];
-      let rest = frames.tail;
-      loop$frames = rest;
-      loop$previous = new None();
-      loop$joined = listPrepend(frame, joined);
     } else {
-      return new Error(undefined);
+      let $ = frames.head;
+      if ($ instanceof Complete) {
+        if (previous instanceof Some) {
+          let $1 = $[0];
+          if ($1 instanceof Continuation) {
+            let rest = frames.tail;
+            let prev = previous[0];
+            let length = $1.length;
+            let data = $1.payload;
+            let next = append_frame(prev, length, data);
+            loop$frames = rest;
+            loop$previous = new None();
+            loop$joined = listPrepend(next, joined);
+          } else {
+            return new Error(undefined);
+          }
+        } else {
+          let rest = frames.tail;
+          let frame = $[0];
+          loop$frames = rest;
+          loop$previous = new None();
+          loop$joined = listPrepend(frame, joined);
+        }
+      } else if (previous instanceof Some) {
+        let $1 = $[0];
+        if ($1 instanceof Continuation) {
+          let rest = frames.tail;
+          let prev = previous[0];
+          let length = $1.length;
+          let data = $1.payload;
+          let next = append_frame(prev, length, data);
+          loop$frames = rest;
+          loop$previous = new Some(next);
+          loop$joined = joined;
+        } else {
+          return new Error(undefined);
+        }
+      } else {
+        let rest = frames.tail;
+        let frame = $[0];
+        loop$frames = rest;
+        loop$previous = new Some(frame);
+        loop$joined = joined;
+      }
     }
   }
 }

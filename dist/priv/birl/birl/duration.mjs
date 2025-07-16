@@ -9,6 +9,8 @@ import {
   Ok,
   Error,
   toList,
+  Empty as $Empty,
+  NonEmpty as $NonEmpty,
   prepend as listPrepend,
   CustomType as $CustomType,
   makeError,
@@ -16,10 +18,12 @@ import {
   divideInt,
 } from "../gleam.mjs";
 
+const FILEPATH = "src/birl/duration.gleam";
+
 export class Duration extends $CustomType {
-  constructor(x0) {
+  constructor($0) {
     super();
-    this[0] = x0;
+    this[0] = $0;
   }
 }
 
@@ -139,28 +143,29 @@ export function new$(values) {
     _pipe,
     0,
     (total, current) => {
-      if (current[1] instanceof MicroSecond) {
+      let $ = current[1];
+      if ($ instanceof MicroSecond) {
         let amount = current[0];
         return total + amount;
-      } else if (current[1] instanceof MilliSecond) {
+      } else if ($ instanceof MilliSecond) {
         let amount = current[0];
         return total + amount * milli_second;
-      } else if (current[1] instanceof Second) {
+      } else if ($ instanceof Second) {
         let amount = current[0];
         return total + amount * second;
-      } else if (current[1] instanceof Minute) {
+      } else if ($ instanceof Minute) {
         let amount = current[0];
         return total + amount * minute;
-      } else if (current[1] instanceof Hour) {
+      } else if ($ instanceof Hour) {
         let amount = current[0];
         return total + amount * hour;
-      } else if (current[1] instanceof Day) {
+      } else if ($ instanceof Day) {
         let amount = current[0];
         return total + amount * day;
-      } else if (current[1] instanceof Week) {
+      } else if ($ instanceof Week) {
         let amount = current[0];
         return total + amount * week;
-      } else if (current[1] instanceof Month) {
+      } else if ($ instanceof Month) {
         let amount = current[0];
         return total + amount * month;
       } else {
@@ -225,24 +230,24 @@ export function decompose(duration) {
 }
 
 function unit_values(unit) {
-  if (unit instanceof Year) {
-    return year;
-  } else if (unit instanceof Month) {
-    return month;
-  } else if (unit instanceof Week) {
-    return week;
-  } else if (unit instanceof Day) {
-    return day;
-  } else if (unit instanceof Hour) {
-    return hour;
-  } else if (unit instanceof Minute) {
-    return minute;
-  } else if (unit instanceof Second) {
-    return second;
+  if (unit instanceof MicroSecond) {
+    return 1;
   } else if (unit instanceof MilliSecond) {
     return milli_second;
+  } else if (unit instanceof Second) {
+    return second;
+  } else if (unit instanceof Minute) {
+    return minute;
+  } else if (unit instanceof Hour) {
+    return hour;
+  } else if (unit instanceof Day) {
+    return day;
+  } else if (unit instanceof Week) {
+    return week;
+  } else if (unit instanceof Month) {
+    return month;
   } else {
-    return 1;
+    return year;
   }
 }
 
@@ -263,29 +268,32 @@ export function blur_to(duration, unit) {
 function inner_blur(loop$values) {
   while (true) {
     let values = loop$values;
-    if (values.hasLength(0)) {
+    if (values instanceof $Empty) {
       return [0, new MicroSecond()];
-    } else if (values.hasLength(1)) {
-      let single = values.head;
-      return single;
     } else {
-      let smaller = values.head;
-      let larger = values.tail.head;
-      let rest = values.tail.tail;
-      let smaller_unit_value = unit_values(smaller[1]);
-      let larger_unit_value = unit_values(larger[1]);
-      let at_least_two_thirds = smaller[0] * smaller_unit_value < (divideInt(
-        larger_unit_value * 2,
-        3
-      ));
-      let rounded = (() => {
+      let $ = values.tail;
+      if ($ instanceof $Empty) {
+        let single = values.head;
+        return single;
+      } else {
+        let smaller = values.head;
+        let larger = $.head;
+        let rest = $.tail;
+        let smaller_unit_value = unit_values(smaller[1]);
+        let larger_unit_value = unit_values(larger[1]);
+        let at_least_two_thirds = smaller[0] * smaller_unit_value < (divideInt(
+          larger_unit_value * 2,
+          3
+        ));
+        let _block;
         if (at_least_two_thirds) {
-          return larger;
+          _block = larger;
         } else {
-          return [larger[0] + 1, larger[1]];
+          _block = [larger[0] + 1, larger[1]];
         }
-      })();
-      loop$values = listPrepend(rounded, rest);
+        let rounded = _block;
+        loop$values = listPrepend(rounded, rest);
+      }
     }
   }
 }
@@ -306,28 +314,29 @@ export function accurate_new(values) {
     _pipe,
     0,
     (total, current) => {
-      if (current[1] instanceof MicroSecond) {
+      let $ = current[1];
+      if ($ instanceof MicroSecond) {
         let amount = current[0];
         return total + amount;
-      } else if (current[1] instanceof MilliSecond) {
+      } else if ($ instanceof MilliSecond) {
         let amount = current[0];
         return total + amount * milli_second;
-      } else if (current[1] instanceof Second) {
+      } else if ($ instanceof Second) {
         let amount = current[0];
         return total + amount * second;
-      } else if (current[1] instanceof Minute) {
+      } else if ($ instanceof Minute) {
         let amount = current[0];
         return total + amount * minute;
-      } else if (current[1] instanceof Hour) {
+      } else if ($ instanceof Hour) {
         let amount = current[0];
         return total + amount * hour;
-      } else if (current[1] instanceof Day) {
+      } else if ($ instanceof Day) {
         let amount = current[0];
         return total + amount * day;
-      } else if (current[1] instanceof Week) {
+      } else if ($ instanceof Week) {
         let amount = current[0];
         return total + amount * week;
-      } else if (current[1] instanceof Month) {
+      } else if ($ instanceof Month) {
         let amount = current[0];
         return total + amount * accurate_month;
       } else {
@@ -436,40 +445,58 @@ const units = /* @__PURE__ */ toList([
 
 export function parse(expression) {
   let $ = $regexp.from_string("([+|\\-])?\\s*(\\d+)\\s*(\\w+)?");
-  if (!$.isOk()) {
+  if (!($ instanceof Ok)) {
     throw makeError(
       "let_assert",
+      FILEPATH,
       "birl/duration",
       328,
       "parse",
       "Pattern match failed, no pattern matched the value.",
-      { value: $ }
+      {
+        value: $,
+        start: 8616,
+        end: 8689,
+        pattern_start: 8627,
+        pattern_end: 8633
+      }
     )
   }
   let re = $[0];
-  let $1 = (() => {
-    let $2 = $string.starts_with(expression, "accurate:");
-    if ($2) {
-      let $3 = $string.split(expression, ":");
-      if (!$3.hasLength(2)) {
-        throw makeError(
-          "let_assert",
-          "birl/duration",
-          334,
-          "parse",
-          "Pattern match failed, no pattern matched the value.",
-          { value: $3 }
-        )
-      }
-      let expression$1 = $3.tail.head;
-      return [accurate_new, expression$1];
-    } else {
-      return [new$, expression];
+  let _block;
+  let $2 = $string.starts_with(expression, "accurate:");
+  if ($2) {
+    let $3 = $string.split(expression, ":");
+    if (
+      $3 instanceof $Empty ||
+      $3.tail instanceof $Empty ||
+      $3.tail.tail instanceof $NonEmpty
+    ) {
+      throw makeError(
+        "let_assert",
+        FILEPATH,
+        "birl/duration",
+        334,
+        "parse",
+        "Pattern match failed, no pattern matched the value.",
+        {
+          value: $3,
+          start: 8803,
+          end: 8861,
+          pattern_start: 8814,
+          pattern_end: 8829
+        }
+      )
     }
-  })();
+    let expression$1 = $3.tail.head;
+    _block = [accurate_new, expression$1];
+  } else {
+    _block = [new$, expression];
+  }
+  let $1 = _block;
   let constructor = $1[0];
   let expression$1 = $1[1];
-  let $2 = (() => {
+  let $3 = (() => {
     let _pipe = expression$1;
     let _pipe$1 = $string.lowercase(_pipe);
     let _pipe$2 = ((_capture) => { return $regexp.scan(re, _capture); })(
@@ -478,66 +505,93 @@ export function parse(expression) {
     return $list.try_map(
       _pipe$2,
       (item) => {
-        if (item instanceof $regexp.Match &&
-        item.submatches.hasLength(2) &&
-        item.submatches.tail.head instanceof $option.Some) {
-          let sign_option = item.submatches.head;
-          let amount_string = item.submatches.tail.head[0];
-          return $result.then$(
-            $int.parse(amount_string),
-            (amount) => {
-              if (sign_option instanceof $option.Some && sign_option[0] === "-") {
-                return new Ok([-1 * amount, new MicroSecond()]);
-              } else if (sign_option instanceof $option.None) {
-                return new Ok([amount, new MicroSecond()]);
-              } else if (sign_option instanceof $option.Some &&
-              sign_option[0] === "+") {
-                return new Ok([amount, new MicroSecond()]);
+        let $4 = item.submatches;
+        if ($4 instanceof $Empty) {
+          return new Error(undefined);
+        } else {
+          let $5 = $4.tail;
+          if ($5 instanceof $Empty) {
+            return new Error(undefined);
+          } else {
+            let $6 = $5.tail;
+            if ($6 instanceof $Empty) {
+              let $7 = $5.head;
+              if ($7 instanceof $option.Some) {
+                let sign_option = $4.head;
+                let amount_string = $7[0];
+                return $result.then$(
+                  $int.parse(amount_string),
+                  (amount) => {
+                    if (sign_option instanceof $option.Some) {
+                      let $8 = sign_option[0];
+                      if ($8 === "-") {
+                        return new Ok([-1 * amount, new MicroSecond()]);
+                      } else if ($8 === "+") {
+                        return new Ok([amount, new MicroSecond()]);
+                      } else {
+                        return new Error(undefined);
+                      }
+                    } else {
+                      return new Ok([amount, new MicroSecond()]);
+                    }
+                  },
+                );
               } else {
                 return new Error(undefined);
               }
-            },
-          );
-        } else if (item instanceof $regexp.Match &&
-        item.submatches.hasLength(3) &&
-        item.submatches.tail.head instanceof $option.Some &&
-        item.submatches.tail.tail.head instanceof $option.Some) {
-          let sign_option = item.submatches.head;
-          let amount_string = item.submatches.tail.head[0];
-          let unit = item.submatches.tail.tail.head[0];
-          return $result.then$(
-            $int.parse(amount_string),
-            (amount) => {
-              return $result.then$(
-                $list.find(
-                  units,
-                  (item) => { return $list.contains(item[1], unit); },
-                ),
-                (_use0) => {
-                  let unit$1 = _use0[0];
-                  if (sign_option instanceof $option.Some &&
-                  sign_option[0] === "-") {
-                    return new Ok([-1 * amount, unit$1]);
-                  } else if (sign_option instanceof $option.None) {
-                    return new Ok([amount, unit$1]);
-                  } else if (sign_option instanceof $option.Some &&
-                  sign_option[0] === "+") {
-                    return new Ok([amount, unit$1]);
+            } else {
+              let $7 = $6.tail;
+              if ($7 instanceof $Empty) {
+                let $8 = $6.head;
+                if ($8 instanceof $option.Some) {
+                  let $9 = $5.head;
+                  if ($9 instanceof $option.Some) {
+                    let sign_option = $4.head;
+                    let unit = $8[0];
+                    let amount_string = $9[0];
+                    return $result.then$(
+                      $int.parse(amount_string),
+                      (amount) => {
+                        return $result.then$(
+                          $list.find(
+                            units,
+                            (item) => { return $list.contains(item[1], unit); },
+                          ),
+                          (_use0) => {
+                            let unit$1 = _use0[0];
+                            if (sign_option instanceof $option.Some) {
+                              let $10 = sign_option[0];
+                              if ($10 === "-") {
+                                return new Ok([-1 * amount, unit$1]);
+                              } else if ($10 === "+") {
+                                return new Ok([amount, unit$1]);
+                              } else {
+                                return new Error(undefined);
+                              }
+                            } else {
+                              return new Ok([amount, unit$1]);
+                            }
+                          },
+                        );
+                      },
+                    );
                   } else {
                     return new Error(undefined);
                   }
-                },
-              );
-            },
-          );
-        } else {
-          return new Error(undefined);
+                } else {
+                  return new Error(undefined);
+                }
+              } else {
+                return new Error(undefined);
+              }
+            }
+          }
         }
       },
     );
   })();
-  if ($2.isOk()) {
-    let values = $2[0];
+  if ($3 instanceof Ok) {
+    let values = $3[0];
     let _pipe = values;
     let _pipe$1 = constructor(_pipe);
     return new Ok(_pipe$1);

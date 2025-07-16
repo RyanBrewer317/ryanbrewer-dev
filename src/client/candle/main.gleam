@@ -1,7 +1,7 @@
 import client/candle/elab
-import gleam/result
 import client/candle/header
 import client/candle/parser
+import gleam/result
 
 fn go_helper(code) {
   use s <- result.try(parser.parse(code, parser.expr()))

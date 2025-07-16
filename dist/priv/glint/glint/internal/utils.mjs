@@ -2,7 +2,7 @@ import * as $bool from "../../../gleam_stdlib/gleam/bool.mjs";
 import * as $int from "../../../gleam_stdlib/gleam/int.mjs";
 import * as $list from "../../../gleam_stdlib/gleam/list.mjs";
 import * as $string from "../../../gleam_stdlib/gleam/string.mjs";
-import { toList, prepend as listPrepend } from "../../gleam.mjs";
+import { toList, Empty as $Empty, prepend as listPrepend } from "../../gleam.mjs";
 
 export function max_string_length(strings) {
   return $list.fold(
@@ -22,7 +22,13 @@ function do_wordwrap(loop$tokens, loop$max_width, loop$line, loop$lines) {
     let max_width = loop$max_width;
     let line = loop$line;
     let lines = loop$lines;
-    if (tokens.atLeastLength(1)) {
+    if (tokens instanceof $Empty) {
+      if (line === "") {
+        return $list.reverse(lines);
+      } else {
+        return $list.reverse(listPrepend(line, lines));
+      }
+    } else {
       let token = tokens.head;
       let tokens$1 = tokens.tail;
       let token_length = $string.length(token);
@@ -44,44 +50,71 @@ function do_wordwrap(loop$tokens, loop$max_width, loop$line, loop$lines) {
         loop$line = token;
         loop$lines = listPrepend(line, lines);
       }
-    } else if (tokens.hasLength(0) && (line === "")) {
-      return $list.reverse(lines);
-    } else {
-      return $list.reverse(listPrepend(line, lines));
     }
   }
 }
 
 function space_split_lines(s) {
-  let chunks = (() => {
-    let _pipe = s;
-    let _pipe$1 = $string.trim(_pipe);
-    let _pipe$2 = $string.to_graphemes(_pipe$1);
-    return $list.chunk(_pipe$2, (s) => { return s === "\n"; });
-  })();
+  let _block;
+  let _pipe = s;
+  let _pipe$1 = $string.trim(_pipe);
+  let _pipe$2 = $string.to_graphemes(_pipe$1);
+  _block = $list.chunk(_pipe$2, (s) => { return s === "\n"; });
+  let chunks = _block;
   let lines = $list.fold(
     chunks,
     [toList([]), false],
     (acc, chunk) => {
       let $ = acc[0];
-      if (chunk.atLeastLength(2) &&
-      chunk.head === "\n" &&
-      chunk.tail.head === "\n" &&
-      $.atLeastLength(1)) {
-        let rest = chunk.tail.tail;
-        let s$1 = $.head;
-        let accs = $.tail;
-        return [listPrepend(s$1 + $string.concat(rest), accs), true];
-      } else if (chunk.hasLength(1) && chunk.head === "\n" && $.atLeastLength(1)) {
-        let s$1 = $.head;
-        let accs = $.tail;
-        return [listPrepend(s$1 + " ", accs), false];
-      } else if ($.atLeastLength(1) && (!acc[1])) {
-        let s$1 = $.head;
-        let accs = $.tail;
-        return [listPrepend(s$1 + $string.concat(chunk), accs), false];
-      } else {
+      if ($ instanceof $Empty) {
         return [listPrepend($string.concat(chunk), acc[0]), false];
+      } else if (chunk instanceof $Empty) {
+        if (!acc[1]) {
+          let s$1 = $.head;
+          let accs = $.tail;
+          return [listPrepend(s$1 + $string.concat(chunk), accs), false];
+        } else {
+          return [listPrepend($string.concat(chunk), acc[0]), false];
+        }
+      } else {
+        let $1 = chunk.tail;
+        if ($1 instanceof $Empty) {
+          let $2 = chunk.head;
+          if ($2 === "\n") {
+            let s$1 = $.head;
+            let accs = $.tail;
+            return [listPrepend(s$1 + " ", accs), false];
+          } else if (!acc[1]) {
+            let s$1 = $.head;
+            let accs = $.tail;
+            return [listPrepend(s$1 + $string.concat(chunk), accs), false];
+          } else {
+            return [listPrepend($string.concat(chunk), acc[0]), false];
+          }
+        } else {
+          let $2 = $1.head;
+          if ($2 === "\n") {
+            let $3 = chunk.head;
+            if ($3 === "\n") {
+              let s$1 = $.head;
+              let accs = $.tail;
+              let rest = $1.tail;
+              return [listPrepend(s$1 + $string.concat(rest), accs), true];
+            } else if (!acc[1]) {
+              let s$1 = $.head;
+              let accs = $.tail;
+              return [listPrepend(s$1 + $string.concat(chunk), accs), false];
+            } else {
+              return [listPrepend($string.concat(chunk), acc[0]), false];
+            }
+          } else if (!acc[1]) {
+            let s$1 = $.head;
+            let accs = $.tail;
+            return [listPrepend(s$1 + $string.concat(chunk), accs), false];
+          } else {
+            return [listPrepend($string.concat(chunk), acc[0]), false];
+          }
+        }
       }
     },
   );

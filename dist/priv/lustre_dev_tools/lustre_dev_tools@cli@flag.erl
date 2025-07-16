@@ -1,6 +1,6 @@
 -module(lustre_dev_tools@cli@flag).
 -compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch]).
-
+-define(FILEPATH, "src/lustre_dev_tools/cli/flag.gleam").
 -export([esbuild_os/0, esbuild_cpu/0, tailwind_os/0, tailwind_cpu/0, minify/0, tailwind_entry/0, outdir/0, ext/0, detect_tailwind/0, port/0, bind/0, proxy_from/0, proxy_to/0, entry/0]).
 
 -if(?OTP_RELEASE >= 27).
@@ -61,8 +61,7 @@ tailwind_os() ->
 -spec tailwind_cpu() -> glint:flag(binary()).
 tailwind_cpu() ->
     Description = <<"Override the automatic CPU architecture detection."/utf8>>,
-    Allowed = [<<"armv7"/utf8>>,
-        <<"arm64"/utf8>>,
+    Allowed = [<<"arm64"/utf8>>,
         <<"x64"/utf8>>,
         <<"x86_64"/utf8>>,
         <<"aarch64"/utf8>>],

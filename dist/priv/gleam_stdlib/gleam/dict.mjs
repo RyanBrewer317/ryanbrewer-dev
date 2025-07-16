@@ -1,4 +1,4 @@
-import { Error, toList, prepend as listPrepend, isEqual } from "../gleam.mjs";
+import { Ok, Error, toList, Empty as $Empty, prepend as listPrepend, isEqual } from "../gleam.mjs";
 import * as $option from "../gleam/option.mjs";
 import {
   map_size as size,
@@ -31,12 +31,12 @@ function from_list_loop(loop$list, loop$initial) {
   while (true) {
     let list = loop$list;
     let initial = loop$initial;
-    if (list.hasLength(0)) {
+    if (list instanceof $Empty) {
       return initial;
     } else {
+      let rest = list.tail;
       let key = list.head[0];
       let value = list.head[1];
-      let rest = list.tail;
       loop$list = rest;
       loop$initial = insert(initial, key, value);
     }
@@ -51,7 +51,7 @@ function reverse_and_concat(loop$remaining, loop$accumulator) {
   while (true) {
     let remaining = loop$remaining;
     let accumulator = loop$accumulator;
-    if (remaining.hasLength(0)) {
+    if (remaining instanceof $Empty) {
       return accumulator;
     } else {
       let first = remaining.head;
@@ -66,11 +66,11 @@ function do_keys_loop(loop$list, loop$acc) {
   while (true) {
     let list = loop$list;
     let acc = loop$acc;
-    if (list.hasLength(0)) {
+    if (list instanceof $Empty) {
       return reverse_and_concat(acc, toList([]));
     } else {
-      let key = list.head[0];
       let rest = list.tail;
+      let key = list.head[0];
       loop$list = rest;
       loop$acc = listPrepend(key, acc);
     }
@@ -85,11 +85,11 @@ function do_values_loop(loop$list, loop$acc) {
   while (true) {
     let list = loop$list;
     let acc = loop$acc;
-    if (list.hasLength(0)) {
+    if (list instanceof $Empty) {
       return reverse_and_concat(acc, toList([]));
     } else {
-      let value = list.head[1];
       let rest = list.tail;
+      let value = list.head[1];
       loop$list = rest;
       loop$acc = listPrepend(value, acc);
     }
@@ -108,14 +108,14 @@ function do_take_loop(loop$dict, loop$desired_keys, loop$acc) {
     let acc = loop$acc;
     let insert$1 = (taken, key) => {
       let $ = get(dict, key);
-      if ($.isOk()) {
+      if ($ instanceof Ok) {
         let value = $[0];
         return insert(taken, key, value);
       } else {
         return taken;
       }
     };
-    if (desired_keys.hasLength(0)) {
+    if (desired_keys instanceof $Empty) {
       return acc;
     } else {
       let first = desired_keys.head;
@@ -143,7 +143,7 @@ function fold_inserts(loop$new_entries, loop$dict) {
   while (true) {
     let new_entries = loop$new_entries;
     let dict = loop$dict;
-    if (new_entries.hasLength(0)) {
+    if (new_entries instanceof $Empty) {
       return dict;
     } else {
       let first = new_entries.head;
@@ -168,7 +168,7 @@ export function drop(loop$dict, loop$disallowed_keys) {
   while (true) {
     let dict = loop$dict;
     let disallowed_keys = loop$disallowed_keys;
-    if (disallowed_keys.hasLength(0)) {
+    if (disallowed_keys instanceof $Empty) {
       return dict;
     } else {
       let first = disallowed_keys.head;
@@ -181,7 +181,7 @@ export function drop(loop$dict, loop$disallowed_keys) {
 
 export function upsert(dict, key, fun) {
   let $ = get(dict, key);
-  if ($.isOk()) {
+  if ($ instanceof Ok) {
     let value = $[0];
     return insert(dict, key, fun(new $option.Some(value)));
   } else {
@@ -194,12 +194,12 @@ function fold_loop(loop$list, loop$initial, loop$fun) {
     let list = loop$list;
     let initial = loop$initial;
     let fun = loop$fun;
-    if (list.hasLength(0)) {
+    if (list instanceof $Empty) {
       return initial;
     } else {
+      let rest = list.tail;
       let k = list.head[0];
       let v = list.head[1];
-      let rest = list.tail;
       loop$list = rest;
       loop$initial = fun(initial, k, v);
       loop$fun = fun;
@@ -253,7 +253,7 @@ export function combine(dict, other, fun) {
     other,
     (acc, key, value) => {
       let $ = get(acc, key);
-      if ($.isOk()) {
+      if ($ instanceof Ok) {
         let other_value = $[0];
         return insert(acc, key, fun(value, other_value));
       } else {

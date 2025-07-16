@@ -1,6 +1,6 @@
 -module(lustre_dev_tools@server).
 -compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch]).
-
+-define(FILEPATH, "src/lustre_dev_tools/server.gleam").
 -export([start/3]).
 
 -if(?OTP_RELEASE >= 27).
@@ -21,19 +21,23 @@
     fun(() -> gleam@http@response:response(wisp:body()))
 ) -> gleam@http@response:response(wisp:body()).
 inject_live_reload(Req, Root, K) ->
-    _assert_subject = gleam@regexp:from_string(<<".*\\.html$"/utf8>>),
-    {ok, Is_interesting} = case _assert_subject of
-        {ok, _} -> _assert_subject;
+    Is_interesting@1 = case gleam@regexp:from_string(<<".*\\.html$"/utf8>>) of
+        {ok, Is_interesting} -> Is_interesting;
         _assert_fail ->
             erlang:error(#{gleam_error => let_assert,
                         message => <<"Pattern match failed, no pattern matched the value."/utf8>>,
-                        value => _assert_fail,
+                        file => <<?FILEPATH/utf8>>,
                         module => <<"lustre_dev_tools/server"/utf8>>,
                         function => <<"inject_live_reload"/utf8>>,
-                        line => 85})
+                        line => 85,
+                        value => _assert_fail,
+                        start => 2609,
+                        'end' => 2673,
+                        pattern_start => 2620,
+                        pattern_end => 2638})
     end,
     gleam@bool:lazy_guard(
-        not gleam@regexp:check(Is_interesting, erlang:element(8, Req)),
+        not gleam@regexp:check(Is_interesting@1, erlang:element(8, Req)),
         K,
         fun() ->
             Path = filepath:join(Root, erlang:element(8, Req)),
@@ -45,18 +49,22 @@ inject_live_reload(Req, Root, K) ->
                     K();
 
                 {ok, true} ->
-                    _assert_subject@1 = simplifile:read(Path),
-                    {ok, Html} = case _assert_subject@1 of
-                        {ok, _} -> _assert_subject@1;
+                    Html@1 = case simplifile:read(Path) of
+                        {ok, Html} -> Html;
                         _assert_fail@1 ->
                             erlang:error(#{gleam_error => let_assert,
                                         message => <<"Pattern match failed, no pattern matched the value."/utf8>>,
-                                        value => _assert_fail@1,
+                                        file => <<?FILEPATH/utf8>>,
                                         module => <<"lustre_dev_tools/server"/utf8>>,
                                         function => <<"inject_live_reload"/utf8>>,
-                                        line => 92})
+                                        line => 92,
+                                        value => _assert_fail@1,
+                                        start => 2877,
+                                        'end' => 2920,
+                                        pattern_start => 2888,
+                                        pattern_end => 2896})
                     end,
-                    _pipe = Html,
+                    _pipe = Html@1,
                     _pipe@1 = lustre_dev_tools@server@live_reload:inject(_pipe),
                     _pipe@2 = gleam_stdlib:identity(_pipe@1),
                     wisp:html_response(_pipe@2, 200)
@@ -101,29 +109,37 @@ handler(Req, Root) ->
 ?DOC(false).
 -spec start(binary(), integer(), binary()) -> lustre_dev_tools@cli:cli(nil).
 start(Entry, Port, Bind) ->
-    _assert_subject = lustre_dev_tools_ffi:get_cwd(),
-    {ok, Cwd} = case _assert_subject of
-        {ok, _} -> _assert_subject;
+    Cwd@1 = case lustre_dev_tools_ffi:get_cwd() of
+        {ok, Cwd} -> Cwd;
         _assert_fail ->
             erlang:error(#{gleam_error => let_assert,
                         message => <<"Pattern match failed, no pattern matched the value."/utf8>>,
-                        value => _assert_fail,
+                        file => <<?FILEPATH/utf8>>,
                         module => <<"lustre_dev_tools/server"/utf8>>,
                         function => <<"start"/utf8>>,
-                        line => 25})
+                        line => 25,
+                        value => _assert_fail,
+                        start => 726,
+                        'end' => 756,
+                        pattern_start => 737,
+                        pattern_end => 744})
     end,
-    _assert_subject@1 = filepath:expand(
-        filepath:join(Cwd, lustre_dev_tools@project:root())
-    ),
-    {ok, Root} = case _assert_subject@1 of
-        {ok, _} -> _assert_subject@1;
+    Root@1 = case filepath:expand(
+        filepath:join(Cwd@1, lustre_dev_tools@project:root())
+    ) of
+        {ok, Root} -> Root;
         _assert_fail@1 ->
             erlang:error(#{gleam_error => let_assert,
                         message => <<"Pattern match failed, no pattern matched the value."/utf8>>,
-                        value => _assert_fail@1,
+                        file => <<?FILEPATH/utf8>>,
                         module => <<"lustre_dev_tools/server"/utf8>>,
                         function => <<"start"/utf8>>,
-                        line => 26})
+                        line => 26,
+                        value => _assert_fail@1,
+                        start => 759,
+                        'end' => 832,
+                        pattern_start => 770,
+                        pattern_end => 778})
     end,
     lustre_dev_tools@cli:do(
         lustre_dev_tools@server@proxy:get(),
@@ -148,7 +164,7 @@ at https://github.com/lustre-labs/dev-tools/issues/new
                     lustre_dev_tools@cli:'try'(
                         lustre_dev_tools@server@live_reload:start(
                             Entry,
-                            Root,
+                            Root@1,
                             Flags
                         ),
                         fun(Make_socket) ->
@@ -203,7 +219,7 @@ at https://github.com/lustre-labs/dev-tools/issues/new
                                                             fun(_capture) ->
                                                                 handler(
                                                                     _capture,
-                                                                    Root
+                                                                    Root@1
                                                                 )
                                                             end,
                                                             <<""/utf8>>
@@ -214,7 +230,7 @@ at https://github.com/lustre-labs/dev-tools/issues/new
                                                             fun(_capture@1) ->
                                                                 handler(
                                                                     _capture@1,
-                                                                    Root
+                                                                    Root@1
                                                                 )
                                                             end,
                                                             <<""/utf8>>
@@ -226,7 +242,7 @@ at https://github.com/lustre-labs/dev-tools/issues/new
                                     _pipe@2 = mist:new(_pipe@1),
                                     _pipe@3 = mist:port(_pipe@2, Port),
                                     _pipe@4 = mist:bind(_pipe@3, Bind),
-                                    _pipe@5 = mist:start_http(_pipe@4),
+                                    _pipe@5 = mist:start(_pipe@4),
                                     gleam@result:map_error(
                                         _pipe@5,
                                         fun(_capture@2) ->

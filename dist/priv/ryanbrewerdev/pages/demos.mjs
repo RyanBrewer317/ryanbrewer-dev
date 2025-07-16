@@ -2,7 +2,7 @@ import * as $attribute from "../../lustre/lustre/attribute.mjs";
 import { attribute, id } from "../../lustre/lustre/attribute.mjs";
 import * as $element from "../../lustre/lustre/element.mjs";
 import * as $html from "../../lustre/lustre/element/html.mjs";
-import { div, html, script } from "../../lustre/lustre/element/html.mjs";
+import { div, script } from "../../lustre/lustre/element/html.mjs";
 import * as $head from "../components/head.mjs";
 import * as $navbar from "../components/navbar.mjs";
 import { navbar } from "../components/navbar.mjs";

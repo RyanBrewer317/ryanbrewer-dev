@@ -1,6 +1,6 @@
 -module(gleam@time@duration).
 -compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch]).
-
+-define(FILEPATH, "src/gleam/time/duration.gleam").
 -export([approximate/1, compare/2, difference/2, add/2, to_iso8601_string/1, seconds/1, minutes/1, hours/1, milliseconds/1, nanoseconds/1, to_seconds/1, to_seconds_and_nanoseconds/1]).
 -export_type([duration/0, unit/0]).
 

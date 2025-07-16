@@ -11,6 +11,8 @@ import { toList, makeError } from "../gleam.mjs";
 import * as $helpers from "../helpers.mjs";
 import { pretty_date } from "../helpers.mjs";
 
+const FILEPATH = "src/components/script_posts.gleam";
+
 export function script_posts(posts) {
   return ((k) => {
     return $html.script(
@@ -32,11 +34,18 @@ export function script_posts(posts) {
           if (!($ instanceof Some)) {
             throw makeError(
               "let_assert",
+              FILEPATH,
               "components/script_posts",
               29,
-              "",
+              "script_posts",
               "Pattern match failed, no pattern matched the value.",
-              { value: $ }
+              {
+                value: $,
+                start: 855,
+                end: 885,
+                pattern_start: 866,
+                pattern_end: 876
+              }
             )
           }
           let date = $[0];

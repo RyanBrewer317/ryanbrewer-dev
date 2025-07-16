@@ -1,8 +1,8 @@
 -module(gleam@otp@static_supervisor).
 -compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch]).
-
--export([new/1, restart_tolerance/3, auto_shutdown/2, add/2, worker_child/2, supervisor_child/2, significant/2, timeout/2, restart/2, start_link/1, init/1]).
--export_type([strategy/0, auto_shutdown/0, builder/0, restart/0, child_type/0, child_builder/0]).
+-define(FILEPATH, "src/gleam/otp/static_supervisor.gleam").
+-export([new/1, restart_tolerance/3, auto_shutdown/2, add/2, start/1, supervised/1, init/1, start_child_callback/1]).
+-export_type([supervisor/0, strategy/0, auto_shutdown/0, builder/0, erlang_start_flags/0, erlang_start_flag/1, erlang_child_spec/0, erlang_child_spec_property/1, timeout_/0]).
 
 -if(?OTP_RELEASE >= 27).
 -define(MODULEDOC(Str), -moduledoc(Str)).
@@ -21,18 +21,21 @@
     " # Example\n"
     "\n"
     " ```gleam\n"
-    " import gleam/erlang/process.{type Pid}\n"
-    " import gleam/otp/static_supervisor as sup\n"
+    " import gleam/erlang/actor\n"
+    " import gleam/otp/static_supervisor.{type Supervisor} as supervisor\n"
+    " import app/database_pool\n"
+    " import app/http_server\n"
     " \n"
-    " pub fn start_supervisor() {\n"
-    "   sup.new(sup.OneForOne)\n"
-    "   |> sup.add(sup.worker_child(\"db\", start_database_connection))\n"
-    "   |> sup.add(sup.worker_child(\"workers\", start_workers))\n"
-    "   |> sup.add(sup.worker_child(\"web\", start_http_server))\n"
-    "   |> sup.start_link\n"
+    " pub fn start_supervisor() ->  {\n"
+    "   supervisor.new(supervisor.OneForOne)\n"
+    "   |> supervisor.add(database_pool.supervised())\n"
+    "   |> supervisor.add(http_server.supervised())\n"
+    "   |> supervisor.start\n"
     " }\n"
     " ```\n"
 ).
+
+-opaque supervisor() :: {supervisor, gleam@erlang@process:pid_()}.
 
 -type strategy() :: one_for_one | one_for_all | rest_for_one.
 
@@ -43,26 +46,38 @@
         integer(),
         integer(),
         auto_shutdown(),
-        list(child_builder())}.
+        list(gleam@otp@supervision:child_specification(nil))}.
 
--type restart() :: permanent | transient | temporary.
+-type erlang_start_flags() :: any().
 
--type child_type() :: {worker, integer()} | supervisor.
+-type erlang_start_flag(FBB) :: {strategy, strategy()} |
+    {intensity, integer()} |
+    {period, integer()} |
+    {auto_shutdown, auto_shutdown()} |
+    {gleam_phantom, FBB}.
 
--opaque child_builder() :: {child_builder,
-        binary(),
-        fun(() -> {ok, gleam@erlang@process:pid_()} |
-            {error, gleam@dynamic:dynamic_()}),
-        restart(),
-        boolean(),
-        child_type()}.
+-type erlang_child_spec() :: any().
 
--file("/Users/louis/src/gleam/otp/src/gleam/otp/static_supervisor.gleam", 74).
+-type erlang_child_spec_property(FBC) :: {id, integer()} |
+    {start,
+        {gleam@erlang@atom:atom_(),
+            gleam@erlang@atom:atom_(),
+            list(fun(() -> {ok, gleam@otp@actor:started(FBC)} |
+                {error, gleam@otp@actor:start_error()}))}} |
+    {restart, gleam@otp@supervision:restart()} |
+    {significant, boolean()} |
+    {type, gleam@erlang@atom:atom_()} |
+    {shutdown, timeout_()}.
+
+-type timeout_() :: any().
+
+-file("src/gleam/otp/static_supervisor.gleam", 109).
+?DOC(" Create a new supervisor builder, ready for further configuration.\n").
 -spec new(strategy()) -> builder().
 new(Strategy) ->
     {builder, Strategy, 2, 5, never, []}.
 
--file("/Users/louis/src/gleam/otp/src/gleam/otp/static_supervisor.gleam", 94).
+-file("src/gleam/otp/static_supervisor.gleam", 129).
 ?DOC(
     " To prevent a supervisor from getting into an infinite loop of child\n"
     " process terminations and restarts, a maximum restart intensity is\n"
@@ -85,7 +100,7 @@ restart_tolerance(Builder, Intensity, Period) ->
         erlang:element(5, _record),
         erlang:element(6, _record)}.
 
--file("/Users/louis/src/gleam/otp/src/gleam/otp/static_supervisor.gleam", 104).
+-file("src/gleam/otp/static_supervisor.gleam", 140).
 ?DOC(
     " A supervisor can be configured to automatically shut itself down with\n"
     " exit reason shutdown when significant children terminate.\n"
@@ -100,9 +115,9 @@ auto_shutdown(Builder, Value) ->
         Value,
         erlang:element(6, _record)}.
 
--file("/Users/louis/src/gleam/otp/src/gleam/otp/static_supervisor.gleam", 184).
+-file("src/gleam/otp/static_supervisor.gleam", 200).
 ?DOC(" Add a child to the supervisor.\n").
--spec add(builder(), child_builder()) -> builder().
+-spec add(builder(), gleam@otp@supervision:child_specification(any())) -> builder().
 add(Builder, Child) ->
     _record = Builder,
     {builder,
@@ -110,187 +125,104 @@ add(Builder, Child) ->
         erlang:element(3, _record),
         erlang:element(4, _record),
         erlang:element(5, _record),
-        [Child | erlang:element(6, Builder)]}.
+        [gleam@otp@supervision:map_data(Child, fun(_) -> nil end) |
+            erlang:element(6, Builder)]}.
 
--file("/Users/louis/src/gleam/otp/src/gleam/otp/static_supervisor.gleam", 197).
-?DOC(
-    " A regular child that is not also a supervisor.\n"
-    "\n"
-    " id is used to identify the child specification internally by the\n"
-    " supervisor.\n"
-    " Notice that this identifier on occations has been called \"name\". As far\n"
-    " as possible, the terms \"identifier\" or \"id\" are now used but to keep\n"
-    " backward compatibility, some occurences of \"name\" can still be found, for\n"
-    " example in error messages.\n"
-).
--spec worker_child(
-    binary(),
-    fun(() -> {ok, gleam@erlang@process:pid_()} | {error, any()})
-) -> child_builder().
-worker_child(Id, Starter) ->
-    {child_builder, Id, fun() -> _pipe = Starter(),
-            gleam@result:map_error(_pipe, fun gleam_stdlib:identity/1) end, permanent, false, {worker,
-            5000}}.
-
--file("/Users/louis/src/gleam/otp/src/gleam/otp/static_supervisor.gleam", 219).
-?DOC(
-    " A special child that is a supervisor itself.\n"
-    "\n"
-    " id is used to identify the child specification internally by the\n"
-    " supervisor.\n"
-    " Notice that this identifier on occations has been called \"name\". As far\n"
-    " as possible, the terms \"identifier\" or \"id\" are now used but to keep\n"
-    " backward compatibility, some occurences of \"name\" can still be found, for\n"
-    " example in error messages.\n"
-).
--spec supervisor_child(
-    binary(),
-    fun(() -> {ok, gleam@erlang@process:pid_()} | {error, any()})
-) -> child_builder().
-supervisor_child(Id, Starter) ->
-    {child_builder, Id, fun() -> _pipe = Starter(),
-            gleam@result:map_error(_pipe, fun gleam_stdlib:identity/1) end, permanent, false, supervisor}.
-
--file("/Users/louis/src/gleam/otp/src/gleam/otp/static_supervisor.gleam", 241).
-?DOC(
-    " This defines if a child is considered significant for automatic\n"
-    " self-shutdown of the supervisor.\n"
-    "\n"
-    " You most likely do not want to consider any children significant.\n"
-    "\n"
-    " This will be ignored if the supervisor auto shutdown is set to `Never`,\n"
-    " which is the default.\n"
-    "\n"
-    " The default value for significance is `False`.\n"
-).
--spec significant(child_builder(), boolean()) -> child_builder().
-significant(Child, Significant) ->
-    _record = Child,
-    {child_builder,
-        erlang:element(2, _record),
-        erlang:element(3, _record),
-        erlang:element(4, _record),
-        Significant,
-        erlang:element(6, _record)}.
-
--file("/Users/louis/src/gleam/otp/src/gleam/otp/static_supervisor.gleam", 252).
-?DOC(
-    " This defines the amount of milliseconds a child has to shut down before\n"
-    " being brutal killed by the supervisor.\n"
-    "\n"
-    " If not set the default for a child is 5000ms.\n"
-    "\n"
-    " This will be ignored if the child is a supervisor itself.\n"
-).
--spec timeout(child_builder(), integer()) -> child_builder().
-timeout(Child, Ms) ->
-    case erlang:element(6, Child) of
-        {worker, _} ->
-            _record = Child,
-            {child_builder,
-                erlang:element(2, _record),
-                erlang:element(3, _record),
-                erlang:element(4, _record),
-                erlang:element(5, _record),
-                {worker, Ms}};
-
-        _ ->
-            Child
-    end.
-
--file("/Users/louis/src/gleam/otp/src/gleam/otp/static_supervisor.gleam", 263).
-?DOC(
-    " When the child is to be restarted. See the `Restart` documentation for\n"
-    " more.\n"
-    "\n"
-    " The default value for restart is `Permanent`.\n"
-).
--spec restart(child_builder(), restart()) -> child_builder().
-restart(Child, Restart) ->
-    _record = Child,
-    {child_builder,
-        erlang:element(2, _record),
-        erlang:element(3, _record),
-        Restart,
-        erlang:element(5, _record),
-        erlang:element(6, _record)}.
-
--file("/Users/louis/src/gleam/otp/src/gleam/otp/static_supervisor.gleam", 294).
--spec property(
-    gleam@dict:dict(gleam@erlang@atom:atom_(), gleam@dynamic:dynamic_()),
-    binary(),
-    any()
-) -> gleam@dict:dict(gleam@erlang@atom:atom_(), gleam@dynamic:dynamic_()).
-property(Dict, Key, Value) ->
-    gleam@dict:insert(
-        Dict,
-        erlang:binary_to_atom(Key),
-        gleam_stdlib:identity(Value)
-    ).
-
--file("/Users/louis/src/gleam/otp/src/gleam/otp/static_supervisor.gleam", 267).
--spec convert_child(child_builder()) -> gleam@dict:dict(gleam@erlang@atom:atom_(), gleam@dynamic:dynamic_()).
-convert_child(Child) ->
-    Mfa = {erlang:binary_to_atom(<<"erlang"/utf8>>),
-        erlang:binary_to_atom(<<"apply"/utf8>>),
-        [gleam_stdlib:identity(erlang:element(3, Child)),
-            gleam_stdlib:identity([])]},
-    {Type_, Shutdown} = case erlang:element(6, Child) of
+-file("src/gleam/otp/static_supervisor.gleam", 207).
+-spec convert_child(gleam@otp@supervision:child_specification(any()), integer()) -> erlang_child_spec().
+convert_child(Child, Id) ->
+    Mfa = {erlang:binary_to_atom(<<"gleam@otp@static_supervisor"/utf8>>),
+        erlang:binary_to_atom(<<"start_child_callback"/utf8>>),
+        [erlang:element(2, Child)]},
+    {Type_, Shutdown} = case erlang:element(5, Child) of
         supervisor ->
             {erlang:binary_to_atom(<<"supervisor"/utf8>>),
-                gleam_stdlib:identity(
-                    erlang:binary_to_atom(<<"infinity"/utf8>>)
-                )};
+                gleam_otp_external:make_timeout(-1)};
 
-        {worker, Timeout} ->
+        {worker, Ms} ->
             {erlang:binary_to_atom(<<"worker"/utf8>>),
-                gleam_stdlib:identity(Timeout)}
+                gleam_otp_external:make_timeout(Ms)}
     end,
-    _pipe = maps:new(),
-    _pipe@1 = property(_pipe, <<"id"/utf8>>, erlang:element(2, Child)),
-    _pipe@2 = property(_pipe@1, <<"start"/utf8>>, Mfa),
-    _pipe@3 = property(_pipe@2, <<"restart"/utf8>>, erlang:element(4, Child)),
-    _pipe@4 = property(
-        _pipe@3,
-        <<"significant"/utf8>>,
-        erlang:element(5, Child)
+    maps:from_list(
+        [{id, Id},
+            {start, Mfa},
+            {restart, erlang:element(3, Child)},
+            {significant, erlang:element(4, Child)},
+            {type, Type_},
+            {shutdown, Shutdown}]
+    ).
+
+-file("src/gleam/otp/static_supervisor.gleam", 157).
+?DOC(
+    " Start a new supervisor process with the configuration and children\n"
+    " specified within the builder.\n"
+    "\n"
+    " Typically you would use the `supervised` function to add your supervisor to\n"
+    " a supervision tree instead of using this function directly.\n"
+    "\n"
+    " The supervisor will be linked to the parent process that calls this\n"
+    " function.\n"
+    "\n"
+    " If any child fails to start the supevisor first terminates all already\n"
+    " started child processes with reason shutdown and then terminate itself and\n"
+    " returns an error.\n"
+).
+-spec start(builder()) -> {ok, gleam@otp@actor:started(supervisor())} |
+    {error, gleam@otp@actor:start_error()}.
+start(Builder) ->
+    Flags = maps:from_list(
+        [{strategy, erlang:element(2, Builder)},
+            {intensity, erlang:element(3, Builder)},
+            {period, erlang:element(4, Builder)},
+            {auto_shutdown, erlang:element(5, Builder)}]
     ),
-    _pipe@5 = property(_pipe@4, <<"type"/utf8>>, Type_),
-    property(_pipe@5, <<"shutdown"/utf8>>, Shutdown).
-
--file("/Users/louis/src/gleam/otp/src/gleam/otp/static_supervisor.gleam", 165).
--spec start_link(builder()) -> {ok, gleam@erlang@process:pid_()} |
-    {error, gleam@dynamic:dynamic_()}.
-start_link(Builder) ->
-    Flags = begin
-        _pipe = maps:new(),
-        _pipe@1 = property(
-            _pipe,
-            <<"strategy"/utf8>>,
-            erlang:element(2, Builder)
-        ),
-        _pipe@2 = property(
-            _pipe@1,
-            <<"intensity"/utf8>>,
-            erlang:element(3, Builder)
-        ),
-        _pipe@3 = property(
-            _pipe@2,
-            <<"period"/utf8>>,
-            erlang:element(4, Builder)
-        ),
-        property(_pipe@3, <<"auto_shutdown"/utf8>>, erlang:element(5, Builder))
-    end,
+    Module = erlang:binary_to_atom(<<"gleam@otp@static_supervisor"/utf8>>),
     Children = begin
-        _pipe@4 = erlang:element(6, Builder),
-        _pipe@5 = lists:reverse(_pipe@4),
-        gleam@list:map(_pipe@5, fun convert_child/1)
+        _pipe = erlang:element(6, Builder),
+        _pipe@1 = lists:reverse(_pipe),
+        gleam@list:index_map(_pipe@1, fun convert_child/2)
     end,
-    gleam_otp_external:static_supervisor_start_link({Flags, Children}).
+    case supervisor:start_link(Module, {Flags, Children}) of
+        {ok, Pid} ->
+            {ok, {started, Pid, {supervisor, Pid}}};
 
--file("/Users/louis/src/gleam/otp/src/gleam/otp/static_supervisor.gleam", 304).
+        {error, Error} ->
+            {error, gleam_otp_external:convert_erlang_start_error(Error)}
+    end.
+
+-file("src/gleam/otp/static_supervisor.gleam", 186).
+?DOC(
+    " Create a `ChildSpecification` that adds this supervisor as the child of\n"
+    " another, making it fault tolerant and part of the application's supervision\n"
+    " tree. You should prefer to starting unsupervised supervisors with the\n"
+    " `start` function.\n"
+    "\n"
+    " If any child fails to start the supevisor first terminates all already\n"
+    " started child processes with reason shutdown and then terminate itself and\n"
+    " returns an error.\n"
+).
+-spec supervised(builder()) -> gleam@otp@supervision:child_specification(supervisor()).
+supervised(Builder) ->
+    gleam@otp@supervision:supervisor(fun() -> start(Builder) end).
+
+-file("src/gleam/otp/static_supervisor.gleam", 269).
 ?DOC(false).
 -spec init(gleam@dynamic:dynamic_()) -> {ok, gleam@dynamic:dynamic_()} |
     {error, any()}.
 init(Start_data) ->
     {ok, Start_data}.
+
+-file("src/gleam/otp/static_supervisor.gleam", 275).
+?DOC(false).
+-spec start_child_callback(
+    fun(() -> {ok, gleam@otp@actor:started(any())} |
+        {error, gleam@otp@actor:start_error()})
+) -> {ok, gleam@erlang@process:pid_()} | {error, gleam@otp@actor:start_error()}.
+start_child_callback(Start) ->
+    case Start() of
+        {ok, Started} ->
+            {ok, erlang:element(2, Started)};
+
+        {error, Error} ->
+            {error, Error}
+    end.

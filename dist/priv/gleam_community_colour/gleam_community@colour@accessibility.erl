@@ -1,6 +1,6 @@
 -module(gleam_community@colour@accessibility).
 -compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch]).
-
+-define(FILEPATH, "src/gleam_community/colour/accessibility.gleam").
 -export([luminance/1, contrast_ratio/2, maximum_contrast/2]).
 
 -if(?OTP_RELEASE >= 27).
@@ -62,21 +62,22 @@ intensity(Colour_value) ->
             Colour_value / 12.92;
 
         _ ->
-            _assert_subject = gleam@float:power(
-                (Colour_value + 0.055) / 1.055,
-                2.4
-            ),
-            {ok, I} = case _assert_subject of
-                {ok, _} -> _assert_subject;
+            I@1 = case gleam@float:power((Colour_value + 0.055) / 1.055, 2.4) of
+                {ok, I} -> I;
                 _assert_fail ->
                     erlang:error(#{gleam_error => let_assert,
                                 message => <<"Pattern match failed, no pattern matched the value."/utf8>>,
-                                value => _assert_fail,
+                                file => <<?FILEPATH/utf8>>,
                                 module => <<"gleam_community/colour/accessibility"/utf8>>,
                                 function => <<"intensity"/utf8>>,
-                                line => 62})
+                                line => 62,
+                                value => _assert_fail,
+                                start => 2399,
+                                'end' => 2470,
+                                pattern_start => 2410,
+                                pattern_end => 2415})
             end,
-            I
+            I@1
     end.
 
 -file("src/gleam_community/colour/accessibility.gleam", 92).

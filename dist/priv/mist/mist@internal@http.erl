@@ -1,6 +1,6 @@
 -module(mist@internal@http).
 -compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch]).
-
+-define(FILEPATH, "src/mist/internal/http.gleam").
 -export([from_header/1, read_data/4, version_to_string/1, add_date_header/1, connection_close/1, keep_alive/1, maybe_keep_alive/1, add_content_length/2, add_default_headers/2, handle_continue/1, parse_headers/4, crypto_hash/2, base64_encode/1, parse_chunk/1, parse_request/2, read_body/1, upgrade_socket/2, upgrade/4]).
 -export_type([response_data/0, connection/0, packet_type/0, http_uri/0, http_packet/0, decoded_packet/0, decode_error/0, chunk/0, http_version/0, parsed_request/0, body/0, sha_hash/0]).
 
@@ -15,12 +15,12 @@
 ?MODULEDOC(false).
 
 -type response_data() :: {websocket,
-        gleam@erlang@process:selector(gleam@erlang@process:process_down())} |
+        gleam@erlang@process:selector(gleam@erlang@process:down())} |
     {bytes, gleam@bytes_tree:bytes_tree()} |
     {chunked, gleam@yielder:yielder(gleam@bytes_tree:bytes_tree())} |
     {file, mist@internal@file:file_descriptor(), integer(), integer()} |
     {server_sent_events,
-        gleam@erlang@process:selector(gleam@erlang@process:process_down())}.
+        gleam@erlang@process:selector(gleam@erlang@process:down())}.
 
 -type connection() :: {connection,
         body(),
@@ -78,18 +78,22 @@
 ?DOC(false).
 -spec from_header(bitstring()) -> binary().
 from_header(Value) ->
-    _assert_subject = gleam@bit_array:to_string(Value),
-    {ok, Value@1} = case _assert_subject of
-        {ok, _} -> _assert_subject;
+    Value@2 = case gleam@bit_array:to_string(Value) of
+        {ok, Value@1} -> Value@1;
         _assert_fail ->
             erlang:error(#{gleam_error => let_assert,
                         message => <<"Pattern match failed, no pattern matched the value."/utf8>>,
-                        value => _assert_fail,
+                        file => <<?FILEPATH/utf8>>,
                         module => <<"mist/internal/http"/utf8>>,
                         function => <<"from_header"/utf8>>,
-                        line => 78})
+                        line => 78,
+                        value => _assert_fail,
+                        start => 1766,
+                        'end' => 1815,
+                        pattern_start => 1777,
+                        pattern_end => 1786})
     end,
-    string:lowercase(Value@1).
+    string:lowercase(Value@2).
 
 -file("src/mist/internal/http.gleam", 112).
 ?DOC(false).
@@ -102,7 +106,7 @@ from_header(Value) ->
 read_data(Socket, Transport, Buffer, Error) ->
     To_read = gleam@int:min(erlang:element(2, Buffer), 1000000),
     Timeout = 15000,
-    gleam@result:then(
+    gleam@result:'try'(
         begin
             _pipe = Socket,
             _pipe@1 = glisten@transport:receive_timeout(
@@ -139,9 +143,56 @@ version_to_string(Version) ->
             <<"1.1"/utf8>>
     end.
 
--file("src/mist/internal/http.gleam", 515).
+-file("src/mist/internal/http.gleam", 254).
 ?DOC(false).
--spec add_date_header(gleam@http@response:response(MVY)) -> gleam@http@response:response(MVY).
+-spec decode_http_method(gleam@dynamic:dynamic_()) -> {ok, gleam@http:method()} |
+    {error, nil}.
+decode_http_method(Value) ->
+    Options = erlang:binary_to_atom(<<"OPTIONS"/utf8>>),
+    Get = erlang:binary_to_atom(<<"GET"/utf8>>),
+    Head = erlang:binary_to_atom(<<"HEAD"/utf8>>),
+    Post = erlang:binary_to_atom(<<"POST"/utf8>>),
+    Put = erlang:binary_to_atom(<<"PUT"/utf8>>),
+    Delete = erlang:binary_to_atom(<<"DELETE"/utf8>>),
+    Trace = erlang:binary_to_atom(<<"TRACE"/utf8>>),
+    case mist_ffi:decode_atom(Value) of
+        {ok, Method} when Method =:= Options ->
+            {ok, options};
+
+        {ok, Method@1} when Method@1 =:= Get ->
+            {ok, get};
+
+        {ok, Method@2} when Method@2 =:= Head ->
+            {ok, head};
+
+        {ok, Method@3} when Method@3 =:= Post ->
+            {ok, post};
+
+        {ok, Method@4} when Method@4 =:= Put ->
+            {ok, put};
+
+        {ok, Method@5} when Method@5 =:= Delete ->
+            {ok, delete};
+
+        {ok, Method@6} when Method@6 =:= Trace ->
+            {ok, trace};
+
+        _ ->
+            case gleam@dynamic@decode:run(
+                Value,
+                {decoder, fun gleam@dynamic@decode:decode_string/1}
+            ) of
+                {ok, Str} ->
+                    gleam@http:parse_method(Str);
+
+                _ ->
+                    {error, nil}
+            end
+    end.
+
+-file("src/mist/internal/http.gleam", 538).
+?DOC(false).
+-spec add_date_header(gleam@http@response:response(KQN)) -> gleam@http@response:response(KQN).
 add_date_header(Resp) ->
     case gleam@http@response:get_header(Resp, <<"date"/utf8>>) of
         {error, _} ->
@@ -155,9 +206,9 @@ add_date_header(Resp) ->
             Resp
     end.
 
--file("src/mist/internal/http.gleam", 522).
+-file("src/mist/internal/http.gleam", 545).
 ?DOC(false).
--spec connection_close(gleam@http@response:response(MWB)) -> gleam@http@response:response(MWB).
+-spec connection_close(gleam@http@response:response(KQQ)) -> gleam@http@response:response(KQQ).
 connection_close(Resp) ->
     gleam@http@response:set_header(
         Resp,
@@ -165,9 +216,9 @@ connection_close(Resp) ->
         <<"close"/utf8>>
     ).
 
--file("src/mist/internal/http.gleam", 526).
+-file("src/mist/internal/http.gleam", 549).
 ?DOC(false).
--spec keep_alive(gleam@http@response:response(MWE)) -> gleam@http@response:response(MWE).
+-spec keep_alive(gleam@http@response:response(KQT)) -> gleam@http@response:response(KQT).
 keep_alive(Resp) ->
     gleam@http@response:set_header(
         Resp,
@@ -175,9 +226,9 @@ keep_alive(Resp) ->
         <<"keep-alive"/utf8>>
     ).
 
--file("src/mist/internal/http.gleam", 530).
+-file("src/mist/internal/http.gleam", 553).
 ?DOC(false).
--spec maybe_keep_alive(gleam@http@response:response(MWH)) -> gleam@http@response:response(MWH).
+-spec maybe_keep_alive(gleam@http@response:response(KQW)) -> gleam@http@response:response(KQW).
 maybe_keep_alive(Resp) ->
     case gleam@http@response:get_header(Resp, <<"connection"/utf8>>) of
         {ok, _} ->
@@ -191,7 +242,7 @@ maybe_keep_alive(Resp) ->
             )
     end.
 
--file("src/mist/internal/http.gleam", 537).
+-file("src/mist/internal/http.gleam", 560).
 ?DOC(false).
 -spec maybe_drop_body(
     gleam@http@response:response(gleam@bytes_tree:bytes_tree()),
@@ -206,9 +257,9 @@ maybe_drop_body(Resp, Is_head_request) ->
             Resp
     end.
 
--file("src/mist/internal/http.gleam", 547).
+-file("src/mist/internal/http.gleam", 570).
 ?DOC(false).
--spec add_content_length(boolean(), integer()) -> fun((gleam@http@response:response(MWM)) -> gleam@http@response:response(MWM)).
+-spec add_content_length(boolean(), integer()) -> fun((gleam@http@response:response(KRB)) -> gleam@http@response:response(KRB)).
 add_content_length(When, Length) ->
     fun(Resp) -> case When of
             true ->
@@ -240,7 +291,7 @@ add_content_length(When, Length) ->
                 Resp
         end end.
 
--file("src/mist/internal/http.gleam", 567).
+-file("src/mist/internal/http.gleam", 590).
 ?DOC(false).
 -spec add_default_headers(
     gleam@http@response:response(gleam@bytes_tree:bytes_tree()),
@@ -288,7 +339,7 @@ add_default_headers(Resp, Is_head_response) ->
     _pipe@3 = add_date_header(_pipe@2),
     maybe_drop_body(_pipe@3, Is_head_response).
 
--file("src/mist/internal/http.gleam", 596).
+-file("src/mist/internal/http.gleam", 619).
 ?DOC(false).
 -spec is_continue(gleam@http@request:request(connection())) -> boolean().
 is_continue(Req) ->
@@ -304,7 +355,7 @@ is_continue(Req) ->
     ),
     gleam@result:is_ok(_pipe@1).
 
--file("src/mist/internal/http.gleam", 604).
+-file("src/mist/internal/http.gleam", 627).
 ?DOC(false).
 -spec handle_continue(gleam@http@request:request(connection())) -> {ok, nil} |
     {error, decode_error()}.
@@ -344,19 +395,23 @@ parse_headers(Bs, Socket, Transport, Headers) ->
     case mist_ffi:decode_packet(httph_bin, Bs, []) of
         {ok, {binary_data, {http_header, _, _, Field, Value}, Rest}} ->
             Field@1 = from_header(Field),
-            _assert_subject = gleam@bit_array:to_string(Value),
-            {ok, Value@1} = case _assert_subject of
-                {ok, _} -> _assert_subject;
+            Value@2 = case gleam@bit_array:to_string(Value) of
+                {ok, Value@1} -> Value@1;
                 _assert_fail ->
                     erlang:error(#{gleam_error => let_assert,
                                 message => <<"Pattern match failed, no pattern matched the value."/utf8>>,
-                                value => _assert_fail,
+                                file => <<?FILEPATH/utf8>>,
                                 module => <<"mist/internal/http"/utf8>>,
                                 function => <<"parse_headers"/utf8>>,
-                                line => 92})
+                                line => 92,
+                                value => _assert_fail,
+                                start => 2172,
+                                'end' => 2221,
+                                pattern_start => 2183,
+                                pattern_end => 2192})
             end,
             _pipe = Headers,
-            _pipe@1 = gleam@dict:insert(_pipe, Field@1, Value@1),
+            _pipe@1 = gleam@dict:insert(_pipe, Field@1, Value@2),
             parse_headers(Rest, Socket, Transport, _pipe@1);
 
         {ok, {end_of_headers, Rest@1}} ->
@@ -364,7 +419,7 @@ parse_headers(Bs, Socket, Transport, Headers) ->
 
         {ok, {more_data, Size}} ->
             Amount_to_read = gleam@option:unwrap(Size, 0),
-            gleam@result:then(
+            gleam@result:'try'(
                 read_data(
                     Socket,
                     Transport,
@@ -378,13 +433,13 @@ parse_headers(Bs, Socket, Transport, Headers) ->
             {error, unknown_header}
     end.
 
--file("src/mist/internal/http.gleam", 625).
+-file("src/mist/internal/http.gleam", 648).
 ?DOC(false).
 -spec crypto_hash(sha_hash(), binary()) -> binary().
 crypto_hash(Hash, Data) ->
     crypto:hash(Hash, Data).
 
--file("src/mist/internal/http.gleam", 628).
+-file("src/mist/internal/http.gleam", 651).
 ?DOC(false).
 -spec base64_encode(binary()) -> binary().
 base64_encode(Data) ->
@@ -399,18 +454,22 @@ parse_chunk(String) ->
             complete;
 
         [Chunk_size, Rest] ->
-            _assert_subject = gleam@bit_array:to_string(Chunk_size),
-            {ok, Chunk_size@1} = case _assert_subject of
-                {ok, _} -> _assert_subject;
+            Chunk_size@2 = case gleam@bit_array:to_string(Chunk_size) of
+                {ok, Chunk_size@1} -> Chunk_size@1;
                 _assert_fail ->
                     erlang:error(#{gleam_error => let_assert,
                                 message => <<"Pattern match failed, no pattern matched the value."/utf8>>,
-                                value => _assert_fail,
+                                file => <<?FILEPATH/utf8>>,
                                 module => <<"mist/internal/http"/utf8>>,
                                 function => <<"parse_chunk"/utf8>>,
-                                line => 149})
+                                line => 149,
+                                value => _assert_fail,
+                                start => 3646,
+                                'end' => 3705,
+                                pattern_start => 3657,
+                                pattern_end => 3671})
             end,
-            case gleam@int:base_parse(Chunk_size@1, 16) of
+            case gleam@int:base_parse(Chunk_size@2, 16) of
                 {ok, Size} ->
                     Size@1 = Size * 8,
                     case Rest of
@@ -434,7 +493,7 @@ parse_chunk(String) ->
             {chunk, <<>>, mist@internal@buffer:new(String)}
     end.
 
--file("src/mist/internal/http.gleam", 252).
+-file("src/mist/internal/http.gleam", 281).
 ?DOC(false).
 -spec parse_request(bitstring(), connection()) -> {ok, parsed_request()} |
     {error, decode_error()}.
@@ -444,35 +503,14 @@ parse_request(Bs, Conn) ->
             {binary_data,
                 {http_request, Http_method, {abs_path, Path}, Version},
                 Rest}} ->
-            gleam@result:then(
+            gleam@result:'try'(
                 begin
                     _pipe = Http_method,
-                    _pipe@1 = gleam_erlang_ffi:atom_from_dynamic(_pipe),
-                    _pipe@2 = gleam@result:map(
-                        _pipe@1,
-                        fun erlang:atom_to_binary/1
-                    ),
-                    _pipe@3 = gleam@result:replace_error(_pipe@2, nil),
-                    _pipe@6 = gleam@result:'or'(
-                        _pipe@3,
-                        begin
-                            _pipe@4 = Http_method,
-                            _pipe@5 = gleam@dynamic@decode:run(
-                                _pipe@4,
-                                {decoder,
-                                    fun gleam@dynamic@decode:decode_string/1}
-                            ),
-                            gleam@result:replace_error(_pipe@5, nil)
-                        end
-                    ),
-                    _pipe@7 = gleam@result:then(
-                        _pipe@6,
-                        fun gleam@http:parse_method/1
-                    ),
-                    gleam@result:replace_error(_pipe@7, unknown_method)
+                    _pipe@1 = decode_http_method(_pipe),
+                    gleam@result:replace_error(_pipe@1, unknown_method)
                 end,
                 fun(Method) ->
-                    gleam@result:then(
+                    gleam@result:'try'(
                         parse_headers(
                             Rest,
                             erlang:element(3, Conn),
@@ -481,23 +519,23 @@ parse_request(Bs, Conn) ->
                         ),
                         fun(_use0) ->
                             {Headers, Rest@1} = _use0,
-                            gleam@result:then(
+                            gleam@result:'try'(
                                 begin
-                                    _pipe@8 = Path,
-                                    _pipe@9 = gleam@bit_array:to_string(_pipe@8),
+                                    _pipe@2 = Path,
+                                    _pipe@3 = gleam@bit_array:to_string(_pipe@2),
                                     gleam@result:replace_error(
-                                        _pipe@9,
+                                        _pipe@3,
                                         invalid_path
                                     )
                                 end,
                                 fun(Path@1) ->
                                     gleam@result:'try'(
                                         begin
-                                            _pipe@10 = mist_ffi:get_path_and_query(
+                                            _pipe@4 = mist_ffi:get_path_and_query(
                                                 Path@1
                                             ),
                                             gleam@result:replace_error(
-                                                _pipe@10,
+                                                _pipe@4,
                                                 invalid_path
                                             )
                                         end,
@@ -513,36 +551,36 @@ parse_request(Bs, Conn) ->
                                                 tcp ->
                                                     http
                                             end,
-                                            gleam@result:then(
+                                            gleam@result:'try'(
                                                 begin
-                                                    _pipe@11 = gleam_stdlib:map_get(
+                                                    _pipe@5 = gleam_stdlib:map_get(
                                                         Headers,
                                                         <<"host"/utf8>>
                                                     ),
                                                     gleam@result:replace_error(
-                                                        _pipe@11,
+                                                        _pipe@5,
                                                         no_host_header
                                                     )
                                                 end,
                                                 fun(Host_header) ->
                                                     {Hostname, Port} = begin
-                                                        _pipe@12 = Host_header,
-                                                        _pipe@13 = gleam@string:split_once(
-                                                            _pipe@12,
+                                                        _pipe@6 = Host_header,
+                                                        _pipe@7 = gleam@string:split_once(
+                                                            _pipe@6,
                                                             <<":"/utf8>>
                                                         ),
                                                         gleam@result:unwrap(
-                                                            _pipe@13,
+                                                            _pipe@7,
                                                             {Host_header,
                                                                 <<""/utf8>>}
                                                         )
                                                     end,
                                                     Port@1 = begin
-                                                        _pipe@14 = gleam_stdlib:parse_int(
+                                                        _pipe@8 = gleam_stdlib:parse_int(
                                                             Port
                                                         ),
-                                                        _pipe@15 = gleam@result:map_error(
-                                                            _pipe@14,
+                                                        _pipe@9 = gleam@result:map_error(
+                                                            _pipe@8,
                                                             fun(_) ->
                                                                 case Scheme of
                                                                     https ->
@@ -554,7 +592,7 @@ parse_request(Bs, Conn) ->
                                                             end
                                                         ),
                                                         gleam@result:unwrap_both(
-                                                            _pipe@15
+                                                            _pipe@9
                                                         )
                                                     end,
                                                     Req = {request,
@@ -624,7 +662,7 @@ parse_request(Bs, Conn) ->
 
         {ok, {more_data, Size}} ->
             Amount_to_read = gleam@option:unwrap(Size, 0),
-            gleam@result:then(
+            gleam@result:'try'(
                 read_data(
                     erlang:element(3, Conn),
                     erlang:element(4, Conn),
@@ -653,20 +691,26 @@ read_chunk(Socket, Transport, Buffer, Body) ->
             <<13/integer, 10/integer>>
         )} of
         {_, {ok, {Offset, _}}} ->
-            _assert_subject = erlang:element(3, Buffer),
-            <<Chunk:Offset/binary, _/integer, _/integer, Rest/binary>> = case _assert_subject of
-                <<_:Offset/binary, _/integer, _/integer, _/binary>> -> _assert_subject;
+            {Chunk@1, Rest@1} = case erlang:element(3, Buffer) of
+                <<Chunk:Offset/binary, _/integer, _/integer, Rest/binary>> -> {
+                Chunk,
+                    Rest};
                 _assert_fail ->
                     erlang:error(#{gleam_error => let_assert,
                                 message => <<"Pattern match failed, no pattern matched the value."/utf8>>,
-                                value => _assert_fail,
+                                file => <<?FILEPATH/utf8>>,
                                 module => <<"mist/internal/http"/utf8>>,
                                 function => <<"read_chunk"/utf8>>,
-                                line => 183})
+                                line => 183,
+                                value => _assert_fail,
+                                start => 4529,
+                                'end' => 4662,
+                                pattern_start => 4540,
+                                pattern_end => 4648})
             end,
-            gleam@result:then(
+            gleam@result:'try'(
                 begin
-                    _pipe = Chunk,
+                    _pipe = Chunk@1,
                     _pipe@1 = gleam@bit_array:to_string(_pipe),
                     _pipe@2 = gleam@result:map(
                         _pipe@1,
@@ -675,7 +719,7 @@ read_chunk(Socket, Transport, Buffer, Body) ->
                     gleam@result:replace_error(_pipe@2, invalid_body)
                 end,
                 fun(Chunk_size) ->
-                    gleam@result:then(
+                    gleam@result:'try'(
                         begin
                             _pipe@3 = mist_ffi:string_to_int(Chunk_size, 16),
                             gleam@result:replace_error(_pipe@3, invalid_body)
@@ -685,15 +729,15 @@ read_chunk(Socket, Transport, Buffer, Body) ->
                                     {ok, Body};
 
                                 Size@1 ->
-                                    case Rest of
+                                    case Rest@1 of
                                         <<Next_chunk:Size@1/binary,
                                             13/integer,
                                             10/integer,
-                                            Rest@1/binary>> ->
+                                            Rest@2/binary>> ->
                                             read_chunk(
                                                 Socket,
                                                 Transport,
-                                                {buffer, 0, Rest@1},
+                                                {buffer, 0, Rest@2},
                                                 gleam@bytes_tree:append(
                                                     Body,
                                                     Next_chunk
@@ -701,7 +745,7 @@ read_chunk(Socket, Transport, Buffer, Body) ->
                                             );
 
                                         _ ->
-                                            gleam@result:then(
+                                            gleam@result:'try'(
                                                 read_data(
                                                     Socket,
                                                     Transport,
@@ -729,7 +773,7 @@ read_chunk(Socket, Transport, Buffer, Body) ->
             );
 
         {<<>> = Data, _} ->
-            gleam@result:then(
+            gleam@result:'try'(
                 read_data(Socket, Transport, {buffer, 0, Data}, invalid_body),
                 fun(Next@1) ->
                     read_chunk(Socket, Transport, {buffer, 0, Next@1}, Body)
@@ -737,7 +781,7 @@ read_chunk(Socket, Transport, Buffer, Body) ->
             );
 
         {Data, {error, nil}} ->
-            gleam@result:then(
+            gleam@result:'try'(
                 read_data(Socket, Transport, {buffer, 0, Data}, invalid_body),
                 fun(Next@1) ->
                     read_chunk(Socket, Transport, {buffer, 0, Next@1}, Body)
@@ -745,7 +789,7 @@ read_chunk(Socket, Transport, Buffer, Body) ->
             )
     end.
 
--file("src/mist/internal/http.gleam", 362).
+-file("src/mist/internal/http.gleam", 383).
 ?DOC(false).
 -spec read_body(gleam@http@request:request(connection())) -> {ok,
         gleam@http@request:request(bitstring())} |
@@ -761,10 +805,10 @@ read_body(Req) ->
     case {gleam@http@request:get_header(Req, <<"transfer-encoding"/utf8>>),
         erlang:element(2, erlang:element(4, Req))} of
         {{ok, <<"chunked"/utf8>>}, {initial, Rest}} ->
-            gleam@result:then(
+            gleam@result:'try'(
                 handle_continue(Req),
                 fun(_) ->
-                    gleam@result:then(
+                    gleam@result:'try'(
                         read_chunk(
                             erlang:element(3, erlang:element(4, Req)),
                             Transport,
@@ -783,7 +827,7 @@ read_body(Req) ->
             );
 
         {_, {initial, Rest@1}} ->
-            gleam@result:then(
+            gleam@result:'try'(
                 handle_continue(Req),
                 fun(_) ->
                     Body_size = begin
@@ -798,7 +842,7 @@ read_body(Req) ->
                             _pipe@1,
                             fun gleam@pair:second/1
                         ),
-                        _pipe@3 = gleam@result:then(
+                        _pipe@3 = gleam@result:'try'(
                             _pipe@2,
                             fun gleam_stdlib:parse_int/1
                         ),
@@ -839,7 +883,7 @@ read_body(Req) ->
                 _pipe@7 = gleam_erlang_ffi:select(_pipe@6, 1000),
                 gleam@result:replace_error(_pipe@7, invalid_body)
             end,
-            gleam@result:then(
+            gleam@result:'try'(
                 Res,
                 fun(Next) ->
                     Got = erlang:byte_size(Next),
@@ -874,7 +918,7 @@ read_body(Req) ->
             {ok, gleam@http@request:set_body(Req, Data@1)}
     end.
 
--file("src/mist/internal/http.gleam", 445).
+-file("src/mist/internal/http.gleam", 468).
 ?DOC(false).
 -spec parse_websocket_key(binary()) -> binary().
 parse_websocket_key(Key) ->
@@ -886,19 +930,19 @@ parse_websocket_key(Key) ->
     _pipe@2 = crypto:hash(sha, _pipe@1),
     base64:encode(_pipe@2).
 
--file("src/mist/internal/http.gleam", 452).
+-file("src/mist/internal/http.gleam", 475).
 ?DOC(false).
 -spec upgrade_socket(gleam@http@request:request(connection()), list(binary())) -> {ok,
         gleam@http@response:response(gleam@bytes_tree:bytes_tree())} |
     {error, gleam@http@request:request(connection())}.
 upgrade_socket(Req, Extensions) ->
-    gleam@result:then(
+    gleam@result:'try'(
         begin
             _pipe = gleam@http@request:get_header(Req, <<"upgrade"/utf8>>),
             gleam@result:replace_error(_pipe, Req)
         end,
         fun(_) ->
-            gleam@result:then(
+            gleam@result:'try'(
                 begin
                     _pipe@1 = gleam@http@request:get_header(
                         Req,
@@ -907,7 +951,7 @@ upgrade_socket(Req, Extensions) ->
                     gleam@result:replace_error(_pipe@1, Req)
                 end,
                 fun(Key) ->
-                    gleam@result:then(
+                    gleam@result:'try'(
                         begin
                             _pipe@2 = gleam@http@request:get_header(
                                 Req,
@@ -961,7 +1005,7 @@ upgrade_socket(Req, Extensions) ->
         end
     ).
 
--file("src/mist/internal/http.gleam", 492).
+-file("src/mist/internal/http.gleam", 515).
 ?DOC(false).
 -spec upgrade(
     glisten@socket:socket(),
@@ -970,13 +1014,13 @@ upgrade_socket(Req, Extensions) ->
     gleam@http@request:request(connection())
 ) -> {ok, nil} | {error, nil}.
 upgrade(Socket, Transport, Extensions, Req) ->
-    gleam@result:then(
+    gleam@result:'try'(
         begin
             _pipe = upgrade_socket(Req, Extensions),
             gleam@result:replace_error(_pipe, nil)
         end,
         fun(Resp) ->
-            gleam@result:then(
+            gleam@result:'try'(
                 begin
                     _pipe@1 = Resp,
                     _pipe@2 = add_default_headers(

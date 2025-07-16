@@ -1,7 +1,5 @@
 import * as $process from "../../../gleam_erlang/gleam/erlang/process.mjs";
 import * as $response from "../../../gleam_http/gleam/http/response.mjs";
-import * as $actor from "../../../gleam_otp/gleam/otp/actor.mjs";
-import * as $function from "../../../gleam_stdlib/gleam/function.mjs";
 import * as $option from "../../../gleam_stdlib/gleam/option.mjs";
 import { Some } from "../../../gleam_stdlib/gleam/option.mjs";
 import * as $result from "../../../gleam_stdlib/gleam/result.mjs";
@@ -25,12 +23,13 @@ import {
 import * as $http_handler from "../../mist/internal/http/handler.mjs";
 import * as $http2 from "../../mist/internal/http2.mjs";
 import * as $http2_handler from "../../mist/internal/http2/handler.mjs";
-import { Send } from "../../mist/internal/http2/handler.mjs";
+import * as $stream from "../../mist/internal/http2/stream.mjs";
+import { Send } from "../../mist/internal/http2/stream.mjs";
 
 export class InvalidRequest extends $CustomType {
-  constructor(x0) {
+  constructor($0) {
     super();
-    this[0] = x0;
+    this[0] = $0;
   }
 }
 

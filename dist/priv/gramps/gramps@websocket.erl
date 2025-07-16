@@ -1,6 +1,6 @@
 -module(gramps@websocket).
 -compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch]).
-
+-define(FILEPATH, "src/gramps/websocket.gleam").
 -export([frame_to_bytes_tree/2, compressed_frame_to_bytes_tree/3, to_text_frame/3, to_binary_frame/3, aggregate_frames/3, frame_from_message/2, get_messages/3, has_deflate/1, parse_websocket_key/1]).
 -export_type([data_frame/0, control_frame/0, frame/0, frame_parse_error/0, parsed_frame/0, sha_hash/0]).
 
@@ -26,32 +26,38 @@
 mask_data(Data, Masks, Index, Resp) ->
     case Data of
         <<Masked:8/bitstring, Rest/bitstring>> ->
-            [One, Two, Three, Four] = case Masks of
-                [_, _, _, _] -> Masks;
+            {One@1, Two@1, Three@1, Four@1} = case Masks of
+                [One, Two, Three, Four] -> {One, Two, Three, Four};
                 _assert_fail ->
                     erlang:error(#{gleam_error => let_assert,
                                 message => <<"Pattern match failed, no pattern matched the value."/utf8>>,
-                                value => _assert_fail,
+                                file => <<?FILEPATH/utf8>>,
                                 module => <<"gramps/websocket"/utf8>>,
                                 function => <<"mask_data"/utf8>>,
-                                line => 38})
+                                line => 38,
+                                value => _assert_fail,
+                                start => 924,
+                                'end' => 966,
+                                pattern_start => 935,
+                                pattern_end => 958})
             end,
             Mask_value = case Index rem 4 of
                 0 ->
-                    One;
+                    One@1;
 
                 1 ->
-                    Two;
+                    Two@1;
 
                 2 ->
-                    Three;
+                    Three@1;
 
                 3 ->
-                    Four;
+                    Four@1;
 
                 _ ->
                     erlang:error(#{gleam_error => panic,
                             message => <<"Somehow a value mod 4 is not 0, 1, 2, or 3"/utf8>>,
+                            file => <<?FILEPATH/utf8>>,
                             module => <<"gramps/websocket"/utf8>>,
                             function => <<"mask_data"/utf8>>,
                             line => 44})
@@ -190,17 +196,26 @@ compressed_frame_to_bytes_tree(Frame, Context, Mask) ->
 -file("src/gramps/websocket.gleam", 266).
 -spec apply_mask(bitstring(), bitstring()) -> bitstring().
 apply_mask(Data, Mask) ->
-    <<Mask1:1/binary, Mask2:1/binary, Mask3:1/binary, Mask4:1/binary>> = case Mask of
-        <<_:1/binary, _:1/binary, _:1/binary, _:1/binary>> -> Mask;
+    {Mask1@1, Mask2@1, Mask3@1, Mask4@1} = case Mask of
+        <<Mask1:1/binary, Mask2:1/binary, Mask3:1/binary, Mask4:1/binary>> -> {
+        Mask1,
+            Mask2,
+            Mask3,
+            Mask4};
         _assert_fail ->
             erlang:error(#{gleam_error => let_assert,
                         message => <<"Pattern match failed, no pattern matched the value."/utf8>>,
-                        value => _assert_fail,
+                        file => <<?FILEPATH/utf8>>,
                         module => <<"gramps/websocket"/utf8>>,
                         function => <<"apply_mask"/utf8>>,
-                        line => 267})
+                        line => 267,
+                        value => _assert_fail,
+                        start => 6884,
+                        'end' => 7009,
+                        pattern_start => 6895,
+                        pattern_end => 7002})
     end,
-    mask_data(Data, [Mask1, Mask2, Mask3, Mask4], 0, <<>>).
+    mask_data(Data, [Mask1@1, Mask2@1, Mask3@1, Mask4@1], 0, <<>>).
 
 -file("src/gramps/websocket.gleam", 276).
 -spec to_text_frame(
@@ -497,7 +512,7 @@ frame_from_message(Message, Context) ->
                                 _ ->
                                     {error, invalid_frame}
                             end,
-                            gleam@result:then(
+                            gleam@result:'try'(
                                 _pipe@6,
                                 fun(Frame) -> case Complete of
                                         1 ->

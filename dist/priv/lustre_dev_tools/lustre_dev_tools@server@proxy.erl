@@ -1,6 +1,6 @@
 -module(lustre_dev_tools@server@proxy).
 -compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch]).
-
+-define(FILEPATH, "src/lustre_dev_tools/server/proxy.gleam").
 -export([middleware/3, get/0]).
 -export_type([proxy/0]).
 
@@ -29,13 +29,8 @@ middleware(Req, Proxy, K) ->
             K();
 
         {some, {proxy, From, To}} ->
-            gleam@bool:lazy_guard(
-                not gleam_stdlib:string_starts_with(
-                    erlang:element(8, Req),
-                    From
-                ),
-                K,
-                fun() ->
+            case gleam@string:split_once(erlang:element(8, Req), From) of
+                {ok, {<<""/utf8>>, Path}} ->
                     Internal_error = begin
                         _pipe = gleam@http@response:new(500),
                         gleam@http@response:set_body(
@@ -43,52 +38,52 @@ middleware(Req, Proxy, K) ->
                             {bytes, gleam@bytes_tree:new()}
                         )
                     end,
-                    _assert_subject = erlang:element(4, To),
-                    {some, Host} = case _assert_subject of
-                        {some, _} -> _assert_subject;
+                    Path@1 = filepath:join(erlang:element(6, To), Path),
+                    Host@1 = case erlang:element(4, To) of
+                        {some, Host} -> Host;
                         _assert_fail ->
                             erlang:error(#{gleam_error => let_assert,
                                         message => <<"Pattern match failed, no pattern matched the value."/utf8>>,
-                                        value => _assert_fail,
+                                        file => <<?FILEPATH/utf8>>,
                                         module => <<"lustre_dev_tools/server/proxy"/utf8>>,
                                         function => <<"middleware"/utf8>>,
-                                        line => 39})
+                                        line => 41,
+                                        value => _assert_fail,
+                                        start => 1080,
+                                        'end' => 1111,
+                                        pattern_start => 1091,
+                                        pattern_end => 1101})
                     end,
-                    Path = begin
-                        _pipe@1 = erlang:element(8, Req),
-                        _pipe@2 = gleam@string:replace(
-                            _pipe@1,
-                            From,
-                            <<""/utf8>>
-                        ),
-                        filepath:join(erlang:element(6, To), _pipe@2)
-                    end,
-                    _assert_subject@1 = mist:read_body(Req, (100 * 1024) * 1024),
-                    {ok, Req@1} = case _assert_subject@1 of
-                        {ok, _} -> _assert_subject@1;
+                    Req@2 = case mist:read_body(Req, (100 * 1024) * 1024) of
+                        {ok, Req@1} -> Req@1;
                         _assert_fail@1 ->
                             erlang:error(#{gleam_error => let_assert,
                                         message => <<"Pattern match failed, no pattern matched the value."/utf8>>,
-                                        value => _assert_fail@1,
+                                        file => <<?FILEPATH/utf8>>,
                                         module => <<"lustre_dev_tools/server/proxy"/utf8>>,
                                         function => <<"middleware"/utf8>>,
-                                        line => 44})
+                                        line => 42,
+                                        value => _assert_fail@1,
+                                        start => 1122,
+                                        'end' => 1181,
+                                        pattern_start => 1133,
+                                        pattern_end => 1140})
                     end,
-                    _pipe@3 = begin
-                        _record = Req@1,
+                    _pipe@1 = begin
+                        _record = Req@2,
                         {request,
                             erlang:element(2, _record),
                             erlang:element(3, _record),
                             erlang:element(4, _record),
                             erlang:element(5, _record),
-                            Host,
+                            Host@1,
                             erlang:element(5, To),
-                            Path,
+                            Path@1,
                             erlang:element(9, _record)}
                     end,
-                    _pipe@4 = gleam@httpc:send_bits(_pipe@3),
-                    _pipe@5 = gleam@result:map(
-                        _pipe@4,
+                    _pipe@2 = gleam@httpc:send_bits(_pipe@1),
+                    _pipe@3 = gleam@result:map(
+                        _pipe@2,
                         fun(_capture) ->
                             gleam@http@response:map(
                                 _capture,
@@ -96,8 +91,8 @@ middleware(Req, Proxy, K) ->
                             )
                         end
                     ),
-                    _pipe@6 = gleam@result:map(
-                        _pipe@5,
+                    _pipe@4 = gleam@result:map(
+                        _pipe@3,
                         fun(_capture@1) ->
                             gleam@http@response:map(
                                 _capture@1,
@@ -105,12 +100,14 @@ middleware(Req, Proxy, K) ->
                             )
                         end
                     ),
-                    gleam@result:unwrap(_pipe@6, Internal_error)
-                end
-            )
+                    gleam@result:unwrap(_pipe@4, Internal_error);
+
+                _ ->
+                    K()
+            end
     end.
 
--file("src/lustre_dev_tools/server/proxy.gleam", 67).
+-file("src/lustre_dev_tools/server/proxy.gleam", 68).
 ?DOC(false).
 -spec get_proxy_from() -> lustre_dev_tools@cli:cli(gleam@option:option(binary())).
 get_proxy_from() ->
@@ -145,7 +142,7 @@ get_proxy_from() ->
         end
     ).
 
--file("src/lustre_dev_tools/server/proxy.gleam", 83).
+-file("src/lustre_dev_tools/server/proxy.gleam", 84).
 ?DOC(false).
 -spec get_proxy_to() -> lustre_dev_tools@cli:cli(gleam@option:option(gleam@uri:uri())).
 get_proxy_to() ->
@@ -177,23 +174,28 @@ get_proxy_to() ->
                         From =:= {error, nil},
                         lustre_dev_tools@cli:return(none),
                         fun() ->
-                            {ok, From@1} = case From of
-                                {ok, _} -> From;
+                            From@2 = case From of
+                                {ok, From@1} -> From@1;
                                 _assert_fail ->
                                     erlang:error(#{gleam_error => let_assert,
                                                 message => <<"Pattern match failed, no pattern matched the value."/utf8>>,
-                                                value => _assert_fail,
+                                                file => <<?FILEPATH/utf8>>,
                                                 module => <<"lustre_dev_tools/server/proxy"/utf8>>,
                                                 function => <<"get_proxy_to"/utf8>>,
-                                                line => 96})
+                                                line => 97,
+                                                value => _assert_fail,
+                                                start => 2644,
+                                                'end' => 2670,
+                                                pattern_start => 2655,
+                                                pattern_end => 2663})
                             end,
-                            case gleam_stdlib:uri_parse(From@1) of
-                                {ok, From@2} ->
-                                    lustre_dev_tools@cli:return({some, From@2});
+                            case gleam_stdlib:uri_parse(From@2) of
+                                {ok, From@3} ->
+                                    lustre_dev_tools@cli:return({some, From@3});
 
                                 {error, _} ->
                                     lustre_dev_tools@cli:throw(
-                                        {invalid_proxy_target, From@1}
+                                        {invalid_proxy_target, From@2}
                                     )
                             end
                         end
@@ -203,7 +205,7 @@ get_proxy_to() ->
         end
     ).
 
--file("src/lustre_dev_tools/server/proxy.gleam", 55).
+-file("src/lustre_dev_tools/server/proxy.gleam", 56).
 ?DOC(false).
 -spec get() -> lustre_dev_tools@cli:cli(gleam@option:option(proxy())).
 get() ->

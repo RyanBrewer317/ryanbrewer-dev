@@ -1,6 +1,6 @@
 -module(mist@internal@buffer).
 -compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch]).
-
+-define(FILEPATH, "src/mist/internal/buffer.gleam").
 -export([empty/0, new/1, append/2, slice/2, with_capacity/2, size/1]).
 -export_type([buffer/0]).
 

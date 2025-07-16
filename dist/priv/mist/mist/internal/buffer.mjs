@@ -27,10 +27,14 @@ export function append(buffer, data) {
 export function slice(buffer, bits) {
   let bytes = bits * 8;
   let $ = buffer.data;
-  if ($.bitSize >= bytes) {
-    let value = bitArraySlice($, 0, bytes);
-    let rest = bitArraySlice($, bytes);
-    return [value, rest];
+  if (bytes >= 0) {
+    if ($.bitSize >= bytes) {
+      let value = bitArraySlice($, 0, bytes);
+      let rest = bitArraySlice($, bytes);
+      return [value, rest];
+    } else {
+      return [buffer.data, toBitArray([])];
+    }
   } else {
     return [buffer.data, toBitArray([])];
   }

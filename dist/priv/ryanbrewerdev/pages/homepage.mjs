@@ -57,21 +57,16 @@ export function homepage(_) {
               $html.div(
                 toList([
                   $attribute.id("homepage-flags"),
-                  $attribute.style(
-                    toList([["text-align", "center"], ["font-size", "inherit"]]),
-                  ),
+                  $attribute.style("text-align", "center"),
+                  $attribute.style("font-size", "inherit"),
                 ]),
                 toList([
                   text("I support: "),
                   $html.span(
                     toList([
-                      $attribute.style(
-                        toList([
-                          ["font-size", "30pt"],
-                          ["position", "relative"],
-                          ["top", "7.5pt"],
-                        ]),
-                      ),
+                      $attribute.style("font-size", "30pt"),
+                      $attribute.style("position", "relative"),
+                      $attribute.style("top", "7.5pt"),
                     ]),
                     toList([text("🏳️‍🌈🏳️‍⚧️🇵🇸🇺🇦")]),
                   ),

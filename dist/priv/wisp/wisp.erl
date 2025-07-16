@@ -1,7 +1,7 @@
 -module(wisp).
 -compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch]).
-
--export([response/1, set_body/2, file_download/3, file_download_from_memory/3, html_response/2, json_response/2, html_body/2, json_body/2, string_tree_body/2, string_body/2, method_not_allowed/1, ok/0, created/0, accepted/0, redirect/1, moved_permanently/1, no_content/0, not_found/0, bad_request/0, entity_too_large/0, unsupported_media_type/1, unprocessable_entity/0, internal_server_error/0, set_max_body_size/2, get_max_body_size/1, set_secret_key_base/2, get_secret_key_base/1, set_max_files_size/2, get_max_files_size/1, set_read_chunk_size/2, get_read_chunk_size/1, require_method/3, get_query/1, method_override/1, read_body_to_bitstring/1, require_bit_array_body/2, require_content_type/3, require_string_body/2, require_json/2, serve_static/4, handle_head/2, new_temporary_file/1, delete_temporary_files/1, configure_logger/0, set_logger_level/1, log_emergency/1, log_alert/1, log_critical/1, log_error/1, require_form/2, rescue_crashes/1, log_warning/1, log_notice/1, log_info/1, log_request/2, log_debug/1, random_string/1, sign_message/3, verify_signed_message/2, set_cookie/6, get_cookie/3, create_canned_connection/2, escape_html/1]).
+-define(FILEPATH, "src/wisp.gleam").
+-export([response/1, set_body/2, file_download/3, file_download_from_memory/3, html_response/2, json_response/2, html_body/2, json_body/2, string_tree_body/2, string_body/2, escape_html/1, method_not_allowed/1, ok/0, created/0, accepted/0, redirect/1, moved_permanently/1, no_content/0, not_found/0, bad_request/0, entity_too_large/0, unsupported_media_type/1, unprocessable_entity/0, internal_server_error/0, set_max_body_size/2, get_max_body_size/1, set_secret_key_base/2, get_secret_key_base/1, set_max_files_size/2, get_max_files_size/1, set_read_chunk_size/2, get_read_chunk_size/1, require_method/3, get_query/1, method_override/1, read_body_to_bitstring/1, require_bit_array_body/2, require_content_type/3, require_string_body/2, require_json/2, handle_head/2, new_temporary_file/1, delete_temporary_files/1, configure_logger/0, set_logger_level/1, log_emergency/1, log_alert/1, log_critical/1, log_error/1, require_form/2, rescue_crashes/1, log_warning/1, log_notice/1, log_info/1, log_request/2, log_debug/1, random_string/1, sign_message/3, verify_signed_message/2, set_cookie/6, get_cookie/3, create_canned_connection/2, serve_static/4]).
 -export_type([body/0, buffered_reader/0, quotas/0, form_data/0, uploaded_file/0, do_not_leak/0, error_kind/0, log_level/0, security/0]).
 
 -if(?OTP_RELEASE >= 27).
@@ -44,7 +44,7 @@
 
 -type security() :: plain_text | signed.
 
--file("src/wisp.gleam", 79).
+-file("src/wisp.gleam", 80).
 ?DOC(
     " Create an empty response with the given status code.\n"
     "\n"
@@ -59,7 +59,7 @@
 response(Status) ->
     {response, Status, [], empty}.
 
--file("src/wisp.gleam", 93).
+-file("src/wisp.gleam", 94).
 ?DOC(
     " Set the body of a response.\n"
     "\n"
@@ -76,7 +76,7 @@ set_body(Response, Body) ->
     _pipe = Response,
     gleam@http@response:set_body(_pipe, Body).
 
--file("src/wisp.gleam", 123).
+-file("src/wisp.gleam", 124).
 ?DOC(
     " Send a file from the disc as a file download.\n"
     "\n"
@@ -114,7 +114,7 @@ file_download(Response, Name, Path) ->
     ),
     gleam@http@response:set_body(_pipe@1, {file, Path}).
 
--file("src/wisp.gleam", 160).
+-file("src/wisp.gleam", 161).
 ?DOC(
     " Send a file from memory as a file download.\n"
     "\n"
@@ -154,19 +154,19 @@ file_download_from_memory(Response, Name, Data) ->
     ),
     gleam@http@response:set_body(_pipe@1, {bytes, Data}).
 
--file("src/wisp.gleam", 187).
+-file("src/wisp.gleam", 188).
 ?DOC(
     " Create a HTML response.\n"
     "\n"
     " The body is expected to be valid HTML, though this is not validated.\n"
-    " The `content-type` header will be set to `text/html`.\n"
+    " The `content-type` header will be set to `text/html; charset=utf-8`.\n"
     "\n"
     " # Examples\n"
     "\n"
     " ```gleam\n"
     " let body = string_tree.from_string(\"<h1>Hello, Joe!</h1>\")\n"
     " html_response(body, 200)\n"
-    " // -> Response(200, [#(\"content-type\", \"text/html\")], Text(body))\n"
+    " // -> Response(200, [#(\"content-type\", \"text/html; charset=utf-8\")], Text(body))\n"
     " ```\n"
 ).
 -spec html_response(gleam@string_tree:string_tree(), integer()) -> gleam@http@response:response(body()).
@@ -176,7 +176,7 @@ html_response(Html, Status) ->
         [{<<"content-type"/utf8>>, <<"text/html; charset=utf-8"/utf8>>}],
         {text, Html}}.
 
--file("src/wisp.gleam", 208).
+-file("src/wisp.gleam", 209).
 ?DOC(
     " Create a JSON response.\n"
     "\n"
@@ -198,7 +198,7 @@ json_response(Json, Status) ->
         [{<<"content-type"/utf8>>, <<"application/json; charset=utf-8"/utf8>>}],
         {text, Json}}.
 
--file("src/wisp.gleam", 230).
+-file("src/wisp.gleam", 231).
 ?DOC(
     " Set the body of a response to a given HTML document, and set the\n"
     " `content-type` header to `text/html`.\n"
@@ -227,7 +227,7 @@ html_body(Response, Html) ->
         <<"text/html; charset=utf-8"/utf8>>
     ).
 
--file("src/wisp.gleam", 250).
+-file("src/wisp.gleam", 251).
 ?DOC(
     " Set the body of a response to a given JSON document, and set the\n"
     " `content-type` header to `application/json`.\n"
@@ -256,7 +256,7 @@ json_body(Response, Json) ->
         <<"application/json; charset=utf-8"/utf8>>
     ).
 
--file("src/wisp.gleam", 270).
+-file("src/wisp.gleam", 271).
 ?DOC(
     " Set the body of a response to a given string tree.\n"
     "\n"
@@ -280,7 +280,7 @@ string_tree_body(Response, Content) ->
     _pipe = Response,
     gleam@http@response:set_body(_pipe, {text, Content}).
 
--file("src/wisp.gleam", 293).
+-file("src/wisp.gleam", 294).
 ?DOC(
     " Set the body of a response to a given string.\n"
     "\n"
@@ -305,7 +305,25 @@ string_body(Response, Content) ->
     _pipe = Response,
     gleam@http@response:set_body(_pipe, {text, gleam_stdlib:identity(Content)}).
 
--file("src/wisp.gleam", 450).
+-file("src/wisp.gleam", 311).
+?DOC(
+    " Escape a string so that it can be safely included in a HTML document.\n"
+    "\n"
+    " Any content provided by the user should be escaped before being included in\n"
+    " a HTML document to prevent cross-site scripting attacks.\n"
+    "\n"
+    " # Examples\n"
+    "\n"
+    " ```gleam\n"
+    " escape_html(\"<h1>Hello, Joe!</h1>\")\n"
+    " // -> \"&lt;h1&gt;Hello, Joe!&lt;/h1&gt;\"\n"
+    " ```\n"
+).
+-spec escape_html(binary()) -> binary().
+escape_html(Content) ->
+    houdini:escape(Content).
+
+-file("src/wisp.gleam", 328).
 ?DOC(
     " Create an empty response with status code 405: Method Not Allowed. Use this\n"
     " when a request does not have an appropriate method to be handled.\n"
@@ -331,7 +349,7 @@ method_not_allowed(Methods) ->
     end,
     {response, 405, [{<<"allow"/utf8>>, Allowed}], empty}.
 
--file("src/wisp.gleam", 469).
+-file("src/wisp.gleam", 347).
 ?DOC(
     " Create an empty response with status code 200: OK.\n"
     "\n"
@@ -346,7 +364,7 @@ method_not_allowed(Methods) ->
 ok() ->
     {response, 200, [], empty}.
 
--file("src/wisp.gleam", 482).
+-file("src/wisp.gleam", 360).
 ?DOC(
     " Create an empty response with status code 201: Created.\n"
     "\n"
@@ -361,7 +379,7 @@ ok() ->
 created() ->
     {response, 201, [], empty}.
 
--file("src/wisp.gleam", 495).
+-file("src/wisp.gleam", 373).
 ?DOC(
     " Create an empty response with status code 202: Accepted.\n"
     "\n"
@@ -376,7 +394,7 @@ created() ->
 accepted() ->
     {response, 202, [], empty}.
 
--file("src/wisp.gleam", 509).
+-file("src/wisp.gleam", 387).
 ?DOC(
     " Create an empty response with status code 303: See Other, and the `location`\n"
     " header set to the given URL. Used to redirect the client to another page.\n"
@@ -392,7 +410,7 @@ accepted() ->
 redirect(Url) ->
     {response, 303, [{<<"location"/utf8>>, Url}], empty}.
 
--file("src/wisp.gleam", 527).
+-file("src/wisp.gleam", 405).
 ?DOC(
     " Create an empty response with status code 308: Moved Permanently, and the\n"
     " `location` header set to the given URL. Used to redirect the client to\n"
@@ -412,7 +430,7 @@ redirect(Url) ->
 moved_permanently(Url) ->
     {response, 308, [{<<"location"/utf8>>, Url}], empty}.
 
--file("src/wisp.gleam", 540).
+-file("src/wisp.gleam", 418).
 ?DOC(
     " Create an empty response with status code 204: No content.\n"
     "\n"
@@ -427,7 +445,7 @@ moved_permanently(Url) ->
 no_content() ->
     {response, 204, [], empty}.
 
--file("src/wisp.gleam", 553).
+-file("src/wisp.gleam", 431).
 ?DOC(
     " Create an empty response with status code 404: No content.\n"
     "\n"
@@ -442,7 +460,7 @@ no_content() ->
 not_found() ->
     {response, 404, [], empty}.
 
--file("src/wisp.gleam", 566).
+-file("src/wisp.gleam", 444).
 ?DOC(
     " Create an empty response with status code 400: Bad request.\n"
     "\n"
@@ -457,7 +475,7 @@ not_found() ->
 bad_request() ->
     {response, 400, [], empty}.
 
--file("src/wisp.gleam", 579).
+-file("src/wisp.gleam", 457).
 ?DOC(
     " Create an empty response with status code 413: Entity too large.\n"
     "\n"
@@ -472,7 +490,7 @@ bad_request() ->
 entity_too_large() ->
     {response, 413, [], empty}.
 
--file("src/wisp.gleam", 595).
+-file("src/wisp.gleam", 473).
 ?DOC(
     " Create an empty response with status code 415: Unsupported media type.\n"
     "\n"
@@ -491,7 +509,7 @@ unsupported_media_type(Acceptable) ->
     Acceptable@1 = gleam@string:join(Acceptable, <<", "/utf8>>),
     {response, 415, [{<<"accept"/utf8>>, Acceptable@1}], empty}.
 
--file("src/wisp.gleam", 609).
+-file("src/wisp.gleam", 487).
 ?DOC(
     " Create an empty response with status code 422: Unprocessable entity.\n"
     "\n"
@@ -506,7 +524,7 @@ unsupported_media_type(Acceptable) ->
 unprocessable_entity() ->
     {response, 422, [], empty}.
 
--file("src/wisp.gleam", 622).
+-file("src/wisp.gleam", 500).
 ?DOC(
     " Create an empty response with status code 500: Internal server error.\n"
     "\n"
@@ -521,7 +539,7 @@ unprocessable_entity() ->
 internal_server_error() ->
     {response, 500, [], empty}.
 
--file("src/wisp.gleam", 646).
+-file("src/wisp.gleam", 524).
 -spec decrement_body_quota(quotas(), integer()) -> {ok, quotas()} |
     {error, gleam@http@response:response(body())}.
 decrement_body_quota(Quotas, Size) ->
@@ -537,7 +555,7 @@ decrement_body_quota(Quotas, Size) ->
             {ok, Quotas@1}
     end.
 
--file("src/wisp.gleam", 654).
+-file("src/wisp.gleam", 532).
 -spec decrement_quota(integer(), integer()) -> {ok, integer()} |
     {error, gleam@http@response:response(body())}.
 decrement_quota(Quota, Size) ->
@@ -549,7 +567,7 @@ decrement_quota(Quota, Size) ->
             {ok, Quota@2}
     end.
 
--file("src/wisp.gleam", 661).
+-file("src/wisp.gleam", 539).
 -spec buffered_read(buffered_reader(), integer()) -> {ok, wisp@internal:read()} |
     {error, nil}.
 buffered_read(Reader, Chunk_size) ->
@@ -561,7 +579,7 @@ buffered_read(Reader, Chunk_size) ->
             {ok, {chunk, erlang:element(3, Reader), erlang:element(2, Reader)}}
     end.
 
--file("src/wisp.gleam", 681).
+-file("src/wisp.gleam", 559).
 ?DOC(
     " Set the maximum permitted size of a request body of the request in bytes.\n"
     "\n"
@@ -590,13 +608,13 @@ set_max_body_size(Request, Size) ->
     end,
     gleam@http@request:set_body(Request, _pipe).
 
--file("src/wisp.gleam", 688).
+-file("src/wisp.gleam", 566).
 ?DOC(" Get the maximum permitted size of a request body of the request in bytes.\n").
 -spec get_max_body_size(gleam@http@request:request(wisp@internal:connection())) -> integer().
 get_max_body_size(Request) ->
     erlang:element(3, erlang:element(4, Request)).
 
--file("src/wisp.gleam", 702).
+-file("src/wisp.gleam", 580).
 ?DOC(
     " Set the secret key base used to sign cookies and other sensitive data.\n"
     "\n"
@@ -617,9 +635,10 @@ set_secret_key_base(Request, Key) ->
         true ->
             erlang:error(#{gleam_error => panic,
                     message => <<"Secret key base must be at least 64 bytes long"/utf8>>,
+                    file => <<?FILEPATH/utf8>>,
                     module => <<"wisp"/utf8>>,
                     function => <<"set_secret_key_base"/utf8>>,
-                    line => 704});
+                    line => 582});
 
         false ->
             _pipe = begin
@@ -635,7 +654,7 @@ set_secret_key_base(Request, Key) ->
             gleam@http@request:set_body(Request, _pipe)
     end.
 
--file("src/wisp.gleam", 713).
+-file("src/wisp.gleam", 591).
 ?DOC(" Get the secret key base used to sign cookies and other sensitive data.\n").
 -spec get_secret_key_base(
     gleam@http@request:request(wisp@internal:connection())
@@ -643,7 +662,7 @@ set_secret_key_base(Request, Key) ->
 get_secret_key_base(Request) ->
     erlang:element(6, erlang:element(4, Request)).
 
--file("src/wisp.gleam", 727).
+-file("src/wisp.gleam", 605).
 ?DOC(
     " Set the maximum permitted size of all files uploaded by a request, in bytes.\n"
     "\n"
@@ -672,7 +691,7 @@ set_max_files_size(Request, Size) ->
     end,
     gleam@http@request:set_body(Request, _pipe).
 
--file("src/wisp.gleam", 735).
+-file("src/wisp.gleam", 613).
 ?DOC(
     " Get the maximum permitted total size of a files uploaded by a request in\n"
     " bytes.\n"
@@ -681,7 +700,7 @@ set_max_files_size(Request, Size) ->
 get_max_files_size(Request) ->
     erlang:element(4, erlang:element(4, Request)).
 
--file("src/wisp.gleam", 747).
+-file("src/wisp.gleam", 625).
 ?DOC(
     " The the size limit for each chunk of the request body when read from the\n"
     " client.\n"
@@ -708,7 +727,7 @@ set_read_chunk_size(Request, Size) ->
     end,
     gleam@http@request:set_body(Request, _pipe).
 
--file("src/wisp.gleam", 755).
+-file("src/wisp.gleam", 633).
 ?DOC(
     " Get the size limit for each chunk of the request body when read from the\n"
     " client.\n"
@@ -719,7 +738,7 @@ set_read_chunk_size(Request, Size) ->
 get_read_chunk_size(Request) ->
     erlang:element(5, erlang:element(4, Request)).
 
--file("src/wisp.gleam", 777).
+-file("src/wisp.gleam", 655).
 ?DOC(
     " This middleware function ensures that the request has a specific HTTP\n"
     " method, returning an empty response with status code 405: Method not allowed\n"
@@ -748,7 +767,7 @@ require_method(Request, Method, Next) ->
             method_not_allowed([Method])
     end.
 
--file("src/wisp.gleam", 822).
+-file("src/wisp.gleam", 700).
 ?DOC(
     " Parse the query parameters of a request into a list of key-value pairs. The\n"
     " `key_find` function in the `gleam/list` stdlib module may be useful for\n"
@@ -763,7 +782,7 @@ get_query(Request) ->
     _pipe = gleam@http@request:get_query(Request),
     gleam@result:unwrap(_pipe, []).
 
--file("src/wisp.gleam", 850).
+-file("src/wisp.gleam", 728).
 ?DOC(
     " This function overrides an incoming POST request with a method given in\n"
     " the request's `_method` query paramerter. This is useful as web browsers\n"
@@ -788,7 +807,7 @@ get_query(Request) ->
     " }\n"
     " ```\n"
 ).
--spec method_override(gleam@http@request:request(RVY)) -> gleam@http@request:request(RVY).
+-spec method_override(gleam@http@request:request(QEH)) -> gleam@http@request:request(QEH).
 method_override(Request) ->
     gleam@bool:guard(
         erlang:element(2, Request) /= post,
@@ -835,7 +854,7 @@ method_override(Request) ->
         end
     ).
 
--file("src/wisp.gleam", 959).
+-file("src/wisp.gleam", 837).
 -spec read_body_loop(
     fun((integer()) -> {ok, wisp@internal:read()} | {error, nil}),
     integer(),
@@ -863,7 +882,7 @@ read_body_loop(Reader, Read_chunk_size, Max_body_size, Accumulator) ->
                     end
             end end).
 
--file("src/wisp.gleam", 949).
+-file("src/wisp.gleam", 827).
 ?DOC(
     " Read the entire body of the request as a bit string.\n"
     "\n"
@@ -891,7 +910,7 @@ read_body_to_bitstring(Request) ->
         <<>>
     ).
 
--file("src/wisp.gleam", 923).
+-file("src/wisp.gleam", 801).
 ?DOC(
     " A middleware function which reads the entire body of the request as a bit\n"
     " string.\n"
@@ -927,7 +946,7 @@ require_bit_array_body(Request, Next) ->
             entity_too_large()
     end.
 
--file("src/wisp.gleam", 1049).
+-file("src/wisp.gleam", 927).
 ?DOC(
     " This middleware function ensures that the request has a value for the\n"
     " `content-type` header, returning an empty response with status code 415:\n"
@@ -968,22 +987,22 @@ require_content_type(Request, Expected, Next) ->
             unsupported_media_type([Expected])
     end.
 
--file("src/wisp.gleam", 1182).
+-file("src/wisp.gleam", 1060).
 -spec bit_array_to_string(bitstring()) -> {ok, binary()} |
     {error, gleam@http@response:response(body())}.
 bit_array_to_string(Bits) ->
     _pipe = gleam@bit_array:to_string(Bits),
     gleam@result:replace_error(_pipe, bad_request()).
 
--file("src/wisp.gleam", 1248).
--spec fn_with_bad_request_error(fun((RWZ) -> {ok, RXA} | {error, any()})) -> fun((RWZ) -> {ok,
-        RXA} |
+-file("src/wisp.gleam", 1126).
+-spec fn_with_bad_request_error(fun((QFI) -> {ok, QFJ} | {error, any()})) -> fun((QFI) -> {ok,
+        QFJ} |
     {error, gleam@http@response:response(body())}).
 fn_with_bad_request_error(F) ->
     fun(A) -> _pipe = F(A),
         gleam@result:replace_error(_pipe, bad_request()) end.
 
--file("src/wisp.gleam", 1257).
+-file("src/wisp.gleam", 1135).
 -spec multipart_content_disposition(list({binary(), binary()})) -> {ok,
         {binary(), gleam@option:option(binary())}} |
     {error, gleam@http@response:response(body())}.
@@ -1017,7 +1036,7 @@ multipart_content_disposition(Headers) ->
     end,
     gleam@result:replace_error(_pipe, bad_request()).
 
--file("src/wisp.gleam", 1271).
+-file("src/wisp.gleam", 1149).
 -spec read_chunk(buffered_reader(), integer()) -> {ok,
         {bitstring(),
             fun((integer()) -> {ok, wisp@internal:read()} | {error, nil})}} |
@@ -1033,7 +1052,7 @@ read_chunk(Reader, Chunk_size) ->
                     {error, bad_request()}
             end end).
 
--file("src/wisp.gleam", 1206).
+-file("src/wisp.gleam", 1084).
 -spec multipart_body(
     buffered_reader(),
     fun((bitstring()) -> {ok, gleam@http:multipart_body()} |
@@ -1041,10 +1060,10 @@ read_chunk(Reader, Chunk_size) ->
     binary(),
     integer(),
     integer(),
-    fun((RWT, bitstring()) -> {ok, RWT} |
+    fun((QFC, bitstring()) -> {ok, QFC} |
         {error, gleam@http@response:response(body())}),
-    RWT
-) -> {ok, {gleam@option:option(buffered_reader()), integer(), RWT}} |
+    QFC
+) -> {ok, {gleam@option:option(buffered_reader()), integer(), QFC}} |
     {error, gleam@http@response:response(body())}.
 multipart_body(Reader, Parse, Boundary, Chunk_size, Quota, Append, Data) ->
     gleam@result:'try'(
@@ -1105,7 +1124,7 @@ multipart_body(Reader, Parse, Boundary, Chunk_size, Quota, Append, Data) ->
         end
     ).
 
--file("src/wisp.gleam", 1285).
+-file("src/wisp.gleam", 1163).
 -spec multipart_headers(
     buffered_reader(),
     fun((bitstring()) -> {ok, gleam@http:multipart_headers()} |
@@ -1148,8 +1167,8 @@ multipart_headers(Reader, Parse, Chunk_size, Quotas) ->
         end
     ).
 
--file("src/wisp.gleam", 1312).
--spec sort_keys(list({binary(), RXR})) -> list({binary(), RXR}).
+-file("src/wisp.gleam", 1190).
+-spec sort_keys(list({binary(), QGA})) -> list({binary(), QGA}).
 sort_keys(Pairs) ->
     gleam@list:sort(
         Pairs,
@@ -1158,10 +1177,10 @@ sort_keys(Pairs) ->
         end
     ).
 
--file("src/wisp.gleam", 1316).
+-file("src/wisp.gleam", 1194).
 -spec or_400(
-    {ok, RXU} | {error, any()},
-    fun((RXU) -> gleam@http@response:response(body()))
+    {ok, QGD} | {error, any()},
+    fun((QGD) -> gleam@http@response:response(body()))
 ) -> gleam@http@response:response(body()).
 or_400(Result, Next) ->
     case Result of
@@ -1172,7 +1191,7 @@ or_400(Result, Next) ->
             bad_request()
     end.
 
--file("src/wisp.gleam", 890).
+-file("src/wisp.gleam", 768).
 ?DOC(
     " A middleware function which reads the entire body of the request as a string.\n"
     "\n"
@@ -1210,7 +1229,7 @@ require_string_body(Request, Next) ->
             entity_too_large()
     end.
 
--file("src/wisp.gleam", 1091).
+-file("src/wisp.gleam", 969).
 ?DOC(
     " A middleware which extracts JSON from the body of a request.\n"
     "\n"
@@ -1248,9 +1267,9 @@ require_json(Request, Next) ->
                 Request,
                 fun(Body) ->
                     or_400(
-                        gleam@json:decode(
+                        gleam@json:parse(
                             Body,
-                            fun(Field@0) -> {ok, Field@0} end
+                            {decoder, fun gleam@dynamic@decode:decode_dynamic/1}
                         ),
                         fun(Json) -> Next(Json) end
                     )
@@ -1259,7 +1278,7 @@ require_json(Request, Next) ->
         end
     ).
 
--file("src/wisp.gleam", 1098).
+-file("src/wisp.gleam", 976).
 -spec require_urlencoded_form(
     gleam@http@request:request(wisp@internal:connection()),
     fun((form_data()) -> gleam@http@response:response(body()))
@@ -1278,12 +1297,12 @@ require_urlencoded_form(Request, Next) ->
         end
     ).
 
--file("src/wisp.gleam", 1384).
+-file("src/wisp.gleam", 1265).
 -spec atom_dict_decoder() -> gleam@dynamic@decode:decoder(gleam@dict:dict(gleam@erlang@atom:atom_(), gleam@dynamic:dynamic_())).
 atom_dict_decoder() ->
     Atom@1 = gleam@dynamic@decode:new_primitive_decoder(
         <<"Atom"/utf8>>,
-        fun(Data) -> case gleam_erlang_ffi:atom_from_dynamic(Data) of
+        fun(Data) -> case wisp_ffi:atom_from_dynamic(Data) of
                 {ok, Atom} ->
                     {ok, Atom};
 
@@ -1291,151 +1310,12 @@ atom_dict_decoder() ->
                     {error, erlang:binary_to_atom(<<"nil"/utf8>>)}
             end end
     ),
-    Dynamic = gleam@dynamic@decode:new_primitive_decoder(
-        <<"Dynamic"/utf8>>,
-        fun(Field@0) -> {ok, Field@0} end
-    ),
-    gleam@dynamic@decode:dict(Atom@1, Dynamic).
+    gleam@dynamic@decode:dict(
+        Atom@1,
+        {decoder, fun gleam@dynamic@decode:decode_dynamic/1}
+    ).
 
--file("src/wisp.gleam", 1528).
-?DOC(
-    " Calculates etag for requested file and then checks for the request header `if-none-match`.\n"
-    "\n"
-    " If the header isn't present or the value doesn't match the newly generated etag, it returns the file with the newly generated etag.\n"
-    " Otherwise if the etag matches, it returns status 304 without the file, allowing the browser to use the cached version.\n"
-).
--spec handle_etag(
-    gleam@http@response:response(body()),
-    gleam@http@request:request(wisp@internal:connection()),
-    simplifile:file_info()
-) -> gleam@http@response:response(body()).
-handle_etag(Resp, Req, File_info) ->
-    Etag = wisp@internal:generate_etag(
-        erlang:element(2, File_info),
-        erlang:element(10, File_info)
-    ),
-    case gleam@http@request:get_header(Req, <<"if-none-match"/utf8>>) of
-        {ok, Old_etag} when Old_etag =:= Etag ->
-            response(304);
-
-        _ ->
-            gleam@http@response:set_header(Resp, <<"etag"/utf8>>, Etag)
-    end.
-
--file("src/wisp.gleam", 1477).
-?DOC(
-    " A middleware function that serves files from a directory, along with a\n"
-    " suitable `content-type` header for known file extensions.\n"
-    "\n"
-    " Files are sent using the `File` response body type, so they will be sent\n"
-    " directly to the client from the disc, without being read into memory.\n"
-    "\n"
-    " The `under` parameter is the request path prefix that must match for the\n"
-    " file to be served.\n"
-    "\n"
-    " | `under`   | `from`  | `request.path`     | `file`                  |\n"
-    " |-----------|---------|--------------------|-------------------------|\n"
-    " | `/static` | `/data` | `/static/file.txt` | `/data/file.txt`        |\n"
-    " | ``        | `/data` | `/static/file.txt` | `/data/static/file.txt` |\n"
-    " | `/static` | ``      | `/static/file.txt` | `file.txt`              |\n"
-    "\n"
-    " This middleware will discard any `..` path segments in the request path to\n"
-    " prevent the client from accessing files outside of the directory. It is\n"
-    " advised not to serve a directory that contains your source code, application\n"
-    " configuration, database, or other private files.\n"
-    "\n"
-    " # Examples\n"
-    "\n"
-    " ```gleam\n"
-    " fn handle_request(req: Request) -> Response {\n"
-    "   use <- wisp.serve_static(req, under: \"/static\", from: \"/public\")\n"
-    "   // ...\n"
-    " }\n"
-    " ```\n"
-    "\n"
-    " Typically you static assets may be kept in your project in a directory\n"
-    " called `priv`. The `priv_directory` function can be used to get a path to\n"
-    " this directory.\n"
-    "\n"
-    " ```gleam\n"
-    " fn handle_request(req: Request) -> Response {\n"
-    "   let assert Ok(priv) = priv_directory(\"my_application\")\n"
-    "   use <- wisp.serve_static(req, under: \"/static\", from: priv)\n"
-    "   // ...\n"
-    " }\n"
-    " ```\n"
-).
--spec serve_static(
-    gleam@http@request:request(wisp@internal:connection()),
-    binary(),
-    binary(),
-    fun(() -> gleam@http@response:response(body()))
-) -> gleam@http@response:response(body()).
-serve_static(Req, Prefix, Directory, Handler) ->
-    Path = wisp@internal:remove_preceeding_slashes(erlang:element(8, Req)),
-    Prefix@1 = wisp@internal:remove_preceeding_slashes(Prefix),
-    case {erlang:element(2, Req),
-        gleam_stdlib:string_starts_with(Path, Prefix@1)} of
-        {get, true} ->
-            Path@1 = begin
-                _pipe = Path,
-                _pipe@1 = gleam@string:drop_start(
-                    _pipe,
-                    string:length(Prefix@1)
-                ),
-                _pipe@2 = gleam@string:replace(
-                    _pipe@1,
-                    <<".."/utf8>>,
-                    <<""/utf8>>
-                ),
-                wisp@internal:join_path(Directory, _pipe@2)
-            end,
-            File_type = begin
-                _pipe@3 = erlang:element(8, Req),
-                _pipe@4 = gleam@string:split(_pipe@3, <<"."/utf8>>),
-                _pipe@5 = gleam@list:last(_pipe@4),
-                gleam@result:unwrap(_pipe@5, <<""/utf8>>)
-            end,
-            Mime_type = marceau:extension_to_mime_type(File_type),
-            Content_type = case Mime_type of
-                <<"application/json"/utf8>> ->
-                    <<Mime_type/binary, "; charset=utf-8"/utf8>>;
-
-                <<"text/"/utf8, _/binary>> ->
-                    <<Mime_type/binary, "; charset=utf-8"/utf8>>;
-
-                _ ->
-                    Mime_type
-            end,
-            case simplifile_erl:file_info(Path@1) of
-                {ok, File_info} ->
-                    case simplifile:file_info_type(File_info) of
-                        file ->
-                            _pipe@6 = gleam@http@response:new(200),
-                            _pipe@7 = gleam@http@response:set_header(
-                                _pipe@6,
-                                <<"content-type"/utf8>>,
-                                Content_type
-                            ),
-                            _pipe@8 = gleam@http@response:set_body(
-                                _pipe@7,
-                                {file, Path@1}
-                            ),
-                            handle_etag(_pipe@8, Req, File_info);
-
-                        _ ->
-                            Handler()
-                    end;
-
-                _ ->
-                    Handler()
-            end;
-
-        {_, _} ->
-            Handler()
-    end.
-
--file("src/wisp.gleam", 1558).
+-file("src/wisp.gleam", 1443).
 ?DOC(
     " A middleware function that converts `HEAD` requests to `GET` requests,\n"
     " handles the request, and then discards the response body. This is useful so\n"
@@ -1474,7 +1354,7 @@ handle_head(Req, Handler) ->
             Handler(Req)
     end.
 
--file("src/wisp.gleam", 1583).
+-file("src/wisp.gleam", 1468).
 ?DOC(
     " Create a new temporary directory for the given request.\n"
     "\n"
@@ -1499,7 +1379,7 @@ new_temporary_file(Request) ->
         end
     ).
 
--file("src/wisp.gleam", 1599).
+-file("src/wisp.gleam", 1484).
 ?DOC(
     " Delete any temporary files created for the given request.\n"
     "\n"
@@ -1519,7 +1399,7 @@ delete_temporary_files(Request) ->
             Other
     end.
 
--file("src/wisp.gleam", 1634).
+-file("src/wisp.gleam", 1519).
 ?DOC(
     " Configure the Erlang logger, setting the minimum log level to `info`, to be\n"
     " called when your application starts.\n"
@@ -1533,7 +1413,7 @@ delete_temporary_files(Request) ->
 configure_logger() ->
     logging_ffi:configure().
 
--file("src/wisp.gleam", 1655).
+-file("src/wisp.gleam", 1540).
 -spec log_level_to_logging_log_level(log_level()) -> logging:log_level().
 log_level_to_logging_log_level(Log_level) ->
     case Log_level of
@@ -1562,7 +1442,7 @@ log_level_to_logging_log_level(Log_level) ->
             debug
     end.
 
--file("src/wisp.gleam", 1674).
+-file("src/wisp.gleam", 1559).
 ?DOC(
     " Set the log level of the Erlang logger to `log_level`.\n"
     "\n"
@@ -1574,7 +1454,7 @@ log_level_to_logging_log_level(Log_level) ->
 set_logger_level(Log_level) ->
     logging:set_level(log_level_to_logging_log_level(Log_level)).
 
--file("src/wisp.gleam", 1684).
+-file("src/wisp.gleam", 1569).
 ?DOC(
     " Log a message to the Erlang logger with the level of `emergency`.\n"
     "\n"
@@ -1586,7 +1466,7 @@ set_logger_level(Log_level) ->
 log_emergency(Message) ->
     logging:log(emergency, Message).
 
--file("src/wisp.gleam", 1694).
+-file("src/wisp.gleam", 1579).
 ?DOC(
     " Log a message to the Erlang logger with the level of `alert`.\n"
     "\n"
@@ -1598,7 +1478,7 @@ log_emergency(Message) ->
 log_alert(Message) ->
     logging:log(alert, Message).
 
--file("src/wisp.gleam", 1704).
+-file("src/wisp.gleam", 1589).
 ?DOC(
     " Log a message to the Erlang logger with the level of `critical`.\n"
     "\n"
@@ -1610,7 +1490,7 @@ log_alert(Message) ->
 log_critical(Message) ->
     logging:log(critical, Message).
 
--file("src/wisp.gleam", 1714).
+-file("src/wisp.gleam", 1599).
 ?DOC(
     " Log a message to the Erlang logger with the level of `error`.\n"
     "\n"
@@ -1622,8 +1502,8 @@ log_critical(Message) ->
 log_error(Message) ->
     logging:log(error, Message).
 
--file("src/wisp.gleam", 1196).
--spec or_500({ok, RWL} | {error, any()}) -> {ok, RWL} |
+-file("src/wisp.gleam", 1074).
+-spec or_500({ok, QEU} | {error, any()}) -> {ok, QEU} |
     {error, gleam@http@response:response(body())}.
 or_500(Result) ->
     case Result of
@@ -1635,7 +1515,7 @@ or_500(Result) ->
             {error, internal_server_error()}
     end.
 
--file("src/wisp.gleam", 1187).
+-file("src/wisp.gleam", 1065).
 -spec multipart_file_append(binary(), bitstring()) -> {ok, binary()} |
     {error, gleam@http@response:response(body())}.
 multipart_file_append(Path, Chunk) ->
@@ -1643,7 +1523,7 @@ multipart_file_append(Path, Chunk) ->
     _pipe@1 = or_500(_pipe),
     gleam@result:replace(_pipe@1, Path).
 
--file("src/wisp.gleam", 1125).
+-file("src/wisp.gleam", 1003).
 -spec read_multipart(
     gleam@http@request:request(wisp@internal:connection()),
     buffered_reader(),
@@ -1795,7 +1675,7 @@ read_multipart(Request, Reader, Boundary, Quotas, Data) ->
         end
     ).
 
--file("src/wisp.gleam", 1108).
+-file("src/wisp.gleam", 986).
 -spec require_multipart_form(
     gleam@http@request:request(wisp@internal:connection()),
     binary(),
@@ -1823,7 +1703,7 @@ require_multipart_form(Request, Boundary, Next) ->
             Response
     end.
 
--file("src/wisp.gleam", 1015).
+-file("src/wisp.gleam", 893).
 ?DOC(
     " A middleware which extracts form data from the body of a request that is\n"
     " encoded as either `application/x-www-form-urlencoded` or\n"
@@ -1889,7 +1769,7 @@ require_form(Request, Next) ->
             )
     end.
 
--file("src/wisp.gleam", 1362).
+-file("src/wisp.gleam", 1240).
 ?DOC(
     " A middleware function that rescues crashes and returns an empty response\n"
     " with status code 500: Internal server error.\n"
@@ -1927,7 +1807,7 @@ rescue_crashes(Handler) ->
                         gleam@dict:insert(
                             Details,
                             C,
-                            gleam_stdlib:identity(Kind)
+                            gleam@function:identity(Kind)
                         )
                     ),
                     nil;
@@ -1938,7 +1818,7 @@ rescue_crashes(Handler) ->
             internal_server_error()
     end.
 
--file("src/wisp.gleam", 1724).
+-file("src/wisp.gleam", 1609).
 ?DOC(
     " Log a message to the Erlang logger with the level of `warning`.\n"
     "\n"
@@ -1950,7 +1830,7 @@ rescue_crashes(Handler) ->
 log_warning(Message) ->
     logging:log(warning, Message).
 
--file("src/wisp.gleam", 1734).
+-file("src/wisp.gleam", 1619).
 ?DOC(
     " Log a message to the Erlang logger with the level of `notice`.\n"
     "\n"
@@ -1962,7 +1842,7 @@ log_warning(Message) ->
 log_notice(Message) ->
     logging:log(notice, Message).
 
--file("src/wisp.gleam", 1744).
+-file("src/wisp.gleam", 1629).
 ?DOC(
     " Log a message to the Erlang logger with the level of `info`.\n"
     "\n"
@@ -1974,7 +1854,7 @@ log_notice(Message) ->
 log_info(Message) ->
     logging:log(info, Message).
 
--file("src/wisp.gleam", 1422).
+-file("src/wisp.gleam", 1305).
 ?DOC(
     " A middleware function that logs details about the request and response.\n"
     "\n"
@@ -2001,11 +1881,11 @@ log_request(Req, Handler) ->
         string:uppercase(gleam@http:method_to_string(erlang:element(2, Req))),
         <<" "/utf8>>,
         erlang:element(8, Req)],
-    _pipe@1 = gleam@string:concat(_pipe),
+    _pipe@1 = erlang:list_to_binary(_pipe),
     log_info(_pipe@1),
     Response.
 
--file("src/wisp.gleam", 1754).
+-file("src/wisp.gleam", 1639).
 ?DOC(
     " Log a message to the Erlang logger with the level of `debug`.\n"
     "\n"
@@ -2017,13 +1897,13 @@ log_request(Req, Handler) ->
 log_debug(Message) ->
     logging:log(debug, Message).
 
--file("src/wisp.gleam", 1764).
+-file("src/wisp.gleam", 1649).
 ?DOC(" Generate a random string of the given length.\n").
 -spec random_string(integer()) -> binary().
 random_string(Length) ->
     wisp@internal:random_string(Length).
 
--file("src/wisp.gleam", 1777).
+-file("src/wisp.gleam", 1662).
 ?DOC(
     " Sign a message which can later be verified using the `verify_signed_message`\n"
     " function to detect if the message has been tampered with.\n"
@@ -2046,7 +1926,7 @@ sign_message(Request, Message, Algorithm) ->
         Algorithm
     ).
 
--file("src/wisp.gleam", 1793).
+-file("src/wisp.gleam", 1678).
 ?DOC(
     " Verify a signed message which was signed using the `sign_message` function.\n"
     "\n"
@@ -2066,7 +1946,7 @@ verify_signed_message(Request, Message) ->
         <<(erlang:element(6, erlang:element(4, Request)))/binary>>
     ).
 
--file("src/wisp.gleam", 1834).
+-file("src/wisp.gleam", 1719).
 ?DOC(
     " Set a cookie on the response. After `max_age` seconds the cookie will be\n"
     " expired by the client.\n"
@@ -2127,7 +2007,7 @@ set_cookie(Response, Request, Name, Value, Security, Max_age) ->
     _pipe = Response,
     gleam@http@response:set_cookie(_pipe, Name, Value@1, Attributes).
 
--file("src/wisp.gleam", 1875).
+-file("src/wisp.gleam", 1760).
 ?DOC(
     " Get a cookie from the request.\n"
     "\n"
@@ -2160,7 +2040,7 @@ get_cookie(Request, Name, Security) ->
                 end, fun(Value@1) -> gleam@bit_array:to_string(Value@1) end) end
     ).
 
--file("src/wisp.gleam", 1902).
+-file("src/wisp.gleam", 1787).
 ?DOC(
     " Create a connection which will return the given body when read.\n"
     "\n"
@@ -2174,152 +2054,141 @@ create_canned_connection(Body, Secret_key_base) ->
         Secret_key_base
     ).
 
--file("src/wisp.gleam", 371).
--spec do_escape_html_regular(
-    bitstring(),
-    integer(),
-    bitstring(),
-    list(bitstring()),
-    integer()
-) -> list(bitstring()).
-do_escape_html_regular(Bin, Skip, Original, Acc, Len) ->
-    case Bin of
-        <<"<"/utf8, Rest/bitstring>> ->
-            _assert_subject = gleam_stdlib:bit_array_slice(Original, Skip, Len),
-            {ok, Slice} = case _assert_subject of
-                {ok, _} -> _assert_subject;
-                _assert_fail ->
-                    erlang:error(#{gleam_error => let_assert,
-                                message => <<"Pattern match failed, no pattern matched the value."/utf8>>,
-                                value => _assert_fail,
-                                module => <<"wisp"/utf8>>,
-                                function => <<"do_escape_html_regular"/utf8>>,
-                                line => 402})
-            end,
-            Acc@1 = [<<"&lt;"/utf8>>, Slice | Acc],
-            do_escape_html(Rest, (Skip + Len) + 1, Original, Acc@1);
-
-        <<">"/utf8, Rest@1/bitstring>> ->
-            _assert_subject@1 = gleam_stdlib:bit_array_slice(
-                Original,
-                Skip,
-                Len
-            ),
-            {ok, Slice@1} = case _assert_subject@1 of
-                {ok, _} -> _assert_subject@1;
-                _assert_fail@1 ->
-                    erlang:error(#{gleam_error => let_assert,
-                                message => <<"Pattern match failed, no pattern matched the value."/utf8>>,
-                                value => _assert_fail@1,
-                                module => <<"wisp"/utf8>>,
-                                function => <<"do_escape_html_regular"/utf8>>,
-                                line => 408})
-            end,
-            Acc@2 = [<<"&gt;"/utf8>>, Slice@1 | Acc],
-            do_escape_html(Rest@1, (Skip + Len) + 1, Original, Acc@2);
-
-        <<"&"/utf8, Rest@2/bitstring>> ->
-            _assert_subject@2 = gleam_stdlib:bit_array_slice(
-                Original,
-                Skip,
-                Len
-            ),
-            {ok, Slice@2} = case _assert_subject@2 of
-                {ok, _} -> _assert_subject@2;
-                _assert_fail@2 ->
-                    erlang:error(#{gleam_error => let_assert,
-                                message => <<"Pattern match failed, no pattern matched the value."/utf8>>,
-                                value => _assert_fail@2,
-                                module => <<"wisp"/utf8>>,
-                                function => <<"do_escape_html_regular"/utf8>>,
-                                line => 414})
-            end,
-            Acc@3 = [<<"&amp;"/utf8>>, Slice@2 | Acc],
-            do_escape_html(Rest@2, (Skip + Len) + 1, Original, Acc@3);
-
-        <<_, Rest@3/bitstring>> ->
-            do_escape_html_regular(Rest@3, Skip, Original, Acc, Len + 1);
-
-        <<>> ->
-            case Skip of
-                0 ->
-                    [Original];
-
-                _ ->
-                    _assert_subject@3 = gleam_stdlib:bit_array_slice(
-                        Original,
-                        Skip,
-                        Len
-                    ),
-                    {ok, Slice@3} = case _assert_subject@3 of
-                        {ok, _} -> _assert_subject@3;
-                        _assert_fail@3 ->
-                            erlang:error(#{gleam_error => let_assert,
-                                        message => <<"Pattern match failed, no pattern matched the value."/utf8>>,
-                                        value => _assert_fail@3,
-                                        module => <<"wisp"/utf8>>,
-                                        function => <<"do_escape_html_regular"/utf8>>,
-                                        line => 428})
-                    end,
-                    [Slice@3 | Acc]
-            end;
-
-        _ ->
-            erlang:error(#{gleam_error => panic,
-                    message => <<"non byte aligned string, all strings should be byte aligned"/utf8>>,
-                    module => <<"wisp"/utf8>>,
-                    function => <<"do_escape_html_regular"/utf8>>,
-                    line => 433})
-    end.
-
--file("src/wisp.gleam", 336).
--spec do_escape_html(bitstring(), integer(), bitstring(), list(bitstring())) -> list(bitstring()).
-do_escape_html(Bin, Skip, Original, Acc) ->
-    case Bin of
-        <<"<"/utf8, Rest/bitstring>> ->
-            Acc@1 = [<<"&lt;"/utf8>> | Acc],
-            do_escape_html(Rest, Skip + 1, Original, Acc@1);
-
-        <<">"/utf8, Rest@1/bitstring>> ->
-            Acc@2 = [<<"&gt;"/utf8>> | Acc],
-            do_escape_html(Rest@1, Skip + 1, Original, Acc@2);
-
-        <<"&"/utf8, Rest@2/bitstring>> ->
-            Acc@3 = [<<"&amp;"/utf8>> | Acc],
-            do_escape_html(Rest@2, Skip + 1, Original, Acc@3);
-
-        <<_, Rest@3/bitstring>> ->
-            do_escape_html_regular(Rest@3, Skip, Original, Acc, 1);
-
-        <<>> ->
-            Acc;
-
-        _ ->
-            erlang:error(#{gleam_error => panic,
-                    message => <<"non byte aligned string, all strings should be byte aligned"/utf8>>,
-                    module => <<"wisp"/utf8>>,
-                    function => <<"do_escape_html"/utf8>>,
-                    line => 367})
-    end.
-
--file("src/wisp.gleam", 310).
+-file("src/wisp.gleam", 1411).
 ?DOC(
-    " Escape a string so that it can be safely included in a HTML document.\n"
+    " Calculates etag for requested file and then checks for the request header `if-none-match`.\n"
     "\n"
-    " Any content provided by the user should be escaped before being included in\n"
-    " a HTML document to prevent cross-site scripting attacks.\n"
+    " If the header isn't present or the value doesn't match the newly generated etag, it returns the file with the newly generated etag.\n"
+    " Otherwise if the etag matches, it returns status 304 without the file, allowing the browser to use the cached version.\n"
+).
+-spec handle_etag(
+    gleam@http@response:response(body()),
+    gleam@http@request:request(wisp@internal:connection()),
+    simplifile:file_info()
+) -> gleam@http@response:response(body()).
+handle_etag(Resp, Req, File_info) ->
+    Etag = wisp@internal:generate_etag(
+        erlang:element(2, File_info),
+        erlang:element(10, File_info)
+    ),
+    case gleam@http@request:get_header(Req, <<"if-none-match"/utf8>>) of
+        {ok, Old_etag} when Old_etag =:= Etag ->
+            _pipe = response(304),
+            gleam@http@response:set_header(_pipe, <<"etag"/utf8>>, Etag);
+
+        _ ->
+            gleam@http@response:set_header(Resp, <<"etag"/utf8>>, Etag)
+    end.
+
+-file("src/wisp.gleam", 1360).
+?DOC(
+    " A middleware function that serves files from a directory, along with a\n"
+    " suitable `content-type` header for known file extensions.\n"
+    "\n"
+    " Files are sent using the `File` response body type, so they will be sent\n"
+    " directly to the client from the disc, without being read into memory.\n"
+    "\n"
+    " The `under` parameter is the request path prefix that must match for the\n"
+    " file to be served.\n"
+    "\n"
+    " | `under`   | `from`  | `request.path`     | `file`                  |\n"
+    " |-----------|---------|--------------------|-------------------------|\n"
+    " | `/static` | `/data` | `/static/file.txt` | `/data/file.txt`        |\n"
+    " | ``        | `/data` | `/static/file.txt` | `/data/static/file.txt` |\n"
+    " | `/static` | ``      | `/static/file.txt` | `file.txt`              |\n"
+    "\n"
+    " This middleware will discard any `..` path segments in the request path to\n"
+    " prevent the client from accessing files outside of the directory. It is\n"
+    " advised not to serve a directory that contains your source code, application\n"
+    " configuration, database, or other private files.\n"
     "\n"
     " # Examples\n"
     "\n"
     " ```gleam\n"
-    " escape_html(\"<h1>Hello, Joe!</h1>\")\n"
-    " // -> \"&lt;h1&gt;Hello, Joe!&lt;/h1&gt;\"\n"
+    " fn handle_request(req: Request) -> Response {\n"
+    "   use <- wisp.serve_static(req, under: \"/static\", from: \"/public\")\n"
+    "   // ...\n"
+    " }\n"
+    " ```\n"
+    "\n"
+    " Typically you static assets may be kept in your project in a directory\n"
+    " called `priv`. The `priv_directory` function can be used to get a path to\n"
+    " this directory.\n"
+    "\n"
+    " ```gleam\n"
+    " fn handle_request(req: Request) -> Response {\n"
+    "   let assert Ok(priv) = priv_directory(\"my_application\")\n"
+    "   use <- wisp.serve_static(req, under: \"/static\", from: priv)\n"
+    "   // ...\n"
+    " }\n"
     " ```\n"
 ).
--spec escape_html(binary()) -> binary().
-escape_html(Content) ->
-    Bits = <<Content/binary>>,
-    Acc = do_escape_html(Bits, 0, Bits, []),
-    _pipe = lists:reverse(Acc),
-    _pipe@1 = gleam_stdlib:bit_array_concat(_pipe),
-    wisp_ffi:coerce(_pipe@1).
+-spec serve_static(
+    gleam@http@request:request(wisp@internal:connection()),
+    binary(),
+    binary(),
+    fun(() -> gleam@http@response:response(body()))
+) -> gleam@http@response:response(body()).
+serve_static(Req, Prefix, Directory, Handler) ->
+    Path = wisp@internal:remove_preceeding_slashes(erlang:element(8, Req)),
+    Prefix@1 = wisp@internal:remove_preceeding_slashes(Prefix),
+    case {erlang:element(2, Req),
+        gleam_stdlib:string_starts_with(Path, Prefix@1)} of
+        {get, true} ->
+            Path@1 = begin
+                _pipe = Path,
+                _pipe@1 = gleam@string:drop_start(
+                    _pipe,
+                    string:length(Prefix@1)
+                ),
+                _pipe@2 = gleam@string:replace(
+                    _pipe@1,
+                    <<".."/utf8>>,
+                    <<""/utf8>>
+                ),
+                wisp@internal:join_path(Directory, _pipe@2)
+            end,
+            File_type = begin
+                _pipe@3 = erlang:element(8, Req),
+                _pipe@4 = gleam@string:split(_pipe@3, <<"."/utf8>>),
+                _pipe@5 = gleam@list:last(_pipe@4),
+                gleam@result:unwrap(_pipe@5, <<""/utf8>>)
+            end,
+            Mime_type = marceau:extension_to_mime_type(File_type),
+            Content_type = case Mime_type of
+                <<"application/json"/utf8>> ->
+                    <<Mime_type/binary, "; charset=utf-8"/utf8>>;
+
+                <<"text/"/utf8, _/binary>> ->
+                    <<Mime_type/binary, "; charset=utf-8"/utf8>>;
+
+                _ ->
+                    Mime_type
+            end,
+            case simplifile_erl:file_info(Path@1) of
+                {ok, File_info} ->
+                    case simplifile:file_info_type(File_info) of
+                        file ->
+                            _pipe@6 = gleam@http@response:new(200),
+                            _pipe@7 = gleam@http@response:set_header(
+                                _pipe@6,
+                                <<"content-type"/utf8>>,
+                                Content_type
+                            ),
+                            _pipe@8 = gleam@http@response:set_body(
+                                _pipe@7,
+                                {file, Path@1}
+                            ),
+                            handle_etag(_pipe@8, Req, File_info);
+
+                        _ ->
+                            Handler()
+                    end;
+
+                _ ->
+                    Handler()
+            end;
+
+        {_, _} ->
+            Handler()
+    end.

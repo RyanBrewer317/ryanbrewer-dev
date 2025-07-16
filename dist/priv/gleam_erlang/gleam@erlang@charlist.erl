@@ -1,6 +1,6 @@
 -module(gleam@erlang@charlist).
 -compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch]).
-
+-define(FILEPATH, "src/gleam/erlang/charlist.gleam").
 -export([to_string/1, from_string/1]).
 -export_type([charlist/0]).
 
@@ -23,14 +23,20 @@
 
 -type charlist() :: any().
 
--file("/Users/louis/src/gleam/erlang/src/gleam/erlang/charlist.gleam", 14).
-?DOC(" Transform a charlist to a string\n").
+-file("src/gleam/erlang/charlist.gleam", 18).
+?DOC(
+    " Convert a charlist to a string using Erlang's\n"
+    " `unicode:characters_to_binary`.\n"
+).
 -spec to_string(charlist()) -> binary().
 to_string(A) ->
     unicode:characters_to_binary(A).
 
--file("/Users/louis/src/gleam/erlang/src/gleam/erlang/charlist.gleam", 22).
-?DOC(" Transform a string to a charlist\n").
+-file("src/gleam/erlang/charlist.gleam", 24).
+?DOC(
+    " Convert a string to a charlist using Erlang's\n"
+    " `unicode:characters_to_list`.\n"
+).
 -spec from_string(binary()) -> charlist().
 from_string(A) ->
     unicode:characters_to_list(A).

@@ -1,6 +1,6 @@
 -module(mist@internal@http2@flow_control).
 -compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch]).
-
+-define(FILEPATH, "src/mist/internal/http2/flow_control.gleam").
 -export([compute_receive_window/2, update_send_window/2]).
 
 -if(?OTP_RELEASE >= 27).

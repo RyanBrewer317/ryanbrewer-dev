@@ -1,37 +1,42 @@
-import { toList, prepend as listPrepend, CustomType as $CustomType } from "../gleam.mjs";
+import {
+  toList,
+  Empty as $Empty,
+  prepend as listPrepend,
+  CustomType as $CustomType,
+} from "../gleam.mjs";
 import * as $bit_array from "../gleam/bit_array.mjs";
 import * as $list from "../gleam/list.mjs";
 import * as $string_tree from "../gleam/string_tree.mjs";
 
 class Bytes extends $CustomType {
-  constructor(x0) {
+  constructor($0) {
     super();
-    this[0] = x0;
+    this[0] = $0;
   }
 }
 
 class Text extends $CustomType {
-  constructor(x0) {
+  constructor($0) {
     super();
-    this[0] = x0;
+    this[0] = $0;
   }
 }
 
 class Many extends $CustomType {
-  constructor(x0) {
+  constructor($0) {
     super();
-    this[0] = x0;
+    this[0] = $0;
   }
 }
 
 export function append_tree(first, second) {
-  if (second instanceof Many) {
-    let trees = second[0];
-    return new Many(listPrepend(first, trees));
+  if (second instanceof Bytes) {
+    return new Many(toList([first, second]));
   } else if (second instanceof Text) {
     return new Many(toList([first, second]));
   } else {
-    return new Many(toList([first, second]));
+    let trees = second[0];
+    return new Many(listPrepend(first, trees));
   }
 }
 
@@ -91,35 +96,37 @@ function to_list(loop$stack, loop$acc) {
   while (true) {
     let stack = loop$stack;
     let acc = loop$acc;
-    if (stack.hasLength(0)) {
+    if (stack instanceof $Empty) {
       return acc;
-    } else if (stack.atLeastLength(1) && stack.head.hasLength(0)) {
-      let remaining_stack = stack.tail;
-      loop$stack = remaining_stack;
-      loop$acc = acc;
-    } else if (stack.atLeastLength(1) &&
-    stack.head.atLeastLength(1) &&
-    stack.head.head instanceof Bytes) {
-      let bits = stack.head.head[0];
-      let rest = stack.head.tail;
-      let remaining_stack = stack.tail;
-      loop$stack = listPrepend(rest, remaining_stack);
-      loop$acc = listPrepend(bits, acc);
-    } else if (stack.atLeastLength(1) &&
-    stack.head.atLeastLength(1) &&
-    stack.head.head instanceof Text) {
-      let tree = stack.head.head[0];
-      let rest = stack.head.tail;
-      let remaining_stack = stack.tail;
-      let bits = $bit_array.from_string($string_tree.to_string(tree));
-      loop$stack = listPrepend(rest, remaining_stack);
-      loop$acc = listPrepend(bits, acc);
     } else {
-      let trees = stack.head.head[0];
-      let rest = stack.head.tail;
-      let remaining_stack = stack.tail;
-      loop$stack = listPrepend(trees, listPrepend(rest, remaining_stack));
-      loop$acc = acc;
+      let $ = stack.head;
+      if ($ instanceof $Empty) {
+        let remaining_stack = stack.tail;
+        loop$stack = remaining_stack;
+        loop$acc = acc;
+      } else {
+        let $1 = $.head;
+        if ($1 instanceof Bytes) {
+          let remaining_stack = stack.tail;
+          let rest = $.tail;
+          let bits = $1[0];
+          loop$stack = listPrepend(rest, remaining_stack);
+          loop$acc = listPrepend(bits, acc);
+        } else if ($1 instanceof Text) {
+          let remaining_stack = stack.tail;
+          let rest = $.tail;
+          let tree = $1[0];
+          let bits = $bit_array.from_string($string_tree.to_string(tree));
+          loop$stack = listPrepend(rest, remaining_stack);
+          loop$acc = listPrepend(bits, acc);
+        } else {
+          let remaining_stack = stack.tail;
+          let rest = $.tail;
+          let trees = $1[0];
+          loop$stack = listPrepend(trees, listPrepend(rest, remaining_stack));
+          loop$acc = acc;
+        }
+      }
     }
   }
 }

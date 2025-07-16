@@ -13,12 +13,14 @@ import * as $uri from "../../../gleam_stdlib/gleam/uri.mjs";
 import * as $glint from "../../../glint/glint.mjs";
 import * as $mist from "../../../mist/mist.mjs";
 import * as $tom from "../../../tom/tom.mjs";
-import { Error, toList, CustomType as $CustomType, makeError, isEqual } from "../../gleam.mjs";
+import { Ok, Error, toList, CustomType as $CustomType, makeError, isEqual } from "../../gleam.mjs";
 import * as $cli from "../../lustre_dev_tools/cli.mjs";
 import { do$ } from "../../lustre_dev_tools/cli.mjs";
 import * as $flag from "../../lustre_dev_tools/cli/flag.mjs";
 import * as $error from "../../lustre_dev_tools/error.mjs";
 import { IncompleteProxy, InvalidProxyTarget } from "../../lustre_dev_tools/error.mjs";
+
+const FILEPATH = "src/lustre_dev_tools/server/proxy.gleam";
 
 export class Proxy extends $CustomType {
   constructor(from, to) {
@@ -78,19 +80,26 @@ function get_proxy_to() {
             isEqual(from, new Error(undefined)),
             $cli.return$(new None()),
             () => {
-              if (!from.isOk()) {
+              if (!(from instanceof Ok)) {
                 throw makeError(
                   "let_assert",
+                  FILEPATH,
                   "lustre_dev_tools/server/proxy",
-                  96,
-                  "",
+                  97,
+                  "get_proxy_to",
                   "Pattern match failed, no pattern matched the value.",
-                  { value: from }
+                  {
+                    value: from,
+                    start: 2644,
+                    end: 2670,
+                    pattern_start: 2655,
+                    pattern_end: 2663
+                  }
                 )
               }
               let from$1 = from[0];
               let $ = $uri.parse(from$1);
-              if ($.isOk()) {
+              if ($ instanceof Ok) {
                 let from$2 = $[0];
                 return $cli.return$(new Some(from$2));
               } else {
@@ -111,14 +120,16 @@ export function get() {
       return do$(
         get_proxy_to(),
         (to) => {
-          if (from instanceof Some && to instanceof Some) {
-            let from$1 = from[0];
-            let to$1 = to[0];
-            return $cli.return$(new Some(new Proxy(from$1, to$1)));
-          } else if (from instanceof Some && to instanceof None) {
+          if (to instanceof Some) {
+            if (from instanceof Some) {
+              let to$1 = to[0];
+              let from$1 = from[0];
+              return $cli.return$(new Some(new Proxy(from$1, to$1)));
+            } else {
+              return $cli.throw$(new IncompleteProxy(toList(["proxy-from"])));
+            }
+          } else if (from instanceof Some) {
             return $cli.throw$(new IncompleteProxy(toList(["proxy-to"])));
-          } else if (from instanceof None && to instanceof Some) {
-            return $cli.throw$(new IncompleteProxy(toList(["proxy-from"])));
           } else {
             return $cli.return$(new None());
           }

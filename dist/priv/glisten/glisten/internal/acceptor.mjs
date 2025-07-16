@@ -1,8 +1,7 @@
 import * as $process from "../../../gleam_erlang/gleam/erlang/process.mjs";
-import { Abnormal } from "../../../gleam_erlang/gleam/erlang/process.mjs";
 import * as $actor from "../../../gleam_otp/gleam/otp/actor.mjs";
-import * as $supervisor from "../../../gleam_otp/gleam/otp/supervisor.mjs";
-import * as $function from "../../../gleam_stdlib/gleam/function.mjs";
+import * as $supervisor from "../../../gleam_otp/gleam/otp/static_supervisor.mjs";
+import * as $supervision from "../../../gleam_otp/gleam/otp/supervision.mjs";
 import * as $list from "../../../gleam_stdlib/gleam/list.mjs";
 import * as $option from "../../../gleam_stdlib/gleam/option.mjs";
 import { None } from "../../../gleam_stdlib/gleam/option.mjs";
@@ -18,9 +17,9 @@ import * as $options from "../../glisten/socket/options.mjs";
 import * as $transport from "../../glisten/transport.mjs";
 
 export class AcceptConnection extends $CustomType {
-  constructor(x0) {
+  constructor($0) {
     super();
-    this[0] = x0;
+    this[0] = $0;
   }
 }
 

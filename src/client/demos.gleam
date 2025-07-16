@@ -2,9 +2,9 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
+import client/candle/main as candle
 import client/tinylang
 import client/tinytypedlang
-import client/candle/main as candle
 import lustre
 import lustre/attribute.{class, href, id, placeholder, style}
 import lustre/element.{type Element, text}
@@ -27,12 +27,9 @@ fn init(_) -> Model {
 
 fn update(model: Model, msg: Msg) -> Model {
   case msg {
-    NewUntypedCode(code) ->
-      Model(..model, untyped_code: code)
-    NewDepTypedCode(code) ->
-      Model(..model, deptyped_code: code)
-    NewCandleCode(code) ->
-      Model(..model, candle_code: code)
+    NewUntypedCode(code) -> Model(..model, untyped_code: code)
+    NewDepTypedCode(code) -> Model(..model, deptyped_code: code)
+    NewCandleCode(code) -> Model(..model, candle_code: code)
   }
 }
 
@@ -167,7 +164,20 @@ Type annotations are introduced by ",
           }
       }
     },
-    p([], [text("Lastly, here's a simple proof assistant, implementing Andrew Marmaduke's "), a([href("https://iro.uiowa.edu/esploro/outputs/doctoral/A-proof-theoretic-redesign-of-the/9984697941302771")], [text("PhD thesis")]), text(".")]),
+    p([], [
+      text(
+        "Lastly, here's a simple proof assistant, implementing Andrew Marmaduke's ",
+      ),
+      a(
+        [
+          href(
+            "https://iro.uiowa.edu/esploro/outputs/doctoral/A-proof-theoretic-redesign-of-the/9984697941302771",
+          ),
+        ],
+        [text("PhD thesis")],
+      ),
+      text("."),
+    ]),
     br([]),
     {
       case model {

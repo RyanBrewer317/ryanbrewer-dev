@@ -17,10 +17,13 @@ import {
   Ok,
   Error,
   toList,
+  Empty as $Empty,
   prepend as listPrepend,
   CustomType as $CustomType,
   makeError,
 } from "../gleam.mjs";
+
+const FILEPATH = "src/arctic/parse.gleam";
 
 class ParsedPage extends $CustomType {
   constructor(metadata, body) {
@@ -200,7 +203,7 @@ function parse_metadata(start_dict) {
   return $party.do$(
     $party.perhaps($party.satisfy((c) => { return c !== "\n"; })),
     (res) => {
-      if (res.isOk()) {
+      if (res instanceof Ok) {
         let key_first = res[0];
         return $party.do$(
           $party.until(
@@ -287,14 +290,21 @@ function escaped_char() {
                               $party.char("}"),
                               (_) => {
                                 let $ = $int.base_parse(code_str, 16);
-                                if (!$.isOk()) {
+                                if (!($ instanceof Ok)) {
                                   throw makeError(
                                     "let_assert",
+                                    FILEPATH,
                                     "arctic/parse",
                                     396,
-                                    "",
+                                    "escaped_char",
                                     "Pattern match failed, no pattern matched the value.",
-                                    { value: $ }
+                                    {
+                                      value: $,
+                                      start: 11916,
+                                      end: 11966,
+                                      pattern_start: 11927,
+                                      pattern_end: 11935
+                                    }
                                   )
                                 }
                                 let code = $[0];
@@ -341,7 +351,7 @@ function escaped_char() {
 }
 
 function invert_res(res, d) {
-  if (res.isOk()) {
+  if (res instanceof Ok) {
     let el = res[0][0];
     let state = res[0][1];
     return [
@@ -382,7 +392,7 @@ function parse_component(components) {
                             (res) => {
                               return $party.do$(
                                 (() => {
-                                  if (res.isOk()) {
+                                  if (res instanceof Ok) {
                                     return $party.do$(
                                       $party.whitespace(),
                                       (_) => {
@@ -448,16 +458,16 @@ function parse_component(components) {
                                                 return $party.do$(
                                                   $party.pos(),
                                                   (party_pos) => {
-                                                    let data2 = (() => {
-                                                      let _pipe = data;
-                                                      return with_pos(
-                                                        _pipe,
-                                                        new Position(
-                                                          pos.line + party_pos.row,
-                                                          pos.column + party_pos.col,
-                                                        ),
-                                                      );
-                                                    })();
+                                                    let _block;
+                                                    let _pipe = data;
+                                                    _block = with_pos(
+                                                      _pipe,
+                                                      new Position(
+                                                        pos.line + party_pos.row,
+                                                        pos.column + party_pos.col,
+                                                      ),
+                                                    );
+                                                    let data2 = _block;
                                                     return $party.do$(
                                                       $party.try$(
                                                         $party.return$(
@@ -526,7 +536,7 @@ function parse_component(components) {
         ),
         src,
       );
-      if (res.isOk()) {
+      if (res instanceof Ok) {
         let t = res[0];
         return new ParseResult(t, toList([]));
       } else {
@@ -579,16 +589,16 @@ function parse_inline_rule(inline_rules, data) {
               $party.pos(),
               (party_pos) => {
                 let pos = get_pos(data);
-                let data2 = (() => {
-                  let _pipe = data;
-                  return with_pos(
-                    _pipe,
-                    new Position(
-                      pos.line + party_pos.row,
-                      pos.column + party_pos.col,
-                    ),
-                  );
-                })();
+                let _block;
+                let _pipe = data;
+                _block = with_pos(
+                  _pipe,
+                  new Position(
+                    pos.line + party_pos.row,
+                    pos.column + party_pos.col,
+                  ),
+                );
+                let data2 = _block;
                 return $party.do$(
                   $party.try$(
                     $party.lazy(
@@ -616,7 +626,7 @@ function parse_inline_rule(inline_rules, data) {
                           (res) => {
                             return $party.do$(
                               (() => {
-                                if (res.isOk()) {
+                                if (res instanceof Ok) {
                                   return $party.do$(
                                     $party.sep(
                                       $party.many_concat(
@@ -722,16 +732,16 @@ function parse_text(inline_rules, prefix_rules) {
                 return $party.do$(
                   $party.pos(),
                   (party_pos) => {
-                    let data2 = (() => {
-                      let _pipe = data;
-                      return with_pos(
-                        _pipe,
-                        new Position(
-                          pos.line + party_pos.row,
-                          pos.column + party_pos.col,
-                        ),
-                      );
-                    })();
+                    let _block;
+                    let _pipe = data;
+                    _block = with_pos(
+                      _pipe,
+                      new Position(
+                        pos.line + party_pos.row,
+                        pos.column + party_pos.col,
+                      ),
+                    );
+                    let data2 = _block;
                     return $party.do$(
                       parse_markup(inline_rules, $party.end(), data2),
                       (res) => {
@@ -749,21 +759,21 @@ function parse_text(inline_rules, prefix_rules) {
                                   prefix_rules,
                                   (rule) => { return rule.prefix === prefix; },
                                 );
-                                if ($.isOk()) {
+                                if ($ instanceof Ok) {
                                   let rule = $[0];
                                   return $party.do$(
                                     $party.pos(),
                                     (party_pos) => {
-                                      let data4 = (() => {
-                                        let _pipe = data3;
-                                        return with_pos(
-                                          _pipe,
-                                          new Position(
-                                            pos.line + party_pos.row,
-                                            pos.column + party_pos.col,
-                                          ),
-                                        );
-                                      })();
+                                      let _block$1;
+                                      let _pipe$1 = data3;
+                                      _block$1 = with_pos(
+                                        _pipe$1,
+                                        new Position(
+                                          pos.line + party_pos.row,
+                                          pos.column + party_pos.col,
+                                        ),
+                                      );
+                                      let data4 = _block$1;
                                       return $party.do$(
                                         $party.try$(
                                           $party.return$(undefined),
@@ -801,7 +811,7 @@ function parse_text(inline_rules, prefix_rules) {
         ),
         src,
       );
-      if (res.isOk()) {
+      if (res instanceof Ok) {
         let t = res[0];
         return new ParseResult(t, toList([]));
       } else {
@@ -853,16 +863,18 @@ function parse_page(builder, src) {
       let sec_line = so_far[2];
       let curr_line = so_far[3];
       let was_newline = so_far[4];
-      if (c === "\n" && (was_newline)) {
-        return [
-          "",
-          listPrepend([sec_line, sec], secs),
-          curr_line + 1,
-          curr_line + 1,
-          true,
-        ];
-      } else if (c === "\n") {
-        return [sec + "\n", secs, sec_line, curr_line + 1, true];
+      if (c === "\n") {
+        if (was_newline) {
+          return [
+            "",
+            listPrepend([sec_line, sec], secs),
+            curr_line + 1,
+            curr_line + 1,
+            true,
+          ];
+        } else {
+          return [sec + "\n", secs, sec_line, curr_line + 1, true];
+        }
       } else {
         return [sec + c, secs, sec_line, curr_line, false];
       }
@@ -871,16 +883,16 @@ function parse_page(builder, src) {
   let last_sec = $[0];
   let sections_rev = $[1];
   let last_sec_line = $[2];
-  let sections = (() => {
-    if (last_sec === "") {
-      return $list.reverse(sections_rev);
-    } else {
-      return $list.reverse(listPrepend([last_sec_line, last_sec], sections_rev));
-    }
-  })();
+  let _block;
+  if (last_sec === "") {
+    _block = $list.reverse(sections_rev);
+  } else {
+    _block = $list.reverse(listPrepend([last_sec_line, last_sec], sections_rev));
+  }
+  let sections = _block;
   return $result.try$(
     (() => {
-      if (sections.hasLength(0)) {
+      if (sections instanceof $Empty) {
         return $snag.error("empty page");
       } else {
         let h = sections.head;
@@ -889,39 +901,37 @@ function parse_page(builder, src) {
       }
     })(),
     (_use0) => {
-      let meta_sec = _use0[0][1];
       let body = _use0[1];
+      let meta_sec = _use0[0][1];
       let meta_res = $party.go(parse_metadata($dict.new$()), meta_sec);
-      let metadata = (() => {
-        if (meta_res.isOk()) {
-          let sec = meta_res[0];
-          return new ParseResult(sec, toList([]));
+      let _block$1;
+      if (meta_res instanceof Ok) {
+        let sec = meta_res[0];
+        _block$1 = new ParseResult(sec, toList([]));
+      } else {
+        let err = meta_res[0];
+        if (err instanceof $party.Unexpected) {
+          let pos = err.pos;
+          let s = err.error;
+          _block$1 = new ParseResult(
+            $dict.new$(),
+            toList([new ParseError(new Position(pos.row, pos.col), s)]),
+          );
         } else {
-          let err = meta_res[0];
-          if (err instanceof $party.Unexpected) {
-            let pos = err.pos;
-            let s = err.error;
-            return new ParseResult(
-              $dict.new$(),
-              toList([new ParseError(new Position(pos.row, pos.col), s)]),
-            );
-          } else {
-            let pos = err.pos;
-            let err$1 = err.error;
-            return new ParseResult(
-              $dict.new$(),
-              toList([
-                new ParseError(new Position(pos.row, pos.col), err$1.issue),
-              ]),
-            );
-          }
+          let pos = err.pos;
+          let err$1 = err.error;
+          _block$1 = new ParseResult(
+            $dict.new$(),
+            toList([new ParseError(new Position(pos.row, pos.col), err$1.issue)]),
+          );
         }
-      })();
-      let id = (() => {
-        let _pipe = metadata.val;
-        let _pipe$1 = $dict.get(_pipe, "id");
-        return $result.unwrap(_pipe$1, "[no id]");
-      })();
+      }
+      let metadata = _block$1;
+      let _block$2;
+      let _pipe = metadata.val;
+      let _pipe$1 = $dict.get(_pipe, "id");
+      _block$2 = $result.unwrap(_pipe$1, "[no id]");
+      let id = _block$2;
       $io.print(("Starting `" + id) + "`. ");
       let $1 = $list.fold(
         body,
@@ -931,29 +941,29 @@ function parse_page(builder, src) {
           let body_rev = so_far[1];
           let line = sec[0];
           let str = sec[1];
-          let res = (() => {
-            let $2 = $string.starts_with(str, "@");
-            if ($2) {
-              return parse_component(builder.components).parse(
-                str,
-                new ParseData(new Position(line, 0), metadata.val, state),
-              );
-            } else {
-              return parse_text(builder.inline_rules, builder.prefix_rules).parse(
-                str,
-                new ParseData(new Position(line, 0), metadata.val, state),
-              );
-            }
-          })();
-          let new_state = (() => {
-            let $2 = res.val;
-            if ($2 instanceof Some) {
-              let s = $2[0][1];
-              return s;
-            } else {
-              return state;
-            }
-          })();
+          let _block$3;
+          let $2 = $string.starts_with(str, "@");
+          if ($2) {
+            _block$3 = parse_component(builder.components).parse(
+              str,
+              new ParseData(new Position(line, 0), metadata.val, state),
+            );
+          } else {
+            _block$3 = parse_text(builder.inline_rules, builder.prefix_rules).parse(
+              str,
+              new ParseData(new Position(line, 0), metadata.val, state),
+            );
+          }
+          let res = _block$3;
+          let _block$4;
+          let $3 = res.val;
+          if ($3 instanceof Some) {
+            let s = $3[0][1];
+            _block$4 = s;
+          } else {
+            _block$4 = state;
+          }
+          let new_state = _block$4;
           return [new_state, listPrepend(res, body_rev)];
         },
       );
@@ -989,23 +999,7 @@ export function parse(p, src_name, src) {
     parse_page(p, src),
     (parsed) => {
       let $ = parsed.errors;
-      if ($.atLeastLength(1)) {
-        let first_e = $.head;
-        let rest = $.tail;
-        return $snag.error(
-          ((("parse errors in `" + src_name) + "` (") + $list.fold(
-            rest,
-            (((("unexpected " + first_e.unexpected) + " at ") + $int.to_string(
-              first_e.pos.line,
-            )) + ":") + $int.to_string(first_e.pos.column),
-            (s, e) => {
-              return (((((s + ", unexpected ") + e.unexpected) + " at ") + $int.to_string(
-                e.pos.line,
-              )) + ":") + $int.to_string(e.pos.column);
-            },
-          )) + ")",
-        );
-      } else {
+      if ($ instanceof $Empty) {
         return $result.try$(
           (() => {
             let _pipe = $dict.get(parsed.val.metadata, "id");
@@ -1018,7 +1012,7 @@ export function parse(p, src_name, src) {
             return $result.try$(
               (() => {
                 let $1 = $dict.get(parsed.val.metadata, "date");
-                if ($1.isOk()) {
+                if ($1 instanceof Ok) {
                   let s = $1[0];
                   return $result.try$(
                     $arctic.parse_date(s),
@@ -1077,6 +1071,22 @@ export function parse(p, src_name, src) {
               },
             );
           },
+        );
+      } else {
+        let first_e = $.head;
+        let rest = $.tail;
+        return $snag.error(
+          ((("parse errors in `" + src_name) + "` (") + $list.fold(
+            rest,
+            (((("unexpected " + first_e.unexpected) + " at ") + $int.to_string(
+              first_e.pos.line,
+            )) + ":") + $int.to_string(first_e.pos.column),
+            (s, e) => {
+              return (((((s + ", unexpected ") + e.unexpected) + " at ") + $int.to_string(
+                e.pos.line,
+              )) + ":") + $int.to_string(e.pos.column);
+            },
+          )) + ")",
         );
       }
     },

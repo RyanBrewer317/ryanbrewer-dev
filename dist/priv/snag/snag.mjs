@@ -2,7 +2,14 @@ import * as $int from "../gleam_stdlib/gleam/int.mjs";
 import * as $list from "../gleam_stdlib/gleam/list.mjs";
 import * as $string from "../gleam_stdlib/gleam/string.mjs";
 import * as $gleam from "./gleam.mjs";
-import { Ok, Error, toList, prepend as listPrepend, CustomType as $CustomType } from "./gleam.mjs";
+import {
+  Ok,
+  Error,
+  toList,
+  Empty as $Empty,
+  prepend as listPrepend,
+  CustomType as $CustomType,
+} from "./gleam.mjs";
 
 export class Snag extends $CustomType {
   constructor(issue, cause) {
@@ -25,7 +32,7 @@ export function layer(snag, issue) {
 }
 
 export function context(result, issue) {
-  if (result.isOk()) {
+  if (result instanceof Ok) {
     return result;
   } else {
     let snag = result[0];
@@ -34,7 +41,7 @@ export function context(result, issue) {
 }
 
 export function map_error(result, describer) {
-  if (result.isOk()) {
+  if (result instanceof Ok) {
     let a = result[0];
     return new Ok(a);
   } else {
@@ -60,7 +67,7 @@ function pretty_print_cause(cause) {
 export function pretty_print(snag) {
   let output = ("error: " + snag.issue) + "\n";
   let $ = snag.cause;
-  if ($.hasLength(0)) {
+  if ($ instanceof $Empty) {
     return output;
   } else {
     let cause = $;

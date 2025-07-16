@@ -29,9 +29,7 @@ export function none_of(disallowed) {
   let disallowed_set = $set.from_list(disallowed);
   return (val) => {
     let $ = $set.contains(disallowed_set, val);
-    if (!$) {
-      return new Ok(val);
-    } else {
+    if ($) {
       return $snag.error(
         (("invalid value '" + $string.inspect(val)) + "', must not be one of: [") + ((() => {
           let _pipe = disallowed;
@@ -42,6 +40,8 @@ export function none_of(disallowed) {
           return $string.join(_pipe$1, ", ");
         })() + "]"),
       );
+    } else {
+      return new Ok(val);
     }
   };
 }

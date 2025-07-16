@@ -2,7 +2,7 @@
 -compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch]).
 
 -export([document_to_html/1, parse/1, to_html/1]).
--export_type([document/0, container/0, inline/0, destination/0, refs/0, generated_html/0]).
+-export_type([document/0, container/0, inline/0, list_layout/0, destination/0, refs/0, splitters/0, generated_html/0, trim/0]).
 
 -if(?OTP_RELEASE >= 27).
 -define(MODULEDOC(Str), -moduledoc(Str)).
@@ -23,9 +23,12 @@
     {codeblock,
         gleam@dict:dict(binary(), binary()),
         gleam@option:option(binary()),
-        binary()}.
+        binary()} |
+    {raw_block, binary()} |
+    {bullet_list, list_layout(), binary(), list(list(container()))}.
 
 -type inline() :: linebreak |
+    non_breaking_space |
     {text, binary()} |
     {link, list(inline()), destination()} |
     {image, list(inline()), destination()} |
@@ -34,17 +37,27 @@
     {footnote, binary()} |
     {code, binary()}.
 
+-type list_layout() :: tight | loose.
+
 -type destination() :: {reference, binary()} | {url, binary()}.
 
 -type refs() :: {refs,
         gleam@dict:dict(binary(), binary()),
         gleam@dict:dict(binary(), list(container()))}.
 
+-type splitters() :: {splitters,
+        splitter:splitter(),
+        splitter:splitter(),
+        splitter:splitter(),
+        splitter:splitter()}.
+
 -type generated_html() :: {generated_html,
         binary(),
         list({integer(), binary()})}.
 
--file("src/jot.gleam", 19).
+-type trim() :: no_trim | trim_last.
+
+-file("src/jot.gleam", 21).
 -spec add_attribute(gleam@dict:dict(binary(), binary()), binary(), binary()) -> gleam@dict:dict(binary(), binary()).
 add_attribute(Attributes, Key, Value) ->
     case Key of
@@ -62,184 +75,187 @@ add_attribute(Attributes, Key, Value) ->
             gleam@dict:insert(Attributes, Key, Value)
     end.
 
--file("src/jot.gleam", 97).
--spec drop_lines(list(binary())) -> list(binary()).
+-file("src/jot.gleam", 121).
+-spec drop_lines(binary()) -> binary().
 drop_lines(In) ->
     case In of
-        [] ->
-            [];
+        <<""/utf8>> ->
+            <<""/utf8>>;
 
-        [<<"\n"/utf8>> | Rest] ->
+        <<"\n"/utf8, Rest/binary>> ->
             drop_lines(Rest);
 
-        [C | Rest@1] ->
-            [C | Rest@1]
+        Other ->
+            Other
     end.
 
--file("src/jot.gleam", 105).
--spec drop_spaces(list(binary())) -> list(binary()).
+-file("src/jot.gleam", 129).
+-spec drop_spaces(binary()) -> binary().
 drop_spaces(In) ->
     case In of
-        [] ->
-            [];
+        <<""/utf8>> ->
+            <<""/utf8>>;
 
-        [<<" "/utf8>> | Rest] ->
+        <<" "/utf8, Rest/binary>> ->
             drop_spaces(Rest);
 
-        [C | Rest@1] ->
-            [C | Rest@1]
+        Other ->
+            Other
     end.
 
--file("src/jot.gleam", 113).
--spec count_drop_spaces(list(binary()), integer()) -> {list(binary()),
-    integer()}.
+-file("src/jot.gleam", 137).
+-spec count_drop_spaces(binary(), integer()) -> {binary(), integer()}.
 count_drop_spaces(In, Count) ->
     case In of
-        [] ->
-            {[], Count};
+        <<""/utf8>> ->
+            {<<""/utf8>>, Count};
 
-        [<<" "/utf8>> | Rest] ->
+        <<" "/utf8, Rest/binary>> ->
             count_drop_spaces(Rest, Count + 1);
 
-        [C | Rest@1] ->
-            {[C | Rest@1], Count}
+        Other ->
+            {Other, Count}
     end.
 
--file("src/jot.gleam", 275).
--spec parse_thematic_break(integer(), list(binary())) -> gleam@option:option({container(),
-    list(binary())}).
+-file("src/jot.gleam", 318).
+-spec parse_thematic_break(integer(), binary()) -> gleam@option:option({container(),
+    binary()}).
 parse_thematic_break(Count, In) ->
     case In of
-        [] ->
-            case Count >= 3 of
-                true ->
-                    {some, {thematic_break, In}};
+        <<""/utf8>> when Count >= 3 ->
+            {some, {thematic_break, In}};
 
-                false ->
-                    none
-            end;
+        <<"\n"/utf8, _/binary>> when Count >= 3 ->
+            {some, {thematic_break, In}};
 
-        [<<"\n"/utf8>> | _] ->
-            case Count >= 3 of
-                true ->
-                    {some, {thematic_break, In}};
-
-                false ->
-                    none
-            end;
-
-        [<<" "/utf8>> | Rest] ->
+        <<" "/utf8, Rest/binary>> ->
             parse_thematic_break(Count, Rest);
 
-        [<<"\t"/utf8>> | Rest] ->
+        <<"\t"/utf8, Rest/binary>> ->
             parse_thematic_break(Count, Rest);
 
-        [<<"-"/utf8>> | Rest@1] ->
+        <<"-"/utf8, Rest@1/binary>> ->
             parse_thematic_break(Count + 1, Rest@1);
 
-        [<<"*"/utf8>> | Rest@1] ->
+        <<"*"/utf8, Rest@1/binary>> ->
             parse_thematic_break(Count + 1, Rest@1);
 
         _ ->
             none
     end.
 
--file("src/jot.gleam", 333).
--spec slurp_verbatim_line(list(binary()), integer(), binary()) -> {binary(),
-    list(binary())}.
-slurp_verbatim_line(In, Indentation, Acc) ->
-    case In of
-        [] ->
-            {Acc, []};
+-file("src/jot.gleam", 388).
+-spec slurp_verbatim_line(binary(), integer(), binary(), splitters()) -> {binary(),
+    binary()}.
+slurp_verbatim_line(In, Indentation, Acc, Splitters) ->
+    case splitter_ffi:split(erlang:element(2, Splitters), In) of
+        {Before, <<"\n"/utf8>>, In@1} ->
+            {<<<<Acc/binary, Before/binary>>/binary, "\n"/utf8>>, In@1};
 
-        [<<" "/utf8>> | In@1] when Indentation > 0 ->
-            slurp_verbatim_line(In@1, Indentation - 1, Acc);
+        {<<""/utf8>>, <<" "/utf8>>, In@2} when Indentation > 0 ->
+            slurp_verbatim_line(In@2, Indentation - 1, Acc, Splitters);
 
-        [<<"\n"/utf8>> | In@2] ->
-            {<<Acc/binary, "\n"/utf8>>, In@2};
-
-        [C | In@3] ->
-            slurp_verbatim_line(In@3, 0, <<Acc/binary, C/binary>>)
+        {Before@1, Split, In@3} ->
+            slurp_verbatim_line(
+                In@3,
+                Indentation,
+                <<<<Acc/binary, Before@1/binary>>/binary, Split/binary>>,
+                Splitters
+            )
     end.
 
--file("src/jot.gleam", 348).
--spec parse_codeblock_end(list(binary()), binary(), integer()) -> gleam@option:option({list(binary())}).
+-file("src/jot.gleam", 403).
+-spec parse_codeblock_end(binary(), binary(), integer()) -> gleam@option:option(binary()).
 parse_codeblock_end(In, Delim, Count) ->
     case In of
-        [<<"\n"/utf8>> | In@1] when Count =:= 0 ->
-            {some, {In@1}};
+        <<"\n"/utf8, In@1/binary>> when Count =:= 0 ->
+            {some, In@1};
 
         _ when Count =:= 0 ->
-            {some, {In}};
+            {some, In};
 
-        [<<" "/utf8>> | In@2] ->
+        <<" "/utf8, In@2/binary>> ->
             parse_codeblock_end(In@2, Delim, Count);
 
-        [C | In@3] when C =:= Delim ->
-            parse_codeblock_end(In@3, Delim, Count - 1);
-
-        [] ->
-            {some, {In}};
-
         _ ->
-            none
+            case gleam_stdlib:string_pop_grapheme(In) of
+                {ok, {C, In@3}} when C =:= Delim ->
+                    parse_codeblock_end(In@3, Delim, Count - 1);
+
+                {ok, _} ->
+                    none;
+
+                {error, _} ->
+                    {some, In}
+            end
     end.
 
--file("src/jot.gleam", 317).
+-file("src/jot.gleam", 371).
 -spec parse_codeblock_content(
-    list(binary()),
+    binary(),
     binary(),
     integer(),
     integer(),
-    binary()
-) -> {binary(), list(binary())}.
-parse_codeblock_content(In, Delim, Count, Indentation, Acc) ->
+    binary(),
+    splitters()
+) -> {binary(), binary()}.
+parse_codeblock_content(In, Delim, Count, Indentation, Acc, Splitters) ->
     case parse_codeblock_end(In, Delim, Count) of
         none ->
-            {Acc@1, In@1} = slurp_verbatim_line(In, Indentation, Acc),
-            parse_codeblock_content(In@1, Delim, Count, Indentation, Acc@1);
+            {Acc@1, In@1} = slurp_verbatim_line(In, Indentation, Acc, Splitters),
+            parse_codeblock_content(
+                In@1,
+                Delim,
+                Count,
+                Indentation,
+                Acc@1,
+                Splitters
+            );
 
-        {some, {In@2}} ->
+        {some, In@2} ->
             {Acc, In@2}
     end.
 
--file("src/jot.gleam", 362).
--spec parse_codeblock_language(list(binary()), binary()) -> gleam@option:option({gleam@option:option(binary()),
-    list(binary())}).
-parse_codeblock_language(In, Language) ->
-    case In of
-        [<<"`"/utf8>> | _] ->
+-file("src/jot.gleam", 420).
+-spec parse_codeblock_language(binary(), splitters(), binary()) -> gleam@option:option({gleam@option:option(binary()),
+    binary()}).
+parse_codeblock_language(In, Splitters, Language) ->
+    case splitter_ffi:split(erlang:element(3, Splitters), In) of
+        {_, <<"`"/utf8>>, _} ->
             none;
 
-        [] ->
+        {A, <<"\n"/utf8>>, _} when (A =:= <<""/utf8>>) andalso (Language =:= <<""/utf8>>) ->
             {some, {none, In}};
 
-        [<<"\n"/utf8>> | In@1] when Language =:= <<""/utf8>> ->
-            {some, {none, In@1}};
+        {A@1, <<"\n"/utf8>>, In@1} ->
+            {some, {{some, <<Language/binary, A@1/binary>>}, In@1}};
 
-        [<<"\n"/utf8>> | In@2] ->
-            {some, {{some, Language}, In@2}};
-
-        [C | In@3] ->
-            parse_codeblock_language(In@3, <<Language/binary, C/binary>>)
+        _ ->
+            {some, {none, In}}
     end.
 
--file("src/jot.gleam", 300).
--spec parse_codeblock_start(list(binary()), binary(), integer()) -> gleam@option:option({gleam@option:option(binary()),
+-file("src/jot.gleam", 344).
+-spec parse_codeblock_start(binary(), splitters(), binary(), integer()) -> gleam@option:option({gleam@option:option(binary()),
     integer(),
-    list(binary())}).
-parse_codeblock_start(In, Delim, Count) ->
+    binary()}).
+parse_codeblock_start(In, Splitters, Delim, Count) ->
     case In of
-        [C | In@1] when C =:= Delim ->
-            parse_codeblock_start(In@1, Delim, Count + 1);
+        <<C:1/binary, In@1/binary>> when (C =:= <<"`"/utf8>>) andalso (C =:= Delim) ->
+            parse_codeblock_start(In@1, Splitters, Delim, Count + 1);
 
-        [<<"\n"/utf8>> | In@2] when Count >= 3 ->
+        <<C:1/binary, In@1/binary>> when (C =:= <<"~"/utf8>>) andalso (C =:= Delim) ->
+            parse_codeblock_start(In@1, Splitters, Delim, Count + 1);
+
+        <<"\n"/utf8, In@2/binary>> when Count >= 3 ->
             {some, {none, Count, In@2}};
 
-        [_ | _] when Count >= 3 ->
+        <<""/utf8>> ->
+            none;
+
+        _ when Count >= 3 ->
             In@3 = drop_spaces(In),
             gleam@option:map(
-                parse_codeblock_language(In@3, <<""/utf8>>),
+                parse_codeblock_language(In@3, Splitters, <<""/utf8>>),
                 fun(_use0) ->
                     {Language, In@4} = _use0,
                     {Language, Count, In@4}
@@ -250,16 +266,18 @@ parse_codeblock_start(In, Delim, Count) ->
             none
     end.
 
--file("src/jot.gleam", 288).
+-file("src/jot.gleam", 327).
 -spec parse_codeblock(
-    list(binary()),
+    binary(),
     gleam@dict:dict(binary(), binary()),
     binary(),
-    integer()
-) -> gleam@option:option({container(), list(binary())}).
-parse_codeblock(In, Attrs, Delim, Indentation) ->
+    integer(),
+    splitters()
+) -> gleam@option:option({container(), binary()}).
+parse_codeblock(In, Attrs, Delim, Indentation, Splitters) ->
+    Out = parse_codeblock_start(In, Splitters, Delim, 1),
     gleam@option:then(
-        parse_codeblock_start(In, Delim, 1),
+        Out,
         fun(_use0) ->
             {Language, Count, In@1} = _use0,
             {Content, In@2} = parse_codeblock_content(
@@ -267,171 +285,215 @@ parse_codeblock(In, Attrs, Delim, Indentation) ->
                 Delim,
                 Count,
                 Indentation,
-                <<""/utf8>>
+                <<""/utf8>>,
+                Splitters
             ),
-            {some, {{codeblock, Attrs, Language, Content}, In@2}}
+            case Language of
+                {some, <<"=html"/utf8>>} ->
+                    {some, {{raw_block, gleam@string:trim_end(Content)}, In@2}};
+
+                _ ->
+                    {some, {{codeblock, Attrs, Language, Content}, In@2}}
+            end
         end
     ).
 
--file("src/jot.gleam", 385).
--spec parse_ref_value(list(binary()), binary(), binary()) -> gleam@option:option({binary(),
+-file("src/jot.gleam", 446).
+-spec parse_ref_value(binary(), binary(), binary()) -> gleam@option:option({binary(),
     binary(),
-    list(binary())}).
+    binary()}).
 parse_ref_value(In, Id, Url) ->
     case In of
-        [] ->
-            {some, {Id, gleam@string:trim(Url), []}};
-
-        [<<"\n"/utf8>>, <<" "/utf8>> | In@1] ->
+        <<"\n "/utf8, In@1/binary>> ->
             parse_ref_value(drop_spaces(In@1), Id, Url);
 
-        [<<"\n"/utf8>> | In@2] ->
+        <<"\n"/utf8, In@2/binary>> ->
             {some, {Id, gleam@string:trim(Url), In@2}};
 
-        [C | In@3] ->
-            parse_ref_value(In@3, Id, <<Url/binary, C/binary>>)
+        _ ->
+            case gleam_stdlib:string_pop_grapheme(In) of
+                {ok, {C, In@3}} ->
+                    parse_ref_value(In@3, Id, <<Url/binary, C/binary>>);
+
+                {error, _} ->
+                    {some, {Id, gleam@string:trim(Url), <<""/utf8>>}}
+            end
     end.
 
--file("src/jot.gleam", 377).
--spec parse_ref_def(list(binary()), binary()) -> gleam@option:option({binary(),
+-file("src/jot.gleam", 434).
+-spec parse_ref_def(binary(), binary()) -> gleam@option:option({binary(),
     binary(),
-    list(binary())}).
+    binary()}).
 parse_ref_def(In, Id) ->
     case In of
-        [<<"]"/utf8>>, <<":"/utf8>> | In@1] ->
+        <<"]:"/utf8, In@1/binary>> ->
             parse_ref_value(In@1, Id, <<""/utf8>>);
 
-        [] ->
+        <<""/utf8>> ->
             none;
 
-        [<<"]"/utf8>> | _] ->
+        <<"]"/utf8, _/binary>> ->
             none;
 
-        [<<"\n"/utf8>> | _] ->
+        <<"\n"/utf8, _/binary>> ->
             none;
 
-        [C | In@2] ->
-            parse_ref_def(In@2, <<Id/binary, C/binary>>)
+        _ ->
+            case gleam_stdlib:string_pop_grapheme(In) of
+                {ok, {C, In@2}} ->
+                    parse_ref_def(In@2, <<Id/binary, C/binary>>);
+
+                {error, _} ->
+                    none
+            end
     end.
 
--file("src/jot.gleam", 469).
--spec parse_attribute_value(list(binary()), binary(), binary()) -> gleam@option:option({binary(),
+-file("src/jot.gleam", 544).
+-spec parse_attribute_value(binary(), binary(), binary()) -> gleam@option:option({binary(),
     binary(),
-    list(binary())}).
+    binary()}).
 parse_attribute_value(In, Key, Value) ->
     case In of
-        [] ->
+        <<""/utf8>> ->
             none;
 
-        [<<" "/utf8>> | In@1] ->
+        <<" "/utf8, In@1/binary>> ->
             {some, {Key, Value, In@1}};
 
-        [<<"}"/utf8>> | _] ->
+        <<"}"/utf8, _/binary>> ->
             {some, {Key, Value, In}};
 
-        [C | In@2] ->
-            parse_attribute_value(In@2, Key, <<Value/binary, C/binary>>)
+        _ ->
+            case gleam_stdlib:string_pop_grapheme(In) of
+                {ok, {C, In@2}} ->
+                    parse_attribute_value(In@2, Key, <<Value/binary, C/binary>>);
+
+                {error, _} ->
+                    none
+            end
     end.
 
--file("src/jot.gleam", 482).
--spec parse_attribute_quoted_value(list(binary()), binary(), binary()) -> gleam@option:option({binary(),
+-file("src/jot.gleam", 561).
+-spec parse_attribute_quoted_value(binary(), binary(), binary()) -> gleam@option:option({binary(),
     binary(),
-    list(binary())}).
+    binary()}).
 parse_attribute_quoted_value(In, Key, Value) ->
     case In of
-        [] ->
+        <<""/utf8>> ->
             none;
 
-        [<<"\""/utf8>> | In@1] ->
+        <<"\""/utf8, In@1/binary>> ->
             {some, {Key, Value, In@1}};
 
-        [C | In@2] ->
-            parse_attribute_quoted_value(In@2, Key, <<Value/binary, C/binary>>)
+        _ ->
+            case gleam_stdlib:string_pop_grapheme(In) of
+                {ok, {C, In@2}} ->
+                    parse_attribute_quoted_value(
+                        In@2,
+                        Key,
+                        <<Value/binary, C/binary>>
+                    );
+
+                {error, _} ->
+                    none
+            end
     end.
 
--file("src/jot.gleam", 460).
--spec parse_attribute(list(binary()), binary()) -> gleam@option:option({binary(),
+-file("src/jot.gleam", 531).
+-spec parse_attribute(binary(), binary()) -> gleam@option:option({binary(),
     binary(),
-    list(binary())}).
+    binary()}).
 parse_attribute(In, Key) ->
     case In of
-        [] ->
+        <<""/utf8>> ->
             none;
 
-        [<<" "/utf8>> | _] ->
+        <<" "/utf8, _/binary>> ->
             none;
 
-        [<<"="/utf8>>, <<"\""/utf8>> | In@1] ->
+        <<"=\""/utf8, In@1/binary>> ->
             parse_attribute_quoted_value(In@1, Key, <<""/utf8>>);
 
-        [<<"="/utf8>> | In@2] ->
+        <<"="/utf8, In@2/binary>> ->
             parse_attribute_value(In@2, Key, <<""/utf8>>);
 
-        [C | In@3] ->
-            parse_attribute(In@3, <<Key/binary, C/binary>>)
+        _ ->
+            case gleam_stdlib:string_pop_grapheme(In) of
+                {ok, {C, In@3}} ->
+                    parse_attribute(In@3, <<Key/binary, C/binary>>);
+
+                {error, _} ->
+                    none
+            end
     end.
 
--file("src/jot.gleam", 494).
--spec parse_attributes_id_or_class(list(binary()), binary()) -> gleam@option:option({binary(),
-    list(binary())}).
+-file("src/jot.gleam", 577).
+-spec parse_attributes_id_or_class(binary(), binary()) -> gleam@option:option({binary(),
+    binary()}).
 parse_attributes_id_or_class(In, Id) ->
     case In of
-        [] ->
+        <<""/utf8>> ->
             {some, {Id, In}};
 
-        [<<"}"/utf8>> | _] ->
+        <<"}"/utf8, _/binary>> ->
             {some, {Id, In}};
 
-        [<<" "/utf8>> | _] ->
+        <<" "/utf8, _/binary>> ->
             {some, {Id, In}};
 
-        [<<"#"/utf8>> | _] ->
+        <<"#"/utf8, _/binary>> ->
             none;
 
-        [<<"."/utf8>> | _] ->
+        <<"."/utf8, _/binary>> ->
             none;
 
-        [<<"="/utf8>> | _] ->
+        <<"="/utf8, _/binary>> ->
             none;
 
-        [<<"\n"/utf8>> | _] ->
+        <<"\n"/utf8, _/binary>> ->
             none;
 
-        [C | In@1] ->
-            parse_attributes_id_or_class(In@1, <<Id/binary, C/binary>>)
+        _ ->
+            case gleam_stdlib:string_pop_grapheme(In) of
+                {ok, {C, In@1}} ->
+                    parse_attributes_id_or_class(In@1, <<Id/binary, C/binary>>);
+
+                {error, _} ->
+                    {some, {Id, In}}
+            end
     end.
 
--file("src/jot.gleam", 507).
--spec parse_attributes_end(list(binary()), gleam@dict:dict(binary(), binary())) -> gleam@option:option({gleam@dict:dict(binary(), binary()),
-    list(binary())}).
+-file("src/jot.gleam", 594).
+-spec parse_attributes_end(binary(), gleam@dict:dict(binary(), binary())) -> gleam@option:option({gleam@dict:dict(binary(), binary()),
+    binary()}).
 parse_attributes_end(In, Attrs) ->
     case In of
-        [] ->
-            {some, {Attrs, []}};
+        <<""/utf8>> ->
+            {some, {Attrs, <<""/utf8>>}};
 
-        [<<"\n"/utf8>> | In@1] ->
+        <<"\n"/utf8, In@1/binary>> ->
             {some, {Attrs, In@1}};
 
-        [<<" "/utf8>> | In@2] ->
+        <<" "/utf8, In@2/binary>> ->
             parse_attributes_end(In@2, Attrs);
 
-        [_ | _] ->
+        _ ->
             none
     end.
 
--file("src/jot.gleam", 431).
--spec parse_attributes(list(binary()), gleam@dict:dict(binary(), binary())) -> gleam@option:option({gleam@dict:dict(binary(), binary()),
-    list(binary())}).
+-file("src/jot.gleam", 502).
+-spec parse_attributes(binary(), gleam@dict:dict(binary(), binary())) -> gleam@option:option({gleam@dict:dict(binary(), binary()),
+    binary()}).
 parse_attributes(In, Attrs) ->
     In@1 = drop_spaces(In),
     case In@1 of
-        [] ->
+        <<""/utf8>> ->
             none;
 
-        [<<"}"/utf8>> | In@2] ->
+        <<"}"/utf8, In@2/binary>> ->
             parse_attributes_end(In@2, Attrs);
 
-        [<<"#"/utf8>> | In@3] ->
+        <<"#"/utf8, In@3/binary>> ->
             case parse_attributes_id_or_class(In@3, <<""/utf8>>) of
                 {some, {Id, In@4}} ->
                     parse_attributes(
@@ -443,7 +505,7 @@ parse_attributes(In, Attrs) ->
                     none
             end;
 
-        [<<"."/utf8>> | In@5] ->
+        <<"."/utf8, In@5/binary>> ->
             case parse_attributes_id_or_class(In@5, <<""/utf8>>) of
                 {some, {C, In@6}} ->
                     parse_attributes(
@@ -465,149 +527,108 @@ parse_attributes(In, Attrs) ->
             end
     end.
 
--file("src/jot.gleam", 562).
--spec id_char(binary()) -> boolean().
-id_char(Char) ->
-    case Char of
-        <<"#"/utf8>> ->
-            false;
-
-        <<"?"/utf8>> ->
-            false;
-
-        <<"!"/utf8>> ->
-            false;
-
-        <<","/utf8>> ->
-            false;
-
-        _ ->
-            true
-    end.
-
--file("src/jot.gleam", 569).
--spec id_escape(list(binary()), binary()) -> binary().
-id_escape(Content, Acc) ->
-    case Content of
-        [] ->
-            Acc;
-
-        [<<" "/utf8>> | Rest] when Rest =:= [] ->
-            Acc;
-
-        [<<"\n"/utf8>> | Rest] when Rest =:= [] ->
-            Acc;
-
-        [<<" "/utf8>> | Rest@1] when Acc =:= <<""/utf8>> ->
-            id_escape(Rest@1, Acc);
-
-        [<<"\n"/utf8>> | Rest@1] when Acc =:= <<""/utf8>> ->
-            id_escape(Rest@1, Acc);
-
-        [<<" "/utf8>> | Rest@2] ->
-            id_escape(Rest@2, <<Acc/binary, "-"/utf8>>);
-
-        [<<"\n"/utf8>> | Rest@2] ->
-            id_escape(Rest@2, <<Acc/binary, "-"/utf8>>);
-
-        [C | Rest@3] ->
-            id_escape(Rest@3, <<Acc/binary, C/binary>>)
-    end.
-
--file("src/jot.gleam", 555).
+-file("src/jot.gleam", 644).
 -spec id_sanitise(binary()) -> binary().
 id_sanitise(Content) ->
     _pipe = Content,
-    _pipe@1 = gleam@string:to_graphemes(_pipe),
-    _pipe@2 = gleam@list:filter(_pipe@1, fun id_char/1),
-    id_escape(_pipe@2, <<""/utf8>>).
+    _pipe@1 = gleam@string:replace(_pipe, <<"#"/utf8>>, <<""/utf8>>),
+    _pipe@2 = gleam@string:replace(_pipe@1, <<"?"/utf8>>, <<""/utf8>>),
+    _pipe@3 = gleam@string:replace(_pipe@2, <<"!"/utf8>>, <<""/utf8>>),
+    _pipe@4 = gleam@string:replace(_pipe@3, <<","/utf8>>, <<""/utf8>>),
+    _pipe@5 = gleam@string:trim(_pipe@4),
+    _pipe@6 = gleam@string:replace(_pipe@5, <<" "/utf8>>, <<"-"/utf8>>),
+    gleam@string:replace(_pipe@6, <<"\n"/utf8>>, <<"-"/utf8>>).
 
--file("src/jot.gleam", 596).
--spec take_heading_chars_newline_hash(list(binary()), integer(), list(binary())) -> gleam@option:option({list(binary()),
-    list(binary())}).
+-file("src/jot.gleam", 673).
+-spec take_heading_chars_newline_hash(binary(), integer(), binary()) -> gleam@option:option({binary(),
+    binary()}).
 take_heading_chars_newline_hash(In, Level, Acc) ->
     case In of
         _ when Level < 0 ->
             none;
 
-        [] when Level > 0 ->
+        <<""/utf8>> when Level > 0 ->
             none;
 
-        [] when Level =:= 0 ->
-            {some, {Acc, []}};
+        <<""/utf8>> when Level =:= 0 ->
+            {some, {Acc, <<""/utf8>>}};
 
-        [<<" "/utf8>> | In@1] when Level =:= 0 ->
+        <<" "/utf8, In@1/binary>> when Level =:= 0 ->
             {some, {Acc, In@1}};
 
-        [<<"#"/utf8>> | Rest] ->
+        <<"#"/utf8, Rest/binary>> ->
             take_heading_chars_newline_hash(Rest, Level - 1, Acc);
 
         _ ->
             none
     end.
 
--file("src/jot.gleam", 582).
--spec take_heading_chars(list(binary()), integer(), list(binary())) -> {list(binary()),
-    list(binary())}.
+-file("src/jot.gleam", 655).
+-spec take_heading_chars(binary(), integer(), binary()) -> {binary(), binary()}.
 take_heading_chars(In, Level, Acc) ->
     case In of
-        [] ->
-            {lists:reverse(Acc), []};
+        <<""/utf8>> ->
+            {Acc, <<""/utf8>>};
 
-        [<<"\n"/utf8>>] ->
-            {lists:reverse(Acc), []};
+        <<"\n"/utf8>> ->
+            {Acc, <<""/utf8>>};
 
-        [<<"\n"/utf8>>, <<"\n"/utf8>> | In@1] ->
-            {lists:reverse(Acc), In@1};
+        <<"\n\n"/utf8, In@1/binary>> ->
+            {Acc, In@1};
 
-        [<<"\n"/utf8>>, <<"#"/utf8>> | Rest] ->
+        <<"\n#"/utf8, Rest/binary>> ->
             case take_heading_chars_newline_hash(
                 Rest,
                 Level - 1,
-                [<<"\n"/utf8>> | Acc]
+                <<Acc/binary, "\n"/utf8>>
             ) of
                 {some, {Acc@1, In@2}} ->
                     take_heading_chars(In@2, Level, Acc@1);
 
                 none ->
-                    {lists:reverse(Acc), In}
+                    {Acc, In}
             end;
 
-        [C | In@3] ->
-            take_heading_chars(In@3, Level, [C | Acc])
+        _ ->
+            case gleam_stdlib:string_pop_grapheme(In) of
+                {ok, {C, In@3}} ->
+                    take_heading_chars(In@3, Level, <<Acc/binary, C/binary>>);
+
+                {error, _} ->
+                    {Acc, <<""/utf8>>}
+            end
     end.
 
--file("src/jot.gleam", 774).
--spec parse_code_end(list(binary()), integer(), integer(), binary()) -> {boolean(),
+-file("src/jot.gleam", 876).
+-spec parse_code_end(binary(), integer(), integer(), binary()) -> {boolean(),
     binary(),
-    list(binary())}.
+    binary()}.
 parse_code_end(In, Limit, Count, Content) ->
     case In of
-        [] ->
+        <<""/utf8>> ->
             {true, Content, In};
 
-        [<<"`"/utf8>> | In@1] ->
+        <<"`"/utf8, In@1/binary>> ->
             parse_code_end(In@1, Limit, Count + 1, Content);
 
-        [_ | _] when Limit =:= Count ->
+        _ when Limit =:= Count ->
             {true, Content, In};
 
-        [_ | _] ->
+        _ ->
             {false,
                 <<Content/binary,
                     (gleam@string:repeat(<<"`"/utf8>>, Count))/binary>>,
                 In}
     end.
 
--file("src/jot.gleam", 756).
--spec parse_code_content(list(binary()), integer(), binary()) -> {binary(),
-    list(binary())}.
+-file("src/jot.gleam", 853).
+-spec parse_code_content(binary(), integer(), binary()) -> {binary(), binary()}.
 parse_code_content(In, Count, Content) ->
     case In of
-        [] ->
+        <<""/utf8>> ->
             {Content, In};
 
-        [<<"`"/utf8>> | In@1] ->
+        <<"`"/utf8, In@1/binary>> ->
             {Done, Content@1, In@2} = parse_code_end(In@1, Count, 1, Content),
             case Done of
                 true ->
@@ -617,15 +638,25 @@ parse_code_content(In, Count, Content) ->
                     parse_code_content(In@2, Count, Content@1)
             end;
 
-        [C | In@3] ->
-            parse_code_content(In@3, Count, <<Content/binary, C/binary>>)
+        _ ->
+            case gleam_stdlib:string_pop_grapheme(In) of
+                {ok, {C, In@3}} ->
+                    parse_code_content(
+                        In@3,
+                        Count,
+                        <<Content/binary, C/binary>>
+                    );
+
+                {error, _} ->
+                    {Content, In}
+            end
     end.
 
--file("src/jot.gleam", 734).
--spec parse_code(list(binary()), integer()) -> {inline(), list(binary())}.
+-file("src/jot.gleam", 831).
+-spec parse_code(binary(), integer()) -> {inline(), binary()}.
 parse_code(In, Count) ->
     case In of
-        [<<"`"/utf8>> | In@1] ->
+        <<"`"/utf8, In@1/binary>> ->
             parse_code(In@1, Count + 1);
 
         _ ->
@@ -653,135 +684,188 @@ parse_code(In, Count) ->
             {{code, Content@2}, In@2}
     end.
 
--file("src/jot.gleam", 799).
--spec take_emphasis_chars(list(binary()), binary(), list(binary())) -> gleam@option:option({list(binary()),
-    list(binary())}).
+-file("src/jot.gleam", 906).
+-spec take_emphasis_chars(binary(), binary(), binary()) -> gleam@option:option({binary(),
+    binary()}).
 take_emphasis_chars(In, Close, Acc) ->
     case In of
-        [] ->
+        <<""/utf8>> ->
             none;
 
-        [<<"`"/utf8>> | _] ->
+        <<"`"/utf8, _/binary>> ->
             none;
 
-        [<<"\t"/utf8>>, C | In@1] when C =:= Close ->
-            take_emphasis_chars(In@1, Close, [<<" "/utf8>>, C | Acc]);
+        <<Ws:1/binary, In@1/binary>> when Ws =:= <<"\t"/utf8>> ->
+            case gleam_stdlib:string_pop_grapheme(In@1) of
+                {ok, {C, In@2}} when C =:= Close ->
+                    take_emphasis_chars(
+                        In@2,
+                        Close,
+                        <<<<Acc/binary, Ws/binary>>/binary, C/binary>>
+                    );
 
-        [<<"\n"/utf8>>, C@1 | In@2] when C@1 =:= Close ->
-            take_emphasis_chars(In@2, Close, [<<" "/utf8>>, C@1 | Acc]);
-
-        [<<" "/utf8>>, C@2 | In@3] when C@2 =:= Close ->
-            take_emphasis_chars(In@3, Close, [<<" "/utf8>>, C@2 | Acc]);
-
-        [C@3 | In@4] when C@3 =:= Close ->
-            case lists:reverse(Acc) of
-                [] ->
-                    none;
-
-                Acc@1 ->
-                    {some, {Acc@1, In@4}}
+                _ ->
+                    take_emphasis_chars(In@1, Close, <<Acc/binary, Ws/binary>>)
             end;
 
-        [C@4 | Rest] ->
-            take_emphasis_chars(Rest, Close, [C@4 | Acc])
+        <<Ws:1/binary, In@1/binary>> when Ws =:= <<"\n"/utf8>> ->
+            case gleam_stdlib:string_pop_grapheme(In@1) of
+                {ok, {C, In@2}} when C =:= Close ->
+                    take_emphasis_chars(
+                        In@2,
+                        Close,
+                        <<<<Acc/binary, Ws/binary>>/binary, C/binary>>
+                    );
+
+                _ ->
+                    take_emphasis_chars(In@1, Close, <<Acc/binary, Ws/binary>>)
+            end;
+
+        <<Ws:1/binary, In@1/binary>> when Ws =:= <<" "/utf8>> ->
+            case gleam_stdlib:string_pop_grapheme(In@1) of
+                {ok, {C, In@2}} when C =:= Close ->
+                    take_emphasis_chars(
+                        In@2,
+                        Close,
+                        <<<<Acc/binary, Ws/binary>>/binary, C/binary>>
+                    );
+
+                _ ->
+                    take_emphasis_chars(In@1, Close, <<Acc/binary, Ws/binary>>)
+            end;
+
+        _ ->
+            case gleam_stdlib:string_pop_grapheme(In) of
+                {ok, {C@1, _}} when (C@1 =:= Close) andalso (Acc =:= <<""/utf8>>) ->
+                    none;
+
+                {ok, {C@2, In@3}} when C@2 =:= Close ->
+                    {some, {Acc, In@3}};
+
+                {ok, {C@3, In@4}} ->
+                    take_emphasis_chars(In@4, Close, <<Acc/binary, C@3/binary>>);
+
+                {error, _} ->
+                    none
+            end
     end.
 
--file("src/jot.gleam", 867).
+-file("src/jot.gleam", 975).
 -spec take_link_chars_destination(
-    list(binary()),
+    binary(),
     boolean(),
-    list(binary()),
+    binary(),
+    splitters(),
     binary()
-) -> gleam@option:option({list(binary()), destination(), list(binary())}).
-take_link_chars_destination(In, Is_url, Inline_in, Acc) ->
-    case In of
-        [] ->
-            none;
+) -> gleam@option:option({binary(), destination(), binary()}).
+take_link_chars_destination(In, Is_url, Inline_in, Splitters, Acc) ->
+    case splitter_ffi:split(erlang:element(5, Splitters), In) of
+        {A, <<")"/utf8>>, In@1} when Is_url ->
+            {some, {Inline_in, {url, <<Acc/binary, A/binary>>}, In@1}};
 
-        [<<")"/utf8>> | In@1] when Is_url ->
-            {some, {Inline_in, {url, Acc}, In@1}};
+        {A@1, <<"]"/utf8>>, In@2} when not Is_url ->
+            {some, {Inline_in, {reference, <<Acc/binary, A@1/binary>>}, In@2}};
 
-        [<<"]"/utf8>> | In@2] when not Is_url ->
-            {some, {Inline_in, {reference, Acc}, In@2}};
+        {A@2, <<"\n"/utf8>>, Rest} when Is_url ->
+            take_link_chars_destination(
+                Rest,
+                Is_url,
+                Inline_in,
+                Splitters,
+                <<Acc/binary, A@2/binary>>
+            );
 
-        [<<"\n"/utf8>> | Rest] when Is_url ->
-            take_link_chars_destination(Rest, Is_url, Inline_in, Acc);
-
-        [<<"\n"/utf8>> | Rest@1] when not Is_url ->
+        {A@3, <<"\n"/utf8>>, Rest@1} when not Is_url ->
             take_link_chars_destination(
                 Rest@1,
                 Is_url,
                 Inline_in,
-                <<Acc/binary, " "/utf8>>
+                Splitters,
+                <<<<Acc/binary, A@3/binary>>/binary, " "/utf8>>
             );
 
-        [C | Rest@2] ->
-            take_link_chars_destination(
-                Rest@2,
-                Is_url,
-                Inline_in,
-                <<Acc/binary, C/binary>>
-            )
+        _ ->
+            none
     end.
 
--file("src/jot.gleam", 847).
--spec take_link_chars(list(binary()), list(binary())) -> gleam@option:option({list(binary()),
+-file("src/jot.gleam", 956).
+-spec take_link_chars(binary(), binary(), splitters()) -> gleam@option:option({binary(),
     destination(),
-    list(binary())}).
-take_link_chars(In, Inline_in) ->
-    case In of
-        [] ->
-            none;
+    binary()}).
+take_link_chars(In, Inline_in, Splitters) ->
+    case gleam@string:split_once(In, <<"]"/utf8>>) of
+        {ok, {Before, <<"["/utf8, In@1/binary>>}} ->
+            take_link_chars_destination(
+                In@1,
+                false,
+                <<Inline_in/binary, Before/binary>>,
+                Splitters,
+                <<""/utf8>>
+            );
 
-        [<<"]"/utf8>>, <<"["/utf8>> | In@1] ->
-            Inline_in@1 = lists:reverse(Inline_in),
-            take_link_chars_destination(In@1, false, Inline_in@1, <<""/utf8>>);
+        {ok, {Before@1, <<"("/utf8, In@2/binary>>}} ->
+            take_link_chars_destination(
+                In@2,
+                true,
+                <<Inline_in/binary, Before@1/binary>>,
+                Splitters,
+                <<""/utf8>>
+            );
 
-        [<<"]"/utf8>>, <<"("/utf8>> | In@2] ->
-            Inline_in@2 = lists:reverse(Inline_in),
-            take_link_chars_destination(In@2, true, Inline_in@2, <<""/utf8>>);
+        {ok, {Before@2, In@3}} ->
+            take_link_chars(
+                In@3,
+                <<Inline_in/binary, Before@2/binary>>,
+                Splitters
+            );
 
-        [C | Rest] ->
-            take_link_chars(Rest, [C | Inline_in])
+        {error, _} ->
+            none
     end.
 
--file("src/jot.gleam", 888).
--spec parse_footnote(list(binary()), binary()) -> gleam@option:option({inline(),
-    list(binary())}).
+-file("src/jot.gleam", 1001).
+-spec parse_footnote(binary(), binary()) -> gleam@option:option({inline(),
+    binary()}).
 parse_footnote(In, Acc) ->
     case In of
-        [] ->
+        <<""/utf8>> ->
             none;
 
-        [<<"]"/utf8>> | Rest] ->
+        <<"]"/utf8, Rest/binary>> ->
             {some, {{footnote, Acc}, Rest}};
 
-        [C | Rest@1] ->
-            parse_footnote(Rest@1, <<Acc/binary, C/binary>>)
+        _ ->
+            case gleam_stdlib:string_pop_grapheme(In) of
+                {ok, {C, Rest@1}} ->
+                    parse_footnote(Rest@1, <<Acc/binary, C/binary>>);
+
+                {error, _} ->
+                    none
+            end
     end.
 
--file("src/jot.gleam", 902).
--spec heading_level(list(binary()), integer()) -> gleam@option:option({integer(),
-    list(binary())}).
+-file("src/jot.gleam", 1018).
+-spec heading_level(binary(), integer()) -> gleam@option:option({integer(),
+    binary()}).
 heading_level(In, Level) ->
     case In of
-        [<<"#"/utf8>> | Rest] ->
+        <<"#"/utf8, Rest/binary>> ->
             heading_level(Rest, Level + 1);
 
-        [] when Level > 0 ->
-            {some, {Level, []}};
+        <<""/utf8>> when Level > 0 ->
+            {some, {Level, <<""/utf8>>}};
 
-        [<<" "/utf8>> | Rest@1] when Level =/= 0 ->
+        <<" "/utf8, Rest@1/binary>> when Level =/= 0 ->
             {some, {Level, Rest@1}};
 
-        [<<"\n"/utf8>> | Rest@1] when Level =/= 0 ->
+        <<"\n"/utf8, Rest@1/binary>> when Level =/= 0 ->
             {some, {Level, Rest@1}};
 
         _ ->
             none
     end.
 
--file("src/jot.gleam", 913).
+-file("src/jot.gleam", 1029).
 -spec take_inline_text(list(inline()), binary()) -> binary().
 take_inline_text(Inlines, Acc) ->
     case Inlines of
@@ -790,6 +874,9 @@ take_inline_text(Inlines, Acc) ->
 
         [First | Rest] ->
             case First of
+                non_breaking_space ->
+                    take_inline_text(Rest, <<Acc/binary, " "/utf8>>);
+
                 {text, Text} ->
                     take_inline_text(Rest, <<Acc/binary, Text/binary>>);
 
@@ -818,25 +905,56 @@ take_inline_text(Inlines, Acc) ->
             end
     end.
 
--file("src/jot.gleam", 941).
--spec take_paragraph_chars(list(binary()), list(binary())) -> {list(binary()),
-    list(binary())}.
-take_paragraph_chars(In, Acc) ->
-    case In of
-        [] ->
-            {lists:reverse(Acc), []};
+-file("src/jot.gleam", 1097).
+-spec take_list_item_chars(binary(), binary(), binary()) -> {binary(),
+    binary(),
+    boolean()}.
+take_list_item_chars(In, Acc, Style) ->
+    {In@2, Acc@1} = case gleam@string:split_once(In, <<"\n"/utf8>>) of
+        {ok, {Content, In@1}} ->
+            {In@1, <<Acc/binary, Content/binary>>};
 
-        [<<"\n"/utf8>>] ->
-            {lists:reverse(Acc), []};
+        {error, _} ->
+            {<<""/utf8>>, <<Acc/binary, In/binary>>}
+    end,
+    case In@2 of
+        <<" "/utf8, In@3/binary>> ->
+            take_list_item_chars(In@3, <<Acc@1/binary, "\n "/utf8>>, Style);
 
-        [<<"\n"/utf8>>, <<"\n"/utf8>> | Rest] ->
-            {lists:reverse(Acc), Rest};
+        <<"- "/utf8, In@4/binary>> when Style =:= <<"-"/utf8>> ->
+            {Acc@1, In@4, false};
 
-        [C | Rest@1] ->
-            take_paragraph_chars(Rest@1, [C | Acc])
+        <<"\n- "/utf8, In@5/binary>> when Style =:= <<"-"/utf8>> ->
+            {Acc@1, In@5, false};
+
+        <<"* "/utf8, In@6/binary>> when Style =:= <<"*"/utf8>> ->
+            {Acc@1, In@6, false};
+
+        <<"\n* "/utf8, In@7/binary>> when Style =:= <<"*"/utf8>> ->
+            {Acc@1, In@7, false};
+
+        _ ->
+            {Acc@1, In@2, true}
     end.
 
--file("src/jot.gleam", 1145).
+-file("src/jot.gleam", 1117).
+-spec take_paragraph_chars(binary()) -> {binary(), binary()}.
+take_paragraph_chars(In) ->
+    case gleam@string:split_once(In, <<"\n\n"/utf8>>) of
+        {ok, {Content, In@1}} ->
+            {Content, In@1};
+
+        {error, _} ->
+            case gleam_stdlib:string_ends_with(In, <<"\n"/utf8>>) of
+                true ->
+                    {gleam@string:drop_end(In, 1), <<""/utf8>>};
+
+                false ->
+                    {In, <<""/utf8>>}
+            end
+    end.
+
+-file("src/jot.gleam", 1334).
 -spec get_new_footnotes(
     generated_html(),
     generated_html(),
@@ -861,7 +979,7 @@ get_new_footnotes(Original_html, New_html, Acc) ->
             Acc
     end.
 
--file("src/jot.gleam", 1162).
+-file("src/jot.gleam", 1351).
 -spec append_to_html(generated_html(), binary()) -> generated_html().
 append_to_html(Original_html, Str) ->
     _record = Original_html,
@@ -869,7 +987,7 @@ append_to_html(Original_html, Str) ->
         <<(erlang:element(2, Original_html))/binary, Str/binary>>,
         erlang:element(3, _record)}.
 
--file("src/jot.gleam", 1192).
+-file("src/jot.gleam", 1381).
 -spec close_tag(generated_html(), binary()) -> generated_html().
 close_tag(Initial_html, Tag) ->
     _record = Initial_html,
@@ -879,7 +997,7 @@ close_tag(Initial_html, Tag) ->
             ">"/utf8>>,
         erlang:element(3, _record)}.
 
--file("src/jot.gleam", 1284).
+-file("src/jot.gleam", 1524).
 -spec find_footnote_number(
     list({integer(), binary()}),
     binary(),
@@ -908,25 +1026,25 @@ find_footnote_number(Footnotes_to_check, Reference, Used_footnotes) ->
             find_footnote_number(Rest, Reference, Used_footnotes)
     end.
 
--file("src/jot.gleam", 1312).
+-file("src/jot.gleam", 1552).
 -spec destination_attribute(binary(), destination(), refs()) -> gleam@dict:dict(binary(), binary()).
 destination_attribute(Key, Destination, Refs) ->
     Dict = maps:new(),
     case Destination of
         {url, Url} ->
-            gleam@dict:insert(Dict, Key, Url);
+            gleam@dict:insert(Dict, Key, houdini:escape(Url));
 
         {reference, Id} ->
             case gleam_stdlib:map_get(erlang:element(2, Refs), Id) of
                 {ok, Url@1} ->
-                    gleam@dict:insert(Dict, Key, Url@1);
+                    gleam@dict:insert(Dict, Key, houdini:escape(Url@1));
 
                 _ ->
                     Dict
             end
     end.
 
--file("src/jot.gleam", 1335).
+-file("src/jot.gleam", 1575).
 -spec ordered_attributes_to_html(list({binary(), binary()}), binary()) -> binary().
 ordered_attributes_to_html(Attributes, Html) ->
     gleam@list:fold(
@@ -941,7 +1059,7 @@ ordered_attributes_to_html(Attributes, Html) ->
         end
     ).
 
--file("src/jot.gleam", 1180).
+-file("src/jot.gleam", 1369).
 -spec open_tag_ordered_attributes(
     generated_html(),
     binary(),
@@ -955,7 +1073,7 @@ open_tag_ordered_attributes(Initial_html, Tag, Attributes) ->
         <<(ordered_attributes_to_html(Attributes, Html))/binary, ">"/utf8>>,
         erlang:element(3, _record)}.
 
--file("src/jot.gleam", 1135).
+-file("src/jot.gleam", 1324).
 -spec add_footnote_link(generated_html(), binary()) -> generated_html().
 add_footnote_link(Html, Footnote_number) ->
     _pipe = Html,
@@ -968,7 +1086,7 @@ add_footnote_link(Html, Footnote_number) ->
     _pipe@2 = append_to_html(_pipe@1, <<"↩︎"/utf8>>),
     close_tag(_pipe@2, <<"a"/utf8>>).
 
--file("src/jot.gleam", 1328).
+-file("src/jot.gleam", 1568).
 -spec attributes_to_html(binary(), gleam@dict:dict(binary(), binary())) -> binary().
 attributes_to_html(Html, Attributes) ->
     _pipe = Attributes,
@@ -981,7 +1099,7 @@ attributes_to_html(Html, Attributes) ->
     ),
     ordered_attributes_to_html(_pipe@2, Html).
 
--file("src/jot.gleam", 1166).
+-file("src/jot.gleam", 1355).
 -spec open_tag(generated_html(), binary(), gleam@dict:dict(binary(), binary())) -> generated_html().
 open_tag(Initial_html, Tag, Attributes) ->
     Html = <<<<(erlang:element(2, Initial_html))/binary, "<"/utf8>>/binary,
@@ -991,113 +1109,52 @@ open_tag(Initial_html, Tag, Attributes) ->
         <<(attributes_to_html(Html, Attributes))/binary, ">"/utf8>>,
         erlang:element(3, _record)}.
 
--file("src/jot.gleam", 1214).
--spec inline_to_html(generated_html(), inline(), refs()) -> generated_html().
-inline_to_html(Html, Inline, Refs) ->
-    case Inline of
-        linebreak ->
-            _pipe = Html,
-            _pipe@1 = open_tag(_pipe, <<"br"/utf8>>, maps:new()),
-            append_to_html(_pipe@1, <<"\n"/utf8>>);
-
-        {text, Text} ->
-            append_to_html(Html, Text);
-
-        {strong, Inlines} ->
-            _pipe@2 = Html,
-            _pipe@3 = open_tag(_pipe@2, <<"strong"/utf8>>, maps:new()),
-            _pipe@4 = inlines_to_html(_pipe@3, Inlines, Refs),
-            close_tag(_pipe@4, <<"strong"/utf8>>);
-
-        {emphasis, Inlines@1} ->
-            _pipe@5 = Html,
-            _pipe@6 = open_tag(_pipe@5, <<"em"/utf8>>, maps:new()),
-            _pipe@7 = inlines_to_html(_pipe@6, Inlines@1, Refs),
-            close_tag(_pipe@7, <<"em"/utf8>>);
-
-        {link, Text@1, Destination} ->
-            _pipe@8 = Html,
-            _pipe@9 = open_tag(
-                _pipe@8,
-                <<"a"/utf8>>,
-                destination_attribute(<<"href"/utf8>>, Destination, Refs)
-            ),
-            _pipe@10 = inlines_to_html(_pipe@9, Text@1, Refs),
-            close_tag(_pipe@10, <<"a"/utf8>>);
-
-        {image, Text@2, Destination@1} ->
-            _pipe@11 = Html,
-            open_tag(
-                _pipe@11,
-                <<"img"/utf8>>,
-                begin
-                    _pipe@12 = destination_attribute(
-                        <<"src"/utf8>>,
-                        Destination@1,
-                        Refs
-                    ),
-                    gleam@dict:insert(
-                        _pipe@12,
-                        <<"alt"/utf8>>,
-                        take_inline_text(Text@2, <<""/utf8>>)
-                    )
-                end
-            );
-
-        {code, Content} ->
-            _pipe@13 = Html,
-            _pipe@14 = open_tag(_pipe@13, <<"code"/utf8>>, maps:new()),
-            _pipe@15 = append_to_html(_pipe@14, Content),
-            close_tag(_pipe@15, <<"code"/utf8>>);
-
-        {footnote, Reference} ->
-            {Footnote_number, New_used_footnotes} = find_footnote_number(
-                erlang:element(3, Html),
-                Reference,
-                erlang:element(3, Html)
-            ),
-            Footnote_attrs = [{<<"id"/utf8>>,
-                    <<"fnref"/utf8, Footnote_number/binary>>},
-                {<<"href"/utf8>>, <<"#fn"/utf8, Footnote_number/binary>>},
-                {<<"role"/utf8>>, <<"doc-noteref"/utf8>>}],
-            Updated_html = begin
-                _pipe@16 = Html,
-                _pipe@17 = open_tag_ordered_attributes(
-                    _pipe@16,
-                    <<"a"/utf8>>,
-                    Footnote_attrs
-                ),
-                _pipe@18 = append_to_html(
-                    _pipe@17,
-                    <<<<"<sup>"/utf8, Footnote_number/binary>>/binary,
-                        "</sup>"/utf8>>
-                ),
-                close_tag(_pipe@18, <<"a"/utf8>>)
-            end,
-            _record = Updated_html,
-            {generated_html, erlang:element(2, _record), New_used_footnotes}
-    end.
-
--file("src/jot.gleam", 1196).
--spec inlines_to_html(generated_html(), list(inline()), refs()) -> generated_html().
-inlines_to_html(Html, Inlines, Refs) ->
-    case Inlines of
+-file("src/jot.gleam", 1390).
+-spec list_items_to_html(
+    generated_html(),
+    list_layout(),
+    list(list(container())),
+    refs()
+) -> generated_html().
+list_items_to_html(Html, Layout, Items, Refs) ->
+    case Items of
         [] ->
             Html;
 
-        [Inline | Rest] ->
-            Html@1 = begin
-                _pipe = Html,
-                _pipe@1 = inline_to_html(_pipe, Inline, Refs),
-                inlines_to_html(_pipe@1, Rest, Refs)
-            end,
-            _record = Html@1,
-            {generated_html,
-                gleam@string:trim_end(erlang:element(2, Html@1)),
-                erlang:element(3, _record)}
+        [[{paragraph, _, Inlines}] | Rest] when Layout =:= tight ->
+            _pipe = Html,
+            _pipe@1 = open_tag(_pipe, <<"li"/utf8>>, maps:new()),
+            _pipe@2 = append_to_html(_pipe@1, <<"\n"/utf8>>),
+            _pipe@3 = inlines_to_html(_pipe@2, Inlines, Refs, trim_last),
+            _pipe@4 = append_to_html(_pipe@3, <<"\n"/utf8>>),
+            _pipe@5 = close_tag(_pipe@4, <<"li"/utf8>>),
+            _pipe@6 = append_to_html(_pipe@5, <<"\n"/utf8>>),
+            list_items_to_html(_pipe@6, Layout, Rest, Refs);
+
+        [Item | Rest@1] ->
+            _pipe@7 = Html,
+            _pipe@8 = open_tag(_pipe@7, <<"li"/utf8>>, maps:new()),
+            _pipe@9 = append_to_html(_pipe@8, <<"\n"/utf8>>),
+            _pipe@10 = containers_to_html(Item, Refs, _pipe@9),
+            _pipe@11 = append_to_html(_pipe@10, <<"\n"/utf8>>),
+            _pipe@12 = close_tag(_pipe@11, <<"li"/utf8>>),
+            _pipe@13 = append_to_html(_pipe@12, <<"\n"/utf8>>),
+            list_items_to_html(_pipe@13, Layout, Rest@1, Refs)
     end.
 
--file("src/jot.gleam", 1041).
+-file("src/jot.gleam", 1206).
+-spec containers_to_html(list(container()), refs(), generated_html()) -> generated_html().
+containers_to_html(Containers, Refs, Html) ->
+    case Containers of
+        [] ->
+            Html;
+
+        [Container | Rest] ->
+            Html@1 = container_to_html(Html, Container, Refs),
+            containers_to_html(Rest, Refs, Html@1)
+    end.
+
+-file("src/jot.gleam", 1220).
 -spec container_to_html(generated_html(), container(), refs()) -> generated_html().
 container_to_html(Html, Container, Refs) ->
     New_html = case Container of
@@ -1108,7 +1165,7 @@ container_to_html(Html, Container, Refs) ->
         {paragraph, Attrs, Inlines} ->
             _pipe@1 = Html,
             _pipe@2 = open_tag(_pipe@1, <<"p"/utf8>>, Attrs),
-            _pipe@3 = inlines_to_html(_pipe@2, Inlines, Refs),
+            _pipe@3 = inlines_to_html(_pipe@2, Inlines, Refs, trim_last),
             close_tag(_pipe@3, <<"p"/utf8>>);
 
         {codeblock, Attrs@1, Language, Content} ->
@@ -1126,7 +1183,7 @@ container_to_html(Html, Container, Refs) ->
             _pipe@4 = Html,
             _pipe@5 = open_tag(_pipe@4, <<"pre"/utf8>>, maps:new()),
             _pipe@6 = open_tag(_pipe@5, <<"code"/utf8>>, Code_attrs),
-            _pipe@7 = append_to_html(_pipe@6, Content),
+            _pipe@7 = append_to_html(_pipe@6, houdini:escape(Content)),
             _pipe@8 = close_tag(_pipe@7, <<"code"/utf8>>),
             close_tag(_pipe@8, <<"pre"/utf8>>);
 
@@ -1134,12 +1191,141 @@ container_to_html(Html, Container, Refs) ->
             Tag = <<"h"/utf8, (erlang:integer_to_binary(Level))/binary>>,
             _pipe@9 = Html,
             _pipe@10 = open_tag(_pipe@9, Tag, Attrs@2),
-            _pipe@11 = inlines_to_html(_pipe@10, Inlines@1, Refs),
-            close_tag(_pipe@11, Tag)
+            _pipe@11 = inlines_to_html(_pipe@10, Inlines@1, Refs, trim_last),
+            close_tag(_pipe@11, Tag);
+
+        {raw_block, Content@1} ->
+            _record = Html,
+            {generated_html,
+                <<(erlang:element(2, Html))/binary, Content@1/binary>>,
+                erlang:element(3, _record)};
+
+        {bullet_list, Layout, _, Items} ->
+            _pipe@12 = Html,
+            _pipe@13 = open_tag(_pipe@12, <<"ul"/utf8>>, maps:new()),
+            _pipe@14 = append_to_html(_pipe@13, <<"\n"/utf8>>),
+            _pipe@15 = list_items_to_html(_pipe@14, Layout, Items, Refs),
+            close_tag(_pipe@15, <<"ul"/utf8>>)
     end,
     append_to_html(New_html, <<"\n"/utf8>>).
 
--file("src/jot.gleam", 997).
+-file("src/jot.gleam", 1445).
+-spec inline_to_html(generated_html(), inline(), refs(), trim()) -> generated_html().
+inline_to_html(Html, Inline, Refs, Trim) ->
+    case Inline of
+        non_breaking_space ->
+            _pipe = Html,
+            append_to_html(_pipe, <<"&nbsp;"/utf8>>);
+
+        linebreak ->
+            _pipe@1 = Html,
+            _pipe@2 = open_tag(_pipe@1, <<"br"/utf8>>, maps:new()),
+            append_to_html(_pipe@2, <<"\n"/utf8>>);
+
+        {text, Text} ->
+            Text@1 = houdini:escape(Text),
+            case Trim of
+                no_trim ->
+                    append_to_html(Html, Text@1);
+
+                trim_last ->
+                    append_to_html(Html, gleam@string:trim_end(Text@1))
+            end;
+
+        {strong, Inlines} ->
+            _pipe@3 = Html,
+            _pipe@4 = open_tag(_pipe@3, <<"strong"/utf8>>, maps:new()),
+            _pipe@5 = inlines_to_html(_pipe@4, Inlines, Refs, Trim),
+            close_tag(_pipe@5, <<"strong"/utf8>>);
+
+        {emphasis, Inlines@1} ->
+            _pipe@6 = Html,
+            _pipe@7 = open_tag(_pipe@6, <<"em"/utf8>>, maps:new()),
+            _pipe@8 = inlines_to_html(_pipe@7, Inlines@1, Refs, Trim),
+            close_tag(_pipe@8, <<"em"/utf8>>);
+
+        {link, Text@2, Destination} ->
+            _pipe@9 = Html,
+            _pipe@10 = open_tag(
+                _pipe@9,
+                <<"a"/utf8>>,
+                destination_attribute(<<"href"/utf8>>, Destination, Refs)
+            ),
+            _pipe@11 = inlines_to_html(_pipe@10, Text@2, Refs, Trim),
+            close_tag(_pipe@11, <<"a"/utf8>>);
+
+        {image, Text@3, Destination@1} ->
+            _pipe@12 = Html,
+            open_tag(
+                _pipe@12,
+                <<"img"/utf8>>,
+                begin
+                    _pipe@13 = destination_attribute(
+                        <<"src"/utf8>>,
+                        Destination@1,
+                        Refs
+                    ),
+                    gleam@dict:insert(
+                        _pipe@13,
+                        <<"alt"/utf8>>,
+                        houdini:escape(take_inline_text(Text@3, <<""/utf8>>))
+                    )
+                end
+            );
+
+        {code, Content} ->
+            Content@1 = houdini:escape(Content),
+            _pipe@14 = Html,
+            _pipe@15 = open_tag(_pipe@14, <<"code"/utf8>>, maps:new()),
+            _pipe@16 = append_to_html(_pipe@15, Content@1),
+            close_tag(_pipe@16, <<"code"/utf8>>);
+
+        {footnote, Reference} ->
+            {Footnote_number, New_used_footnotes} = find_footnote_number(
+                erlang:element(3, Html),
+                Reference,
+                erlang:element(3, Html)
+            ),
+            Footnote_attrs = [{<<"id"/utf8>>,
+                    <<"fnref"/utf8, Footnote_number/binary>>},
+                {<<"href"/utf8>>, <<"#fn"/utf8, Footnote_number/binary>>},
+                {<<"role"/utf8>>, <<"doc-noteref"/utf8>>}],
+            Updated_html = begin
+                _pipe@17 = Html,
+                _pipe@18 = open_tag_ordered_attributes(
+                    _pipe@17,
+                    <<"a"/utf8>>,
+                    Footnote_attrs
+                ),
+                _pipe@19 = append_to_html(
+                    _pipe@18,
+                    <<<<"<sup>"/utf8, Footnote_number/binary>>/binary,
+                        "</sup>"/utf8>>
+                ),
+                close_tag(_pipe@19, <<"a"/utf8>>)
+            end,
+            _record = Updated_html,
+            {generated_html, erlang:element(2, _record), New_used_footnotes}
+    end.
+
+-file("src/jot.gleam", 1423).
+-spec inlines_to_html(generated_html(), list(inline()), refs(), trim()) -> generated_html().
+inlines_to_html(Html, Inlines, Refs, Trim) ->
+    case Inlines of
+        [] ->
+            Html;
+
+        [Inline] when Trim =:= trim_last ->
+            _pipe = Html,
+            inline_to_html(_pipe, Inline, Refs, Trim);
+
+        [Inline@1 | Rest] ->
+            _pipe@1 = Html,
+            _pipe@2 = inline_to_html(_pipe@1, Inline@1, Refs, no_trim),
+            inlines_to_html(_pipe@2, Rest, Refs, Trim)
+    end.
+
+-file("src/jot.gleam", 1176).
 -spec containers_to_html_with_last_paragraph(
     list(container()),
     refs(),
@@ -1156,7 +1342,7 @@ containers_to_html_with_last_paragraph(Containers, Refs, Html, Apply) ->
                 {paragraph, Attrs, Inlines} ->
                     _pipe = Html,
                     _pipe@1 = open_tag(_pipe, <<"p"/utf8>>, Attrs),
-                    _pipe@2 = inlines_to_html(_pipe@1, Inlines, Refs),
+                    _pipe@2 = inlines_to_html(_pipe@1, Inlines, Refs, trim_last),
                     _pipe@3 = Apply(_pipe@2),
                     close_tag(_pipe@3, <<"p"/utf8>>);
 
@@ -1172,19 +1358,7 @@ containers_to_html_with_last_paragraph(Containers, Refs, Html, Apply) ->
             containers_to_html_with_last_paragraph(Rest, Refs, Html@1, Apply)
     end.
 
--file("src/jot.gleam", 1027).
--spec containers_to_html(list(container()), refs(), generated_html()) -> generated_html().
-containers_to_html(Containers, Refs, Html) ->
-    case Containers of
-        [] ->
-            Html;
-
-        [Container | Rest] ->
-            Html@1 = container_to_html(Html, Container, Refs),
-            containers_to_html(Rest, Refs, Html@1)
-    end.
-
--file("src/jot.gleam", 1080).
+-file("src/jot.gleam", 1269).
 -spec create_footnotes(
     document(),
     list({integer(), binary()}),
@@ -1256,7 +1430,7 @@ create_footnotes(Document, Used_footnotes, Html_acc) ->
             create_footnotes(Document, New_used_footnotes, Html@1)
     end.
 
--file("src/jot.gleam", 951).
+-file("src/jot.gleam", 1130).
 ?DOC(" Convert a document tree into a string of HTML.\n").
 -spec document_to_html(document()) -> binary().
 document_to_html(Document) ->
@@ -1300,41 +1474,7 @@ document_to_html(Document) ->
         end
     ).
 
--file("src/jot.gleam", 174).
-?DOC(
-    " This function allows us to parse the contents of a block after we know\n"
-    " that the *first* container meets indentation requirements, but we want to\n"
-    " ensure that once this container is parsed, future containers meet the\n"
-    " indentation requirements\n"
-).
--spec parse_block_after_indent_checked(
-    list(binary()),
-    refs(),
-    list(container()),
-    gleam@dict:dict(binary(), binary()),
-    integer(),
-    integer()
-) -> {list(container()), refs(), list(binary())}.
-parse_block_after_indent_checked(
-    In,
-    Refs,
-    Ast,
-    Attrs,
-    Required_spaces,
-    Indentation
-) ->
-    parse_containers(
-        In,
-        Refs,
-        Ast,
-        Attrs,
-        Indentation,
-        fun(In@1, Refs@1, Ast@1, Attrs@1) ->
-            parse_block(In@1, Refs@1, Ast@1, Attrs@1, Required_spaces)
-        end
-    ).
-
--file("src/jot.gleam", 146).
+-file("src/jot.gleam", 180).
 ?DOC(
     " Parse a block of Djot that ends once the content is no longer indented\n"
     " to a certain level.\n"
@@ -1351,48 +1491,238 @@ parse_block_after_indent_checked(
     " ```\n"
 ).
 -spec parse_block(
-    list(binary()),
+    binary(),
     refs(),
+    splitters(),
     list(container()),
     gleam@dict:dict(binary(), binary()),
     integer()
-) -> {list(container()), refs(), list(binary())}.
-parse_block(In, Refs, Ast, Attrs, Required_spaces) ->
+) -> {list(container()), refs(), binary()}.
+parse_block(In, Refs, Splitters, Ast, Attrs, Required_spaces) ->
     In@1 = drop_lines(In),
-    {In@2, Spaces_count} = count_drop_spaces(In@1, 0),
-    gleam@bool:lazy_guard(
-        Spaces_count < Required_spaces,
-        fun() -> {lists:reverse(Ast), Refs, In@2} end,
-        fun() ->
-            parse_block_after_indent_checked(
+    {In@2, Indentation} = count_drop_spaces(In@1, 0),
+    case Indentation < Required_spaces of
+        true ->
+            {lists:reverse(Ast), Refs, In@2};
+
+        false ->
+            {In@3, Refs@1, Container, Attrs@1} = parse_container(
                 In@2,
                 Refs,
-                Ast,
+                Splitters,
                 Attrs,
-                Required_spaces,
-                Spaces_count
-            )
-        end
-    ).
+                Indentation
+            ),
+            Ast@1 = case Container of
+                none ->
+                    Ast;
 
--file("src/jot.gleam", 398).
--spec parse_footnote_def(list(binary()), refs(), binary()) -> gleam@option:option({binary(),
-    list(container()),
-    refs(),
-    list(binary())}).
-parse_footnote_def(In, Refs, Id) ->
-    case In of
-        [<<"]"/utf8>>, <<":"/utf8>> | In@1] ->
-            {In@2, Spaces_count} = count_drop_spaces(In@1, 0),
-            Block_parser = case In@2 of
-                [<<"\n"/utf8>> | _] ->
-                    fun parse_block/5;
+                {some, Container@1} ->
+                    [Container@1 | Ast]
+            end,
+            case In@3 of
+                <<""/utf8>> ->
+                    {lists:reverse(Ast@1), Refs@1, In@3};
 
                 _ ->
-                    fun(In@3, Refs@1, Ast, Attrs, Required_spaces) ->
+                    parse_block(
+                        In@3,
+                        Refs@1,
+                        Splitters,
+                        Ast@1,
+                        Attrs@1,
+                        Required_spaces
+                    )
+            end
+    end.
+
+-file("src/jot.gleam", 233).
+-spec parse_container(
+    binary(),
+    refs(),
+    splitters(),
+    gleam@dict:dict(binary(), binary()),
+    integer()
+) -> {binary(),
+    refs(),
+    gleam@option:option(container()),
+    gleam@dict:dict(binary(), binary())}.
+parse_container(In, Refs, Splitters, Attrs, Indentation) ->
+    case In of
+        <<""/utf8>> ->
+            {In, Refs, none, maps:new()};
+
+        <<"{"/utf8, In2/binary>> ->
+            case parse_attributes(In2, Attrs) of
+                none ->
+                    {Paragraph, In@1} = parse_paragraph(In, Attrs, Splitters),
+                    {In@1, Refs, {some, Paragraph}, maps:new()};
+
+                {some, {Attrs@1, In@2}} ->
+                    {In@2, Refs, none, Attrs@1}
+            end;
+
+        <<"#"/utf8, In@3/binary>> ->
+            {Heading, Refs@1, In@4} = parse_heading(
+                In@3,
+                Refs,
+                Splitters,
+                Attrs
+            ),
+            {In@4, Refs@1, {some, Heading}, maps:new()};
+
+        <<Delim:1/binary, In2@1/binary>> when Delim =:= <<"~"/utf8>> ->
+            case parse_codeblock(In2@1, Attrs, Delim, Indentation, Splitters) of
+                none ->
+                    {Paragraph@1, In@5} = parse_paragraph(In, Attrs, Splitters),
+                    {In@5, Refs, {some, Paragraph@1}, maps:new()};
+
+                {some, {Codeblock, In@6}} ->
+                    {In@6, Refs, {some, Codeblock}, maps:new()}
+            end;
+
+        <<Delim:1/binary, In2@1/binary>> when Delim =:= <<"`"/utf8>> ->
+            case parse_codeblock(In2@1, Attrs, Delim, Indentation, Splitters) of
+                none ->
+                    {Paragraph@1, In@5} = parse_paragraph(In, Attrs, Splitters),
+                    {In@5, Refs, {some, Paragraph@1}, maps:new()};
+
+                {some, {Codeblock, In@6}} ->
+                    {In@6, Refs, {some, Codeblock}, maps:new()}
+            end;
+
+        <<Style:1/binary, In2@2/binary>> when Style =:= <<"-"/utf8>> ->
+            case {parse_thematic_break(1, In2@2), In2@2} of
+                {none, <<" "/utf8, In2@3/binary>>} ->
+                    {List, In@7} = parse_bullet_list(
+                        In2@3,
+                        Refs,
+                        Attrs,
+                        Style,
+                        tight,
+                        [],
+                        Splitters
+                    ),
+                    {In@7, Refs, {some, List}, maps:new()};
+
+                {none, <<"\n"/utf8, In2@3/binary>>} ->
+                    {List, In@7} = parse_bullet_list(
+                        In2@3,
+                        Refs,
+                        Attrs,
+                        Style,
+                        tight,
+                        [],
+                        Splitters
+                    ),
+                    {In@7, Refs, {some, List}, maps:new()};
+
+                {none, _} ->
+                    {Paragraph@2, In@8} = parse_paragraph(In, Attrs, Splitters),
+                    {In@8, Refs, {some, Paragraph@2}, maps:new()};
+
+                {{some, {Thematic_break, In@9}}, _} ->
+                    {In@9, Refs, {some, Thematic_break}, maps:new()}
+            end;
+
+        <<Style:1/binary, In2@2/binary>> when Style =:= <<"*"/utf8>> ->
+            case {parse_thematic_break(1, In2@2), In2@2} of
+                {none, <<" "/utf8, In2@3/binary>>} ->
+                    {List, In@7} = parse_bullet_list(
+                        In2@3,
+                        Refs,
+                        Attrs,
+                        Style,
+                        tight,
+                        [],
+                        Splitters
+                    ),
+                    {In@7, Refs, {some, List}, maps:new()};
+
+                {none, <<"\n"/utf8, In2@3/binary>>} ->
+                    {List, In@7} = parse_bullet_list(
+                        In2@3,
+                        Refs,
+                        Attrs,
+                        Style,
+                        tight,
+                        [],
+                        Splitters
+                    ),
+                    {In@7, Refs, {some, List}, maps:new()};
+
+                {none, _} ->
+                    {Paragraph@2, In@8} = parse_paragraph(In, Attrs, Splitters),
+                    {In@8, Refs, {some, Paragraph@2}, maps:new()};
+
+                {{some, {Thematic_break, In@9}}, _} ->
+                    {In@9, Refs, {some, Thematic_break}, maps:new()}
+            end;
+
+        <<"[^"/utf8, In2@4/binary>> ->
+            case parse_footnote_def(In2@4, Refs, Splitters, <<"^"/utf8>>) of
+                none ->
+                    {Paragraph@3, In@10} = parse_paragraph(In, Attrs, Splitters),
+                    {In@10, Refs, {some, Paragraph@3}, maps:new()};
+
+                {some, {Id, Footnote, Refs@2, In@11}} ->
+                    Refs@3 = begin
+                        _record = Refs@2,
+                        {refs,
+                            erlang:element(2, _record),
+                            gleam@dict:insert(
+                                erlang:element(3, Refs@2),
+                                Id,
+                                Footnote
+                            )}
+                    end,
+                    {In@11, Refs@3, none, maps:new()}
+            end;
+
+        <<"["/utf8, In2@5/binary>> ->
+            case parse_ref_def(In2@5, <<""/utf8>>) of
+                none ->
+                    {Paragraph@4, In@12} = parse_paragraph(In, Attrs, Splitters),
+                    {In@12, Refs, {some, Paragraph@4}, maps:new()};
+
+                {some, {Id@1, Url, In@13}} ->
+                    Refs@4 = begin
+                        _record@1 = Refs,
+                        {refs,
+                            gleam@dict:insert(
+                                erlang:element(2, Refs),
+                                Id@1,
+                                Url
+                            ),
+                            erlang:element(3, _record@1)}
+                    end,
+                    {In@13, Refs@4, none, maps:new()}
+            end;
+
+        _ ->
+            {Paragraph@5, In@14} = parse_paragraph(In, Attrs, Splitters),
+            {In@14, Refs, {some, Paragraph@5}, maps:new()}
+    end.
+
+-file("src/jot.gleam", 462).
+-spec parse_footnote_def(binary(), refs(), splitters(), binary()) -> gleam@option:option({binary(),
+    list(container()),
+    refs(),
+    binary()}).
+parse_footnote_def(In, Refs, Splitters, Id) ->
+    case In of
+        <<"]:"/utf8, In@1/binary>> ->
+            {In@2, Spaces_count} = count_drop_spaces(In@1, 0),
+            Block_parser = case In@2 of
+                <<"\n"/utf8, _/binary>> ->
+                    fun parse_block/6;
+
+                _ ->
+                    fun(In@3, Refs@1, Splitters@1, Ast, Attrs, Required_spaces) ->
                         parse_block_after_indent_checked(
                             In@3,
                             Refs@1,
+                            Splitters@1,
                             Ast,
                             Attrs,
                             Required_spaces,
@@ -1400,262 +1730,771 @@ parse_footnote_def(In, Refs, Id) ->
                         )
                     end
             end,
-            {Block, Refs@2, Rest} = Block_parser(In@2, Refs, [], maps:new(), 1),
+            {Block, Refs@2, Rest} = Block_parser(
+                In@2,
+                Refs,
+                Splitters,
+                [],
+                maps:new(),
+                1
+            ),
             {some, {Id, Block, Refs@2, Rest}};
 
-        [] ->
+        <<""/utf8>> ->
             none;
 
-        [<<"]"/utf8>> | _] ->
+        <<"]"/utf8, _/binary>> ->
             none;
 
-        [<<"\n"/utf8>> | _] ->
+        <<"\n"/utf8, _/binary>> ->
             none;
 
-        [C | In@4] ->
-            parse_footnote_def(In@4, Refs, <<Id/binary, C/binary>>)
+        _ ->
+            case gleam_stdlib:string_pop_grapheme(In) of
+                {ok, {C, In@4}} ->
+                    parse_footnote_def(
+                        In@4,
+                        Refs,
+                        Splitters,
+                        <<Id/binary, C/binary>>
+                    );
+
+                {error, _} ->
+                    none
+            end
     end.
 
--file("src/jot.gleam", 788).
--spec parse_emphasis(list(binary()), binary()) -> gleam@option:option({list(inline()),
-    list(binary())}).
-parse_emphasis(In, Close) ->
-    case take_emphasis_chars(In, Close, []) of
+-file("src/jot.gleam", 145).
+-spec parse_document_content(
+    binary(),
+    refs(),
+    splitters(),
+    list(container()),
+    gleam@dict:dict(binary(), binary())
+) -> {list(container()), refs(), binary()}.
+parse_document_content(In, Refs, Splitters, Ast, Attrs) ->
+    In@1 = drop_lines(In),
+    {In@2, Spaces_count} = count_drop_spaces(In@1, 0),
+    {In@3, Refs@1, Container, Attrs@1} = parse_container(
+        In@2,
+        Refs,
+        Splitters,
+        Attrs,
+        Spaces_count
+    ),
+    Ast@1 = case Container of
+        none ->
+            Ast;
+
+        {some, Container@1} ->
+            [Container@1 | Ast]
+    end,
+    case In@3 of
+        <<""/utf8>> ->
+            {lists:reverse(Ast@1), Refs@1, In@3};
+
+        _ ->
+            parse_document_content(In@3, Refs@1, Splitters, Ast@1, Attrs@1)
+    end.
+
+-file("src/jot.gleam", 103).
+?DOC(
+    " Convert a string of Djot into a tree of records.\n"
+    "\n"
+    " This may be useful when you want more control over the HTML to be converted\n"
+    " to, or you wish to convert Djot to some other format.\n"
+).
+-spec parse(binary()) -> document().
+parse(Djot) ->
+    Splitters = {splitters,
+        splitter:new([<<" "/utf8>>, <<"\n"/utf8>>]),
+        splitter:new([<<"`"/utf8>>, <<"\n"/utf8>>]),
+        splitter:new(
+            [<<"\\"/utf8>>,
+                <<"_"/utf8>>,
+                <<"*"/utf8>>,
+                <<"[^"/utf8>>,
+                <<"["/utf8>>,
+                <<"!["/utf8>>,
+                <<"`"/utf8>>,
+                <<"\n"/utf8>>]
+        ),
+        splitter:new([<<")"/utf8>>, <<"]"/utf8>>, <<"\n"/utf8>>])},
+    Refs = {refs, maps:new(), maps:new()},
+    {Ast, {refs, Urls, Footnotes}, _} = begin
+        _pipe = Djot,
+        _pipe@1 = gleam@string:replace(_pipe, <<"\r\n"/utf8>>, <<"\n"/utf8>>),
+        parse_document_content(_pipe@1, Refs, Splitters, [], maps:new())
+    end,
+    {document, Ast, Urls, Footnotes}.
+
+-file("src/jot.gleam", 83).
+?DOC(
+    " Convert a string of Djot into a string of HTML.\n"
+    "\n"
+    " If you want to have more control over the HTML generated you can use the\n"
+    " `parse` function to convert Djot to a tree of records instead. You can then\n"
+    " traverse this tree and turn it into HTML yourself.\n"
+).
+-spec to_html(binary()) -> binary().
+to_html(Djot) ->
+    _pipe = Djot,
+    _pipe@1 = parse(_pipe),
+    document_to_html(_pipe@1).
+
+-file("src/jot.gleam", 212).
+?DOC(
+    " This function allows us to parse the contents of a block after we know\n"
+    " that the *first* container meets indentation requirements, but we want to\n"
+    " ensure that once this container is parsed, future containers meet the\n"
+    " indentation requirements\n"
+).
+-spec parse_block_after_indent_checked(
+    binary(),
+    refs(),
+    splitters(),
+    list(container()),
+    gleam@dict:dict(binary(), binary()),
+    integer(),
+    integer()
+) -> {list(container()), refs(), binary()}.
+parse_block_after_indent_checked(
+    In,
+    Refs,
+    Splitters,
+    Ast,
+    Attrs,
+    Required_spaces,
+    Indentation
+) ->
+    {In@1, Refs@1, Container, Attrs@1} = parse_container(
+        In,
+        Refs,
+        Splitters,
+        Attrs,
+        Indentation
+    ),
+    Ast@1 = case Container of
+        none ->
+            Ast;
+
+        {some, Container@1} ->
+            [Container@1 | Ast]
+    end,
+    case In@1 of
+        <<""/utf8>> ->
+            {lists:reverse(Ast@1), Refs@1, In@1};
+
+        _ ->
+            parse_block(
+                In@1,
+                Refs@1,
+                Splitters,
+                Ast@1,
+                Attrs@1,
+                Required_spaces
+            )
+    end.
+
+-file("src/jot.gleam", 1078).
+-spec parse_list_item(
+    binary(),
+    refs(),
+    gleam@dict:dict(binary(), binary()),
+    splitters(),
+    list(container())
+) -> list(container()).
+parse_list_item(In, Refs, Attrs, Splitters, Children) ->
+    {In@1, Refs@1, Container, Attrs@1} = parse_container(
+        In,
+        Refs,
+        Splitters,
+        Attrs,
+        0
+    ),
+    Children@1 = case Container of
+        none ->
+            Children;
+
+        {some, Container@1} ->
+            [Container@1 | Children]
+    end,
+    case In@1 of
+        <<""/utf8>> ->
+            lists:reverse(Children@1);
+
+        _ ->
+            parse_list_item(In@1, Refs@1, Attrs@1, Splitters, Children@1)
+    end.
+
+-file("src/jot.gleam", 1060).
+-spec parse_bullet_list(
+    binary(),
+    refs(),
+    gleam@dict:dict(binary(), binary()),
+    binary(),
+    list_layout(),
+    list(list(container())),
+    splitters()
+) -> {container(), binary()}.
+parse_bullet_list(In, Refs, Attrs, Style, Layout, Items, Splitters) ->
+    {Inline_in, In@1, End} = take_list_item_chars(In, <<""/utf8>>, Style),
+    Item = parse_list_item(Inline_in, Refs, Attrs, Splitters, []),
+    Items@1 = [Item | Items],
+    case End of
+        true ->
+            {{bullet_list, Layout, Style, lists:reverse(Items@1)}, In@1};
+
+        false ->
+            parse_bullet_list(
+                In@1,
+                Refs,
+                Attrs,
+                Style,
+                Layout,
+                Items@1,
+                Splitters
+            )
+    end.
+
+-file("src/jot.gleam", 890).
+-spec parse_emphasis(binary(), splitters(), binary()) -> gleam@option:option({list(inline()),
+    binary()}).
+parse_emphasis(In, Splitters, Close) ->
+    case take_emphasis_chars(In, Close, <<""/utf8>>) of
         none ->
             none;
 
         {some, {Inline_in, In@1}} ->
             {Inline, Inline_in_remaining} = parse_inline(
                 Inline_in,
+                Splitters,
                 <<""/utf8>>,
                 []
             ),
-            {some, {Inline, lists:append(Inline_in_remaining, In@1)}}
+            {some, {Inline, <<Inline_in_remaining/binary, In@1/binary>>}}
     end.
 
--file("src/jot.gleam", 614).
--spec parse_inline(list(binary()), binary(), list(inline())) -> {list(inline()),
-    list(binary())}.
-parse_inline(In, Text, Acc) ->
-    case In of
-        [] when Text =:= <<""/utf8>> ->
-            {lists:reverse(Acc), []};
+-file("src/jot.gleam", 691).
+-spec parse_inline(binary(), splitters(), binary(), list(inline())) -> {list(inline()),
+    binary()}.
+parse_inline(In, Splitters, Text, Acc) ->
+    case splitter_ffi:split(erlang:element(4, Splitters), In) of
+        {Text2, <<""/utf8>>, <<""/utf8>>} ->
+            case <<Text/binary, Text2/binary>> of
+                <<""/utf8>> ->
+                    {lists:reverse(Acc), <<""/utf8>>};
 
-        [] ->
-            parse_inline([], <<""/utf8>>, [{text, Text} | Acc]);
+                Text@1 ->
+                    {lists:reverse([{text, Text@1} | Acc]), <<""/utf8>>}
+            end;
 
-        [<<"\\"/utf8>>, C | Rest] ->
-            case C of
-                <<"\n"/utf8>> ->
+        {A, <<"\\"/utf8>>, In@1} ->
+            Text@2 = <<Text/binary, A/binary>>,
+            case In@1 of
+                <<E:1/binary, In@2/binary>> when E =:= <<"!"/utf8>> ->
                     parse_inline(
-                        Rest,
-                        <<""/utf8>>,
-                        [linebreak, {text, Text} | Acc]
+                        In@2,
+                        Splitters,
+                        <<Text@2/binary, E/binary>>,
+                        Acc
                     );
 
-                <<" "/utf8>> ->
-                    parse_inline(Rest, <<Text/binary, "&nbsp;"/utf8>>, Acc);
+                <<E:1/binary, In@2/binary>> when E =:= <<"\""/utf8>> ->
+                    parse_inline(
+                        In@2,
+                        Splitters,
+                        <<Text@2/binary, E/binary>>,
+                        Acc
+                    );
 
-                <<"!"/utf8>> ->
-                    parse_inline(Rest, <<Text/binary, C/binary>>, Acc);
+                <<E:1/binary, In@2/binary>> when E =:= <<"#"/utf8>> ->
+                    parse_inline(
+                        In@2,
+                        Splitters,
+                        <<Text@2/binary, E/binary>>,
+                        Acc
+                    );
 
-                <<"\""/utf8>> ->
-                    parse_inline(Rest, <<Text/binary, C/binary>>, Acc);
+                <<E:1/binary, In@2/binary>> when E =:= <<"$"/utf8>> ->
+                    parse_inline(
+                        In@2,
+                        Splitters,
+                        <<Text@2/binary, E/binary>>,
+                        Acc
+                    );
 
-                <<"#"/utf8>> ->
-                    parse_inline(Rest, <<Text/binary, C/binary>>, Acc);
+                <<E:1/binary, In@2/binary>> when E =:= <<"%"/utf8>> ->
+                    parse_inline(
+                        In@2,
+                        Splitters,
+                        <<Text@2/binary, E/binary>>,
+                        Acc
+                    );
 
-                <<"$"/utf8>> ->
-                    parse_inline(Rest, <<Text/binary, C/binary>>, Acc);
+                <<E:1/binary, In@2/binary>> when E =:= <<"&"/utf8>> ->
+                    parse_inline(
+                        In@2,
+                        Splitters,
+                        <<Text@2/binary, E/binary>>,
+                        Acc
+                    );
 
-                <<"%"/utf8>> ->
-                    parse_inline(Rest, <<Text/binary, C/binary>>, Acc);
+                <<E:1/binary, In@2/binary>> when E =:= <<"'"/utf8>> ->
+                    parse_inline(
+                        In@2,
+                        Splitters,
+                        <<Text@2/binary, E/binary>>,
+                        Acc
+                    );
 
-                <<"&"/utf8>> ->
-                    parse_inline(Rest, <<Text/binary, C/binary>>, Acc);
+                <<E:1/binary, In@2/binary>> when E =:= <<"("/utf8>> ->
+                    parse_inline(
+                        In@2,
+                        Splitters,
+                        <<Text@2/binary, E/binary>>,
+                        Acc
+                    );
 
-                <<"'"/utf8>> ->
-                    parse_inline(Rest, <<Text/binary, C/binary>>, Acc);
+                <<E:1/binary, In@2/binary>> when E =:= <<")"/utf8>> ->
+                    parse_inline(
+                        In@2,
+                        Splitters,
+                        <<Text@2/binary, E/binary>>,
+                        Acc
+                    );
 
-                <<"("/utf8>> ->
-                    parse_inline(Rest, <<Text/binary, C/binary>>, Acc);
+                <<E:1/binary, In@2/binary>> when E =:= <<"*"/utf8>> ->
+                    parse_inline(
+                        In@2,
+                        Splitters,
+                        <<Text@2/binary, E/binary>>,
+                        Acc
+                    );
 
-                <<")"/utf8>> ->
-                    parse_inline(Rest, <<Text/binary, C/binary>>, Acc);
+                <<E:1/binary, In@2/binary>> when E =:= <<"+"/utf8>> ->
+                    parse_inline(
+                        In@2,
+                        Splitters,
+                        <<Text@2/binary, E/binary>>,
+                        Acc
+                    );
 
-                <<"*"/utf8>> ->
-                    parse_inline(Rest, <<Text/binary, C/binary>>, Acc);
+                <<E:1/binary, In@2/binary>> when E =:= <<","/utf8>> ->
+                    parse_inline(
+                        In@2,
+                        Splitters,
+                        <<Text@2/binary, E/binary>>,
+                        Acc
+                    );
 
-                <<"+"/utf8>> ->
-                    parse_inline(Rest, <<Text/binary, C/binary>>, Acc);
+                <<E:1/binary, In@2/binary>> when E =:= <<"-"/utf8>> ->
+                    parse_inline(
+                        In@2,
+                        Splitters,
+                        <<Text@2/binary, E/binary>>,
+                        Acc
+                    );
 
-                <<","/utf8>> ->
-                    parse_inline(Rest, <<Text/binary, C/binary>>, Acc);
+                <<E:1/binary, In@2/binary>> when E =:= <<"."/utf8>> ->
+                    parse_inline(
+                        In@2,
+                        Splitters,
+                        <<Text@2/binary, E/binary>>,
+                        Acc
+                    );
 
-                <<"-"/utf8>> ->
-                    parse_inline(Rest, <<Text/binary, C/binary>>, Acc);
+                <<E:1/binary, In@2/binary>> when E =:= <<"/"/utf8>> ->
+                    parse_inline(
+                        In@2,
+                        Splitters,
+                        <<Text@2/binary, E/binary>>,
+                        Acc
+                    );
 
-                <<"."/utf8>> ->
-                    parse_inline(Rest, <<Text/binary, C/binary>>, Acc);
+                <<E:1/binary, In@2/binary>> when E =:= <<":"/utf8>> ->
+                    parse_inline(
+                        In@2,
+                        Splitters,
+                        <<Text@2/binary, E/binary>>,
+                        Acc
+                    );
 
-                <<"/"/utf8>> ->
-                    parse_inline(Rest, <<Text/binary, C/binary>>, Acc);
+                <<E:1/binary, In@2/binary>> when E =:= <<";"/utf8>> ->
+                    parse_inline(
+                        In@2,
+                        Splitters,
+                        <<Text@2/binary, E/binary>>,
+                        Acc
+                    );
 
-                <<":"/utf8>> ->
-                    parse_inline(Rest, <<Text/binary, C/binary>>, Acc);
+                <<E:1/binary, In@2/binary>> when E =:= <<"<"/utf8>> ->
+                    parse_inline(
+                        In@2,
+                        Splitters,
+                        <<Text@2/binary, E/binary>>,
+                        Acc
+                    );
 
-                <<";"/utf8>> ->
-                    parse_inline(Rest, <<Text/binary, C/binary>>, Acc);
+                <<E:1/binary, In@2/binary>> when E =:= <<"="/utf8>> ->
+                    parse_inline(
+                        In@2,
+                        Splitters,
+                        <<Text@2/binary, E/binary>>,
+                        Acc
+                    );
 
-                <<"<"/utf8>> ->
-                    parse_inline(Rest, <<Text/binary, C/binary>>, Acc);
+                <<E:1/binary, In@2/binary>> when E =:= <<">"/utf8>> ->
+                    parse_inline(
+                        In@2,
+                        Splitters,
+                        <<Text@2/binary, E/binary>>,
+                        Acc
+                    );
 
-                <<"="/utf8>> ->
-                    parse_inline(Rest, <<Text/binary, C/binary>>, Acc);
+                <<E:1/binary, In@2/binary>> when E =:= <<"?"/utf8>> ->
+                    parse_inline(
+                        In@2,
+                        Splitters,
+                        <<Text@2/binary, E/binary>>,
+                        Acc
+                    );
 
-                <<">"/utf8>> ->
-                    parse_inline(Rest, <<Text/binary, C/binary>>, Acc);
+                <<E:1/binary, In@2/binary>> when E =:= <<"@"/utf8>> ->
+                    parse_inline(
+                        In@2,
+                        Splitters,
+                        <<Text@2/binary, E/binary>>,
+                        Acc
+                    );
 
-                <<"?"/utf8>> ->
-                    parse_inline(Rest, <<Text/binary, C/binary>>, Acc);
+                <<E:1/binary, In@2/binary>> when E =:= <<"["/utf8>> ->
+                    parse_inline(
+                        In@2,
+                        Splitters,
+                        <<Text@2/binary, E/binary>>,
+                        Acc
+                    );
 
-                <<"@"/utf8>> ->
-                    parse_inline(Rest, <<Text/binary, C/binary>>, Acc);
+                <<E:1/binary, In@2/binary>> when E =:= <<"\\"/utf8>> ->
+                    parse_inline(
+                        In@2,
+                        Splitters,
+                        <<Text@2/binary, E/binary>>,
+                        Acc
+                    );
 
-                <<"["/utf8>> ->
-                    parse_inline(Rest, <<Text/binary, C/binary>>, Acc);
+                <<E:1/binary, In@2/binary>> when E =:= <<"]"/utf8>> ->
+                    parse_inline(
+                        In@2,
+                        Splitters,
+                        <<Text@2/binary, E/binary>>,
+                        Acc
+                    );
 
-                <<"\\"/utf8>> ->
-                    parse_inline(Rest, <<Text/binary, C/binary>>, Acc);
+                <<E:1/binary, In@2/binary>> when E =:= <<"^"/utf8>> ->
+                    parse_inline(
+                        In@2,
+                        Splitters,
+                        <<Text@2/binary, E/binary>>,
+                        Acc
+                    );
 
-                <<"]"/utf8>> ->
-                    parse_inline(Rest, <<Text/binary, C/binary>>, Acc);
+                <<E:1/binary, In@2/binary>> when E =:= <<"_"/utf8>> ->
+                    parse_inline(
+                        In@2,
+                        Splitters,
+                        <<Text@2/binary, E/binary>>,
+                        Acc
+                    );
 
-                <<"^"/utf8>> ->
-                    parse_inline(Rest, <<Text/binary, C/binary>>, Acc);
+                <<E:1/binary, In@2/binary>> when E =:= <<"`"/utf8>> ->
+                    parse_inline(
+                        In@2,
+                        Splitters,
+                        <<Text@2/binary, E/binary>>,
+                        Acc
+                    );
 
-                <<"_"/utf8>> ->
-                    parse_inline(Rest, <<Text/binary, C/binary>>, Acc);
+                <<E:1/binary, In@2/binary>> when E =:= <<"{"/utf8>> ->
+                    parse_inline(
+                        In@2,
+                        Splitters,
+                        <<Text@2/binary, E/binary>>,
+                        Acc
+                    );
 
-                <<"`"/utf8>> ->
-                    parse_inline(Rest, <<Text/binary, C/binary>>, Acc);
+                <<E:1/binary, In@2/binary>> when E =:= <<"|"/utf8>> ->
+                    parse_inline(
+                        In@2,
+                        Splitters,
+                        <<Text@2/binary, E/binary>>,
+                        Acc
+                    );
 
-                <<"{"/utf8>> ->
-                    parse_inline(Rest, <<Text/binary, C/binary>>, Acc);
+                <<E:1/binary, In@2/binary>> when E =:= <<"}"/utf8>> ->
+                    parse_inline(
+                        In@2,
+                        Splitters,
+                        <<Text@2/binary, E/binary>>,
+                        Acc
+                    );
 
-                <<"|"/utf8>> ->
-                    parse_inline(Rest, <<Text/binary, C/binary>>, Acc);
+                <<E:1/binary, In@2/binary>> when E =:= <<"~"/utf8>> ->
+                    parse_inline(
+                        In@2,
+                        Splitters,
+                        <<Text@2/binary, E/binary>>,
+                        Acc
+                    );
 
-                <<"}"/utf8>> ->
-                    parse_inline(Rest, <<Text/binary, C/binary>>, Acc);
+                <<"\n"/utf8, In@3/binary>> ->
+                    parse_inline(
+                        In@3,
+                        Splitters,
+                        <<""/utf8>>,
+                        [linebreak, {text, Text@2} | Acc]
+                    );
 
-                <<"~"/utf8>> ->
-                    parse_inline(Rest, <<Text/binary, C/binary>>, Acc);
+                <<" "/utf8, In@4/binary>> ->
+                    parse_inline(
+                        In@4,
+                        Splitters,
+                        <<""/utf8>>,
+                        [non_breaking_space, {text, Text@2} | Acc]
+                    );
 
                 _ ->
                     parse_inline(
-                        lists:append([C], Rest),
-                        <<Text/binary, "\\"/utf8>>,
+                        In@1,
+                        Splitters,
+                        <<Text@2/binary, "\\"/utf8>>,
                         Acc
                     )
             end;
 
-        [<<"_"/utf8>>, C@1 | Rest@1] when ((C@1 =/= <<" "/utf8>>) andalso (C@1 =/= <<"\t"/utf8>>)) andalso (C@1 =/= <<"\n"/utf8>>) ->
-            Rest@2 = [C@1 | Rest@1],
-            case parse_emphasis(Rest@2, <<"_"/utf8>>) of
-                none ->
-                    parse_inline(Rest@2, <<Text/binary, "_"/utf8>>, Acc);
-
-                {some, {Inner, In@1}} ->
+        {A@1, <<"_"/utf8>> = Start, In@5} ->
+            Text@3 = <<Text/binary, A@1/binary>>,
+            case In@5 of
+                <<B:1/binary, In@6/binary>> when B =:= <<" "/utf8>> ->
                     parse_inline(
-                        In@1,
-                        <<""/utf8>>,
-                        [{emphasis, Inner}, {text, Text} | Acc]
-                    )
+                        In@6,
+                        Splitters,
+                        <<<<Text@3/binary, Start/binary>>/binary, B/binary>>,
+                        Acc
+                    );
+
+                <<B:1/binary, In@6/binary>> when B =:= <<"\t"/utf8>> ->
+                    parse_inline(
+                        In@6,
+                        Splitters,
+                        <<<<Text@3/binary, Start/binary>>/binary, B/binary>>,
+                        Acc
+                    );
+
+                <<B:1/binary, In@6/binary>> when B =:= <<"\n"/utf8>> ->
+                    parse_inline(
+                        In@6,
+                        Splitters,
+                        <<<<Text@3/binary, Start/binary>>/binary, B/binary>>,
+                        Acc
+                    );
+
+                _ ->
+                    case parse_emphasis(In@5, Splitters, Start) of
+                        none ->
+                            parse_inline(
+                                In@5,
+                                Splitters,
+                                <<Text@3/binary, Start/binary>>,
+                                Acc
+                            );
+
+                        {some, {Inner, In@7}} ->
+                            Item = case Start of
+                                <<"*"/utf8>> ->
+                                    {strong, Inner};
+
+                                _ ->
+                                    {emphasis, Inner}
+                            end,
+                            parse_inline(
+                                In@7,
+                                Splitters,
+                                <<""/utf8>>,
+                                [Item, {text, Text@3} | Acc]
+                            )
+                    end
             end;
 
-        [<<"*"/utf8>>, C@2 | Rest@3] when ((C@2 =/= <<" "/utf8>>) andalso (C@2 =/= <<"\t"/utf8>>)) andalso (C@2 =/= <<"\n"/utf8>>) ->
-            Rest@4 = [C@2 | Rest@3],
-            case parse_emphasis(Rest@4, <<"*"/utf8>>) of
-                none ->
-                    parse_inline(Rest@4, <<Text/binary, "*"/utf8>>, Acc);
-
-                {some, {Inner@1, In@2}} ->
+        {A@1, <<"*"/utf8>> = Start, In@5} ->
+            Text@3 = <<Text/binary, A@1/binary>>,
+            case In@5 of
+                <<B:1/binary, In@6/binary>> when B =:= <<" "/utf8>> ->
                     parse_inline(
-                        In@2,
-                        <<""/utf8>>,
-                        [{strong, Inner@1}, {text, Text} | Acc]
-                    )
+                        In@6,
+                        Splitters,
+                        <<<<Text@3/binary, Start/binary>>/binary, B/binary>>,
+                        Acc
+                    );
+
+                <<B:1/binary, In@6/binary>> when B =:= <<"\t"/utf8>> ->
+                    parse_inline(
+                        In@6,
+                        Splitters,
+                        <<<<Text@3/binary, Start/binary>>/binary, B/binary>>,
+                        Acc
+                    );
+
+                <<B:1/binary, In@6/binary>> when B =:= <<"\n"/utf8>> ->
+                    parse_inline(
+                        In@6,
+                        Splitters,
+                        <<<<Text@3/binary, Start/binary>>/binary, B/binary>>,
+                        Acc
+                    );
+
+                _ ->
+                    case parse_emphasis(In@5, Splitters, Start) of
+                        none ->
+                            parse_inline(
+                                In@5,
+                                Splitters,
+                                <<Text@3/binary, Start/binary>>,
+                                Acc
+                            );
+
+                        {some, {Inner, In@7}} ->
+                            Item = case Start of
+                                <<"*"/utf8>> ->
+                                    {strong, Inner};
+
+                                _ ->
+                                    {emphasis, Inner}
+                            end,
+                            parse_inline(
+                                In@7,
+                                Splitters,
+                                <<""/utf8>>,
+                                [Item, {text, Text@3} | Acc]
+                            )
+                    end
             end;
 
-        [<<"["/utf8>>, <<"^"/utf8>> | Rest@5] ->
-            case parse_footnote(Rest@5, <<"^"/utf8>>) of
+        {A@2, <<"[^"/utf8>>, Rest} ->
+            Text@4 = <<Text/binary, A@2/binary>>,
+            case parse_footnote(Rest, <<"^"/utf8>>) of
                 none ->
-                    parse_inline(Rest@5, <<Text/binary, "[^"/utf8>>, Acc);
+                    parse_inline(
+                        Rest,
+                        Splitters,
+                        <<Text@4/binary, "[^"/utf8>>,
+                        Acc
+                    );
 
-                {some, {_, [<<":"/utf8>> | _]}} when Text =/= <<""/utf8>> ->
-                    {lists:reverse([{text, Text} | Acc]), In};
+                {some, {_, <<":"/utf8, _/binary>>}} when Text@4 =/= <<""/utf8>> ->
+                    {lists:reverse([{text, Text@4} | Acc]), In};
 
-                {some, {_, [<<":"/utf8>> | _]}} ->
+                {some, {_, <<":"/utf8, _/binary>>}} ->
                     {lists:reverse(Acc), In};
 
-                {some, {Footnote, In@3}} ->
+                {some, {Footnote, In@8}} ->
                     parse_inline(
-                        In@3,
+                        In@8,
+                        Splitters,
                         <<""/utf8>>,
-                        [Footnote, {text, Text} | Acc]
+                        [Footnote, {text, Text@4} | Acc]
                     )
             end;
 
-        [<<"["/utf8>> | Rest@6] ->
+        {A@3, <<"["/utf8>>, In@9} ->
+            Text@5 = <<Text/binary, A@3/binary>>,
             case parse_link(
-                Rest@6,
+                In@9,
+                Splitters,
                 fun(Field@0, Field@1) -> {link, Field@0, Field@1} end
             ) of
                 none ->
-                    parse_inline(Rest@6, <<Text/binary, "["/utf8>>, Acc);
+                    parse_inline(
+                        In@9,
+                        Splitters,
+                        <<Text@5/binary, "["/utf8>>,
+                        Acc
+                    );
 
-                {some, {Link, In@4}} ->
-                    parse_inline(In@4, <<""/utf8>>, [Link, {text, Text} | Acc])
+                {some, {Link, In@10}} ->
+                    parse_inline(
+                        In@10,
+                        Splitters,
+                        <<""/utf8>>,
+                        [Link, {text, Text@5} | Acc]
+                    )
             end;
 
-        [<<"!"/utf8>>, <<"["/utf8>> | Rest@7] ->
+        {A@4, <<"!["/utf8>>, In@11} ->
+            Text@6 = <<Text/binary, A@4/binary>>,
             case parse_link(
-                Rest@7,
+                In@11,
+                Splitters,
                 fun(Field@0, Field@1) -> {image, Field@0, Field@1} end
             ) of
                 none ->
-                    parse_inline(Rest@7, <<Text/binary, "!["/utf8>>, Acc);
+                    parse_inline(
+                        In@11,
+                        Splitters,
+                        <<Text@6/binary, "!["/utf8>>,
+                        Acc
+                    );
 
-                {some, {Image, In@5}} ->
-                    parse_inline(In@5, <<""/utf8>>, [Image, {text, Text} | Acc])
+                {some, {Image, In@12}} ->
+                    parse_inline(
+                        In@12,
+                        Splitters,
+                        <<""/utf8>>,
+                        [Image, {text, Text@6} | Acc]
+                    )
             end;
 
-        [<<"`"/utf8>> | Rest@8] ->
-            {Code, In@6} = parse_code(Rest@8, 1),
-            parse_inline(In@6, <<""/utf8>>, [Code, {text, Text} | Acc]);
+        {A@5, <<"`"/utf8>>, In@13} ->
+            Text@7 = <<Text/binary, A@5/binary>>,
+            {Code, In@14} = parse_code(In@13, 1),
+            parse_inline(
+                In@14,
+                Splitters,
+                <<""/utf8>>,
+                [Code, {text, Text@7} | Acc]
+            );
 
-        [<<"\n"/utf8>> | Rest@9] ->
-            _pipe = drop_spaces(Rest@9),
-            parse_inline(_pipe, <<Text/binary, "\n"/utf8>>, Acc);
+        {A@6, <<"\n"/utf8>>, In@15} ->
+            Text@8 = <<Text/binary, A@6/binary>>,
+            _pipe = drop_spaces(In@15),
+            parse_inline(_pipe, Splitters, <<Text@8/binary, "\n"/utf8>>, Acc);
 
-        [C@3 | Rest@10] ->
-            parse_inline(Rest@10, <<Text/binary, C@3/binary>>, Acc)
+        {Text2@1, Text3, In@16} ->
+            case <<<<Text/binary, Text2@1/binary>>/binary, Text3/binary>> of
+                <<""/utf8>> ->
+                    {lists:reverse(Acc), In@16};
+
+                Text@9 ->
+                    {lists:reverse([{text, Text@9} | Acc]), In@16}
+            end
     end.
 
--file("src/jot.gleam", 828).
+-file("src/jot.gleam", 935).
 -spec parse_link(
-    list(binary()),
+    binary(),
+    splitters(),
     fun((list(inline()), destination()) -> inline())
-) -> gleam@option:option({inline(), list(binary())}).
-parse_link(In, To_inline) ->
-    case take_link_chars(In, []) of
+) -> gleam@option:option({inline(), binary()}).
+parse_link(In, Splitters, To_inline) ->
+    case take_link_chars(In, <<""/utf8>>, Splitters) of
         none ->
             none;
 
         {some, {Inline_in, Ref, In@1}} ->
             {Inline, Inline_in_remaining} = parse_inline(
                 Inline_in,
+                Splitters,
                 <<""/utf8>>,
                 []
             ),
@@ -1668,28 +2507,40 @@ parse_link(In, To_inline) ->
             end,
             {some,
                 {To_inline(Inline, Ref@2),
-                    lists:append(Inline_in_remaining, In@1)}}
+                    <<Inline_in_remaining/binary, In@1/binary>>}}
     end.
 
--file("src/jot.gleam", 932).
--spec parse_paragraph(list(binary()), gleam@dict:dict(binary(), binary())) -> {container(),
-    list(binary())}.
-parse_paragraph(In, Attrs) ->
-    {Inline_in, In@1} = take_paragraph_chars(In, []),
-    {Inline, Inline_in_remaining} = parse_inline(Inline_in, <<""/utf8>>, []),
-    {{paragraph, Attrs, Inline}, lists:append(Inline_in_remaining, In@1)}.
+-file("src/jot.gleam", 1049).
+-spec parse_paragraph(
+    binary(),
+    gleam@dict:dict(binary(), binary()),
+    splitters()
+) -> {container(), binary()}.
+parse_paragraph(In, Attrs, Splitters) ->
+    {Inline_in, In@1} = take_paragraph_chars(In),
+    {Inline, Inline_in_remaining} = parse_inline(
+        Inline_in,
+        Splitters,
+        <<""/utf8>>,
+        []
+    ),
+    {{paragraph, Attrs, Inline}, <<Inline_in_remaining/binary, In@1/binary>>}.
 
--file("src/jot.gleam", 519).
--spec parse_heading(list(binary()), refs(), gleam@dict:dict(binary(), binary())) -> {container(),
+-file("src/jot.gleam", 606).
+-spec parse_heading(
+    binary(),
     refs(),
-    list(binary())}.
-parse_heading(In, Refs, Attrs) ->
+    splitters(),
+    gleam@dict:dict(binary(), binary())
+) -> {container(), refs(), binary()}.
+parse_heading(In, Refs, Splitters, Attrs) ->
     case heading_level(In, 1) of
         {some, {Level, In@1}} ->
             In@2 = drop_spaces(In@1),
-            {Inline_in, In@3} = take_heading_chars(In@2, Level, []),
+            {Inline_in, In@3} = take_heading_chars(In@2, Level, <<""/utf8>>),
             {Inline, Inline_in_remaining} = parse_inline(
                 Inline_in,
+                Splitters,
                 <<""/utf8>>,
                 []
             ),
@@ -1719,179 +2570,13 @@ parse_heading(In, Refs, Attrs) ->
                     end
             end,
             Heading = {heading, Attrs@2, Level, Inline},
-            {Heading, Refs@2, lists:append(Inline_in_remaining, In@3)};
+            {Heading, Refs@2, <<Inline_in_remaining/binary, In@3/binary>>};
 
         none ->
-            {P, In@4} = parse_paragraph([<<"#"/utf8>> | In], Attrs),
+            {P, In@4} = parse_paragraph(
+                <<"#"/utf8, In/binary>>,
+                Attrs,
+                Splitters
+            ),
             {P, Refs, In@4}
     end.
-
--file("src/jot.gleam", 187).
--spec parse_containers(
-    list(binary()),
-    refs(),
-    list(container()),
-    gleam@dict:dict(binary(), binary()),
-    integer(),
-    fun((list(binary()), refs(), list(container()), gleam@dict:dict(binary(), binary())) -> {list(container()),
-        refs(),
-        list(binary())})
-) -> {list(container()), refs(), list(binary())}.
-parse_containers(In, Refs, Ast, Attrs, Indentation, Parser) ->
-    case In of
-        [] ->
-            {lists:reverse(Ast), Refs, []};
-
-        [<<"{"/utf8>> | In2] ->
-            case parse_attributes(In2, Attrs) of
-                none ->
-                    {Paragraph, In@1} = parse_paragraph(In, Attrs),
-                    Parser(In@1, Refs, [Paragraph | Ast], maps:new());
-
-                {some, {Attrs@1, In@2}} ->
-                    Parser(In@2, Refs, Ast, Attrs@1)
-            end;
-
-        [<<"#"/utf8>> | In@3] ->
-            {Heading, Refs@1, In@4} = parse_heading(In@3, Refs, Attrs),
-            Parser(In@4, Refs@1, [Heading | Ast], maps:new());
-
-        [<<"~"/utf8>> = Delim | In2@1] ->
-            case parse_codeblock(In2@1, Attrs, Delim, Indentation) of
-                none ->
-                    {Paragraph@1, In@5} = parse_paragraph(In, Attrs),
-                    Parser(In@5, Refs, [Paragraph@1 | Ast], maps:new());
-
-                {some, {Codeblock, In@6}} ->
-                    Parser(In@6, Refs, [Codeblock | Ast], maps:new())
-            end;
-
-        [<<"`"/utf8>> = Delim | In2@1] ->
-            case parse_codeblock(In2@1, Attrs, Delim, Indentation) of
-                none ->
-                    {Paragraph@1, In@5} = parse_paragraph(In, Attrs),
-                    Parser(In@5, Refs, [Paragraph@1 | Ast], maps:new());
-
-                {some, {Codeblock, In@6}} ->
-                    Parser(In@6, Refs, [Codeblock | Ast], maps:new())
-            end;
-
-        [<<"-"/utf8>> | In2@2] ->
-            case parse_thematic_break(1, In2@2) of
-                none ->
-                    {Paragraph@2, In@7} = parse_paragraph(In, Attrs),
-                    Parser(In@7, Refs, [Paragraph@2 | Ast], maps:new());
-
-                {some, {Thematic_break, In@8}} ->
-                    Parser(In@8, Refs, [Thematic_break | Ast], maps:new())
-            end;
-
-        [<<"*"/utf8>> | In2@2] ->
-            case parse_thematic_break(1, In2@2) of
-                none ->
-                    {Paragraph@2, In@7} = parse_paragraph(In, Attrs),
-                    Parser(In@7, Refs, [Paragraph@2 | Ast], maps:new());
-
-                {some, {Thematic_break, In@8}} ->
-                    Parser(In@8, Refs, [Thematic_break | Ast], maps:new())
-            end;
-
-        [<<"["/utf8>>, <<"^"/utf8>> | In2@3] ->
-            case parse_footnote_def(In2@3, Refs, <<"^"/utf8>>) of
-                none ->
-                    {Paragraph@3, In@9} = parse_paragraph(In, Attrs),
-                    Parser(In@9, Refs, [Paragraph@3 | Ast], maps:new());
-
-                {some, {Id, Footnote, Refs@2, In@10}} ->
-                    Refs@3 = begin
-                        _record = Refs@2,
-                        {refs,
-                            erlang:element(2, _record),
-                            gleam@dict:insert(
-                                erlang:element(3, Refs@2),
-                                Id,
-                                Footnote
-                            )}
-                    end,
-                    Parser(In@10, Refs@3, Ast, maps:new())
-            end;
-
-        [<<"["/utf8>> | In2@4] ->
-            case parse_ref_def(In2@4, <<""/utf8>>) of
-                none ->
-                    {Paragraph@4, In@11} = parse_paragraph(In, Attrs),
-                    Parser(In@11, Refs, [Paragraph@4 | Ast], maps:new());
-
-                {some, {Id@1, Url, In@12}} ->
-                    Refs@4 = begin
-                        _record@1 = Refs,
-                        {refs,
-                            gleam@dict:insert(
-                                erlang:element(2, Refs),
-                                Id@1,
-                                Url
-                            ),
-                            erlang:element(3, _record@1)}
-                    end,
-                    Parser(In@12, Refs@4, Ast, maps:new())
-            end;
-
-        _ ->
-            {Paragraph@5, In@13} = parse_paragraph(In, Attrs),
-            Parser(In@13, Refs, [Paragraph@5 | Ast], maps:new())
-    end.
-
--file("src/jot.gleam", 121).
--spec parse_document_content(
-    list(binary()),
-    refs(),
-    list(container()),
-    gleam@dict:dict(binary(), binary())
-) -> {list(container()), refs(), list(binary())}.
-parse_document_content(In, Refs, Ast, Attrs) ->
-    In@1 = drop_lines(In),
-    {In@2, Spaces_count} = count_drop_spaces(In@1, 0),
-    parse_containers(
-        In@2,
-        Refs,
-        Ast,
-        Attrs,
-        Spaces_count,
-        fun parse_document_content/4
-    ).
-
--file("src/jot.gleam", 87).
-?DOC(
-    " Convert a string of Djot into a tree of records.\n"
-    "\n"
-    " This may be useful when you want more control over the HTML to be converted\n"
-    " to, or you wish to convert Djot to some other format.\n"
-).
--spec parse(binary()) -> document().
-parse(Djot) ->
-    {Ast, {refs, Urls, Footnotes}, _} = begin
-        _pipe = Djot,
-        _pipe@1 = gleam@string:replace(_pipe, <<"\r\n"/utf8>>, <<"\n"/utf8>>),
-        _pipe@2 = gleam@string:to_graphemes(_pipe@1),
-        parse_document_content(
-            _pipe@2,
-            {refs, maps:new(), maps:new()},
-            [],
-            maps:new()
-        )
-    end,
-    {document, Ast, Urls, Footnotes}.
-
--file("src/jot.gleam", 76).
-?DOC(
-    " Convert a string of Djot into a string of HTML.\n"
-    "\n"
-    " If you want to have more control over the HTML generated you can use the\n"
-    " `parse` function to convert Djot to a tree of records instead. You can then\n"
-    " traverse this tree and turn it into HTML yourself.\n"
-).
--spec to_html(binary()) -> binary().
-to_html(Djot) ->
-    _pipe = Djot,
-    _pipe@1 = parse(_pipe),
-    document_to_html(_pipe@1).

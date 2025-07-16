@@ -1,22 +1,22 @@
 -module(arctic).
 -compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch]).
-
+-define(FILEPATH, "src/arctic.gleam").
 -export([get_id/1, output_path/1, parse_date/1, to_dummy_page/1, date_to_string/1]).
 -export_type([collection/0, page/0, cacheable_page/0, processed_collection/0, raw_page/0, config/0]).
 
 -type collection() :: {collection,
         binary(),
         fun((binary(), binary()) -> {ok, page()} | {error, snag:snag()}),
-        gleam@option:option(fun((list(cacheable_page())) -> lustre@internals@vdom:element(nil))),
+        gleam@option:option(fun((list(cacheable_page())) -> lustre@vdom@vnode:element(nil))),
         gleam@option:option({binary(),
             fun((list(cacheable_page())) -> binary())}),
         fun((page(), page()) -> gleam@order:order()),
-        fun((page()) -> lustre@internals@vdom:element(nil)),
+        fun((page()) -> lustre@vdom@vnode:element(nil)),
         list(raw_page())}.
 
 -type page() :: {page,
         binary(),
-        list(lustre@internals@vdom:element(nil)),
+        list(lustre@vdom@vnode:element(nil)),
         gleam@dict:dict(binary(), binary()),
         binary(),
         binary(),
@@ -32,31 +32,35 @@
         collection(),
         list(cacheable_page())}.
 
--type raw_page() :: {raw_page, binary(), lustre@internals@vdom:element(nil)}.
+-type raw_page() :: {raw_page, binary(), lustre@vdom@vnode:element(nil)}.
 
 -type config() :: {config,
-        fun((list(processed_collection())) -> lustre@internals@vdom:element(nil)),
+        fun((list(processed_collection())) -> lustre@vdom@vnode:element(nil)),
         list(raw_page()),
         list(collection()),
-        gleam@option:option(fun((lustre@internals@vdom:element(nil)) -> lustre@internals@vdom:element(nil)))}.
+        gleam@option:option(fun((lustre@vdom@vnode:element(nil)) -> lustre@vdom@vnode:element(nil)))}.
 
 -file("src/arctic.gleam", 79).
 -spec get_id(cacheable_page()) -> binary().
 get_id(P) ->
     case P of
         {cached_page, _, Metadata} ->
-            _assert_subject = gleam_stdlib:map_get(Metadata, <<"id"/utf8>>),
-            {ok, Id} = case _assert_subject of
-                {ok, _} -> _assert_subject;
+            Id@1 = case gleam_stdlib:map_get(Metadata, <<"id"/utf8>>) of
+                {ok, Id} -> Id;
                 _assert_fail ->
                     erlang:error(#{gleam_error => let_assert,
                                 message => <<"Pattern match failed, no pattern matched the value."/utf8>>,
-                                value => _assert_fail,
+                                file => <<?FILEPATH/utf8>>,
                                 module => <<"arctic"/utf8>>,
                                 function => <<"get_id"/utf8>>,
-                                line => 82})
+                                line => 82,
+                                value => _assert_fail,
+                                start => 2581,
+                                'end' => 2625,
+                                pattern_start => 2592,
+                                pattern_end => 2598})
             end,
-            Id;
+            Id@1;
 
         {new_page, Page} ->
             erlang:element(2, Page)
@@ -65,18 +69,22 @@ get_id(P) ->
 -file("src/arctic.gleam", 89).
 -spec output_path(binary()) -> binary().
 output_path(Input_path) ->
-    _assert_subject = gleam@string:split(Input_path, <<".txt"/utf8>>),
-    [Start, <<""/utf8>>] = case _assert_subject of
-        [_, <<""/utf8>>] -> _assert_subject;
+    Start@1 = case gleam@string:split(Input_path, <<".txt"/utf8>>) of
+        [Start, <<""/utf8>>] -> Start;
         _assert_fail ->
             erlang:error(#{gleam_error => let_assert,
                         message => <<"Pattern match failed, no pattern matched the value."/utf8>>,
-                        value => _assert_fail,
+                        file => <<?FILEPATH/utf8>>,
                         module => <<"arctic"/utf8>>,
                         function => <<"output_path"/utf8>>,
-                        line => 90})
+                        line => 90,
+                        value => _assert_fail,
+                        start => 2730,
+                        'end' => 2787,
+                        pattern_start => 2741,
+                        pattern_end => 2752})
     end,
-    <<<<"arctic_build/"/utf8, Start/binary>>/binary, "/index.html"/utf8>>.
+    <<<<"arctic_build/"/utf8, Start@1/binary>>/binary, "/index.html"/utf8>>.
 
 -file("src/arctic.gleam", 115).
 -spec parse_date(binary()) -> {ok, gleam@time@timestamp:timestamp()} |

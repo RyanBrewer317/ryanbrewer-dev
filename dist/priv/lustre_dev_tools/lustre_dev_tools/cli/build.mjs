@@ -9,7 +9,7 @@ import * as $result from "../../../gleam_stdlib/gleam/result.mjs";
 import * as $string from "../../../gleam_stdlib/gleam/string.mjs";
 import * as $glint from "../../../glint/glint.mjs";
 import * as $simplifile from "../../../simplifile/simplifile.mjs";
-import { Ok, Error } from "../../gleam.mjs";
+import { Ok, Error, Empty as $Empty } from "../../gleam.mjs";
 import * as $cli from "../../lustre_dev_tools/cli.mjs";
 import { do$, try$ } from "../../lustre_dev_tools/cli.mjs";
 import * as $flag from "../../lustre_dev_tools/cli/flag.mjs";
@@ -27,12 +27,28 @@ import * as $project from "../../lustre_dev_tools/project.mjs";
 import * as $tailwind from "../../lustre_dev_tools/tailwind.mjs";
 
 function is_string_type(t) {
-  if (t instanceof Named &&
-  t.name === "String" &&
-  t.package === "" &&
-  t.module === "gleam" &&
-  t.parameters.hasLength(0)) {
-    return true;
+  if (t instanceof Named) {
+    let $ = t.parameters;
+    if ($ instanceof $Empty) {
+      let $1 = t.module;
+      if ($1 === "gleam") {
+        let $2 = t.package;
+        if ($2 === "") {
+          let $3 = t.name;
+          if ($3 === "String") {
+            return true;
+          } else {
+            return false;
+          }
+        } else {
+          return false;
+        }
+      } else {
+        return false;
+      }
+    } else {
+      return false;
+    }
   } else {
     return false;
   }
@@ -55,12 +71,28 @@ function check_component_name(module_path, module) {
 }
 
 function is_nil_type(t) {
-  if (t instanceof Named &&
-  t.name === "Nil" &&
-  t.package === "" &&
-  t.module === "gleam" &&
-  t.parameters.hasLength(0)) {
-    return true;
+  if (t instanceof Named) {
+    let $ = t.parameters;
+    if ($ instanceof $Empty) {
+      let $1 = t.module;
+      if ($1 === "gleam") {
+        let $2 = t.package;
+        if ($2 === "") {
+          let $3 = t.name;
+          if ($3 === "Nil") {
+            return true;
+          } else {
+            return false;
+          }
+        } else {
+          return false;
+        }
+      } else {
+        return false;
+      }
+    } else {
+      return false;
+    }
   } else {
     return false;
   }
@@ -75,13 +107,29 @@ function is_type_variable(t) {
 }
 
 function is_compatible_app_type(t) {
-  if (t instanceof Named &&
-  t.name === "App" &&
-  t.package === "lustre" &&
-  t.module === "lustre" &&
-  t.parameters.atLeastLength(1)) {
-    let flags = t.parameters.head;
-    return is_nil_type(flags) || is_type_variable(flags);
+  if (t instanceof Named) {
+    let $ = t.parameters;
+    if ($ instanceof $Empty) {
+      return false;
+    } else {
+      let $1 = t.module;
+      if ($1 === "lustre") {
+        let $2 = t.package;
+        if ($2 === "lustre") {
+          let $3 = t.name;
+          if ($3 === "App") {
+            let flags = $.head;
+            return is_nil_type(flags) || is_type_variable(flags);
+          } else {
+            return false;
+          }
+        } else {
+          return false;
+        }
+      } else {
+        return false;
+      }
+    }
   } else {
     return false;
   }
@@ -98,8 +146,12 @@ function find_component(module_path, module) {
       let t = _use1[1];
       let $ = t.parameters;
       let $1 = is_compatible_app_type(t.return);
-      if ($.hasLength(0) && $1) {
-        return new $list.Stop(new Ok(name));
+      if ($1) {
+        if ($ instanceof $Empty) {
+          return new $list.Stop(new Ok(name));
+        } else {
+          return new $list.Continue(error);
+        }
       } else {
         return new $list.Continue(error);
       }

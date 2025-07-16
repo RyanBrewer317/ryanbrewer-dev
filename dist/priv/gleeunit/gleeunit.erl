@@ -1,6 +1,6 @@
 -module(gleeunit).
 -compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch]).
-
+-define(FILEPATH, "src/gleeunit.gleam").
 -export([main/0]).
 -export_type([atom_/0, encoding/0, report_module_name/0, gleeunit_progress_option/0, eunit_option/0]).
 
@@ -24,15 +24,28 @@
     no_tty |
     {report, {report_module_name(), list(gleeunit_progress_option())}}.
 
--file("src/gleeunit.gleam", 36).
+-file("src/gleeunit.gleam", 37).
 -spec gleam_to_erlang_module_name(binary()) -> binary().
 gleam_to_erlang_module_name(Path) ->
-    _pipe = Path,
-    _pipe@1 = gleam@string:replace(_pipe, <<".gleam"/utf8>>, <<""/utf8>>),
-    _pipe@2 = gleam@string:replace(_pipe@1, <<".erl"/utf8>>, <<""/utf8>>),
-    gleam@string:replace(_pipe@2, <<"/"/utf8>>, <<"@"/utf8>>).
+    case gleam_stdlib:string_ends_with(Path, <<".gleam"/utf8>>) of
+        true ->
+            _pipe = Path,
+            _pipe@1 = gleam@string:replace(
+                _pipe,
+                <<".gleam"/utf8>>,
+                <<""/utf8>>
+            ),
+            gleam@string:replace(_pipe@1, <<"/"/utf8>>, <<"@"/utf8>>);
 
--file("src/gleeunit.gleam", 17).
+        false ->
+            _pipe@2 = Path,
+            _pipe@3 = gleam@string:split(_pipe@2, <<"/"/utf8>>),
+            _pipe@4 = gleam@list:last(_pipe@3),
+            _pipe@5 = gleam@result:unwrap(_pipe@4, Path),
+            gleam@string:replace(_pipe@5, <<".erl"/utf8>>, <<""/utf8>>)
+    end.
+
+-file("src/gleeunit.gleam", 18).
 -spec do_main() -> nil.
 do_main() ->
     Options = [verbose,
@@ -59,15 +72,15 @@ do_main() ->
     end,
     erlang:halt(Code).
 
--file("src/gleeunit.gleam", 12).
+-file("src/gleeunit.gleam", 13).
 ?DOC(
     " Find and run all test functions for the current project using Erlang's EUnit\n"
-    " test framework.\n"
+    " test framework, or a custom JavaScript test runner.\n"
     "\n"
     " Any Erlang or Gleam function in the `test` directory with a name ending in\n"
     " `_test` is considered a test function and will be run.\n"
     "\n"
-    " If running on JavaScript tests will be run with a custom test runner.\n"
+    " A test that panics is considered a failure.\n"
 ).
 -spec main() -> nil.
 main() ->

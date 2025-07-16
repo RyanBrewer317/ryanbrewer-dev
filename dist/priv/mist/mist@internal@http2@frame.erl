@@ -1,6 +1,6 @@
 -module(mist@internal@http2@frame).
 -compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch]).
-
+-define(FILEPATH, "src/mist/internal/http2/frame.gleam").
 -export([stream_identifier/1, get_stream_identifier/1, decode/1, encode/1, settings_ack/0]).
 -export_type([stream_identifier/1, header_priority/0, data/0, push_state/0, setting/0, frame/0, connection_error/0]).
 
@@ -14,8 +14,8 @@
 
 ?MODULEDOC(false).
 
--opaque stream_identifier(NSH) :: {stream_identifier, integer()} |
-    {gleam_phantom, NSH}.
+-opaque stream_identifier(LOC) :: {stream_identifier, integer()} |
+    {gleam_phantom, LOC}.
 
 -type header_priority() :: {header_priority,
         boolean(),
@@ -107,6 +107,7 @@ parse_data(Identifier, Flags, Length, Payload) ->
                 _ ->
                     erlang:error(#{gleam_error => panic,
                             message => <<"Somehow a bit was neither 0 nor 1"/utf8>>,
+                            file => <<?FILEPATH/utf8>>,
                             module => <<"mist/internal/http2/frame"/utf8>>,
                             function => <<"parse_data"/utf8>>,
                             line => 168})
@@ -162,6 +163,7 @@ parse_header(Identifier, Flags, Length, Payload) ->
                 {_, _} ->
                     erlang:error(#{gleam_error => panic,
                             message => <<"Somehow a bit was set to neither 0 nor 1"/utf8>>,
+                            file => <<?FILEPATH/utf8>>,
                             module => <<"mist/internal/http2/frame"/utf8>>,
                             function => <<"parse_header"/utf8>>,
                             line => 213})
@@ -178,6 +180,7 @@ parse_header(Identifier, Flags, Length, Payload) ->
                                 _ ->
                                     erlang:error(#{gleam_error => panic,
                                             message => <<"Somehow a bit was set to neither 0 nor 1"/utf8>>,
+                                            file => <<?FILEPATH/utf8>>,
                                             module => <<"mist/internal/http2/frame"/utf8>>,
                                             function => <<"parse_header"/utf8>>,
                                             line => 223})
@@ -416,6 +419,7 @@ get_setting(Identifier, Value) ->
                         _ ->
                             erlang:error(#{gleam_error => panic,
                                     message => <<"Somehow a bit was neither 0 nor 1"/utf8>>,
+                                    file => <<?FILEPATH/utf8>>,
                                     module => <<"mist/internal/http2/frame"/utf8>>,
                                     function => <<"get_setting"/utf8>>,
                                     line => 638})

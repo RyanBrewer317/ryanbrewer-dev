@@ -32,9 +32,9 @@ export class HttpError extends $CustomType {
 }
 
 class AbsPath extends $CustomType {
-  constructor(x0) {
+  constructor($0) {
     super();
-    this[0] = x0;
+    this[0] = $0;
   }
 }
 
@@ -209,19 +209,22 @@ export function encode_headers(headers) {
 }
 
 export function response_builder(status, headers) {
-  let status_string = (() => {
-    let _pipe = status;
-    let _pipe$1 = $int.to_string(_pipe);
-    let _pipe$2 = $bytes_tree.from_string(_pipe$1);
-    let _pipe$3 = $bytes_tree.append(_pipe$2, toBitArray([stringBits(" ")]));
-    return $bytes_tree.append(_pipe$3, status_to_bit_array(status));
-  })();
-  let _pipe = $bytes_tree.new$();
-  let _pipe$1 = $bytes_tree.append(_pipe, toBitArray([stringBits("HTTP/1.1 ")]));
-  let _pipe$2 = $bytes_tree.append_tree(_pipe$1, status_string);
-  let _pipe$3 = $bytes_tree.append(_pipe$2, toBitArray([stringBits("\r\n")]));
-  let _pipe$4 = $bytes_tree.append_tree(_pipe$3, encode_headers(headers));
-  return $bytes_tree.append(_pipe$4, toBitArray([stringBits("\r\n")]));
+  let _block;
+  let _pipe = status;
+  let _pipe$1 = $int.to_string(_pipe);
+  let _pipe$2 = $bytes_tree.from_string(_pipe$1);
+  let _pipe$3 = $bytes_tree.append(_pipe$2, toBitArray([stringBits(" ")]));
+  _block = $bytes_tree.append(_pipe$3, status_to_bit_array(status));
+  let status_string = _block;
+  let _pipe$4 = $bytes_tree.new$();
+  let _pipe$5 = $bytes_tree.append(
+    _pipe$4,
+    toBitArray([stringBits("HTTP/1.1 ")]),
+  );
+  let _pipe$6 = $bytes_tree.append_tree(_pipe$5, status_string);
+  let _pipe$7 = $bytes_tree.append(_pipe$6, toBitArray([stringBits("\r\n")]));
+  let _pipe$8 = $bytes_tree.append_tree(_pipe$7, encode_headers(headers));
+  return $bytes_tree.append(_pipe$8, toBitArray([stringBits("\r\n")]));
 }
 
 export function to_bytes_tree(resp) {

@@ -1,6 +1,6 @@
 -module(lustre_dev_tools@utils).
 -compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch]).
-
+-define(FILEPATH, "src/lustre_dev_tools/utils.gleam").
 -export([term_width/0, shorten_url/2]).
 -export_type(['end'/0]).
 

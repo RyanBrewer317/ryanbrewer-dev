@@ -1,9 +1,14 @@
 -module(gleam_otp_external).
 
 -export([
-    application_stopped/0, convert_system_message/2,
-    static_supervisor_start_link/1
+    application_stopped/0, convert_system_message/1, identity/1,
+    make_timeout/1, convert_erlang_start_error/1
 ]).
+
+identity(X) -> X.
+
+make_timeout(X) when X < 0 -> infinity;
+make_timeout(X) -> X.
 
 % TODO: support other system messages
 %   {replace_state, StateFn}
@@ -17,10 +22,16 @@
 %   {debug, {install, {Func, FuncState}}}
 %   {debug, {install, {FuncId, Func, FuncState}}}
 %   {debug, {remove, FuncOrId}}
-%   GetStatus(Subject(StatusInfo))
-convert_system_message({From, Ref}, Request) when is_pid(From) ->
+convert_system_message({system, {From, Ref}, Request}) when is_pid(From) ->
     Reply = fun(Msg) ->
-        erlang:send(From, {Ref, Msg}),
+        case Ref of 
+            [alias|Alias] = Tag when is_reference(Alias) ->
+                erlang:send(Alias, {Tag, Msg});
+            [[alias|Alias] | _] = Tag when is_reference(Alias) ->
+                erlang:send(Alias, {Tag, Msg});
+            _ ->
+                erlang:send(From, {Ref, Msg})
+        end,
         nil
     end,
     System = fun(Callback) ->
@@ -35,18 +46,24 @@ convert_system_message({From, Ref}, Request) when is_pid(From) ->
     end.
 
 process_status({status_info, Module, Parent, Mode, DebugState, State}) ->
-    Data = [
-        get(), Mode, Parent, DebugState,
-        [{header, "Status for Gleam process " ++ pid_to_list(self())},
-         {data, [{'Status', Mode}, {'Parent', Parent}, {'State', State}]}]
-    ],
-    {status, self(), {module, Module}, Data}.
+     Data = [
+         get(), Mode, Parent, DebugState,
+         [{header, "Status for Gleam process " ++ pid_to_list(self())},
+           {data, [
+             {"Gleam behaviour", Module},
+             {"Status", Mode},
+             {"Parent", Parent}]},
+          {data, [{"State", State}]}
+         ]
+     ],
+     {status, self(), {module, Module}, Data}.
 
 application_stopped() ->
     ok.
 
-static_supervisor_start_link(Arg) ->
-    case supervisor:start_link(gleam@otp@static_supervisor, Arg) of
-        {ok, P} -> {ok, P};
-        {error, E} -> {error, {init_crashed, E}}
-    end.
+convert_erlang_start_error({already_started, _}) ->
+    {init_failed, "already started"};
+convert_erlang_start_error({shutdown, _}) ->
+    {init_failed, "shutdown"};
+convert_erlang_start_error(Term) ->
+    {init_exited, {abnormal, Term}}.

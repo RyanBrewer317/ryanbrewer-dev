@@ -1,6 +1,6 @@
 -module(gleam@crypto).
 -compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch]).
-
+-define(FILEPATH, "src/gleam/crypto.gleam").
 -export([strong_random_bytes/1, new_hasher/1, hash_chunk/2, digest/1, hash/2, hmac/3, secure_compare/2, sign_message/3, verify_signed_message/2]).
 -export_type([hash_algorithm/0, hasher/0]).
 
@@ -186,7 +186,7 @@ sign_message(Message, Secret, Digest_type) ->
 -spec verify_signed_message(binary(), bitstring()) -> {ok, bitstring()} |
     {error, nil}.
 verify_signed_message(Message, Secret) ->
-    gleam@result:then(case gleam@string:split(Message, <<"."/utf8>>) of
+    gleam@result:'try'(case gleam@string:split(Message, <<"."/utf8>>) of
             [A, B, C] ->
                 {ok, {A, B, C}};
 
@@ -195,16 +195,16 @@ verify_signed_message(Message, Secret) ->
         end, fun(_use0) ->
             {Protected, Payload, Signature} = _use0,
             Text = gleam@string:concat([Protected, <<"."/utf8>>, Payload]),
-            gleam@result:then(
+            gleam@result:'try'(
                 gleam@bit_array:base64_url_decode(Payload),
                 fun(Payload@1) ->
-                    gleam@result:then(
+                    gleam@result:'try'(
                         gleam@bit_array:base64_url_decode(Signature),
                         fun(Signature@1) ->
-                            gleam@result:then(
+                            gleam@result:'try'(
                                 gleam@bit_array:base64_url_decode(Protected),
                                 fun(Protected@1) ->
-                                    gleam@result:then(case Protected@1 of
+                                    gleam@result:'try'(case Protected@1 of
                                             <<72, 83, 50, 50, 52>> ->
                                                 {ok, sha224};
 

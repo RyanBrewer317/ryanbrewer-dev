@@ -1,6 +1,6 @@
 -module(lustre_dev_tools@esbuild).
 -compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch]).
-
+-define(FILEPATH, "src/lustre_dev_tools/esbuild.gleam").
 -export([download/2, bundle/3]).
 
 -if(?OTP_RELEASE >= 27).
@@ -209,6 +209,7 @@ set_file_permissions(File) ->
 exec_esbuild(Root, Options) ->
     _pipe = lustre_dev_tools_ffi:exec(
         <<"./build/.lustre/bin/esbuild"/utf8>>,
+        [{<<"NODE_PATH"/utf8>>, <<"./node_modules"/utf8>>}],
         Options,
         Root
     ),

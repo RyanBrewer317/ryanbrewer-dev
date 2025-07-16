@@ -14,20 +14,44 @@ export function create(validate, negate_step, add, compare) {
     let $ = compare(a, b);
     let $1 = compare(a, add(a, step));
     let $2 = compare(a, add(a, negated_step));
-    if ($ instanceof $order.Eq) {
+    if ($ instanceof $order.Lt) {
+      if ($2 instanceof $order.Lt) {
+        if ($1 instanceof $order.Lt) {
+          return new Ok(new $option.Some([new Forward(), step]));
+        } else {
+          return new Ok(new $option.Some([new Forward(), negated_step]));
+        }
+      } else if ($2 instanceof $order.Eq) {
+        if ($1 instanceof $order.Lt) {
+          return new Ok(new $option.Some([new Forward(), step]));
+        } else if ($1 instanceof $order.Eq) {
+          return new Ok(new $option.None());
+        } else {
+          return new Error(undefined);
+        }
+      } else if ($1 instanceof $order.Lt) {
+        return new Ok(new $option.Some([new Forward(), step]));
+      } else {
+        return new Error(undefined);
+      }
+    } else if ($ instanceof $order.Eq) {
       return new Ok(new $option.None());
-    } else if ($1 instanceof $order.Eq && $2 instanceof $order.Eq) {
-      return new Ok(new $option.None());
-    } else if ($ instanceof $order.Lt && $1 instanceof $order.Lt) {
-      return new Ok(new $option.Some([new Forward(), step]));
-    } else if ($ instanceof $order.Lt && $2 instanceof $order.Lt) {
-      return new Ok(new $option.Some([new Forward(), negated_step]));
-    } else if ($ instanceof $order.Lt) {
-      return new Error(undefined);
-    } else if ($ instanceof $order.Gt && $1 instanceof $order.Gt) {
+    } else if ($2 instanceof $order.Eq) {
+      if ($1 instanceof $order.Eq) {
+        return new Ok(new $option.None());
+      } else if ($1 instanceof $order.Gt) {
+        return new Ok(new $option.Some([new Backward(), step]));
+      } else {
+        return new Error(undefined);
+      }
+    } else if ($2 instanceof $order.Gt) {
+      if ($1 instanceof $order.Gt) {
+        return new Ok(new $option.Some([new Backward(), step]));
+      } else {
+        return new Ok(new $option.Some([new Backward(), negated_step]));
+      }
+    } else if ($1 instanceof $order.Gt) {
       return new Ok(new $option.Some([new Backward(), step]));
-    } else if ($ instanceof $order.Gt && $2 instanceof $order.Gt) {
-      return new Ok(new $option.Some([new Backward(), negated_step]));
     } else {
       return new Error(undefined);
     }
@@ -38,27 +62,33 @@ export function create(validate, negate_step, add, compare) {
       new Error(undefined),
       () => {
         let $ = adjust_step(a, b, s);
-        if ($.isOk() && $[0] instanceof $option.Some) {
-          let direction = $[0][0][0];
-          let step = $[0][0][1];
-          return new Ok(
-            $yielder.unfold(
-              a,
-              (current) => {
-                let $1 = compare(current, b);
-                if ($1 instanceof $order.Gt && direction instanceof Forward) {
-                  return new $yielder.Done();
-                } else if ($1 instanceof $order.Lt &&
-                direction instanceof Backward) {
-                  return new $yielder.Done();
-                } else {
-                  return new $yielder.Next(current, add(current, step));
-                }
-              },
-            ),
-          );
-        } else if ($.isOk() && $[0] instanceof $option.None) {
-          return new Ok($yielder.once(() => { return a; }));
+        if ($ instanceof Ok) {
+          let $1 = $[0];
+          if ($1 instanceof $option.Some) {
+            let direction = $1[0][0];
+            let step = $1[0][1];
+            return new Ok(
+              $yielder.unfold(
+                a,
+                (current) => {
+                  let $2 = compare(current, b);
+                  if (direction instanceof Forward) {
+                    if ($2 instanceof $order.Gt) {
+                      return new $yielder.Done();
+                    } else {
+                      return new $yielder.Next(current, add(current, step));
+                    }
+                  } else if ($2 instanceof $order.Lt) {
+                    return new $yielder.Done();
+                  } else {
+                    return new $yielder.Next(current, add(current, step));
+                  }
+                },
+              ),
+            );
+          } else {
+            return new Ok($yielder.once(() => { return a; }));
+          }
         } else {
           return new Error(undefined);
         }

@@ -1,166 +1,177 @@
-import * as $dynamic from "../../gleam_stdlib/gleam/dynamic.mjs";
-import * as $list from "../../gleam_stdlib/gleam/list.mjs";
+import * as $function from "../../gleam_stdlib/gleam/function.mjs";
+import { identity as coerce } from "../../gleam_stdlib/gleam/function.mjs";
 import * as $string from "../../gleam_stdlib/gleam/string.mjs";
 import * as $string_tree from "../../gleam_stdlib/gleam/string_tree.mjs";
-import { toList } from "../gleam.mjs";
+import { toList, Empty as $Empty } from "../gleam.mjs";
 import * as $attribute from "../lustre/attribute.mjs";
-import { attribute } from "../lustre/attribute.mjs";
-import * as $effect from "../lustre/effect.mjs";
-import * as $vdom from "../lustre/internals/vdom.mjs";
-import { Element, Map, Text } from "../lustre/internals/vdom.mjs";
+import * as $mutable_map from "../lustre/internals/mutable_map.mjs";
+import * as $events from "../lustre/vdom/events.mjs";
+import * as $vnode from "../lustre/vdom/vnode.mjs";
+import { Element, Fragment, Text, UnsafeInnerHtml } from "../lustre/vdom/vnode.mjs";
 
-export function element(tag, attrs, children) {
-  if (tag === "area") {
-    return new Element("", "", tag, attrs, toList([]), false, true);
-  } else if (tag === "base") {
-    return new Element("", "", tag, attrs, toList([]), false, true);
-  } else if (tag === "br") {
-    return new Element("", "", tag, attrs, toList([]), false, true);
-  } else if (tag === "col") {
-    return new Element("", "", tag, attrs, toList([]), false, true);
-  } else if (tag === "embed") {
-    return new Element("", "", tag, attrs, toList([]), false, true);
-  } else if (tag === "hr") {
-    return new Element("", "", tag, attrs, toList([]), false, true);
-  } else if (tag === "img") {
-    return new Element("", "", tag, attrs, toList([]), false, true);
-  } else if (tag === "input") {
-    return new Element("", "", tag, attrs, toList([]), false, true);
-  } else if (tag === "link") {
-    return new Element("", "", tag, attrs, toList([]), false, true);
-  } else if (tag === "meta") {
-    return new Element("", "", tag, attrs, toList([]), false, true);
-  } else if (tag === "param") {
-    return new Element("", "", tag, attrs, toList([]), false, true);
-  } else if (tag === "source") {
-    return new Element("", "", tag, attrs, toList([]), false, true);
-  } else if (tag === "track") {
-    return new Element("", "", tag, attrs, toList([]), false, true);
-  } else if (tag === "wbr") {
-    return new Element("", "", tag, attrs, toList([]), false, true);
-  } else {
-    return new Element("", "", tag, attrs, children, false, false);
-  }
-}
-
-function do_keyed(el, key) {
-  if (el instanceof Element) {
-    let namespace = el.namespace;
-    let tag = el.tag;
-    let attrs = el.attrs;
-    let children = el.children;
-    let self_closing = el.self_closing;
-    let void$ = el.void;
-    return new Element(
-      key,
-      namespace,
-      tag,
-      attrs,
-      children,
-      self_closing,
-      void$,
-    );
-  } else if (el instanceof Map) {
-    let subtree = el.subtree;
-    return new Map(() => { return do_keyed(subtree(), key); });
-  } else {
-    return el;
-  }
-}
-
-export function keyed(el, children) {
-  return el(
-    $list.map(
-      children,
-      (_use0) => {
-        let key = _use0[0];
-        let child = _use0[1];
-        return do_keyed(child, key);
-      },
-    ),
+export function element(tag, attributes, children) {
+  return $vnode.element(
+    "",
+    $function.identity,
+    "",
+    tag,
+    attributes,
+    children,
+    $mutable_map.new$(),
+    false,
+    false,
   );
 }
 
-export function namespaced(namespace, tag, attrs, children) {
-  return new Element("", namespace, tag, attrs, children, false, false);
+export function namespaced(namespace, tag, attributes, children) {
+  return $vnode.element(
+    "",
+    $function.identity,
+    namespace,
+    tag,
+    attributes,
+    children,
+    $mutable_map.new$(),
+    false,
+    false,
+  );
 }
 
-export function advanced(namespace, tag, attrs, children, self_closing, void$) {
-  return new Element("", namespace, tag, attrs, children, self_closing, void$);
+export function advanced(
+  namespace,
+  tag,
+  attributes,
+  children,
+  self_closing,
+  void$
+) {
+  return $vnode.element(
+    "",
+    $function.identity,
+    namespace,
+    tag,
+    attributes,
+    children,
+    $mutable_map.new$(),
+    self_closing,
+    void$,
+  );
 }
 
 export function text(content) {
-  return new Text(content);
+  return $vnode.text("", $function.identity, content);
 }
 
 export function none() {
-  return new Text("");
+  return $vnode.text("", $function.identity, "");
 }
 
-export function fragment(elements) {
-  return element(
-    "lustre-fragment",
-    toList([$attribute.style(toList([["display", "contents"]]))]),
-    elements,
+function count_fragment_children(loop$children, loop$count) {
+  while (true) {
+    let children = loop$children;
+    let count = loop$count;
+    if (children instanceof $Empty) {
+      return count;
+    } else {
+      let child = children.head;
+      let rest = children.tail;
+      loop$children = rest;
+      loop$count = count + $vnode.advance(child);
+    }
+  }
+}
+
+export function fragment(children) {
+  return $vnode.fragment(
+    "",
+    $function.identity,
+    children,
+    $mutable_map.new$(),
+    count_fragment_children(children, 0),
+  );
+}
+
+export function unsafe_raw_html(namespace, tag, attributes, inner_html) {
+  return $vnode.unsafe_inner_html(
+    "",
+    $function.identity,
+    namespace,
+    tag,
+    attributes,
+    inner_html,
   );
 }
 
 export function map(element, f) {
-  if (element instanceof Text) {
-    let content = element.content;
-    return new Text(content);
-  } else if (element instanceof Map) {
-    let subtree = element.subtree;
-    return new Map(() => { return map(subtree(), f); });
-  } else {
-    let key = element.key;
-    let namespace = element.namespace;
-    let tag = element.tag;
-    let attrs = element.attrs;
+  let mapper = coerce($events.compose_mapper(coerce(f), element.mapper));
+  if (element instanceof Fragment) {
     let children = element.children;
-    let self_closing = element.self_closing;
-    let void$ = element.void;
-    return new Map(
-      () => {
-        return new Element(
-          key,
-          namespace,
-          tag,
-          $list.map(
-            attrs,
-            (_capture) => { return $attribute.map(_capture, f); },
-          ),
-          $list.map(children, (_capture) => { return map(_capture, f); }),
-          self_closing,
-          void$,
-        );
-      },
+    let keyed_children = element.keyed_children;
+    let _record = element;
+    return new Fragment(
+      _record.kind,
+      _record.key,
+      mapper,
+      coerce(children),
+      coerce(keyed_children),
+      _record.children_count,
+    );
+  } else if (element instanceof Element) {
+    let attributes = element.attributes;
+    let children = element.children;
+    let keyed_children = element.keyed_children;
+    let _record = element;
+    return new Element(
+      _record.kind,
+      _record.key,
+      mapper,
+      _record.namespace,
+      _record.tag,
+      coerce(attributes),
+      coerce(children),
+      coerce(keyed_children),
+      _record.self_closing,
+      _record.void,
+    );
+  } else if (element instanceof Text) {
+    return coerce(element);
+  } else {
+    let attributes = element.attributes;
+    let _record = element;
+    return new UnsafeInnerHtml(
+      _record.kind,
+      _record.key,
+      mapper,
+      _record.namespace,
+      _record.tag,
+      coerce(attributes),
+      _record.inner_html,
     );
   }
 }
 
-export function get_root(effect) {
-  return $effect.custom(
-    (dispatch, _, _1, root) => { return effect(dispatch, root); },
-  );
-}
-
 export function to_string(element) {
-  return $vdom.element_to_string(element);
+  return $vnode.to_string(element);
 }
 
 export function to_document_string(el) {
-  let _pipe = $vdom.element_to_string(
+  let _pipe = $vnode.to_string(
     (() => {
-      if (el instanceof Element && el.tag === "html") {
-        return el;
-      } else if (el instanceof Element && el.tag === "head") {
-        return element("html", toList([]), toList([el]));
-      } else if (el instanceof Element && el.tag === "body") {
-        return element("html", toList([]), toList([el]));
-      } else if (el instanceof Map) {
-        let subtree = el.subtree;
-        return subtree();
+      if (el instanceof Element) {
+        let $ = el.tag;
+        if ($ === "html") {
+          return el;
+        } else if ($ === "head") {
+          return element("html", toList([]), toList([el]));
+        } else if ($ === "body") {
+          return element("html", toList([]), toList([el]));
+        } else {
+          return element(
+            "html",
+            toList([]),
+            toList([element("body", toList([]), toList([el]))]),
+          );
+        }
       } else {
         return element(
           "html",
@@ -175,22 +186,28 @@ export function to_document_string(el) {
   );
 }
 
-export function to_string_builder(element) {
-  return $vdom.element_to_string_builder(element);
+export function to_string_tree(element) {
+  return $vnode.to_string_tree(element);
 }
 
-export function to_document_string_builder(el) {
-  let _pipe = $vdom.element_to_string_builder(
+export function to_document_string_tree(el) {
+  let _pipe = $vnode.to_string_tree(
     (() => {
-      if (el instanceof Element && el.tag === "html") {
-        return el;
-      } else if (el instanceof Element && el.tag === "head") {
-        return element("html", toList([]), toList([el]));
-      } else if (el instanceof Element && el.tag === "body") {
-        return element("html", toList([]), toList([el]));
-      } else if (el instanceof Map) {
-        let subtree = el.subtree;
-        return subtree();
+      if (el instanceof Element) {
+        let $ = el.tag;
+        if ($ === "html") {
+          return el;
+        } else if ($ === "head") {
+          return element("html", toList([]), toList([el]));
+        } else if ($ === "body") {
+          return element("html", toList([]), toList([el]));
+        } else {
+          return element(
+            "html",
+            toList([]),
+            toList([element("body", toList([]), toList([el]))]),
+          );
+        }
       } else {
         return element(
           "html",
@@ -204,5 +221,5 @@ export function to_document_string_builder(el) {
 }
 
 export function to_readable_string(el) {
-  return $vdom.element_to_snapshot(el);
+  return $vnode.to_snapshot(el);
 }

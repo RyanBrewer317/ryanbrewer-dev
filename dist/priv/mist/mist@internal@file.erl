@@ -1,6 +1,6 @@
 -module(mist@internal@file).
 -compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch]).
-
+-define(FILEPATH, "src/mist/internal/file.gleam").
 -export([sendfile/6, open/1, stat/1, close/1]).
 -export_type([file_descriptor/0, file_error/0, send_error/0, file/0]).
 
@@ -55,7 +55,7 @@ sendfile(Transport, File_descriptor, Socket, Offset, Bytes, Options) ->
                 _pipe@2,
                 fun(Field@0) -> {file_err, Field@0} end
             ),
-            gleam@result:then(
+            gleam@result:'try'(
                 _pipe@3,
                 fun(Bits) ->
                     _pipe@4 = glisten@transport:send(

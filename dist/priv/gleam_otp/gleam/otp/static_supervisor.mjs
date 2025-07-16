@@ -1,10 +1,17 @@
 import * as $atom from "../../../gleam_erlang/gleam/erlang/atom.mjs";
 import * as $process from "../../../gleam_erlang/gleam/erlang/process.mjs";
-import * as $dict from "../../../gleam_stdlib/gleam/dict.mjs";
 import * as $dynamic from "../../../gleam_stdlib/gleam/dynamic.mjs";
 import * as $list from "../../../gleam_stdlib/gleam/list.mjs";
-import * as $result from "../../../gleam_stdlib/gleam/result.mjs";
-import { Ok, toList, prepend as listPrepend, CustomType as $CustomType } from "../../gleam.mjs";
+import { Ok, Error, toList, prepend as listPrepend, CustomType as $CustomType } from "../../gleam.mjs";
+import * as $actor from "../../gleam/otp/actor.mjs";
+import * as $supervision from "../../gleam/otp/supervision.mjs";
+
+class Supervisor extends $CustomType {
+  constructor(pid) {
+    super();
+    this.pid = pid;
+  }
+}
 
 export class OneForOne extends $CustomType {}
 
@@ -29,29 +36,73 @@ class Builder extends $CustomType {
   }
 }
 
-export class Permanent extends $CustomType {}
-
-export class Transient extends $CustomType {}
-
-export class Temporary extends $CustomType {}
-
-export class Worker extends $CustomType {
-  constructor(shutdown_ms) {
+class Strategy extends $CustomType {
+  constructor($0) {
     super();
-    this.shutdown_ms = shutdown_ms;
+    this[0] = $0;
   }
 }
 
-export class Supervisor extends $CustomType {}
-
-class ChildBuilder extends $CustomType {
-  constructor(id, starter, restart, significant, child_type) {
+class Intensity extends $CustomType {
+  constructor($0) {
     super();
-    this.id = id;
-    this.starter = starter;
-    this.restart = restart;
-    this.significant = significant;
-    this.child_type = child_type;
+    this[0] = $0;
+  }
+}
+
+class Period extends $CustomType {
+  constructor($0) {
+    super();
+    this[0] = $0;
+  }
+}
+
+class AutoShutdown extends $CustomType {
+  constructor($0) {
+    super();
+    this[0] = $0;
+  }
+}
+
+class Id extends $CustomType {
+  constructor($0) {
+    super();
+    this[0] = $0;
+  }
+}
+
+class Start extends $CustomType {
+  constructor($0) {
+    super();
+    this[0] = $0;
+  }
+}
+
+class Restart extends $CustomType {
+  constructor($0) {
+    super();
+    this[0] = $0;
+  }
+}
+
+class Significant extends $CustomType {
+  constructor($0) {
+    super();
+    this[0] = $0;
+  }
+}
+
+class Type extends $CustomType {
+  constructor($0) {
+    super();
+    this[0] = $0;
+  }
+}
+
+class Shutdown extends $CustomType {
+  constructor($0) {
+    super();
+    this[0] = $0;
   }
 }
 
@@ -88,74 +139,24 @@ export function add(builder, child) {
     _record.intensity,
     _record.period,
     _record.auto_shutdown,
-    listPrepend(child, builder.children),
-  );
-}
-
-export function worker_child(id, starter) {
-  return new ChildBuilder(
-    id,
-    () => {
-      let _pipe = starter();
-      return $result.map_error(_pipe, $dynamic.from);
-    },
-    new Permanent(),
-    false,
-    new Worker(5000),
-  );
-}
-
-export function supervisor_child(id, starter) {
-  return new ChildBuilder(
-    id,
-    () => {
-      let _pipe = starter();
-      return $result.map_error(_pipe, $dynamic.from);
-    },
-    new Permanent(),
-    false,
-    new Supervisor(),
-  );
-}
-
-export function significant(child, significant) {
-  let _record = child;
-  return new ChildBuilder(
-    _record.id,
-    _record.starter,
-    _record.restart,
-    significant,
-    _record.child_type,
-  );
-}
-
-export function timeout(child, ms) {
-  let $ = child.child_type;
-  if ($ instanceof Worker) {
-    let _record = child;
-    return new ChildBuilder(
-      _record.id,
-      _record.starter,
-      _record.restart,
-      _record.significant,
-      new Worker(ms),
-    );
-  } else {
-    return child;
-  }
-}
-
-export function restart(child, restart) {
-  let _record = child;
-  return new ChildBuilder(
-    _record.id,
-    _record.starter,
-    restart,
-    _record.significant,
-    _record.child_type,
+    listPrepend(
+      $supervision.map_data(child, (_) => { return undefined; }),
+      builder.children,
+    ),
   );
 }
 
 export function init(start_data) {
   return new Ok(start_data);
+}
+
+export function start_child_callback(start) {
+  let $ = start();
+  if ($ instanceof Ok) {
+    let started = $[0];
+    return new Ok(started.pid);
+  } else {
+    let error = $[0];
+    return new Error(error);
+  }
 }

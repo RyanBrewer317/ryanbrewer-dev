@@ -1,8 +1,8 @@
 -module(gleam@erlang@node).
 -compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch]).
-
--export([self/0, visible/0, connect/1, send/3, to_atom/1]).
--export_type([node_/0, do_not_leak/0, connect_error/0]).
+-define(FILEPATH, "src/gleam/erlang/node.gleam").
+-export([self/0, visible/0, connect/1, name/1]).
+-export_type([node_/0, connect_error/0]).
 
 -if(?OTP_RELEASE >= 27).
 -define(MODULEDOC(Str), -moduledoc(Str)).
@@ -12,19 +12,29 @@
 -define(DOC(Str), -compile([])).
 -endif.
 
--type node_() :: any().
+?MODULEDOC(
+    " Multiple Erlang VM instances can form a cluster to make a distributed\n"
+    " Erlang system, talking directly to each other using messages rather than\n"
+    " other communication protocols like HTTP. In a distributed Erlang system\n"
+    " each virtual machine is called a _node_. This module provides Node related\n"
+    " types and functions to be used as a foundation by other packages providing\n"
+    " more specialised functionality.\n"
+    "\n"
+    " For more information on distributed Erlang systems see the Erlang\n"
+    " documentation: <https://www.erlang.org/doc/system/distributed.html>.\n"
+).
 
--type do_not_leak() :: any().
+-type node_() :: any().
 
 -type connect_error() :: failed_to_connect | local_node_is_not_alive.
 
--file("/Users/louis/src/gleam/erlang/src/gleam/erlang/node.gleam", 10).
+-file("src/gleam/erlang/node.gleam", 18).
 ?DOC(" Return the current node.\n").
 -spec self() -> node_().
 self() ->
     erlang:node().
 
--file("/Users/louis/src/gleam/erlang/src/gleam/erlang/node.gleam", 23).
+-file("src/gleam/erlang/node.gleam", 31).
 ?DOC(
     " Return a list of all visible nodes in the cluster, not including the current\n"
     " node.\n"
@@ -40,7 +50,7 @@ self() ->
 visible() ->
     erlang:nodes().
 
--file("/Users/louis/src/gleam/erlang/src/gleam/erlang/node.gleam", 44).
+-file("src/gleam/erlang/node.gleam", 52).
 ?DOC(
     " Establish a connection to a node, so the nodes can send messages to each\n"
     " other and any other connected nodes.\n"
@@ -55,19 +65,16 @@ visible() ->
 connect(Node) ->
     gleam_erlang_ffi:connect_node(Node).
 
--file("/Users/louis/src/gleam/erlang/src/gleam/erlang/node.gleam", 51).
+-file("src/gleam/erlang/node.gleam", 63).
 ?DOC(
-    " Send a message to a named process on a given node.\n"
+    " Get the atom name of a node.\n"
     "\n"
-    " These messages are untyped, like regular Erlang messages.\n"
+    " ## Examples\n"
+    "\n"
+    " ```gleam\n"
+    " assert name(my_node) == atom.create(\"app1@localhost\")\n"
+    " ```\n"
 ).
--spec send(node_(), gleam@erlang@atom:atom_(), any()) -> nil.
-send(Node, Name, Message) ->
-    erlang:send({Name, Node}, Message),
-    nil.
-
--file("/Users/louis/src/gleam/erlang/src/gleam/erlang/node.gleam", 62).
-?DOC(" Convert a node to the atom of its name.\n").
--spec to_atom(node_()) -> gleam@erlang@atom:atom_().
-to_atom(Node) ->
+-spec name(node_()) -> gleam@erlang@atom:atom_().
+name(Node) ->
     gleam_erlang_ffi:identity(Node).

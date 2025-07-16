@@ -1,6 +1,6 @@
 -module(glisten@socket).
 -compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch]).
-
+-define(FILEPATH, "src/glisten/socket.gleam").
 -export_type([socket_reason/0, listen_socket/0, socket/0]).
 
 -type socket_reason() :: closed |

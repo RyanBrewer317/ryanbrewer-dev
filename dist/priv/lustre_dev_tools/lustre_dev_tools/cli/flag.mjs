@@ -45,7 +45,7 @@ export function tailwind_os() {
 
 export function tailwind_cpu() {
   let description = "Override the automatic CPU architecture detection.";
-  let allowed = toList(["armv7", "arm64", "x64", "x86_64", "aarch64"]);
+  let allowed = toList(["arm64", "x64", "x86_64", "aarch64"]);
   let _pipe = $glint.string_flag("cpu");
   let _pipe$1 = $glint.flag_help(_pipe, description);
   return $glint.flag_constraint(_pipe$1, $constraint.one_of(allowed));

@@ -1,6 +1,6 @@
 -module(gramps@debug).
 -compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch]).
-
+-define(FILEPATH, "src/gramps/debug.gleam").
 -export([literal_bits/2]).
 
 -file("src/gramps/debug.gleam", 3).
@@ -16,6 +16,7 @@ literal_bits(Source, Values) ->
         _ ->
             erlang:error(#{gleam_error => panic,
                     message => <<"where'd that bit go"/utf8>>,
+                    file => <<?FILEPATH/utf8>>,
                     module => <<"gramps/debug"/utf8>>,
                     function => <<"literal_bits"/utf8>>,
                     line => 7})

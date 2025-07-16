@@ -1,6 +1,6 @@
 -module(gleam_community@colour).
 -compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch]).
-
+-define(FILEPATH, "src/gleam_community/colour.gleam").
 -export([from_rgb255/3, from_rgb/3, from_rgba/4, from_hsla/4, from_hsl/3, from_rgb_hex/1, from_rgb_hex_string/1, from_rgba_hex/1, from_rgba_hex_string/1, to_rgba/1, to_hsla/1, to_css_rgba_string/1, to_rgba_hex/1, to_rgba_hex_string/1, to_rgb_hex/1, to_rgb_hex_string/1, encode/1, decoder/0]).
 -export_type([colour/0]).
 
@@ -185,7 +185,7 @@ hex_string_to_int(Hex_string) ->
                     {error, nil};
 
                 {ok, V} ->
-                    gleam@result:then(case Char of
+                    gleam@result:'try'(case Char of
                             <<"a"/utf8>> ->
                                 {ok, 10};
 
@@ -207,7 +207,7 @@ hex_string_to_int(Hex_string) ->
                             _ ->
                                 gleam_stdlib:parse_int(Char)
                         end, fun(Num) ->
-                            gleam@result:then(
+                            gleam@result:'try'(
                                 gleam@int:power(16, erlang:float(Index)),
                                 fun(Base) ->
                                     {ok,
@@ -253,11 +253,11 @@ rgba_to_hsla(R, G, B, A) ->
 
         _ when Max_colour =:= G ->
             _pipe = gleam@float:divide(B - R, Max_colour - Min_colour),
-            gleam@result:then(_pipe, fun(D) -> {ok, 2.0 + D} end);
+            gleam@result:'try'(_pipe, fun(D) -> {ok, 2.0 + D} end);
 
         _ ->
             _pipe@1 = gleam@float:divide(R - G, Max_colour - Min_colour),
-            gleam@result:then(_pipe@1, fun(D@1) -> {ok, 4.0 + D@1} end)
+            gleam@result:'try'(_pipe@1, fun(D@1) -> {ok, 4.0 + D@1} end)
     end,
     H2 = case H1 of
         {ok, V} ->
@@ -325,28 +325,31 @@ rgba_to_hsla(R, G, B, A) ->
 -spec from_rgb255(integer(), integer(), integer()) -> {ok, colour()} |
     {error, nil}.
 from_rgb255(Red, Green, Blue) ->
-    gleam@result:then(
+    gleam@result:'try'(
         begin
             _pipe = Red,
             _pipe@1 = erlang:float(_pipe),
             _pipe@2 = gleam@float:divide(_pipe@1, 255.0),
-            gleam@result:then(_pipe@2, fun valid_colour_value/1)
+            gleam@result:'try'(_pipe@2, fun valid_colour_value/1)
         end,
         fun(R) ->
-            gleam@result:then(
+            gleam@result:'try'(
                 begin
                     _pipe@3 = Green,
                     _pipe@4 = erlang:float(_pipe@3),
                     _pipe@5 = gleam@float:divide(_pipe@4, 255.0),
-                    gleam@result:then(_pipe@5, fun valid_colour_value/1)
+                    gleam@result:'try'(_pipe@5, fun valid_colour_value/1)
                 end,
                 fun(G) ->
-                    gleam@result:then(
+                    gleam@result:'try'(
                         begin
                             _pipe@6 = Blue,
                             _pipe@7 = erlang:float(_pipe@6),
                             _pipe@8 = gleam@float:divide(_pipe@7, 255.0),
-                            gleam@result:then(_pipe@8, fun valid_colour_value/1)
+                            gleam@result:'try'(
+                                _pipe@8,
+                                fun valid_colour_value/1
+                            )
                         end,
                         fun(B) -> {ok, {rgba, R, G, B, 1.0}} end
                     )
@@ -382,13 +385,13 @@ from_rgb255(Red, Green, Blue) ->
 ).
 -spec from_rgb(float(), float(), float()) -> {ok, colour()} | {error, nil}.
 from_rgb(Red, Green, Blue) ->
-    gleam@result:then(
+    gleam@result:'try'(
         valid_colour_value(Red),
         fun(R) ->
-            gleam@result:then(
+            gleam@result:'try'(
                 valid_colour_value(Green),
                 fun(G) ->
-                    gleam@result:then(
+                    gleam@result:'try'(
                         valid_colour_value(Blue),
                         fun(B) -> {ok, {rgba, R, G, B, 1.0}} end
                     )
@@ -425,16 +428,16 @@ from_rgb(Red, Green, Blue) ->
 -spec from_rgba(float(), float(), float(), float()) -> {ok, colour()} |
     {error, nil}.
 from_rgba(Red, Green, Blue, Alpha) ->
-    gleam@result:then(
+    gleam@result:'try'(
         valid_colour_value(Red),
         fun(R) ->
-            gleam@result:then(
+            gleam@result:'try'(
                 valid_colour_value(Green),
                 fun(G) ->
-                    gleam@result:then(
+                    gleam@result:'try'(
                         valid_colour_value(Blue),
                         fun(B) ->
-                            gleam@result:then(
+                            gleam@result:'try'(
                                 valid_colour_value(Alpha),
                                 fun(A) -> {ok, {rgba, R, G, B, A}} end
                             )
@@ -473,16 +476,16 @@ from_rgba(Red, Green, Blue, Alpha) ->
 -spec from_hsla(float(), float(), float(), float()) -> {ok, colour()} |
     {error, nil}.
 from_hsla(Hue, Saturation, Lightness, Alpha) ->
-    gleam@result:then(
+    gleam@result:'try'(
         valid_colour_value(Hue),
         fun(H) ->
-            gleam@result:then(
+            gleam@result:'try'(
                 valid_colour_value(Saturation),
                 fun(S) ->
-                    gleam@result:then(
+                    gleam@result:'try'(
                         valid_colour_value(Lightness),
                         fun(L) ->
-                            gleam@result:then(
+                            gleam@result:'try'(
                                 valid_colour_value(Alpha),
                                 fun(A) -> {ok, {hsla, H, S, L, A}} end
                             )
@@ -593,7 +596,7 @@ from_rgb_hex(Hex) ->
 ).
 -spec from_rgb_hex_string(binary()) -> {ok, colour()} | {error, nil}.
 from_rgb_hex_string(Hex_string) ->
-    gleam@result:then(
+    gleam@result:'try'(
         hex_string_to_int(Hex_string),
         fun(Hex_int) -> from_rgb_hex(Hex_int) end
     ).
@@ -630,70 +633,86 @@ from_rgba_hex(Hex) ->
             {error, nil};
 
         false ->
-            _assert_subject = begin
+            R@1 = case begin
                 _pipe = erlang:'bsr'(Hex, 24),
                 _pipe@1 = erlang:'band'(_pipe, 16#ff),
                 _pipe@2 = erlang:float(_pipe@1),
                 gleam@float:divide(_pipe@2, 255.0)
-            end,
-            {ok, R} = case _assert_subject of
-                {ok, _} -> _assert_subject;
+            end of
+                {ok, R} -> R;
                 _assert_fail ->
                     erlang:error(#{gleam_error => let_assert,
                                 message => <<"Pattern match failed, no pattern matched the value."/utf8>>,
-                                value => _assert_fail,
+                                file => <<?FILEPATH/utf8>>,
                                 module => <<"gleam_community/colour"/utf8>>,
                                 function => <<"from_rgba_hex"/utf8>>,
-                                line => 590})
+                                line => 590,
+                                value => _assert_fail,
+                                start => 17111,
+                                'end' => 17260,
+                                pattern_start => 17122,
+                                pattern_end => 17127})
             end,
-            _assert_subject@1 = begin
+            G@1 = case begin
                 _pipe@3 = erlang:'bsr'(Hex, 16),
                 _pipe@4 = erlang:'band'(_pipe@3, 16#ff),
                 _pipe@5 = erlang:float(_pipe@4),
                 gleam@float:divide(_pipe@5, 255.0)
-            end,
-            {ok, G} = case _assert_subject@1 of
-                {ok, _} -> _assert_subject@1;
+            end of
+                {ok, G} -> G;
                 _assert_fail@1 ->
                     erlang:error(#{gleam_error => let_assert,
                                 message => <<"Pattern match failed, no pattern matched the value."/utf8>>,
-                                value => _assert_fail@1,
+                                file => <<?FILEPATH/utf8>>,
                                 module => <<"gleam_community/colour"/utf8>>,
                                 function => <<"from_rgba_hex"/utf8>>,
-                                line => 596})
+                                line => 596,
+                                value => _assert_fail@1,
+                                start => 17332,
+                                'end' => 17481,
+                                pattern_start => 17343,
+                                pattern_end => 17348})
             end,
-            _assert_subject@2 = begin
+            B@1 = case begin
                 _pipe@6 = erlang:'bsr'(Hex, 8),
                 _pipe@7 = erlang:'band'(_pipe@6, 16#ff),
                 _pipe@8 = erlang:float(_pipe@7),
                 gleam@float:divide(_pipe@8, 255.0)
-            end,
-            {ok, B} = case _assert_subject@2 of
-                {ok, _} -> _assert_subject@2;
+            end of
+                {ok, B} -> B;
                 _assert_fail@2 ->
                     erlang:error(#{gleam_error => let_assert,
                                 message => <<"Pattern match failed, no pattern matched the value."/utf8>>,
-                                value => _assert_fail@2,
+                                file => <<?FILEPATH/utf8>>,
                                 module => <<"gleam_community/colour"/utf8>>,
                                 function => <<"from_rgba_hex"/utf8>>,
-                                line => 602})
+                                line => 602,
+                                value => _assert_fail@2,
+                                start => 17553,
+                                'end' => 17701,
+                                pattern_start => 17564,
+                                pattern_end => 17569})
             end,
-            _assert_subject@3 = begin
+            A@1 = case begin
                 _pipe@9 = erlang:'band'(Hex, 16#ff),
                 _pipe@10 = erlang:float(_pipe@9),
                 gleam@float:divide(_pipe@10, 255.0)
-            end,
-            {ok, A} = case _assert_subject@3 of
-                {ok, _} -> _assert_subject@3;
+            end of
+                {ok, A} -> A;
                 _assert_fail@3 ->
                     erlang:error(#{gleam_error => let_assert,
                                 message => <<"Pattern match failed, no pattern matched the value."/utf8>>,
-                                value => _assert_fail@3,
+                                file => <<?FILEPATH/utf8>>,
                                 module => <<"gleam_community/colour"/utf8>>,
                                 function => <<"from_rgba_hex"/utf8>>,
-                                line => 608})
+                                line => 608,
+                                value => _assert_fail@3,
+                                start => 17773,
+                                'end' => 17883,
+                                pattern_start => 17784,
+                                pattern_end => 17789})
             end,
-            from_rgba(R, G, B, A)
+            from_rgba(R@1, G@1, B@1, A@1)
     end.
 
 -file("src/gleam_community/colour.gleam", 556).
@@ -723,7 +742,7 @@ from_rgba_hex(Hex) ->
 ).
 -spec from_rgba_hex_string(binary()) -> {ok, colour()} | {error, nil}.
 from_rgba_hex_string(Hex_string) ->
-    gleam@result:then(
+    gleam@result:'try'(
         hex_string_to_int(Hex_string),
         fun(Hex_int) -> from_rgba_hex(Hex_int) end
     ).
@@ -826,44 +845,52 @@ to_hsla(Colour) ->
 to_css_rgba_string(Colour) ->
     {R, G, B, A} = to_rgba(Colour),
     Percent = fun(X) ->
-        _assert_subject = begin
+        P@1 = case begin
             _pipe = X,
             _pipe@1 = gleam@float:multiply(_pipe, 10000.0),
             _pipe@2 = erlang:round(_pipe@1),
             _pipe@3 = erlang:float(_pipe@2),
             gleam@float:divide(_pipe@3, 100.0)
-        end,
-        {ok, P} = case _assert_subject of
-            {ok, _} -> _assert_subject;
+        end of
+            {ok, P} -> P;
             _assert_fail ->
                 erlang:error(#{gleam_error => let_assert,
                             message => <<"Pattern match failed, no pattern matched the value."/utf8>>,
-                            value => _assert_fail,
+                            file => <<?FILEPATH/utf8>>,
                             module => <<"gleam_community/colour"/utf8>>,
                             function => <<"to_css_rgba_string"/utf8>>,
-                            line => 706})
+                            line => 706,
+                            value => _assert_fail,
+                            start => 20510,
+                            'end' => 20646,
+                            pattern_start => 20521,
+                            pattern_end => 20526})
         end,
-        P
+        P@1
     end,
     Round_to = fun(X@1) ->
-        _assert_subject@1 = begin
+        R@2 = case begin
             _pipe@4 = X@1,
             _pipe@5 = gleam@float:multiply(_pipe@4, 1000.0),
             _pipe@6 = erlang:round(_pipe@5),
             _pipe@7 = erlang:float(_pipe@6),
             gleam@float:divide(_pipe@7, 1000.0)
-        end,
-        {ok, R@1} = case _assert_subject@1 of
-            {ok, _} -> _assert_subject@1;
+        end of
+            {ok, R@1} -> R@1;
             _assert_fail@1 ->
                 erlang:error(#{gleam_error => let_assert,
                             message => <<"Pattern match failed, no pattern matched the value."/utf8>>,
-                            value => _assert_fail@1,
+                            file => <<?FILEPATH/utf8>>,
                             module => <<"gleam_community/colour"/utf8>>,
                             function => <<"to_css_rgba_string"/utf8>>,
-                            line => 718})
+                            line => 718,
+                            value => _assert_fail@1,
+                            start => 20768,
+                            'end' => 20903,
+                            pattern_start => 20779,
+                            pattern_end => 20784})
         end,
-        R@1
+        R@2
     end,
     gleam@string:join(
         [<<"rgba("/utf8>>,
@@ -875,7 +902,7 @@ to_css_rgba_string(Colour) ->
         <<""/utf8>>
     ).
 
--file("src/gleam_community/colour.gleam", 817).
+-file("src/gleam_community/colour.gleam", 829).
 ?DOC(
     " Returns an hex `Int` created from the given `Colour`.\n"
     "\n"
@@ -949,10 +976,20 @@ to_rgba_hex(Colour) ->
 ).
 -spec to_rgba_hex_string(colour()) -> binary().
 to_rgba_hex_string(Colour) ->
-    _pipe = to_rgba_hex(Colour),
-    gleam@int:to_base16(_pipe).
+    Hex_string = begin
+        _pipe = to_rgba_hex(Colour),
+        gleam@int:to_base16(_pipe)
+    end,
+    case string:length(Hex_string) of
+        8 ->
+            Hex_string;
 
--file("src/gleam_community/colour.gleam", 864).
+        L ->
+            <<(gleam@string:repeat(<<"0"/utf8>>, 8 - L))/binary,
+                Hex_string/binary>>
+    end.
+
+-file("src/gleam_community/colour.gleam", 876).
 ?DOC(
     " Returns a rgb hex `Int` created from the given `Colour`.\n"
     "\n"
@@ -995,7 +1032,7 @@ to_rgb_hex(Colour) ->
     end,
     (Red + Green) + Blue.
 
--file("src/gleam_community/colour.gleam", 790).
+-file("src/gleam_community/colour.gleam", 796).
 ?DOC(
     " Returns an rgb hex formatted `String` created from the given `Colour`.\n"
     "\n"
@@ -1021,10 +1058,20 @@ to_rgb_hex(Colour) ->
 ).
 -spec to_rgb_hex_string(colour()) -> binary().
 to_rgb_hex_string(Colour) ->
-    _pipe = to_rgb_hex(Colour),
-    gleam@int:to_base16(_pipe).
+    Hex_string = begin
+        _pipe = to_rgb_hex(Colour),
+        gleam@int:to_base16(_pipe)
+    end,
+    case string:length(Hex_string) of
+        6 ->
+            Hex_string;
 
--file("src/gleam_community/colour.gleam", 906).
+        L ->
+            <<(gleam@string:repeat(<<"0"/utf8>>, 6 - L))/binary,
+                Hex_string/binary>>
+    end.
+
+-file("src/gleam_community/colour.gleam", 918).
 -spec encode_rgba(float(), float(), float(), float()) -> gleam@json:json().
 encode_rgba(R, G, B, A) ->
     gleam@json:object(
@@ -1034,7 +1081,7 @@ encode_rgba(R, G, B, A) ->
             {<<"a"/utf8>>, gleam@json:float(A)}]
     ).
 
--file("src/gleam_community/colour.gleam", 915).
+-file("src/gleam_community/colour.gleam", 927).
 -spec encode_hsla(float(), float(), float(), float()) -> gleam@json:json().
 encode_hsla(H, S, L, A) ->
     gleam@json:object(
@@ -1044,7 +1091,7 @@ encode_hsla(H, S, L, A) ->
             {<<"a"/utf8>>, gleam@json:float(A)}]
     ).
 
--file("src/gleam_community/colour.gleam", 899).
+-file("src/gleam_community/colour.gleam", 911).
 ?DOC(
     " Encodes a `Colour` value as a Gleam [`Json`](https://hexdocs.pm/gleam_json/gleam/json.html#Json)\n"
     " value. You'll need this if you want to send a `Colour` value over the network\n"
@@ -1069,7 +1116,7 @@ encode(Colour) ->
             encode_hsla(H, S, L, A@1)
     end.
 
--file("src/gleam_community/colour.gleam", 940).
+-file("src/gleam_community/colour.gleam", 952).
 -spec rgba_decoder() -> gleam@dynamic@decode:decoder(colour()).
 rgba_decoder() ->
     gleam@dynamic@decode:field(
@@ -1101,7 +1148,7 @@ rgba_decoder() ->
         end
     ).
 
--file("src/gleam_community/colour.gleam", 949).
+-file("src/gleam_community/colour.gleam", 961).
 -spec hsla_decoder() -> gleam@dynamic@decode:decoder(colour()).
 hsla_decoder() ->
     gleam@dynamic@decode:field(
@@ -1133,7 +1180,7 @@ hsla_decoder() ->
         end
     ).
 
--file("src/gleam_community/colour.gleam", 936).
+-file("src/gleam_community/colour.gleam", 948).
 ?DOC(
     " Attempt to decode some [`Dynamic`](https://hexdocs.pm/gleam_stdlib/gleam/dynamic.html#Dynamic)\n"
     " value into a `Colour`. Most often you'll use this to decode some JSON.\n"

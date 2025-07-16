@@ -1,6 +1,6 @@
 -module(arctic@collection).
 -compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch]).
-
+-define(FILEPATH, "src/arctic/collection.gleam").
 -export([with_parser/2, default_parser/0, new/1, with_index/2, with_feed/3, with_ordering/2, with_renderer/2, with_raw_page/3]).
 
 -if(?OTP_RELEASE >= 27).
@@ -132,7 +132,7 @@ new(Dir) ->
 ).
 -spec with_index(
     arctic:collection(),
-    fun((list(arctic:cacheable_page())) -> lustre@internals@vdom:element(nil))
+    fun((list(arctic:cacheable_page())) -> lustre@vdom@vnode:element(nil))
 ) -> arctic:collection().
 with_index(C, Index) ->
     _record = C,
@@ -195,7 +195,7 @@ with_ordering(C, Ordering) ->
 ).
 -spec with_renderer(
     arctic:collection(),
-    fun((arctic:page()) -> lustre@internals@vdom:element(nil))
+    fun((arctic:page()) -> lustre@vdom@vnode:element(nil))
 ) -> arctic:collection().
 with_renderer(C, Renderer) ->
     _record = C,
@@ -217,7 +217,7 @@ with_renderer(C, Renderer) ->
 -spec with_raw_page(
     arctic:collection(),
     binary(),
-    lustre@internals@vdom:element(nil)
+    lustre@vdom@vnode:element(nil)
 ) -> arctic:collection().
 with_raw_page(C, Id, Body) ->
     _record = C,

@@ -1,8 +1,8 @@
 -module(gleam@erlang@atom).
 -compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch]).
-
--export([from_string/1, create_from_string/1, to_string/1, from_dynamic/1]).
--export_type([atom_/0, from_string_error/0]).
+-define(FILEPATH, "src/gleam/erlang/atom.gleam").
+-export([get/1, create/1, to_string/1, to_dynamic/1, cast_from_dynamic/1, decoder/0]).
+-export_type([atom_/0]).
 
 -if(?OTP_RELEASE >= 27).
 -define(MODULEDOC(Str), -moduledoc(Str)).
@@ -14,30 +14,18 @@
 
 -type atom_() :: any().
 
--type from_string_error() :: atom_not_loaded.
-
--file("/Users/louis/src/gleam/erlang/src/gleam/erlang/atom.gleam", 43).
+-file("src/gleam/erlang/atom.gleam", 27).
 ?DOC(
-    " Finds an existing Atom for the given String.\n"
+    " Finds an existing atom for the given string.\n"
     "\n"
-    " If no atom is found in the virtual machine's atom table for the String then\n"
+    " If no atom is found in the virtual machine's atom table for the string then\n"
     " an error is returned.\n"
-    "\n"
-    " ## Examples\n"
-    " ```gleam\n"
-    " from_string(\"ok\")\n"
-    " // -> Ok(create_from_string(\"ok\"))\n"
-    " ```\n"
-    " ```gleam\n"
-    " from_string(\"some_new_atom\")\n"
-    " // -> Error(AtomNotLoaded)\n"
-    " ```\n"
 ).
--spec from_string(binary()) -> {ok, atom_()} | {error, from_string_error()}.
-from_string(A) ->
+-spec get(binary()) -> {ok, atom_()} | {error, nil}.
+get(A) ->
     gleam_erlang_ffi:atom_from_string(A).
 
--file("/Users/louis/src/gleam/erlang/src/gleam/erlang/atom.gleam", 55).
+-file("src/gleam/erlang/atom.gleam", 39).
 ?DOC(
     " Creates an atom from a string, inserting a new value into the virtual\n"
     " machine's atom table if an atom does not already exist for the given\n"
@@ -48,18 +36,18 @@ from_string(A) ->
     " convert user input into atoms as filling the atom table will cause the\n"
     " virtual machine to crash!\n"
 ).
--spec create_from_string(binary()) -> atom_().
-create_from_string(A) ->
+-spec create(binary()) -> atom_().
+create(A) ->
     erlang:binary_to_atom(A).
 
--file("/Users/louis/src/gleam/erlang/src/gleam/erlang/atom.gleam", 68).
+-file("src/gleam/erlang/atom.gleam", 52).
 ?DOC(
     " Returns a `String` corresponding to the text representation of the given\n"
     " `Atom`.\n"
     "\n"
     " ## Examples\n"
     " ```gleam\n"
-    " let ok_atom = create_from_string(\"ok\")\n"
+    " let ok_atom = create(\"ok\")\n"
     " to_string(ok_atom)\n"
     " // -> \"ok\"\n"
     " ```\n"
@@ -68,23 +56,39 @@ create_from_string(A) ->
 to_string(A) ->
     erlang:atom_to_binary(A).
 
--file("/Users/louis/src/gleam/erlang/src/gleam/erlang/atom.gleam", 85).
+-file("src/gleam/erlang/atom.gleam", 59).
 ?DOC(
-    " Checks to see whether a `Dynamic` value is an atom, and return the atom if\n"
-    " it is.\n"
+    " Convert an atom to a dynamic value, throwing away the type information. \n"
     "\n"
-    " ## Examples\n"
-    " ```gleam\n"
-    " import gleam/dynamic\n"
-    " from_dynamic(dynamic.from(create_from_string(\"hello\")))\n"
-    " // -> Ok(create_from_string(\"hello\"))\n"
-    " ```\n"
-    " ```gleam\n"
-    " from_dynamic(dynamic.from(123))\n"
-    " // -> Error([DecodeError(expected: \"Atom\", found: \"Int\", path: [])])\n"
-    " ```\n"
+    " This may be useful for testing decoders.\n"
 ).
--spec from_dynamic(gleam@dynamic:dynamic_()) -> {ok, atom_()} |
-    {error, list(gleam@dynamic@decode:decode_error())}.
-from_dynamic(From) ->
-    gleam_erlang_ffi:atom_from_dynamic(From).
+-spec to_dynamic(atom_()) -> gleam@dynamic:dynamic_().
+to_dynamic(A) ->
+    gleam_erlang_ffi:identity(A).
+
+-file("src/gleam/erlang/atom.gleam", 62).
+-spec cast_from_dynamic(gleam@dynamic:dynamic_()) -> atom_().
+cast_from_dynamic(A) ->
+    gleam_erlang_ffi:identity(A).
+
+-file("src/gleam/erlang/atom.gleam", 71).
+?DOC(
+    " A dynamic decoder for atoms.\n"
+    "\n"
+    " You almost certainly should not use this to work with externally defined\n"
+    " functions. They return known types, so you should define the external\n"
+    " functions with the correct types, defining wrapper functions in Erlang if\n"
+    " the external types cannot be mapped directly onto Gleam types.\n"
+).
+-spec decoder() -> gleam@dynamic@decode:decoder(atom_()).
+decoder() ->
+    gleam@dynamic@decode:new_primitive_decoder(
+        <<"Atom"/utf8>>,
+        fun(Data) -> case erlang:is_atom(Data) of
+                true ->
+                    {ok, gleam_erlang_ffi:identity(Data)};
+
+                false ->
+                    {error, erlang:binary_to_atom(<<"nil"/utf8>>)}
+            end end
+    ).

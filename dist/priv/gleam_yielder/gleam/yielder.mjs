@@ -8,6 +8,7 @@ import {
   Ok,
   Error,
   toList,
+  Empty as $Empty,
   prepend as listPrepend,
   CustomType as $CustomType,
   isEqual,
@@ -16,10 +17,10 @@ import {
 class Stop extends $CustomType {}
 
 class Continue extends $CustomType {
-  constructor(x0, x1) {
+  constructor($0, $1) {
     super();
-    this[0] = x0;
-    this[1] = x1;
+    this[0] = $0;
+    this[1] = $1;
   }
 }
 
@@ -41,34 +42,34 @@ export class Next extends $CustomType {
 export class Done extends $CustomType {}
 
 class AnotherBy extends $CustomType {
-  constructor(x0, x1, x2, x3) {
+  constructor($0, $1, $2, $3) {
     super();
-    this[0] = x0;
-    this[1] = x1;
-    this[2] = x2;
-    this[3] = x3;
+    this[0] = $0;
+    this[1] = $1;
+    this[2] = $2;
+    this[3] = $3;
   }
 }
 
 class LastBy extends $CustomType {
-  constructor(x0) {
+  constructor($0) {
     super();
-    this[0] = x0;
+    this[0] = $0;
   }
 }
 
 class Another extends $CustomType {
-  constructor(x0, x1) {
+  constructor($0, $1) {
     super();
-    this[0] = x0;
-    this[1] = x1;
+    this[0] = $0;
+    this[1] = $1;
   }
 }
 
 class Last extends $CustomType {
-  constructor(x0) {
+  constructor($0) {
     super();
-    this[0] = x0;
+    this[0] = $0;
   }
 }
 
@@ -107,7 +108,7 @@ export function repeat(x) {
 
 export function from_list(list) {
   let yield$1 = (acc) => {
-    if (acc.hasLength(0)) {
+    if (acc instanceof $Empty) {
       return new Done();
     } else {
       let head = acc.head;
@@ -127,12 +128,12 @@ function transform_loop(continuation, state, f) {
       let el = $[0];
       let next = $[1];
       let $1 = f(state, el);
-      if ($1 instanceof Done) {
-        return new Stop();
-      } else {
+      if ($1 instanceof Next) {
         let yield$1 = $1.element;
         let next_state = $1.accumulator;
         return new Continue(yield$1, transform_loop(next, next_state, f));
+      } else {
+        return new Stop();
       }
     }
   };
@@ -149,14 +150,14 @@ function fold_loop(loop$continuation, loop$f, loop$accumulator) {
     let f = loop$f;
     let accumulator = loop$accumulator;
     let $ = continuation();
-    if ($ instanceof Continue) {
+    if ($ instanceof Stop) {
+      return accumulator;
+    } else {
       let elem = $[0];
       let next = $[1];
       loop$continuation = next;
       loop$f = f;
       loop$accumulator = f(accumulator, elem);
-    } else {
-      return accumulator;
     }
   }
 }
@@ -194,9 +195,7 @@ export function step(yielder) {
 function take_loop(continuation, desired) {
   return () => {
     let $ = desired > 0;
-    if (!$) {
-      return new Stop();
-    } else {
+    if ($) {
       let $1 = continuation();
       if ($1 instanceof Stop) {
         return new Stop();
@@ -205,6 +204,8 @@ function take_loop(continuation, desired) {
         let next = $1[1];
         return new Continue(e, take_loop(next, desired - 1));
       }
+    } else {
+      return new Stop();
     }
   };
 }
@@ -287,12 +288,12 @@ export function map2(yielder1, yielder2, fun) {
 
 function append_loop(first, second) {
   let $ = first();
-  if ($ instanceof Continue) {
+  if ($ instanceof Stop) {
+    return second();
+  } else {
     let e = $[0];
     let first$1 = $[1];
     return new Continue(e, () => { return append_loop(first$1, second); });
-  } else {
-    return second();
   }
 }
 
@@ -372,7 +373,7 @@ function filter_map_loop(loop$continuation, loop$f) {
       let e = $[0];
       let next = $[1];
       let $1 = f(e);
-      if ($1.isOk()) {
+      if ($1 instanceof Ok) {
         let e$1 = $1[0];
         return new Continue(e$1, () => { return filter_map_loop(next, f); });
       } else {
@@ -430,7 +431,7 @@ function find_map_loop(loop$continuation, loop$f) {
       let e = $[0];
       let next = $[1];
       let $1 = f(e);
-      if ($1.isOk()) {
+      if ($1 instanceof Ok) {
         let e$1 = $1[0];
         return new Ok(e$1);
       } else {
@@ -478,10 +479,10 @@ function take_while_loop(continuation, predicate) {
       let e = $[0];
       let next = $[1];
       let $1 = predicate(e);
-      if (!$1) {
-        return new Stop();
-      } else {
+      if ($1) {
         return new Continue(e, take_while_loop(next, predicate));
+      } else {
+        return new Stop();
       }
     }
   };
@@ -504,11 +505,11 @@ function drop_while_loop(loop$continuation, loop$predicate) {
       let e = $[0];
       let next = $[1];
       let $1 = predicate(e);
-      if (!$1) {
-        return new Continue(e, next);
-      } else {
+      if ($1) {
         loop$continuation = next;
         loop$predicate = predicate;
+      } else {
+        return new Continue(e, next);
       }
     }
   }
@@ -600,15 +601,15 @@ function next_chunk(
 
 function chunk_loop(continuation, f, previous_key, previous_element) {
   let $ = next_chunk(continuation, f, previous_key, toList([previous_element]));
-  if ($ instanceof LastBy) {
-    let chunk$1 = $[0];
-    return new Continue(chunk$1, stop);
-  } else {
+  if ($ instanceof AnotherBy) {
     let chunk$1 = $[0];
     let key = $[1];
     let el = $[2];
     let next = $[3];
     return new Continue(chunk$1, () => { return chunk_loop(next, f, key, el); });
+  } else {
+    let chunk$1 = $[0];
+    return new Continue(chunk$1, stop);
   }
 }
 
@@ -633,7 +634,7 @@ function next_sized_chunk(loop$continuation, loop$left, loop$current_chunk) {
     let current_chunk = loop$current_chunk;
     let $ = continuation();
     if ($ instanceof Stop) {
-      if (current_chunk.hasLength(0)) {
+      if (current_chunk instanceof $Empty) {
         return new NoMore();
       } else {
         let remaining = current_chunk;
@@ -644,12 +645,12 @@ function next_sized_chunk(loop$continuation, loop$left, loop$current_chunk) {
       let next = $[1];
       let chunk$1 = listPrepend(e, current_chunk);
       let $1 = left > 1;
-      if (!$1) {
-        return new Another($list.reverse(chunk$1), next);
-      } else {
+      if ($1) {
         loop$continuation = next;
         loop$left = left - 1;
         loop$current_chunk = chunk$1;
+      } else {
+        return new Another($list.reverse(chunk$1), next);
       }
     }
   }
@@ -658,15 +659,15 @@ function next_sized_chunk(loop$continuation, loop$left, loop$current_chunk) {
 function sized_chunk_loop(continuation, count) {
   return () => {
     let $ = next_sized_chunk(continuation, count, toList([]));
-    if ($ instanceof NoMore) {
-      return new Stop();
+    if ($ instanceof Another) {
+      let chunk$1 = $[0];
+      let next_element = $[1];
+      return new Continue(chunk$1, sized_chunk_loop(next_element, count));
     } else if ($ instanceof Last) {
       let chunk$1 = $[0];
       return new Continue(chunk$1, stop);
     } else {
-      let chunk$1 = $[0];
-      let next_element = $[1];
-      return new Continue(chunk$1, sized_chunk_loop(next_element, count));
+      return new Stop();
     }
   };
 }
@@ -813,29 +814,29 @@ export function once(f) {
 
 export function range(start, stop) {
   let $ = $int.compare(start, stop);
-  if ($ instanceof $order.Eq) {
-    return once(() => { return start; });
-  } else if ($ instanceof $order.Gt) {
-    return unfold(
-      start,
-      (current) => {
-        let $1 = current < stop;
-        if (!$1) {
-          return new Next(current, current - 1);
-        } else {
-          return new Done();
-        }
-      },
-    );
-  } else {
+  if ($ instanceof $order.Lt) {
     return unfold(
       start,
       (current) => {
         let $1 = current > stop;
-        if (!$1) {
-          return new Next(current, current + 1);
-        } else {
+        if ($1) {
           return new Done();
+        } else {
+          return new Next(current, current + 1);
+        }
+      },
+    );
+  } else if ($ instanceof $order.Eq) {
+    return once(() => { return start; });
+  } else {
+    return unfold(
+      start,
+      (current) => {
+        let $1 = current < stop;
+        if ($1) {
+          return new Done();
+        } else {
+          return new Next(current, current - 1);
         }
       },
     );
@@ -906,7 +907,7 @@ function try_fold_loop(loop$continuation, loop$f, loop$accumulator) {
       let elem = $[0];
       let next = $[1];
       let $1 = f(accumulator, elem);
-      if ($1.isOk()) {
+      if ($1 instanceof Ok) {
         let result = $1[0];
         loop$continuation = next;
         loop$f = f;

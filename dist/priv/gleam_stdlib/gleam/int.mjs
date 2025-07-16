@@ -1,4 +1,12 @@
-import { Ok, Error, toList, prepend as listPrepend, remainderInt, divideInt } from "../gleam.mjs";
+import {
+  Ok,
+  Error,
+  toList,
+  Empty as $Empty,
+  prepend as listPrepend,
+  remainderInt,
+  divideInt,
+} from "../gleam.mjs";
 import * as $float from "../gleam/float.mjs";
 import * as $order from "../gleam/order.mjs";
 import {
@@ -134,13 +142,13 @@ function sum_loop(loop$numbers, loop$initial) {
   while (true) {
     let numbers = loop$numbers;
     let initial = loop$initial;
-    if (numbers.atLeastLength(1)) {
+    if (numbers instanceof $Empty) {
+      return initial;
+    } else {
       let first = numbers.head;
       let rest = numbers.tail;
       loop$numbers = rest;
       loop$initial = first + initial;
-    } else {
-      return initial;
     }
   }
 }
@@ -153,13 +161,13 @@ function product_loop(loop$numbers, loop$initial) {
   while (true) {
     let numbers = loop$numbers;
     let initial = loop$initial;
-    if (numbers.atLeastLength(1)) {
+    if (numbers instanceof $Empty) {
+      return initial;
+    } else {
       let first = numbers.head;
       let rest = numbers.tail;
       loop$numbers = rest;
       loop$initial = first * initial;
-    } else {
-      return initial;
     }
   }
 }
@@ -198,17 +206,19 @@ function undigits_loop(loop$numbers, loop$base, loop$acc) {
     let numbers = loop$numbers;
     let base = loop$base;
     let acc = loop$acc;
-    if (numbers.hasLength(0)) {
+    if (numbers instanceof $Empty) {
       return new Ok(acc);
-    } else if (numbers.atLeastLength(1) && (numbers.head >= base)) {
-      let digit = numbers.head;
-      return new Error(undefined);
     } else {
       let digit = numbers.head;
-      let rest = numbers.tail;
-      loop$numbers = rest;
-      loop$base = base;
-      loop$acc = acc * base + digit;
+      if (digit >= base) {
+        return new Error(undefined);
+      } else {
+        let digit$1 = numbers.head;
+        let rest = numbers.tail;
+        loop$numbers = rest;
+        loop$base = base;
+        loop$acc = acc * base + digit$1;
+      }
     }
   }
 }

@@ -2,6 +2,7 @@ import {
   Ok,
   Error,
   toList,
+  Empty as $Empty,
   prepend as listPrepend,
   CustomType as $CustomType,
   isEqual,
@@ -13,7 +14,6 @@ import * as $int from "../../gleam/int.mjs";
 import * as $list from "../../gleam/list.mjs";
 import * as $option from "../../gleam/option.mjs";
 import { None, Some } from "../../gleam/option.mjs";
-import { identity as cast } from "../../gleam_stdlib.mjs";
 import {
   index as bare_index,
   int as dynamic_int,
@@ -21,9 +21,10 @@ import {
   bit_array as dynamic_bit_array,
   list as decode_list,
   dict as decode_dict,
+  identity as cast,
   is_null,
   string as dynamic_string,
-} from "../../gleam_stdlib_decode_ffi.mjs";
+} from "../../gleam_stdlib.mjs";
 
 export class DecodeError extends $CustomType {
   constructor(expected, found, path) {
@@ -45,7 +46,7 @@ export function run(data, decoder) {
   let $ = decoder.function(data);
   let maybe_invalid_data = $[0];
   let errors = $[1];
-  if (errors.hasLength(0)) {
+  if (errors instanceof $Empty) {
     return new Ok(maybe_invalid_data);
   } else {
     return new Error(errors);
@@ -92,7 +93,7 @@ export function then$(decoder, next) {
       let $1 = decoder$1.function(dynamic_data);
       let layer = $1;
       let data$1 = $1[0];
-      if (errors.hasLength(0)) {
+      if (errors instanceof $Empty) {
         return layer;
       } else {
         return [data$1, errors];
@@ -106,7 +107,7 @@ function run_decoders(loop$data, loop$failure, loop$decoders) {
     let data = loop$data;
     let failure = loop$failure;
     let decoders = loop$decoders;
-    if (decoders.hasLength(0)) {
+    if (decoders instanceof $Empty) {
       return failure;
     } else {
       let decoder = decoders.head;
@@ -114,7 +115,7 @@ function run_decoders(loop$data, loop$failure, loop$decoders) {
       let $ = decoder.function(data);
       let layer = $;
       let errors = $[1];
-      if (errors.hasLength(0)) {
+      if (errors instanceof $Empty) {
         return layer;
       } else {
         loop$data = data;
@@ -131,7 +132,7 @@ export function one_of(first, alternatives) {
       let $ = first.function(dynamic_data);
       let layer = $;
       let errors = $[1];
-      if (errors.hasLength(0)) {
+      if (errors instanceof $Empty) {
         return layer;
       } else {
         return run_decoders(dynamic_data, layer, alternatives);
@@ -175,7 +176,7 @@ export function decode_error(expected, found) {
 
 function run_dynamic_function(data, name, f) {
   let $ = f(data);
-  if ($.isOk()) {
+  if ($ instanceof Ok) {
     let data$1 = $[0];
     return [data$1, toList([])];
   } else {
@@ -220,7 +221,7 @@ export function collapse_errors(decoder, name) {
       let layer = $;
       let data = $[0];
       let errors = $[1];
-      if (errors.hasLength(0)) {
+      if (errors instanceof $Empty) {
         return layer;
       } else {
         return [data, decode_error(name, dynamic_data)];
@@ -237,7 +238,7 @@ export function new_primitive_decoder(name, decoding_function) {
   return new Decoder(
     (d) => {
       let $ = decoding_function(d);
-      if ($.isOk()) {
+      if ($ instanceof Ok) {
         let t = $[0];
         return [t, toList([])];
       } else {
@@ -267,19 +268,21 @@ export const string = /* @__PURE__ */ new Decoder(decode_string);
 
 function fold_dict(acc, key, value, key_decoder, value_decoder) {
   let $ = key_decoder(key);
-  if ($[1].hasLength(0)) {
+  let $1 = $[1];
+  if ($1 instanceof $Empty) {
     let key$1 = $[0];
-    let $1 = value_decoder(value);
-    if ($1[1].hasLength(0)) {
-      let value$1 = $1[0];
+    let $2 = value_decoder(value);
+    let $3 = $2[1];
+    if ($3 instanceof $Empty) {
+      let value$1 = $2[0];
       let dict$1 = $dict.insert(acc[0], key$1, value$1);
       return [dict$1, acc[1]];
     } else {
-      let errors = $1[1];
+      let errors = $3;
       return push_path([$dict.new$(), errors], toList(["values"]));
     }
   } else {
-    let errors = $[1];
+    let errors = $1;
     return push_path([$dict.new$(), errors], toList(["keys"]));
   }
 }
@@ -288,22 +291,22 @@ export function dict(key, value) {
   return new Decoder(
     (data) => {
       let $ = decode_dict(data);
-      if (!$.isOk()) {
-        return [$dict.new$(), decode_error("Dict", data)];
-      } else {
+      if ($ instanceof Ok) {
         let dict$1 = $[0];
         return $dict.fold(
           dict$1,
           [$dict.new$(), toList([])],
           (a, k, v) => {
             let $1 = a[1];
-            if ($1.hasLength(0)) {
+            if ($1 instanceof $Empty) {
               return fold_dict(a, k, v, key.function, value.function);
             } else {
               return a;
             }
           },
         );
+      } else {
+        return [$dict.new$(), decode_error("Dict", data)];
       }
     },
   );
@@ -338,7 +341,7 @@ function push_path(layer, path) {
     (key) => {
       let key$1 = cast(key);
       let $ = run(key$1, decoder);
-      if ($.isOk()) {
+      if ($ instanceof Ok) {
         let key$2 = $[0];
         return key$2;
       } else {
@@ -373,22 +376,25 @@ function index(
     let inner = loop$inner;
     let data = loop$data;
     let handle_miss = loop$handle_miss;
-    if (path.hasLength(0)) {
+    if (path instanceof $Empty) {
       let _pipe = inner(data);
       return push_path(_pipe, $list.reverse(position));
     } else {
       let key = path.head;
       let path$1 = path.tail;
       let $ = bare_index(data, key);
-      if ($.isOk() && $[0] instanceof Some) {
-        let data$1 = $[0][0];
-        loop$path = path$1;
-        loop$position = listPrepend(key, position);
-        loop$inner = inner;
-        loop$data = data$1;
-        loop$handle_miss = handle_miss;
-      } else if ($.isOk() && $[0] instanceof None) {
-        return handle_miss(data, listPrepend(key, position));
+      if ($ instanceof Ok) {
+        let $1 = $[0];
+        if ($1 instanceof Some) {
+          let data$1 = $1[0];
+          loop$path = path$1;
+          loop$position = listPrepend(key, position);
+          loop$inner = inner;
+          loop$data = data$1;
+          loop$handle_miss = handle_miss;
+        } else {
+          return handle_miss(data, listPrepend(key, position));
+        }
       } else {
         let kind = $[0];
         let $1 = inner(data);
@@ -460,31 +466,32 @@ export function field(field_name, field_decoder, next) {
 export function optional_field(key, default$, field_decoder, next) {
   return new Decoder(
     (data) => {
-      let $ = (() => {
-        let _pipe = (() => {
-          let $1 = bare_index(data, key);
-          if ($1.isOk() && $1[0] instanceof Some) {
-            let data$1 = $1[0][0];
-            return field_decoder.function(data$1);
-          } else if ($1.isOk() && $1[0] instanceof None) {
-            return [default$, toList([])];
-          } else {
-            let kind = $1[0];
-            return [
-              default$,
-              toList([
-                new DecodeError(kind, $dynamic.classify(data), toList([])),
-              ]),
-            ];
-          }
-        })();
-        return push_path(_pipe, toList([key]));
-      })();
+      let _block;
+      let _block$1;
+      let $1 = bare_index(data, key);
+      if ($1 instanceof Ok) {
+        let $2 = $1[0];
+        if ($2 instanceof Some) {
+          let data$1 = $2[0];
+          _block$1 = field_decoder.function(data$1);
+        } else {
+          _block$1 = [default$, toList([])];
+        }
+      } else {
+        let kind = $1[0];
+        _block$1 = [
+          default$,
+          toList([new DecodeError(kind, $dynamic.classify(data), toList([]))]),
+        ];
+      }
+      let _pipe = _block$1;
+      _block = push_path(_pipe, toList([key]));
+      let $ = _block;
       let out = $[0];
       let errors1 = $[1];
-      let $1 = next(out).function(data);
-      let out$1 = $1[0];
-      let errors2 = $1[1];
+      let $2 = next(out).function(data);
+      let out$1 = $2[0];
+      let errors2 = $2[1];
       return [out$1, $list.append(errors1, errors2)];
     },
   );

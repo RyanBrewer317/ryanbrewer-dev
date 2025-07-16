@@ -1,6 +1,6 @@
 -module(lustre_dev_tools@project).
 -compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch]).
-
+-define(FILEPATH, "src/lustre_dev_tools/project.gleam").
 -export([otp_version/0, build/0, root/0, config/0, type_to_string/1, interface/0]).
 -export_type([config/0, interface/0, module_/0, function_/0]).
 
@@ -42,6 +42,7 @@ otp_version() ->
             erlang:error(#{gleam_error => panic,
                     message => (<<"unexpected version number format: "/utf8,
                         Version/binary>>),
+                    file => <<?FILEPATH/utf8>>,
                     module => <<"lustre_dev_tools/project"/utf8>>,
                     function => <<"otp_version"/utf8>>,
                     line => 42})
@@ -53,6 +54,7 @@ otp_version() ->
 build() ->
     _pipe = lustre_dev_tools_ffi:exec(
         <<"gleam"/utf8>>,
+        [],
         [<<"build"/utf8>>, <<"--target"/utf8>>, <<"javascript"/utf8>>],
         <<"."/utf8>>
     ),
@@ -62,7 +64,7 @@ build() ->
     ),
     gleam@result:replace(_pipe@1, nil).
 
--file("src/lustre_dev_tools/project.gleam", 100).
+-file("src/lustre_dev_tools/project.gleam", 102).
 ?DOC(false).
 -spec find_root(binary()) -> binary().
 find_root(Path) ->
@@ -78,53 +80,65 @@ find_root(Path) ->
             Path
     end.
 
--file("src/lustre_dev_tools/project.gleam", 96).
+-file("src/lustre_dev_tools/project.gleam", 98).
 ?DOC(false).
 -spec root() -> binary().
 root() ->
     find_root(<<"."/utf8>>).
 
--file("src/lustre_dev_tools/project.gleam", 75).
+-file("src/lustre_dev_tools/project.gleam", 77).
 ?DOC(false).
 -spec config() -> {ok, config()} | {error, lustre_dev_tools@error:error()}.
 config() ->
     Configuration_path = filepath:join(root(), <<"gleam.toml"/utf8>>),
-    _assert_subject = simplifile:read(Configuration_path),
-    {ok, Configuration} = case _assert_subject of
-        {ok, _} -> _assert_subject;
+    Configuration@1 = case simplifile:read(Configuration_path) of
+        {ok, Configuration} -> Configuration;
         _assert_fail ->
             erlang:error(#{gleam_error => let_assert,
                         message => <<"Pattern match failed, no pattern matched the value."/utf8>>,
-                        value => _assert_fail,
+                        file => <<?FILEPATH/utf8>>,
                         module => <<"lustre_dev_tools/project"/utf8>>,
                         function => <<"config"/utf8>>,
-                        line => 84})
+                        line => 86,
+                        value => _assert_fail,
+                        start => 2625,
+                        'end' => 2691,
+                        pattern_start => 2636,
+                        pattern_end => 2653})
     end,
-    _assert_subject@1 = tom:parse(Configuration),
-    {ok, Toml} = case _assert_subject@1 of
-        {ok, _} -> _assert_subject@1;
+    Toml@1 = case tom:parse(Configuration@1) of
+        {ok, Toml} -> Toml;
         _assert_fail@1 ->
             erlang:error(#{gleam_error => let_assert,
                         message => <<"Pattern match failed, no pattern matched the value."/utf8>>,
-                        value => _assert_fail@1,
+                        file => <<?FILEPATH/utf8>>,
                         module => <<"lustre_dev_tools/project"/utf8>>,
                         function => <<"config"/utf8>>,
-                        line => 85})
+                        line => 87,
+                        value => _assert_fail@1,
+                        start => 2694,
+                        'end' => 2740,
+                        pattern_start => 2705,
+                        pattern_end => 2713})
     end,
-    _assert_subject@2 = tom:get_string(Toml, [<<"name"/utf8>>]),
-    {ok, Name} = case _assert_subject@2 of
-        {ok, _} -> _assert_subject@2;
+    Name@1 = case tom:get_string(Toml@1, [<<"name"/utf8>>]) of
+        {ok, Name} -> Name;
         _assert_fail@2 ->
             erlang:error(#{gleam_error => let_assert,
                         message => <<"Pattern match failed, no pattern matched the value."/utf8>>,
-                        value => _assert_fail@2,
+                        file => <<?FILEPATH/utf8>>,
                         module => <<"lustre_dev_tools/project"/utf8>>,
                         function => <<"config"/utf8>>,
-                        line => 86})
+                        line => 88,
+                        value => _assert_fail@2,
+                        start => 2743,
+                        'end' => 2795,
+                        pattern_start => 2754,
+                        pattern_end => 2762})
     end,
-    {ok, {config, Name, Toml}}.
+    {ok, {config, Name@1, Toml@1}}.
 
--file("src/lustre_dev_tools/project.gleam", 109).
+-file("src/lustre_dev_tools/project.gleam", 111).
 ?DOC(false).
 -spec type_to_string(gleam@package_interface:type()) -> binary().
 type_to_string(Type_) ->
@@ -156,7 +170,7 @@ type_to_string(Type_) ->
             <<"a_"/utf8, (erlang:integer_to_binary(Id))/binary>>
     end.
 
--file("src/lustre_dev_tools/project.gleam", 162).
+-file("src/lustre_dev_tools/project.gleam", 164).
 ?DOC(false).
 -spec labelled_argument_decoder() -> gleam@dynamic@decode:decoder(gleam@package_interface:type()).
 labelled_argument_decoder() ->
@@ -165,7 +179,7 @@ labelled_argument_decoder() ->
         gleam@package_interface:type_decoder()
     ).
 
--file("src/lustre_dev_tools/project.gleam", 152).
+-file("src/lustre_dev_tools/project.gleam", 154).
 ?DOC(false).
 -spec function_decoder() -> gleam@dynamic@decode:decoder(function_()).
 function_decoder() ->
@@ -183,16 +197,16 @@ function_decoder() ->
         end
     ).
 
--file("src/lustre_dev_tools/project.gleam", 168).
+-file("src/lustre_dev_tools/project.gleam", 170).
 ?DOC(false).
--spec string_dict(gleam@dynamic@decode:decoder(AFMJ)) -> gleam@dynamic@decode:decoder(gleam@dict:dict(binary(), AFMJ)).
+-spec string_dict(gleam@dynamic@decode:decoder(VWM)) -> gleam@dynamic@decode:decoder(gleam@dict:dict(binary(), VWM)).
 string_dict(Values) ->
     gleam@dynamic@decode:dict(
         {decoder, fun gleam@dynamic@decode:decode_string/1},
         Values
     ).
 
--file("src/lustre_dev_tools/project.gleam", 142).
+-file("src/lustre_dev_tools/project.gleam", 144).
 ?DOC(false).
 -spec module_decoder() -> gleam@dynamic@decode:decoder(module_()).
 module_decoder() ->
@@ -215,7 +229,7 @@ module_decoder() ->
         end
     ).
 
--file("src/lustre_dev_tools/project.gleam", 134).
+-file("src/lustre_dev_tools/project.gleam", 136).
 ?DOC(false).
 -spec interface_decoder() -> gleam@dynamic@decode:decoder(interface()).
 interface_decoder() ->
@@ -241,7 +255,7 @@ interface_decoder() ->
         end
     ).
 
--file("src/lustre_dev_tools/project.gleam", 57).
+-file("src/lustre_dev_tools/project.gleam", 59).
 ?DOC(false).
 -spec interface() -> {ok, interface()} | {error, lustre_dev_tools@error:error()}.
 interface() ->
@@ -255,6 +269,7 @@ interface() ->
         begin
             _pipe = lustre_dev_tools_ffi:exec(
                 <<"gleam"/utf8>>,
+                [],
                 Args,
                 <<"."/utf8>>
             ),
@@ -264,28 +279,36 @@ interface() ->
             )
         end,
         fun(_) ->
-            _assert_subject = simplifile:read(Out),
-            {ok, Json} = case _assert_subject of
-                {ok, _} -> _assert_subject;
+            Json@1 = case simplifile:read(Out) of
+                {ok, Json} -> Json;
                 _assert_fail ->
                     erlang:error(#{gleam_error => let_assert,
                                 message => <<"Pattern match failed, no pattern matched the value."/utf8>>,
-                                value => _assert_fail,
+                                file => <<?FILEPATH/utf8>>,
                                 module => <<"lustre_dev_tools/project"/utf8>>,
                                 function => <<"interface"/utf8>>,
-                                line => 67})
+                                line => 69,
+                                value => _assert_fail,
+                                start => 1936,
+                                'end' => 1978,
+                                pattern_start => 1947,
+                                pattern_end => 1955})
             end,
-            _assert_subject@1 = gleam@json:parse(Json, interface_decoder()),
-            {ok, Interface} = case _assert_subject@1 of
-                {ok, _} -> _assert_subject@1;
+            Interface@1 = case gleam@json:parse(Json@1, interface_decoder()) of
+                {ok, Interface} -> Interface;
                 _assert_fail@1 ->
                     erlang:error(#{gleam_error => let_assert,
                                 message => <<"Pattern match failed, no pattern matched the value."/utf8>>,
-                                value => _assert_fail@1,
+                                file => <<?FILEPATH/utf8>>,
                                 module => <<"lustre_dev_tools/project"/utf8>>,
                                 function => <<"interface"/utf8>>,
-                                line => 68})
+                                line => 70,
+                                value => _assert_fail@1,
+                                start => 1981,
+                                'end' => 2045,
+                                pattern_start => 1992,
+                                pattern_end => 2005})
             end,
-            {ok, Interface}
+            {ok, Interface@1}
         end
     ).

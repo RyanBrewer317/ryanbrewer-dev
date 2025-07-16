@@ -44,25 +44,25 @@ function other_os_message(other_os) {
 
 export function tmp_dir() {
   let $ = check_dir_from_env(toList(["TMPDIR", "TEMP", "TMP"]));
-  if ($.isOk()) {
+  if ($ instanceof Ok) {
     let path = $[0];
     return new Ok(path);
   } else {
     let $1 = $platform.os();
-    if ($1 instanceof $platform.Win32) {
-      return check_dirs(toList(["C:\\TEMP", "C:\\TMP", "\\TEMP", "\\TMP"]));
+    if ($1 instanceof $platform.Aix) {
+      return check_dirs(toList(["/tmp", "/var/tmp", "/usr/tmp"]));
     } else if ($1 instanceof $platform.Darwin) {
       return check_dirs(toList(["/tmp", "/var/tmp", "/usr/tmp"]));
-    } else if ($1 instanceof $platform.Linux) {
-      return check_dirs(toList(["/tmp", "/var/tmp", "/usr/tmp"]));
     } else if ($1 instanceof $platform.FreeBsd) {
+      return check_dirs(toList(["/tmp", "/var/tmp", "/usr/tmp"]));
+    } else if ($1 instanceof $platform.Linux) {
       return check_dirs(toList(["/tmp", "/var/tmp", "/usr/tmp"]));
     } else if ($1 instanceof $platform.OpenBsd) {
       return check_dirs(toList(["/tmp", "/var/tmp", "/usr/tmp"]));
     } else if ($1 instanceof $platform.SunOs) {
       return check_dirs(toList(["/tmp", "/var/tmp", "/usr/tmp"]));
-    } else if ($1 instanceof $platform.Aix) {
-      return check_dirs(toList(["/tmp", "/var/tmp", "/usr/tmp"]));
+    } else if ($1 instanceof $platform.Win32) {
+      return check_dirs(toList(["C:\\TEMP", "C:\\TMP", "\\TEMP", "\\TMP"]));
     } else {
       let os = $1[0];
       return other_os_message(os);
@@ -72,20 +72,20 @@ export function tmp_dir() {
 
 export function home_dir() {
   let $ = $platform.os();
-  if ($ instanceof $platform.Win32) {
-    return check_dir_from_env(toList(["UserProfile", "Profile"]));
+  if ($ instanceof $platform.Aix) {
+    return check_dir_from_env(toList(["HOME"]));
   } else if ($ instanceof $platform.Darwin) {
     return check_dir_from_env(toList(["HOME"]));
-  } else if ($ instanceof $platform.Linux) {
-    return check_dir_from_env(toList(["HOME"]));
   } else if ($ instanceof $platform.FreeBsd) {
+    return check_dir_from_env(toList(["HOME"]));
+  } else if ($ instanceof $platform.Linux) {
     return check_dir_from_env(toList(["HOME"]));
   } else if ($ instanceof $platform.OpenBsd) {
     return check_dir_from_env(toList(["HOME"]));
   } else if ($ instanceof $platform.SunOs) {
     return check_dir_from_env(toList(["HOME"]));
-  } else if ($ instanceof $platform.Aix) {
-    return check_dir_from_env(toList(["HOME"]));
+  } else if ($ instanceof $platform.Win32) {
+    return check_dir_from_env(toList(["UserProfile", "Profile"]));
   } else {
     let os = $[0];
     return other_os_message(os);
@@ -94,15 +94,17 @@ export function home_dir() {
 
 export function cache_dir() {
   let $ = $platform.os();
-  if ($ instanceof $platform.Win32) {
-    return check_dir_from_env(toList(["APPDATA"]));
-  } else if ($ instanceof $platform.Darwin) {
-    return check_dirs(toList([get_env("HOME") + "/Library/Caches"]));
-  } else if ($ instanceof $platform.Linux) {
+  if ($ instanceof $platform.Aix) {
     return check_dirs(
       toList([get_env("XDG_CACHE_HOME"), home_dir_path("/.cache")]),
     );
+  } else if ($ instanceof $platform.Darwin) {
+    return check_dirs(toList([get_env("HOME") + "/Library/Caches"]));
   } else if ($ instanceof $platform.FreeBsd) {
+    return check_dirs(
+      toList([get_env("XDG_CACHE_HOME"), home_dir_path("/.cache")]),
+    );
+  } else if ($ instanceof $platform.Linux) {
     return check_dirs(
       toList([get_env("XDG_CACHE_HOME"), home_dir_path("/.cache")]),
     );
@@ -114,10 +116,8 @@ export function cache_dir() {
     return check_dirs(
       toList([get_env("XDG_CACHE_HOME"), home_dir_path("/.cache")]),
     );
-  } else if ($ instanceof $platform.Aix) {
-    return check_dirs(
-      toList([get_env("XDG_CACHE_HOME"), home_dir_path("/.cache")]),
-    );
+  } else if ($ instanceof $platform.Win32) {
+    return check_dir_from_env(toList(["APPDATA"]));
   } else {
     let os = $[0];
     return other_os_message(os);
@@ -126,17 +126,19 @@ export function cache_dir() {
 
 export function config_dir() {
   let $ = $platform.os();
-  if ($ instanceof $platform.Win32) {
-    return check_dir_from_env(toList(["APPDATA"]));
+  if ($ instanceof $platform.Aix) {
+    return check_dirs(
+      toList([get_env("XDG_CONFIG_HOME"), home_dir_path("/.config")]),
+    );
   } else if ($ instanceof $platform.Darwin) {
     return check_dirs(
       toList([get_env("HOME") + "/Library/Application Support"]),
     );
-  } else if ($ instanceof $platform.Linux) {
+  } else if ($ instanceof $platform.FreeBsd) {
     return check_dirs(
       toList([get_env("XDG_CONFIG_HOME"), home_dir_path("/.config")]),
     );
-  } else if ($ instanceof $platform.FreeBsd) {
+  } else if ($ instanceof $platform.Linux) {
     return check_dirs(
       toList([get_env("XDG_CONFIG_HOME"), home_dir_path("/.config")]),
     );
@@ -148,10 +150,8 @@ export function config_dir() {
     return check_dirs(
       toList([get_env("XDG_CONFIG_HOME"), home_dir_path("/.config")]),
     );
-  } else if ($ instanceof $platform.Aix) {
-    return check_dirs(
-      toList([get_env("XDG_CONFIG_HOME"), home_dir_path("/.config")]),
-    );
+  } else if ($ instanceof $platform.Win32) {
+    return check_dir_from_env(toList(["APPDATA"]));
   } else {
     let os = $[0];
     return other_os_message(os);
@@ -169,11 +169,11 @@ export function config_local_dir() {
 
 export function data_dir() {
   let $ = $platform.os();
-  if ($ instanceof $platform.Linux) {
+  if ($ instanceof $platform.FreeBsd) {
     return check_dirs(
       toList([get_env("XDG_DATA_HOME"), home_dir_path("/.local/share")]),
     );
-  } else if ($ instanceof $platform.FreeBsd) {
+  } else if ($ instanceof $platform.Linux) {
     return check_dirs(
       toList([get_env("XDG_DATA_HOME"), home_dir_path("/.local/share")]),
     );
@@ -193,11 +193,7 @@ export function data_local_dir() {
 
 export function executable_dir() {
   let $ = $platform.os();
-  if ($ instanceof $platform.Win32) {
-    return new Error(undefined);
-  } else if ($ instanceof $platform.Darwin) {
-    return new Error(undefined);
-  } else if ($ instanceof $platform.Linux) {
+  if ($ instanceof $platform.Aix) {
     return check_dirs(
       toList([
         get_env("XDG_BIN_HOME"),
@@ -205,7 +201,17 @@ export function executable_dir() {
         get_env("XDG_DATA_HOME") + "../bin",
       ]),
     );
+  } else if ($ instanceof $platform.Darwin) {
+    return new Error(undefined);
   } else if ($ instanceof $platform.FreeBsd) {
+    return check_dirs(
+      toList([
+        get_env("XDG_BIN_HOME"),
+        home_dir_path("/.local/bin"),
+        get_env("XDG_DATA_HOME") + "../bin",
+      ]),
+    );
+  } else if ($ instanceof $platform.Linux) {
     return check_dirs(
       toList([
         get_env("XDG_BIN_HOME"),
@@ -229,14 +235,8 @@ export function executable_dir() {
         get_env("XDG_DATA_HOME") + "../bin",
       ]),
     );
-  } else if ($ instanceof $platform.Aix) {
-    return check_dirs(
-      toList([
-        get_env("XDG_BIN_HOME"),
-        home_dir_path("/.local/bin"),
-        get_env("XDG_DATA_HOME") + "../bin",
-      ]),
-    );
+  } else if ($ instanceof $platform.Win32) {
+    return new Error(undefined);
   } else {
     let os = $[0];
     return other_os_message(os);
@@ -254,20 +254,20 @@ export function preference_dir() {
 
 export function runtime_dir() {
   let $ = $platform.os();
-  if ($ instanceof $platform.Win32) {
-    return new Error(undefined);
+  if ($ instanceof $platform.Aix) {
+    return check_dir_from_env(toList(["XDG_RUNTIME_DIR"]));
   } else if ($ instanceof $platform.Darwin) {
     return new Error(undefined);
-  } else if ($ instanceof $platform.Linux) {
-    return check_dir_from_env(toList(["XDG_RUNTIME_DIR"]));
   } else if ($ instanceof $platform.FreeBsd) {
+    return check_dir_from_env(toList(["XDG_RUNTIME_DIR"]));
+  } else if ($ instanceof $platform.Linux) {
     return check_dir_from_env(toList(["XDG_RUNTIME_DIR"]));
   } else if ($ instanceof $platform.OpenBsd) {
     return check_dir_from_env(toList(["XDG_RUNTIME_DIR"]));
   } else if ($ instanceof $platform.SunOs) {
     return check_dir_from_env(toList(["XDG_RUNTIME_DIR"]));
-  } else if ($ instanceof $platform.Aix) {
-    return check_dir_from_env(toList(["XDG_RUNTIME_DIR"]));
+  } else if ($ instanceof $platform.Win32) {
+    return new Error(undefined);
   } else {
     let os = $[0];
     return other_os_message(os);
@@ -276,15 +276,17 @@ export function runtime_dir() {
 
 export function state_dir() {
   let $ = $platform.os();
-  if ($ instanceof $platform.Win32) {
-    return new Error(undefined);
-  } else if ($ instanceof $platform.Darwin) {
-    return new Error(undefined);
-  } else if ($ instanceof $platform.Linux) {
+  if ($ instanceof $platform.Aix) {
     return check_dirs(
       toList([get_env("XDG_STATE_HOME"), home_dir_path("/.local/state")]),
     );
+  } else if ($ instanceof $platform.Darwin) {
+    return new Error(undefined);
   } else if ($ instanceof $platform.FreeBsd) {
+    return check_dirs(
+      toList([get_env("XDG_STATE_HOME"), home_dir_path("/.local/state")]),
+    );
+  } else if ($ instanceof $platform.Linux) {
     return check_dirs(
       toList([get_env("XDG_STATE_HOME"), home_dir_path("/.local/state")]),
     );
@@ -296,10 +298,8 @@ export function state_dir() {
     return check_dirs(
       toList([get_env("XDG_STATE_HOME"), home_dir_path("/.local/state")]),
     );
-  } else if ($ instanceof $platform.Aix) {
-    return check_dirs(
-      toList([get_env("XDG_STATE_HOME"), home_dir_path("/.local/state")]),
-    );
+  } else if ($ instanceof $platform.Win32) {
+    return new Error(undefined);
   } else {
     let os = $[0];
     return other_os_message(os);

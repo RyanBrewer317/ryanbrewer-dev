@@ -1,6 +1,6 @@
 -module(mist@internal@clock).
 -compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch]).
-
+-define(FILEPATH, "src/mist/internal/clock.gleam").
 -export([stop/1, start/2, get_date/0]).
 -export_type([clock_message/0, clock_table/0, table_key/0, ets_opts/0]).
 
@@ -60,6 +60,7 @@ weekday_to_short_string(Weekday) ->
         _ ->
             erlang:error(#{gleam_error => panic,
                     message => <<"erlang weekday outside of 1-7 range"/utf8>>,
+                    file => <<?FILEPATH/utf8>>,
                     module => <<"mist/internal/clock"/utf8>>,
                     function => <<"weekday_to_short_string"/utf8>>,
                     line => 98})
@@ -109,6 +110,7 @@ month_to_short_string(Month) ->
         _ ->
             erlang:error(#{gleam_error => panic,
                     message => <<"erlang month outside of 1-12 range"/utf8>>,
+                    file => <<?FILEPATH/utf8>>,
                     module => <<"mist/internal/clock"/utf8>>,
                     function => <<"month_to_short_string"/utf8>>,
                     line => 116})
@@ -151,39 +153,62 @@ date() ->
                 Second@1/binary>>/binary,
             " GMT"/utf8>>))/binary>>.
 
--file("src/mist/internal/clock.gleam", 29).
+-file("src/mist/internal/clock.gleam", 28).
 ?DOC(false).
 -spec start(any(), any()) -> {ok, gleam@erlang@process:pid_()} |
     {error, gleam@otp@actor:start_error()}.
 start(_, _) ->
-    _pipe@1 = gleam@otp@actor:start_spec(
-        {spec,
-            fun() ->
-                Subj = gleam@erlang@process:new_subject(),
-                Selector = begin
-                    _pipe = gleam_erlang_ffi:new_selector(),
-                    gleam@erlang@process:selecting(
-                        _pipe,
-                        Subj,
-                        fun gleam@function:identity/1
-                    )
-                end,
-                ets:new(
-                    mist_clock,
-                    [set, protected, named_table, {read_concurrency, true}]
-                ),
-                gleam@erlang@process:send(Subj, set_time),
-                {ready, Subj, Selector}
-            end,
-            500,
-            fun(Msg, State) -> case Msg of
-                    set_time ->
-                        ets:insert(mist_clock, {date_header, date()}),
-                        gleam@erlang@process:send_after(State, 1000, set_time),
-                        gleam@otp@actor:continue(State)
-                end end}
+    _pipe@5 = gleam@otp@actor:new_with_initialiser(
+        500,
+        fun(Subject) ->
+            ets:new(
+                mist_clock,
+                [set, protected, named_table, {read_concurrency, true}]
+            ),
+            gleam@erlang@process:send(Subject, set_time),
+            _pipe = Subject,
+            _pipe@1 = gleam@otp@actor:initialised(_pipe),
+            _pipe@3 = gleam@otp@actor:selecting(
+                _pipe@1,
+                begin
+                    _pipe@2 = gleam_erlang_ffi:new_selector(),
+                    gleam@erlang@process:select(_pipe@2, Subject)
+                end
+            ),
+            _pipe@4 = gleam@otp@actor:returning(_pipe@3, Subject),
+            {ok, _pipe@4}
+        end
     ),
-    gleam@result:map(_pipe@1, fun gleam@erlang@process:subject_owner/1).
+    _pipe@6 = gleam@otp@actor:on_message(_pipe@5, fun(State, Msg) -> case Msg of
+                set_time ->
+                    ets:insert(mist_clock, {date_header, date()}),
+                    gleam@erlang@process:send_after(State, 1000, set_time),
+                    gleam@otp@actor:continue(State)
+            end end),
+    _pipe@7 = gleam@otp@actor:start(_pipe@6),
+    gleam@result:map(
+        _pipe@7,
+        fun(Start) ->
+            Pid@1 = case gleam@erlang@process:subject_owner(
+                erlang:element(3, Start)
+            ) of
+                {ok, Pid} -> Pid;
+                _assert_fail ->
+                    erlang:error(#{gleam_error => let_assert,
+                                message => <<"Pattern match failed, no pattern matched the value."/utf8>>,
+                                file => <<?FILEPATH/utf8>>,
+                                module => <<"mist/internal/clock"/utf8>>,
+                                function => <<"start"/utf8>>,
+                                line => 51,
+                                value => _assert_fail,
+                                start => 1096,
+                                'end' => 1150,
+                                pattern_start => 1107,
+                                pattern_end => 1114})
+            end,
+            Pid@1
+        end
+    ).
 
 -file("src/mist/internal/clock.gleam", 60).
 ?DOC(false).

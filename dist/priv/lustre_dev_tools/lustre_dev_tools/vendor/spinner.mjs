@@ -2,7 +2,9 @@ import * as $ansi from "../../../gleam_community_ansi/gleam_community/ansi.mjs";
 import * as $deque from "../../../gleam_deque/gleam/deque.mjs";
 import * as $io from "../../../gleam_stdlib/gleam/io.mjs";
 import * as $repeatedly from "../../../repeatedly/repeatedly.mjs";
-import { toList, CustomType as $CustomType, makeError } from "../../gleam.mjs";
+import { Ok, toList, CustomType as $CustomType, makeError } from "../../gleam.mjs";
+
+const FILEPATH = "src/lustre_dev_tools/vendor/spinner.gleam";
 
 class Spinner extends $CustomType {
   constructor(repeater, frames) {
@@ -71,14 +73,21 @@ export function start(builder) {
       let text = _use0.text;
       let colour = _use0.colour;
       let $ = $deque.pop_front(frames);
-      if (!$.isOk()) {
+      if (!($ instanceof Ok)) {
         throw makeError(
           "let_assert",
+          FILEPATH,
           "lustre_dev_tools/vendor/spinner",
           238,
-          "",
+          "start",
           "Pattern match failed, no pattern matched the value.",
-          { value: $ }
+          {
+            value: $,
+            start: 11862,
+            end: 11919,
+            pattern_start: 11873,
+            pattern_end: 11893
+          }
         )
       }
       let frame = $[0][0];

@@ -1,5 +1,5 @@
 import * as $ansi from "../../gleam_community_ansi/gleam_community/ansi.mjs";
-import * as $erlang from "../../gleam_erlang/gleam/erlang.mjs";
+import * as $application from "../../gleam_erlang/gleam/erlang/application.mjs";
 import * as $dict from "../../gleam_stdlib/gleam/dict.mjs";
 import * as $io from "../../gleam_stdlib/gleam/io.mjs";
 import * as $list from "../../gleam_stdlib/gleam/list.mjs";
@@ -56,11 +56,11 @@ export function run(step, flags) {
         undefined
       }
       let $2 = env$1.spinner;
-      if (!result.isOk() && $2 instanceof Running) {
+      if (result instanceof Ok) {
+        undefined
+      } else if ($2 instanceof Running) {
         let message = $2.message;
         $io.println("❌ " + $ansi.red(message))
-      } else if (!result.isOk()) {
-        undefined
       } else {
         undefined
       }
@@ -87,7 +87,7 @@ export function do$(step, next) {
       let $ = step.run(env);
       let env$1 = $[0];
       let result = $[1];
-      if (result.isOk()) {
+      if (result instanceof Ok) {
         let value = result[0];
         return next(value).run(env$1);
       } else {
@@ -124,7 +124,7 @@ export function map(step, next) {
 export function try$(result, next) {
   return new Cli(
     (env) => {
-      if (result.isOk()) {
+      if (result instanceof Ok) {
         let a = result[0];
         return next(a).run(env);
       } else {
@@ -145,40 +145,40 @@ export function try$(result, next) {
 export function log(message, next) {
   return new Cli(
     (env) => {
-      let env$1 = (() => {
-        let $ = env.muted;
-        if ($) {
-          return env;
-        } else {
-          let _record = env;
-          return new Env(
-            _record.muted,
-            (() => {
-              let $1 = env.spinner;
-              if ($1 instanceof Paused) {
-                return new Running(
-                  (() => {
-                    let _pipe = $spinner.new$(message);
-                    let _pipe$1 = $spinner.with_colour(_pipe, $ansi.magenta);
-                    let _pipe$2 = $spinner.with_frames(
-                      _pipe$1,
-                      $spinner.snake_frames,
-                    );
-                    return $spinner.start(_pipe$2);
-                  })(),
-                  message,
-                );
-              } else {
-                let spinner = $1.spinner;
-                $spinner.set_text(spinner, message);
-                return new Running(spinner, message);
-              }
-            })(),
-            _record.flags,
-            _record.config,
-          );
-        }
-      })();
+      let _block;
+      let $ = env.muted;
+      if ($) {
+        _block = env;
+      } else {
+        let _record = env;
+        _block = new Env(
+          _record.muted,
+          (() => {
+            let $1 = env.spinner;
+            if ($1 instanceof Running) {
+              let spinner = $1.spinner;
+              $spinner.set_text(spinner, message);
+              return new Running(spinner, message);
+            } else {
+              return new Running(
+                (() => {
+                  let _pipe = $spinner.new$(message);
+                  let _pipe$1 = $spinner.with_colour(_pipe, $ansi.magenta);
+                  let _pipe$2 = $spinner.with_frames(
+                    _pipe$1,
+                    $spinner.snake_frames,
+                  );
+                  return $spinner.start(_pipe$2);
+                })(),
+                message,
+              );
+            }
+          })(),
+          _record.flags,
+          _record.config,
+        );
+      }
+      let env$1 = _block;
       return next().run(env$1);
     },
   );
@@ -187,24 +187,24 @@ export function log(message, next) {
 export function success(message, next) {
   return new Cli(
     (env) => {
-      let env$1 = (() => {
-        let _record = env;
-        return new Env(
-          _record.muted,
-          (() => {
-            let $ = env.spinner;
-            if ($ instanceof Paused) {
-              return new Paused();
-            } else {
-              let spinner = $.spinner;
-              $spinner.stop(spinner);
-              return new Paused();
-            }
-          })(),
-          _record.flags,
-          _record.config,
-        );
-      })();
+      let _block;
+      let _record = env;
+      _block = new Env(
+        _record.muted,
+        (() => {
+          let $ = env.spinner;
+          if ($ instanceof Running) {
+            let spinner = $.spinner;
+            $spinner.stop(spinner);
+            return new Paused();
+          } else {
+            return new Paused();
+          }
+        })(),
+        _record.flags,
+        _record.config,
+      );
+      let env$1 = _block;
       let $ = env$1.muted;
       if ($) {
         undefined
@@ -219,24 +219,24 @@ export function success(message, next) {
 export function notify(message, next) {
   return new Cli(
     (env) => {
-      let env$1 = (() => {
-        let _record = env;
-        return new Env(
-          _record.muted,
-          (() => {
-            let $ = env.spinner;
-            if ($ instanceof Paused) {
-              return new Paused();
-            } else {
-              let spinner = $.spinner;
-              $spinner.stop(spinner);
-              return new Paused();
-            }
-          })(),
-          _record.flags,
-          _record.config,
-        );
-      })();
+      let _block;
+      let _record = env;
+      _block = new Env(
+        _record.muted,
+        (() => {
+          let $ = env.spinner;
+          if ($ instanceof Running) {
+            let spinner = $.spinner;
+            $spinner.stop(spinner);
+            return new Paused();
+          } else {
+            return new Paused();
+          }
+        })(),
+        _record.flags,
+        _record.config,
+      );
+      let env$1 = _block;
       let $ = env$1.muted;
       if ($) {
         undefined
@@ -294,13 +294,13 @@ export function get_config_value(name, fallback, namespace, toml, flag) {
       let toml_path = $list.flatten(
         toList([toList(["lustre-dev"]), namespace, toList([name])]),
       );
-      let value = (() => {
-        let _pipe = $result.or(
-          $result.replace_error(flag(env.flags), undefined),
-          $result.replace_error(toml(env.config.toml, toml_path), undefined),
-        );
-        return $result.unwrap(_pipe, fallback);
-      })();
+      let _block;
+      let _pipe = $result.or(
+        $result.replace_error(flag(env.flags), undefined),
+        $result.replace_error(toml(env.config.toml, toml_path), undefined),
+      );
+      _block = $result.unwrap(_pipe, fallback);
+      let value = _block;
       return [env, new Ok(value)];
     },
   );

@@ -8,6 +8,8 @@ import * as $calendar from "../gleam_time/gleam/time/calendar.mjs";
 import * as $timestamp from "../gleam_time/gleam/time/timestamp.mjs";
 import { makeError } from "./gleam.mjs";
 
+const FILEPATH = "src/helpers.gleam";
+
 export function string_to_date(s) {
   return $timestamp.parse_rfc3339(s);
 }
@@ -24,11 +26,12 @@ export function before(p1, p2) {
   if (!($ instanceof Some)) {
     throw makeError(
       "let_assert",
+      FILEPATH,
       "helpers",
       29,
       "before",
       "Pattern match failed, no pattern matched the value.",
-      { value: $ }
+      { value: $, start: 774, end: 808, pattern_start: 785, pattern_end: 798 }
     )
   }
   let p1_date = $[0];
@@ -36,11 +39,12 @@ export function before(p1, p2) {
   if (!($1 instanceof Some)) {
     throw makeError(
       "let_assert",
+      FILEPATH,
       "helpers",
       30,
       "before",
       "Pattern match failed, no pattern matched the value.",
-      { value: $1 }
+      { value: $1, start: 811, end: 845, pattern_start: 822, pattern_end: 835 }
     )
   }
   let p2_date = $1[0];

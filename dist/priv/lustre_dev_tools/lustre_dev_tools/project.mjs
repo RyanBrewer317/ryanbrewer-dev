@@ -11,10 +11,12 @@ import * as $result from "../../gleam_stdlib/gleam/result.mjs";
 import * as $string from "../../gleam_stdlib/gleam/string.mjs";
 import * as $simplifile from "../../simplifile/simplifile.mjs";
 import * as $tom from "../../tom/tom.mjs";
-import { Ok, toList, CustomType as $CustomType, makeError } from "../gleam.mjs";
+import { Ok, toList, Empty as $Empty, CustomType as $CustomType, makeError } from "../gleam.mjs";
 import * as $cmd from "../lustre_dev_tools/cmd.mjs";
 import * as $error from "../lustre_dev_tools/error.mjs";
 import { BuildError } from "../lustre_dev_tools/error.mjs";
+
+const FILEPATH = "src/lustre_dev_tools/project.gleam";
 
 export class Config extends $CustomType {
   constructor(name, toml) {
@@ -54,12 +56,15 @@ function find_root(loop$path) {
     let path = loop$path;
     let toml = $filepath.join(path, "gleam.toml");
     let $ = $simplifile.is_file(toml);
-    if ($.isOk() && !$[0]) {
-      loop$path = $filepath.join("..", path);
-    } else if (!$.isOk()) {
-      loop$path = $filepath.join("..", path);
+    if ($ instanceof Ok) {
+      let $1 = $[0];
+      if ($1) {
+        return path;
+      } else {
+        loop$path = $filepath.join("..", path);
+      }
     } else {
-      return path;
+      loop$path = $filepath.join("..", path);
     }
   }
 }
@@ -71,38 +76,59 @@ export function root() {
 export function config() {
   let configuration_path = $filepath.join(root(), "gleam.toml");
   let $ = $simplifile.read(configuration_path);
-  if (!$.isOk()) {
+  if (!($ instanceof Ok)) {
     throw makeError(
       "let_assert",
-      "lustre_dev_tools/project",
-      84,
-      "config",
-      "Pattern match failed, no pattern matched the value.",
-      { value: $ }
-    )
-  }
-  let configuration = $[0];
-  let $1 = $tom.parse(configuration);
-  if (!$1.isOk()) {
-    throw makeError(
-      "let_assert",
-      "lustre_dev_tools/project",
-      85,
-      "config",
-      "Pattern match failed, no pattern matched the value.",
-      { value: $1 }
-    )
-  }
-  let toml = $1[0];
-  let $2 = $tom.get_string(toml, toList(["name"]));
-  if (!$2.isOk()) {
-    throw makeError(
-      "let_assert",
+      FILEPATH,
       "lustre_dev_tools/project",
       86,
       "config",
       "Pattern match failed, no pattern matched the value.",
-      { value: $2 }
+      {
+        value: $,
+        start: 2625,
+        end: 2691,
+        pattern_start: 2636,
+        pattern_end: 2653
+      }
+    )
+  }
+  let configuration = $[0];
+  let $1 = $tom.parse(configuration);
+  if (!($1 instanceof Ok)) {
+    throw makeError(
+      "let_assert",
+      FILEPATH,
+      "lustre_dev_tools/project",
+      87,
+      "config",
+      "Pattern match failed, no pattern matched the value.",
+      {
+        value: $1,
+        start: 2694,
+        end: 2740,
+        pattern_start: 2705,
+        pattern_end: 2713
+      }
+    )
+  }
+  let toml = $1[0];
+  let $2 = $tom.get_string(toml, toList(["name"]));
+  if (!($2 instanceof Ok)) {
+    throw makeError(
+      "let_assert",
+      FILEPATH,
+      "lustre_dev_tools/project",
+      88,
+      "config",
+      "Pattern match failed, no pattern matched the value.",
+      {
+        value: $2,
+        start: 2743,
+        end: 2795,
+        pattern_start: 2754,
+        pattern_end: 2762
+      }
     )
   }
   let name = $2[0];
@@ -120,17 +146,20 @@ export function type_to_string(type_) {
     let params$1 = $list.map(params, type_to_string);
     let return$1 = type_to_string(return$);
     return (("fn(" + $string.join(params$1, ", ")) + ") -> ") + return$1;
-  } else if (type_ instanceof Named && type_.parameters.hasLength(0)) {
-    let name = type_.name;
-    return name;
-  } else if (type_ instanceof Named) {
-    let name = type_.name;
-    let params = type_.parameters;
-    let params$1 = $list.map(params, type_to_string);
-    return ((name + "(") + $string.join(params$1, ", ")) + ")";
-  } else {
+  } else if (type_ instanceof Variable) {
     let id = type_.id;
     return "a_" + $int.to_string(id);
+  } else {
+    let $ = type_.parameters;
+    if ($ instanceof $Empty) {
+      let name = type_.name;
+      return name;
+    } else {
+      let name = type_.name;
+      let params = $;
+      let params$1 = $list.map(params, type_to_string);
+      return ((name + "(") + $string.join(params$1, ", ")) + ")";
+    }
   }
 }
 

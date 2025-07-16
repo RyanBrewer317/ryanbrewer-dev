@@ -11,18 +11,21 @@ import * as $simplifile from "../../../simplifile/simplifile.mjs";
 import * as $snag from "../../../snag/snag.mjs";
 import { Ok, toList, makeError } from "../../gleam.mjs";
 
+const FILEPATH = "src/arctic/plugin/diagram.gleam";
+
 export function parse(dir, get_id, to_state) {
   return (_, body, data) => {
     let counter = get_id($parse.get_state(data));
     let $ = $dict.get($parse.get_metadata(data), "id");
-    if (!$.isOk()) {
+    if (!($ instanceof Ok)) {
       throw makeError(
         "let_assert",
+        FILEPATH,
         "arctic/plugin/diagram",
         16,
-        "",
+        "parse",
         "Pattern match failed, no pattern matched the value.",
-        { value: $ }
+        { value: $, start: 437, end: 497, pattern_start: 448, pattern_end: 454 }
       )
     }
     let id = $[0];

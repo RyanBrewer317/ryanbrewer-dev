@@ -1,6 +1,6 @@
 -module(lustre_dev_tools@cli@build).
 -compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch]).
-
+-define(FILEPATH, "src/lustre_dev_tools/cli/build.gleam").
 -export([do_app/3, app/0, component/0]).
 
 -if(?OTP_RELEASE >= 27).
@@ -13,7 +13,7 @@
 
 ?MODULEDOC(false).
 
--file("src/lustre_dev_tools/cli/build.gleam", 228).
+-file("src/lustre_dev_tools/cli/build.gleam", 226).
 ?DOC(false).
 -spec get_module_interface(binary()) -> {ok, lustre_dev_tools@project:module_()} |
     {error, lustre_dev_tools@error:error()}.
@@ -30,34 +30,39 @@ get_module_interface(Module_path) ->
         end
     ).
 
--file("src/lustre_dev_tools/cli/build.gleam", 261).
+-file("src/lustre_dev_tools/cli/build.gleam", 259).
 ?DOC(false).
 -spec bundle(binary(), binary(), binary(), boolean()) -> lustre_dev_tools@cli:cli(nil).
 bundle(Entry, Tempdir, Outfile, Minify) ->
     Entryfile = filepath:join(Tempdir, <<"entry.mjs"/utf8>>),
-    _assert_subject = simplifile:write(Entryfile, Entry),
-    {ok, _} = case _assert_subject of
-        {ok, _} -> _assert_subject;
+    case simplifile:write(Entryfile, Entry) of
+        {ok, _} -> nil;
         _assert_fail ->
             erlang:error(#{gleam_error => let_assert,
                         message => <<"Pattern match failed, no pattern matched the value."/utf8>>,
-                        value => _assert_fail,
+                        file => <<?FILEPATH/utf8>>,
                         module => <<"lustre_dev_tools/cli/build"/utf8>>,
                         function => <<"bundle"/utf8>>,
-                        line => 268})
+                        line => 266,
+                        value => _assert_fail,
+                        start => 7903,
+                        'end' => 7956,
+                        pattern_start => 7914,
+                        pattern_end => 7919})
     end,
     lustre_dev_tools@cli:do(
         lustre_dev_tools@esbuild:bundle(Entryfile, Outfile, Minify),
         fun(_) -> lustre_dev_tools@cli:return(nil) end
     ).
 
--file("src/lustre_dev_tools/cli/build.gleam", 318).
+-file("src/lustre_dev_tools/cli/build.gleam", 316).
 ?DOC(false).
 -spec exec_tailwind(binary(), list(binary())) -> {ok, binary()} |
     {error, lustre_dev_tools@error:error()}.
 exec_tailwind(Root, Options) ->
     _pipe = lustre_dev_tools_ffi:exec(
         <<"./build/.lustre/bin/tailwind"/utf8>>,
+        [],
         Options,
         Root
     ),
@@ -66,7 +71,7 @@ exec_tailwind(Root, Options) ->
         fun(Pair) -> {bundle_error, erlang:element(2, Pair)} end
     ).
 
--file("src/lustre_dev_tools/cli/build.gleam", 325).
+-file("src/lustre_dev_tools/cli/build.gleam", 323).
 ?DOC(false).
 -spec is_string_type(gleam@package_interface:type()) -> boolean().
 is_string_type(T) ->
@@ -78,7 +83,7 @@ is_string_type(T) ->
             false
     end.
 
--file("src/lustre_dev_tools/cli/build.gleam", 236).
+-file("src/lustre_dev_tools/cli/build.gleam", 234).
 ?DOC(false).
 -spec check_component_name(binary(), lustre_dev_tools@project:module_()) -> {ok,
         nil} |
@@ -97,7 +102,7 @@ check_component_name(Module_path, Module) ->
             end end
     ).
 
--file("src/lustre_dev_tools/cli/build.gleam", 332).
+-file("src/lustre_dev_tools/cli/build.gleam", 330).
 ?DOC(false).
 -spec is_nil_type(gleam@package_interface:type()) -> boolean().
 is_nil_type(T) ->
@@ -109,7 +114,7 @@ is_nil_type(T) ->
             false
     end.
 
--file("src/lustre_dev_tools/cli/build.gleam", 339).
+-file("src/lustre_dev_tools/cli/build.gleam", 337).
 ?DOC(false).
 -spec is_type_variable(gleam@package_interface:type()) -> boolean().
 is_type_variable(T) ->
@@ -121,7 +126,7 @@ is_type_variable(T) ->
             false
     end.
 
--file("src/lustre_dev_tools/cli/build.gleam", 346).
+-file("src/lustre_dev_tools/cli/build.gleam", 344).
 ?DOC(false).
 -spec is_compatible_app_type(gleam@package_interface:type()) -> boolean().
 is_compatible_app_type(T) ->
@@ -137,7 +142,7 @@ is_compatible_app_type(T) ->
             false
     end.
 
--file("src/lustre_dev_tools/cli/build.gleam", 250).
+-file("src/lustre_dev_tools/cli/build.gleam", 248).
 ?DOC(false).
 -spec find_component(binary(), lustre_dev_tools@project:module_()) -> {ok,
         binary()} |
@@ -161,7 +166,7 @@ find_component(Module_path, Module) ->
         end
     ).
 
--file("src/lustre_dev_tools/cli/build.gleam", 368).
+-file("src/lustre_dev_tools/cli/build.gleam", 366).
 ?DOC(false).
 -spec is_reserved_keyword(binary()) -> boolean().
 is_reserved_keyword(Name) ->
@@ -320,7 +325,7 @@ is_reserved_keyword(Name) ->
             false
     end.
 
--file("src/lustre_dev_tools/cli/build.gleam", 361).
+-file("src/lustre_dev_tools/cli/build.gleam", 359).
 ?DOC(false).
 -spec importable_name(binary()) -> binary().
 importable_name(Identifier) ->
@@ -332,87 +337,86 @@ importable_name(Identifier) ->
             Identifier
     end.
 
--file("src/lustre_dev_tools/cli/build.gleam", 274).
+-file("src/lustre_dev_tools/cli/build.gleam", 272).
 ?DOC(false).
--spec bundle_tailwind(binary(), binary(), binary(), boolean()) -> lustre_dev_tools@cli:cli(nil).
-bundle_tailwind(Entry, Tempdir, Outfile, Minify) ->
+-spec bundle_tailwind(binary(), boolean()) -> lustre_dev_tools@cli:cli(nil).
+bundle_tailwind(Outfile, Minify) ->
     Root = lustre_dev_tools@project:root(),
-    Tailwind_config_file = filepath:join(Root, <<"tailwind.config.js"/utf8>>),
-    Has_tailwind_config = begin
-        _pipe = simplifile_erl:is_file(Tailwind_config_file),
-        gleam@result:unwrap(_pipe, false)
-    end,
-    gleam@bool:guard(
-        not Has_tailwind_config,
-        lustre_dev_tools@cli:return(nil),
-        fun() ->
+    lustre_dev_tools@cli:do(
+        lustre_dev_tools@cli:get_name(),
+        fun(Project_name) ->
+            Default_entryfile = filepath:join(
+                Root,
+                <<<<"src/"/utf8, Project_name/binary>>/binary, ".css"/utf8>>
+            ),
             lustre_dev_tools@cli:do(
-                lustre_dev_tools@tailwind:setup(
-                    lustre_dev_tools_ffi:get_os(),
-                    lustre_dev_tools_ffi:get_cpu()
+                lustre_dev_tools@cli:get_string(
+                    <<"tailwind-entry"/utf8>>,
+                    Default_entryfile,
+                    [<<"build"/utf8>>],
+                    fun(_capture) ->
+                        glint:get_flag(
+                            _capture,
+                            lustre_dev_tools@cli@flag:tailwind_entry()
+                        )
+                    end
                 ),
-                fun(_) ->
-                    lustre_dev_tools@cli:log(
-                        <<"Bundling with Tailwind"/utf8>>,
+                fun(Entryfile) ->
+                    Has_legacy_tailwind_conig = begin
+                        _pipe = simplifile_erl:is_file(
+                            filepath:join(Root, <<"tailwind.config.js"/utf8>>)
+                        ),
+                        gleam@result:unwrap(_pipe, false)
+                    end,
+                    Tailwind_import_string = <<"@import \"tailwindcss"/utf8>>,
+                    Has_tailwind_import = case simplifile:read(Entryfile) of
+                        {ok, Content} ->
+                            gleam_stdlib:contains_string(
+                                Content,
+                                Tailwind_import_string
+                            );
+
+                        {error, _} ->
+                            false
+                    end,
+                    Tailwind_detected = Has_tailwind_import orelse Has_legacy_tailwind_conig,
+                    gleam@bool:guard(
+                        not Tailwind_detected,
+                        lustre_dev_tools@cli:return(nil),
                         fun() ->
-                            Default_entryfile = filepath:join(
-                                Tempdir,
-                                <<"entry.css"/utf8>>
-                            ),
                             lustre_dev_tools@cli:do(
-                                lustre_dev_tools@cli:get_string(
-                                    <<"tailwind-entry"/utf8>>,
-                                    Default_entryfile,
-                                    [<<"build"/utf8>>],
-                                    fun(_capture) ->
-                                        glint:get_flag(
-                                            _capture,
-                                            lustre_dev_tools@cli@flag:tailwind_entry(
-                                                
-                                            )
-                                        )
-                                    end
+                                lustre_dev_tools@tailwind:setup(
+                                    lustre_dev_tools_ffi:get_os(),
+                                    lustre_dev_tools_ffi:get_cpu()
                                 ),
-                                fun(Entryfile) ->
-                                    _assert_subject = case Entryfile =:= Default_entryfile of
-                                        true ->
-                                            simplifile:write(Entryfile, Entry);
+                                fun(_) ->
+                                    lustre_dev_tools@cli:log(
+                                        <<"Bundling with Tailwind"/utf8>>,
+                                        fun() ->
+                                            Flags = [<<"--input="/utf8,
+                                                    Entryfile/binary>>,
+                                                <<"--output="/utf8,
+                                                    Outfile/binary>>],
+                                            Options = case Minify of
+                                                true ->
+                                                    [<<"--minify"/utf8>> |
+                                                        Flags];
 
-                                        false ->
-                                            {ok, nil}
-                                    end,
-                                    {ok, _} = case _assert_subject of
-                                        {ok, _} -> _assert_subject;
-                                        _assert_fail ->
-                                            erlang:error(
-                                                    #{gleam_error => let_assert,
-                                                        message => <<"Pattern match failed, no pattern matched the value."/utf8>>,
-                                                        value => _assert_fail,
-                                                        module => <<"lustre_dev_tools/cli/build"/utf8>>,
-                                                        function => <<"bundle_tailwind"/utf8>>,
-                                                        line => 302}
-                                                )
-                                    end,
-                                    Flags = [<<"--input="/utf8,
-                                            Entryfile/binary>>,
-                                        <<"--output="/utf8, Outfile/binary>>],
-                                    Options = case Minify of
-                                        true ->
-                                            [<<"--minify"/utf8>> | Flags];
-
-                                        false ->
-                                            Flags
-                                    end,
-                                    lustre_dev_tools@cli:'try'(
-                                        exec_tailwind(Root, Options),
-                                        fun(_) ->
-                                            lustre_dev_tools@cli:success(
-                                                <<<<"Bundle produced at `"/utf8,
-                                                        Outfile/binary>>/binary,
-                                                    "`"/utf8>>,
-                                                fun() ->
-                                                    lustre_dev_tools@cli:return(
-                                                        nil
+                                                false ->
+                                                    Flags
+                                            end,
+                                            lustre_dev_tools@cli:'try'(
+                                                exec_tailwind(Root, Options),
+                                                fun(_) ->
+                                                    lustre_dev_tools@cli:success(
+                                                        <<<<"Bundle produced at `"/utf8,
+                                                                Outfile/binary>>/binary,
+                                                            "`"/utf8>>,
+                                                        fun() ->
+                                                            lustre_dev_tools@cli:return(
+                                                                nil
+                                                            )
+                                                        end
                                                     )
                                                 end
                                             )
@@ -525,20 +529,24 @@ do_app(Entry_module, Minify, Detect_tailwind) ->
                                                                     _pipe@3
                                                                 )
                                                             end,
-                                                            _assert_subject = simplifile:write(
+                                                            case simplifile:write(
                                                                 Entryfile,
                                                                 Entry
-                                                            ),
-                                                            {ok, _} = case _assert_subject of
-                                                                {ok, _} -> _assert_subject;
+                                                            ) of
+                                                                {ok, _} -> nil;
                                                                 _assert_fail ->
                                                                     erlang:error(
                                                                             #{gleam_error => let_assert,
                                                                                 message => <<"Pattern match failed, no pattern matched the value."/utf8>>,
-                                                                                value => _assert_fail,
+                                                                                file => <<?FILEPATH/utf8>>,
                                                                                 module => <<"lustre_dev_tools/cli/build"/utf8>>,
                                                                                 function => <<"do_app"/utf8>>,
-                                                                                line => 119}
+                                                                                line => 119,
+                                                                                value => _assert_fail,
+                                                                                start => 3550,
+                                                                                'end' => 3603,
+                                                                                pattern_start => 3561,
+                                                                                pattern_end => 3566}
                                                                         )
                                                             end,
                                                             lustre_dev_tools@cli:do(
@@ -555,34 +563,25 @@ do_app(Entry_module, Minify, Detect_tailwind) ->
                                                                             nil
                                                                         ),
                                                                         fun() ->
-                                                                            lustre_dev_tools@cli:template(
-                                                                                <<"entry.css"/utf8>>,
+                                                                            Outfile@1 = begin
+                                                                                _pipe@4 = filepath:strip_extension(
+                                                                                    Outfile
+                                                                                ),
+                                                                                gleam@string:append(
+                                                                                    _pipe@4,
+                                                                                    <<".css"/utf8>>
+                                                                                )
+                                                                            end,
+                                                                            lustre_dev_tools@cli:do(
+                                                                                bundle_tailwind(
+                                                                                    Outfile@1,
+                                                                                    Minify
+                                                                                ),
                                                                                 fun(
-                                                                                    Entry@1
+                                                                                    _
                                                                                 ) ->
-                                                                                    Outfile@1 = begin
-                                                                                        _pipe@4 = filepath:strip_extension(
-                                                                                            Outfile
-                                                                                        ),
-                                                                                        gleam@string:append(
-                                                                                            _pipe@4,
-                                                                                            <<".css"/utf8>>
-                                                                                        )
-                                                                                    end,
-                                                                                    lustre_dev_tools@cli:do(
-                                                                                        bundle_tailwind(
-                                                                                            Entry@1,
-                                                                                            Tempdir,
-                                                                                            Outfile@1,
-                                                                                            Minify
-                                                                                        ),
-                                                                                        fun(
-                                                                                            _
-                                                                                        ) ->
-                                                                                            lustre_dev_tools@cli:return(
-                                                                                                nil
-                                                                                            )
-                                                                                        end
+                                                                                    lustre_dev_tools@cli:return(
+                                                                                        nil
                                                                                     )
                                                                                 end
                                                                             )
@@ -744,7 +743,7 @@ JavaScript module for you to host or distribute.
         end
     ).
 
--file("src/lustre_dev_tools/cli/build.gleam", 133).
+-file("src/lustre_dev_tools/cli/build.gleam", 132).
 ?DOC(false).
 -spec component() -> glint:command(nil).
 component() ->
@@ -925,7 +924,7 @@ returns a suitable Lustre `App`.
                                                                                                                                                     fun(
                                                                                                                                                         Ext
                                                                                                                                                     ) ->
-                                                                                                                                                        _assert_subject = begin
+                                                                                                                                                        Outfile@1 = case begin
                                                                                                                                                             _pipe@3 = gleam@string:split(
                                                                                                                                                                 Module_path@1,
                                                                                                                                                                 <<"/"/utf8>>
@@ -955,77 +954,74 @@ returns a suitable Lustre `App`.
                                                                                                                                                                     )
                                                                                                                                                                 end
                                                                                                                                                             )
-                                                                                                                                                        end,
-                                                                                                                                                        {ok,
-                                                                                                                                                            Outfile} = case _assert_subject of
+                                                                                                                                                        end of
                                                                                                                                                             {ok,
-                                                                                                                                                                _} -> _assert_subject;
+                                                                                                                                                                Outfile} -> Outfile;
                                                                                                                                                             _assert_fail ->
                                                                                                                                                                 erlang:error(
                                                                                                                                                                         #{gleam_error => let_assert,
                                                                                                                                                                             message => <<"Pattern match failed, no pattern matched the value."/utf8>>,
-                                                                                                                                                                            value => _assert_fail,
+                                                                                                                                                                            file => <<?FILEPATH/utf8>>,
                                                                                                                                                                             module => <<"lustre_dev_tools/cli/build"/utf8>>,
                                                                                                                                                                             function => <<"component"/utf8>>,
-                                                                                                                                                                            line => 200}
+                                                                                                                                                                            line => 199,
+                                                                                                                                                                            value => _assert_fail,
+                                                                                                                                                                            start => 6100,
+                                                                                                                                                                            'end' => 6269,
+                                                                                                                                                                            pattern_start => 6111,
+                                                                                                                                                                            pattern_end => 6122}
                                                                                                                                                                     )
                                                                                                                                                         end,
-                                                                                                                                                        _assert_subject@1 = simplifile:write(
+                                                                                                                                                        case simplifile:write(
                                                                                                                                                             Entryfile,
                                                                                                                                                             Entry
-                                                                                                                                                        ),
-                                                                                                                                                        {ok,
-                                                                                                                                                            _} = case _assert_subject@1 of
+                                                                                                                                                        ) of
                                                                                                                                                             {ok,
-                                                                                                                                                                _} -> _assert_subject@1;
+                                                                                                                                                                _} -> nil;
                                                                                                                                                             _assert_fail@1 ->
                                                                                                                                                                 erlang:error(
                                                                                                                                                                         #{gleam_error => let_assert,
                                                                                                                                                                             message => <<"Pattern match failed, no pattern matched the value."/utf8>>,
-                                                                                                                                                                            value => _assert_fail@1,
+                                                                                                                                                                            file => <<?FILEPATH/utf8>>,
                                                                                                                                                                             module => <<"lustre_dev_tools/cli/build"/utf8>>,
                                                                                                                                                                             function => <<"component"/utf8>>,
-                                                                                                                                                                            line => 206}
+                                                                                                                                                                            line => 205,
+                                                                                                                                                                            value => _assert_fail@1,
+                                                                                                                                                                            start => 6275,
+                                                                                                                                                                            'end' => 6328,
+                                                                                                                                                                            pattern_start => 6286,
+                                                                                                                                                                            pattern_end => 6291}
                                                                                                                                                                     )
                                                                                                                                                         end,
                                                                                                                                                         lustre_dev_tools@cli:do(
                                                                                                                                                             bundle(
                                                                                                                                                                 Entry,
                                                                                                                                                                 Tempdir,
-                                                                                                                                                                Outfile,
+                                                                                                                                                                Outfile@1,
                                                                                                                                                                 Minify@1
                                                                                                                                                             ),
                                                                                                                                                             fun(
                                                                                                                                                                 _
                                                                                                                                                             ) ->
-                                                                                                                                                                lustre_dev_tools@cli:template(
-                                                                                                                                                                    <<"entry.css"/utf8>>,
+                                                                                                                                                                Outfile@2 = begin
+                                                                                                                                                                    _pipe@6 = filepath:strip_extension(
+                                                                                                                                                                        Outfile@1
+                                                                                                                                                                    ),
+                                                                                                                                                                    gleam@string:append(
+                                                                                                                                                                        _pipe@6,
+                                                                                                                                                                        <<".css"/utf8>>
+                                                                                                                                                                    )
+                                                                                                                                                                end,
+                                                                                                                                                                lustre_dev_tools@cli:do(
+                                                                                                                                                                    bundle_tailwind(
+                                                                                                                                                                        Outfile@2,
+                                                                                                                                                                        Minify@1
+                                                                                                                                                                    ),
                                                                                                                                                                     fun(
-                                                                                                                                                                        Entry@1
+                                                                                                                                                                        _
                                                                                                                                                                     ) ->
-                                                                                                                                                                        Outfile@1 = begin
-                                                                                                                                                                            _pipe@6 = filepath:strip_extension(
-                                                                                                                                                                                Outfile
-                                                                                                                                                                            ),
-                                                                                                                                                                            gleam@string:append(
-                                                                                                                                                                                _pipe@6,
-                                                                                                                                                                                <<".css"/utf8>>
-                                                                                                                                                                            )
-                                                                                                                                                                        end,
-                                                                                                                                                                        lustre_dev_tools@cli:do(
-                                                                                                                                                                            bundle_tailwind(
-                                                                                                                                                                                Entry@1,
-                                                                                                                                                                                Tempdir,
-                                                                                                                                                                                Outfile@1,
-                                                                                                                                                                                Minify@1
-                                                                                                                                                                            ),
-                                                                                                                                                                            fun(
-                                                                                                                                                                                _
-                                                                                                                                                                            ) ->
-                                                                                                                                                                                lustre_dev_tools@cli:return(
-                                                                                                                                                                                    nil
-                                                                                                                                                                                )
-                                                                                                                                                                            end
+                                                                                                                                                                        lustre_dev_tools@cli:return(
+                                                                                                                                                                            nil
                                                                                                                                                                         )
                                                                                                                                                                     end
                                                                                                                                                                 )

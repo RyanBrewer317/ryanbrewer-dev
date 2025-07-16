@@ -1,6 +1,4 @@
-import * as $erlang from "../../../../gleam_erlang/gleam/erlang.mjs";
 import * as $process from "../../../../gleam_erlang/gleam/erlang/process.mjs";
-import * as $response from "../../../../gleam_http/gleam/http/response.mjs";
 import * as $bit_array from "../../../../gleam_stdlib/gleam/bit_array.mjs";
 import * as $dict from "../../../../gleam_stdlib/gleam/dict.mjs";
 import * as $int from "../../../../gleam_stdlib/gleam/int.mjs";
@@ -8,6 +6,7 @@ import * as $list from "../../../../gleam_stdlib/gleam/list.mjs";
 import * as $option from "../../../../gleam_stdlib/gleam/option.mjs";
 import { None, Some } from "../../../../gleam_stdlib/gleam/option.mjs";
 import * as $result from "../../../../gleam_stdlib/gleam/result.mjs";
+import * as $string from "../../../../gleam_stdlib/gleam/string.mjs";
 import * as $logging from "../../../../logging/logging.mjs";
 import { CustomType as $CustomType } from "../../../gleam.mjs";
 import * as $buffer from "../../../mist/internal/buffer.mjs";
@@ -17,17 +16,9 @@ import * as $http2 from "../../../mist/internal/http2.mjs";
 import { Http2Settings } from "../../../mist/internal/http2.mjs";
 import * as $flow_control from "../../../mist/internal/http2/flow_control.mjs";
 import * as $frame from "../../../mist/internal/http2/frame.mjs";
-import { Complete, Continued, Settings } from "../../../mist/internal/http2/frame.mjs";
+import { Complete, Continued } from "../../../mist/internal/http2/frame.mjs";
 import * as $stream from "../../../mist/internal/http2/stream.mjs";
 import { Ready } from "../../../mist/internal/http2/stream.mjs";
-
-export class Send extends $CustomType {
-  constructor(identifier, resp) {
-    super();
-    this.identifier = identifier;
-    this.resp = resp;
-  }
-}
 
 export class PendingSend extends $CustomType {}
 

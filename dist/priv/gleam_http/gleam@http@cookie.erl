@@ -1,6 +1,6 @@
 -module(gleam@http@cookie).
 -compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch]).
-
+-define(FILEPATH, "src/gleam/http/cookie.gleam").
 -export([defaults/1, parse/1, set_header/3]).
 -export_type([same_site_policy/0, attributes/0]).
 
@@ -101,10 +101,10 @@ parse(Cookie_string) ->
                 {ok, {Key, Value}} ->
                     Key@1 = gleam@string:trim(Key),
                     Value@1 = gleam@string:trim(Value),
-                    gleam@result:then(
+                    gleam@result:'try'(
                         check_token(Key@1),
                         fun(_) ->
-                            gleam@result:then(
+                            gleam@result:'try'(
                                 check_token(Value@1),
                                 fun(_) -> {ok, {Key@1, Value@1}} end
                             )

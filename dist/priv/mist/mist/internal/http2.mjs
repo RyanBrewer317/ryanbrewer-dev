@@ -1,5 +1,3 @@
-import * as $erlang from "../../../gleam_erlang/gleam/erlang.mjs";
-import * as $process from "../../../gleam_erlang/gleam/erlang/process.mjs";
 import * as $response from "../../../gleam_http/gleam/http/response.mjs";
 import * as $bytes_tree from "../../../gleam_stdlib/gleam/bytes_tree.mjs";
 import * as $int from "../../../gleam_stdlib/gleam/int.mjs";
@@ -7,6 +5,7 @@ import * as $list from "../../../gleam_stdlib/gleam/list.mjs";
 import * as $option from "../../../gleam_stdlib/gleam/option.mjs";
 import { None, Some } from "../../../gleam_stdlib/gleam/option.mjs";
 import * as $result from "../../../gleam_stdlib/gleam/result.mjs";
+import * as $string from "../../../gleam_stdlib/gleam/string.mjs";
 import * as $socket from "../../../glisten/glisten/socket.mjs";
 import * as $transport from "../../../glisten/glisten/transport.mjs";
 import * as $logging from "../../../logging/logging.mjs";
@@ -30,9 +29,9 @@ export class Http2Settings extends $CustomType {
 export class Compression extends $CustomType {}
 
 export class BadHeaderPacket extends $CustomType {
-  constructor(x0) {
+  constructor($0) {
     super();
-    this[0] = x0;
+    this[0] = $0;
   }
 }
 

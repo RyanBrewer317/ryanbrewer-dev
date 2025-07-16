@@ -1,6 +1,6 @@
 -module(arctic@build).
 -compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch]).
-
+-define(FILEPATH, "src/arctic/build.gleam").
 -export([build/1]).
 
 -if(?OTP_RELEASE >= 27).
@@ -21,18 +21,22 @@ lift_ordering(Ordering) ->
 get_id(P) ->
     case P of
         {cached_page, _, Metadata} ->
-            _assert_subject = gleam_stdlib:map_get(Metadata, <<"id"/utf8>>),
-            {ok, Id} = case _assert_subject of
-                {ok, _} -> _assert_subject;
+            Id@1 = case gleam_stdlib:map_get(Metadata, <<"id"/utf8>>) of
+                {ok, Id} -> Id;
                 _assert_fail ->
                     erlang:error(#{gleam_error => let_assert,
                                 message => <<"Pattern match failed, no pattern matched the value."/utf8>>,
-                                value => _assert_fail,
+                                file => <<?FILEPATH/utf8>>,
                                 module => <<"arctic/build"/utf8>>,
                                 function => <<"get_id"/utf8>>,
-                                line => 35})
+                                line => 35,
+                                value => _assert_fail,
+                                start => 904,
+                                'end' => 948,
+                                pattern_start => 915,
+                                pattern_end => 921})
             end,
-            Id;
+            Id@1;
 
         {new_page, Page} ->
             erlang:element(2, Page)
@@ -404,9 +408,9 @@ process(Collections, Cache) ->
 
 -file("src/arctic/build.gleam", 241).
 -spec spa(
-    fun((lustre@internals@vdom:element(nil)) -> lustre@internals@vdom:element(nil)),
-    lustre@internals@vdom:element(nil)
-) -> lustre@internals@vdom:element(nil).
+    fun((lustre@vdom@vnode:element(nil)) -> lustre@vdom@vnode:element(nil)),
+    lustre@vdom@vnode:element(nil)
+) -> lustre@vdom@vnode:element(nil).
 spa(Frame, Html) ->
     Frame(
         lustre@element@html:'div'(
@@ -519,11 +523,11 @@ function find_a(target) {
 
 -file("src/arctic/build.gleam", 438).
 -spec add_route(
-    lustre@ssg:config(any(), WRQ, WRR),
+    lustre@ssg:config(any(), XGP, XGQ),
     arctic:config(),
     binary(),
-    lustre@internals@vdom:element(nil)
-) -> lustre@ssg:config(lustre@ssg:has_static_routes(), WRQ, WRR).
+    lustre@vdom@vnode:element(nil)
+) -> lustre@ssg:config(lustre@ssg:has_static_routes(), XGP, XGQ).
 add_route(Ssg_config, Config, Path, Content) ->
     case erlang:element(5, Config) of
         {some, Frame} ->
@@ -631,24 +635,28 @@ make_ssg_config(Processed_collections, Config, K) ->
                                     );
 
                                 {cached_page, Path, _} ->
-                                    _assert_subject = gleam@string:split(
+                                    Start@1 = case gleam@string:split(
                                         Path,
                                         <<".txt"/utf8>>
-                                    ),
-                                    [Start | _] = case _assert_subject of
-                                        [_ | _] -> _assert_subject;
+                                    ) of
+                                        [Start | _] -> Start;
                                         _assert_fail ->
                                             erlang:error(
                                                     #{gleam_error => let_assert,
                                                         message => <<"Pattern match failed, no pattern matched the value."/utf8>>,
-                                                        value => _assert_fail,
+                                                        file => <<?FILEPATH/utf8>>,
                                                         module => <<"arctic/build"/utf8>>,
                                                         function => <<"make_ssg_config"/utf8>>,
-                                                        line => 402}
+                                                        line => 402,
+                                                        value => _assert_fail,
+                                                        start => 12886,
+                                                        'end' => 12937,
+                                                        pattern_start => 12897,
+                                                        pattern_end => 12908}
                                                 )
                                     end,
                                     Cached_path = <<<<"arctic_build/"/utf8,
-                                            Start/binary>>/binary,
+                                            Start@1/binary>>/binary,
                                         "/index.html"/utf8>>,
                                     Res = simplifile:read(Cached_path),
                                     Content = case Res of
@@ -658,6 +666,7 @@ make_ssg_config(Processed_collections, Config, K) ->
                                         {error, _} ->
                                             erlang:error(#{gleam_error => panic,
                                                     message => Cached_path,
+                                                    file => <<?FILEPATH/utf8>>,
                                                     module => <<"arctic/build"/utf8>>,
                                                     function => <<"make_ssg_config"/utf8>>,
                                                     line => 407})
@@ -665,7 +674,7 @@ make_ssg_config(Processed_collections, Config, K) ->
                                     case erlang:element(5, Config) of
                                         {some, _} ->
                                             Spa_content_path = <<<<"arctic_build/__pages/"/utf8,
-                                                    Start/binary>>/binary,
+                                                    Start@1/binary>>/binary,
                                                 "/index.html"/utf8>>,
                                             Res@1 = simplifile:read(
                                                 Spa_content_path
@@ -678,6 +687,7 @@ make_ssg_config(Processed_collections, Config, K) ->
                                                     erlang:error(
                                                         #{gleam_error => panic,
                                                             message => Cached_path,
+                                                            file => <<?FILEPATH/utf8>>,
                                                             module => <<"arctic/build"/utf8>>,
                                                             function => <<"make_ssg_config"/utf8>>,
                                                             line => 419}
@@ -687,13 +697,13 @@ make_ssg_config(Processed_collections, Config, K) ->
                                             _pipe@6 = lustre@ssg:add_static_asset(
                                                 _pipe@5,
                                                 <<<<"/__pages/"/utf8,
-                                                        Start/binary>>/binary,
+                                                        Start@1/binary>>/binary,
                                                     "/index.html"/utf8>>,
                                                 Spa_content
                                             ),
                                             lustre@ssg:add_static_asset(
                                                 _pipe@6,
-                                                <<<<"/"/utf8, Start/binary>>/binary,
+                                                <<<<"/"/utf8, Start@1/binary>>/binary,
                                                     "/index.html"/utf8>>,
                                                 Content
                                             );
@@ -701,7 +711,7 @@ make_ssg_config(Processed_collections, Config, K) ->
                                         none ->
                                             lustre@ssg:add_static_asset(
                                                 S@1,
-                                                <<<<"/"/utf8, Start/binary>>/binary,
+                                                <<<<"/"/utf8, Start@1/binary>>/binary,
                                                     "/index.html"/utf8>>,
                                                 Content
                                             )
@@ -813,8 +823,8 @@ add_public(K) ->
 
 -file("src/arctic/build.gleam", 519).
 -spec option_to_result_nil(
-    gleam@option:option(WJW),
-    fun((WJW) -> {ok, nil} | {error, snag:snag()})
+    gleam@option:option(WYX),
+    fun((WYX) -> {ok, nil} | {error, snag:snag()})
 ) -> {ok, nil} | {error, snag:snag()}.
 option_to_result_nil(Opt, F) ->
     case Opt of

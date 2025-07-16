@@ -9,6 +9,7 @@ import {
   Ok,
   Error,
   toList,
+  Empty as $Empty,
   prepend as listPrepend,
   CustomType as $CustomType,
   makeError,
@@ -24,6 +25,7 @@ import {
   isDirectory as is_directory,
   createDirectory as create_directory,
   createSymlink as create_symlink,
+  createLink as create_link,
   readDirectory as read_directory,
   isFile as is_file,
   isSymlink as is_symlink,
@@ -38,6 +40,7 @@ import {
 export {
   append_bits,
   create_directory,
+  create_link,
   create_symlink,
   current_directory,
   delete$,
@@ -53,6 +56,8 @@ export {
   set_permissions_octal,
   write_bits,
 };
+
+const FILEPATH = "src/simplifile.gleam";
 
 export class Eacces extends $CustomType {}
 
@@ -197,100 +202,100 @@ export class FilePermissions extends $CustomType {
 }
 
 export function describe_error(error) {
-  if (error instanceof Eperm) {
-    return "Operation not permitted";
-  } else if (error instanceof Enoent) {
-    return "No such file or directory";
-  } else if (error instanceof Esrch) {
-    return "No such process";
-  } else if (error instanceof Eintr) {
-    return "Interrupted system call";
-  } else if (error instanceof Eio) {
-    return "Input/output error";
-  } else if (error instanceof Enxio) {
-    return "Device not configured";
+  if (error instanceof Eacces) {
+    return "Permission denied";
+  } else if (error instanceof Eagain) {
+    return "Resource temporarily unavailable";
   } else if (error instanceof Ebadf) {
     return "Bad file descriptor";
+  } else if (error instanceof Ebadmsg) {
+    return "Bad message";
+  } else if (error instanceof Ebusy) {
+    return "Resource busy";
   } else if (error instanceof Edeadlk) {
     return "Resource deadlock avoided";
   } else if (error instanceof Edeadlock) {
     return "Resource deadlock avoided";
-  } else if (error instanceof Enomem) {
-    return "Cannot allocate memory";
-  } else if (error instanceof Eacces) {
-    return "Permission denied";
-  } else if (error instanceof Efault) {
-    return "Bad address";
-  } else if (error instanceof Enotblk) {
-    return "Block device required";
-  } else if (error instanceof Ebusy) {
-    return "Resource busy";
-  } else if (error instanceof Eexist) {
-    return "File exists";
-  } else if (error instanceof Exdev) {
-    return "Cross-device link";
-  } else if (error instanceof Enodev) {
-    return "Operation not supported by device";
-  } else if (error instanceof Enotdir) {
-    return "Not a directory";
-  } else if (error instanceof Eisdir) {
-    return "Is a directory";
-  } else if (error instanceof Einval) {
-    return "Invalid argument";
-  } else if (error instanceof Enfile) {
-    return "Too many open files in system";
-  } else if (error instanceof Emfile) {
-    return "Too many open files";
-  } else if (error instanceof Etxtbsy) {
-    return "Text file busy";
-  } else if (error instanceof Efbig) {
-    return "File too large";
-  } else if (error instanceof Enospc) {
-    return "No space left on device";
-  } else if (error instanceof Espipe) {
-    return "Illegal seek";
-  } else if (error instanceof Erofs) {
-    return "Read-only file system";
-  } else if (error instanceof Emlink) {
-    return "Too many links";
-  } else if (error instanceof Epipe) {
-    return "Broken pipe";
-  } else if (error instanceof Erange) {
-    return "Result too large";
-  } else if (error instanceof Eagain) {
-    return "Resource temporarily unavailable";
-  } else if (error instanceof Enotsup) {
-    return "Operation not supported";
-  } else if (error instanceof Enobufs) {
-    return "No buffer space available";
-  } else if (error instanceof Eloop) {
-    return "Too many levels of symbolic links";
-  } else if (error instanceof Enametoolong) {
-    return "File name too long";
   } else if (error instanceof Edquot) {
     return "Disc quota exceeded";
-  } else if (error instanceof Estale) {
-    return "Stale NFS file handle";
-  } else if (error instanceof Enolck) {
-    return "No locks available";
-  } else if (error instanceof Enosys) {
-    return "Function not implemented";
+  } else if (error instanceof Eexist) {
+    return "File exists";
+  } else if (error instanceof Efault) {
+    return "Bad address";
+  } else if (error instanceof Efbig) {
+    return "File too large";
   } else if (error instanceof Eftype) {
     return "Inappropriate file type or format";
-  } else if (error instanceof Eoverflow) {
-    return "Value too large to be stored in data type";
-  } else if (error instanceof Ebadmsg) {
-    return "Bad message";
+  } else if (error instanceof Eintr) {
+    return "Interrupted system call";
+  } else if (error instanceof Einval) {
+    return "Invalid argument";
+  } else if (error instanceof Eio) {
+    return "Input/output error";
+  } else if (error instanceof Eisdir) {
+    return "Is a directory";
+  } else if (error instanceof Eloop) {
+    return "Too many levels of symbolic links";
+  } else if (error instanceof Emfile) {
+    return "Too many open files";
+  } else if (error instanceof Emlink) {
+    return "Too many links";
   } else if (error instanceof Emultihop) {
     return "Multihop attempted";
+  } else if (error instanceof Enametoolong) {
+    return "File name too long";
+  } else if (error instanceof Enfile) {
+    return "Too many open files in system";
+  } else if (error instanceof Enobufs) {
+    return "No buffer space available";
+  } else if (error instanceof Enodev) {
+    return "Operation not supported by device";
+  } else if (error instanceof Enolck) {
+    return "No locks available";
   } else if (error instanceof Enolink) {
     return "Link has been severed";
+  } else if (error instanceof Enoent) {
+    return "No such file or directory";
+  } else if (error instanceof Enomem) {
+    return "Cannot allocate memory";
+  } else if (error instanceof Enospc) {
+    return "No space left on device";
   } else if (error instanceof Enosr) {
     return "No STREAM resources";
   } else if (error instanceof Enostr) {
     return "Not a STREAM";
+  } else if (error instanceof Enosys) {
+    return "Function not implemented";
+  } else if (error instanceof Enotblk) {
+    return "Block device required";
+  } else if (error instanceof Enotdir) {
+    return "Not a directory";
+  } else if (error instanceof Enotsup) {
+    return "Operation not supported";
+  } else if (error instanceof Enxio) {
+    return "Device not configured";
   } else if (error instanceof Eopnotsupp) {
     return "Operation not supported on socket";
+  } else if (error instanceof Eoverflow) {
+    return "Value too large to be stored in data type";
+  } else if (error instanceof Eperm) {
+    return "Operation not permitted";
+  } else if (error instanceof Epipe) {
+    return "Broken pipe";
+  } else if (error instanceof Erange) {
+    return "Result too large";
+  } else if (error instanceof Erofs) {
+    return "Read-only file system";
+  } else if (error instanceof Espipe) {
+    return "Illegal seek";
+  } else if (error instanceof Esrch) {
+    return "No such process";
+  } else if (error instanceof Estale) {
+    return "Stale NFS file handle";
+  } else if (error instanceof Etxtbsy) {
+    return "Text file busy";
+  } else if (error instanceof Exdev) {
+    return "Cross-device link";
   } else if (error instanceof NotUtf8) {
     return "File not UTF-8 encoded";
   } else {
@@ -319,19 +324,22 @@ export function file_info_type(file_info) {
 export function delete_all(loop$paths) {
   while (true) {
     let paths = loop$paths;
-    if (paths.hasLength(0)) {
+    if (paths instanceof $Empty) {
       return new Ok(undefined);
     } else {
       let path = paths.head;
       let rest = paths.tail;
       let $ = delete$(path);
-      if ($.isOk() && !$[0]) {
-        loop$paths = rest;
-      } else if (!$.isOk() && $[0] instanceof Enoent) {
+      if ($ instanceof Ok) {
         loop$paths = rest;
       } else {
-        let e = $;
-        return e;
+        let $1 = $[0];
+        if ($1 instanceof Enoent) {
+          loop$paths = rest;
+        } else {
+          let e = $;
+          return e;
+        }
       }
     }
   }
@@ -339,10 +347,10 @@ export function delete_all(loop$paths) {
 
 export function read(filepath) {
   let $ = read_bits(filepath);
-  if ($.isOk()) {
+  if ($ instanceof Ok) {
     let bits = $[0];
     let $1 = $bit_array.to_string(bits);
-    if ($1.isOk()) {
+    if ($1 instanceof Ok) {
       let str = $1[0];
       return new Ok(str);
     } else {
@@ -375,10 +383,27 @@ export function create_file(filepath) {
     let _pipe = filepath;
     return is_directory(_pipe);
   })();
-  if ($.isOk() && $[0]) {
-    return new Error(new Eexist());
-  } else if ($1.isOk() && $1[0]) {
-    return new Error(new Eexist());
+  if ($ instanceof Ok) {
+    let $2 = $[0];
+    if ($2) {
+      return new Error(new Eexist());
+    } else if ($1 instanceof Ok) {
+      let $3 = $1[0];
+      if ($3) {
+        return new Error(new Eexist());
+      } else {
+        return write_bits(filepath, toBitArray([]));
+      }
+    } else {
+      return write_bits(filepath, toBitArray([]));
+    }
+  } else if ($1 instanceof Ok) {
+    let $2 = $1[0];
+    if ($2) {
+      return new Error(new Eexist());
+    } else {
+      return write_bits(filepath, toBitArray([]));
+    }
   } else {
     return write_bits(filepath, toBitArray([]));
   }
@@ -386,18 +411,18 @@ export function create_file(filepath) {
 
 export function create_directory_all(dirpath) {
   let is_abs = $filepath.is_absolute(dirpath);
-  let path = (() => {
-    let _pipe = dirpath;
-    let _pipe$1 = $filepath.split(_pipe);
-    return $list.fold(_pipe$1, "", $filepath.join);
-  })();
-  let path$1 = (() => {
-    if (is_abs) {
-      return "/" + path;
-    } else {
-      return path;
-    }
-  })();
+  let _block;
+  let _pipe = dirpath;
+  let _pipe$1 = $filepath.split(_pipe);
+  _block = $list.fold(_pipe$1, "", $filepath.join);
+  let path = _block;
+  let _block$1;
+  if (is_abs) {
+    _block$1 = "/" + path;
+  } else {
+    _block$1 = path;
+  }
+  let path$1 = _block$1;
   return do_create_dir_all(path$1 + "/");
 }
 
@@ -571,8 +596,9 @@ function integer_to_permissions(integer) {
   } else {
     throw makeError(
       "panic",
+      FILEPATH,
       "simplifile",
-      652,
+      667,
       "integer_to_permissions",
       "`panic` expression evaluated.",
       {}

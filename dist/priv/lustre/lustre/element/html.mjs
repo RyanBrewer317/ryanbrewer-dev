@@ -1,7 +1,9 @@
-import { toList } from "../../gleam.mjs";
+import * as $json from "../../../gleam_json/gleam/json.mjs";
+import { toList, prepend as listPrepend } from "../../gleam.mjs";
 import * as $attribute from "../../lustre/attribute.mjs";
 import * as $element from "../../lustre/element.mjs";
 import { element, namespaced } from "../../lustre/element.mjs";
+import * as $constants from "../../lustre/internals/constants.mjs";
 
 export function html(attrs, children) {
   return element("html", attrs, children);
@@ -12,7 +14,7 @@ export function text(content) {
 }
 
 export function base(attrs) {
-  return element("base", attrs, toList([]));
+  return element("base", attrs, $constants.empty_list);
 }
 
 export function head(attrs, children) {
@@ -20,15 +22,15 @@ export function head(attrs, children) {
 }
 
 export function link(attrs) {
-  return element("link", attrs, toList([]));
+  return element("link", attrs, $constants.empty_list);
 }
 
 export function meta(attrs) {
-  return element("meta", attrs, toList([]));
+  return element("meta", attrs, $constants.empty_list);
 }
 
 export function style(attrs, css) {
-  return element("style", attrs, toList([text(css)]));
+  return $element.unsafe_raw_html("", "style", attrs, css);
 }
 
 export function title(attrs, content) {
@@ -132,7 +134,7 @@ export function figure(attrs, children) {
 }
 
 export function hr(attrs) {
-  return element("hr", attrs, toList([]));
+  return element("hr", attrs, $constants.empty_list);
 }
 
 export function li(attrs, children) {
@@ -180,7 +182,7 @@ export function bdo(attrs, children) {
 }
 
 export function br(attrs) {
-  return element("br", attrs, toList([]));
+  return element("br", attrs, $constants.empty_list);
 }
 
 export function cite(attrs, children) {
@@ -272,11 +274,11 @@ export function var$(attrs, children) {
 }
 
 export function wbr(attrs) {
-  return element("wbr", attrs, toList([]));
+  return element("wbr", attrs, $constants.empty_list);
 }
 
 export function area(attrs) {
-  return element("area", attrs, toList([]));
+  return element("area", attrs, $constants.empty_list);
 }
 
 export function audio(attrs, children) {
@@ -284,7 +286,7 @@ export function audio(attrs, children) {
 }
 
 export function img(attrs) {
-  return element("img", attrs, toList([]));
+  return element("img", attrs, $constants.empty_list);
 }
 
 export function map(attrs, children) {
@@ -292,7 +294,7 @@ export function map(attrs, children) {
 }
 
 export function track(attrs) {
-  return element("track", attrs, toList([]));
+  return element("track", attrs, $constants.empty_list);
 }
 
 export function video(attrs, children) {
@@ -300,15 +302,15 @@ export function video(attrs, children) {
 }
 
 export function embed(attrs) {
-  return element("embed", attrs, toList([]));
+  return element("embed", attrs, $constants.empty_list);
 }
 
 export function iframe(attrs) {
-  return element("iframe", attrs, toList([]));
+  return element("iframe", attrs, $constants.empty_list);
 }
 
 export function object(attrs) {
-  return element("object", attrs, toList([]));
+  return element("object", attrs, $constants.empty_list);
 }
 
 export function picture(attrs, children) {
@@ -316,11 +318,11 @@ export function picture(attrs, children) {
 }
 
 export function portal(attrs) {
-  return element("portal", attrs, toList([]));
+  return element("portal", attrs, $constants.empty_list);
 }
 
 export function source(attrs) {
-  return element("source", attrs, toList([]));
+  return element("source", attrs, $constants.empty_list);
 }
 
 export function svg(attrs, children) {
@@ -332,7 +334,7 @@ export function math(attrs, children) {
 }
 
 export function canvas(attrs) {
-  return element("canvas", attrs, toList([]));
+  return element("canvas", attrs, $constants.empty_list);
 }
 
 export function noscript(attrs, children) {
@@ -340,7 +342,7 @@ export function noscript(attrs, children) {
 }
 
 export function script(attrs, js) {
-  return element("script", attrs, toList([text(js)]));
+  return $element.unsafe_raw_html("", "script", attrs, js);
 }
 
 export function del(attrs, children) {
@@ -356,7 +358,7 @@ export function caption(attrs, children) {
 }
 
 export function col(attrs) {
-  return $element.element("col", attrs, toList([]));
+  return $element.element("col", attrs, $constants.empty_list);
 }
 
 export function colgroup(attrs, children) {
@@ -408,7 +410,7 @@ export function form(attrs, children) {
 }
 
 export function input(attrs) {
-  return $element.element("input", attrs, toList([]));
+  return $element.element("input", attrs, $constants.empty_list);
 }
 
 export function label(attrs, children) {
@@ -444,7 +446,11 @@ export function select(attrs, children) {
 }
 
 export function textarea(attrs, content) {
-  return $element.element("textarea", attrs, toList([$element.text(content)]));
+  return $element.element(
+    "textarea",
+    listPrepend($attribute.property("value", $json.string(content)), attrs),
+    toList([$element.text(content)]),
+  );
 }
 
 export function details(attrs, children) {
@@ -459,8 +465,8 @@ export function summary(attrs, children) {
   return $element.element("summary", attrs, children);
 }
 
-export function slot(attrs) {
-  return $element.element("slot", attrs, toList([]));
+export function slot(attrs, fallback) {
+  return $element.element("slot", attrs, fallback);
 }
 
 export function template(attrs, children) {

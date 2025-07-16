@@ -1,6 +1,3 @@
-import gleam/int
-import gleam/list
-import gleam/string
 import client/candle/header.{
   type BinderMode, type Pos, type Syntax, type SyntaxParam, AppSyntax,
   CastSyntax, DefSyntax, EqSyntax, ExFalsoSyntax, FstSyntax, IdentSyntax,
@@ -8,6 +5,9 @@ import client/candle/header.{
   NatSyntax, NatTypeSyntax, PiSyntax, Pos, PsiSyntax, ReflSyntax, SetSort,
   SndSyntax, SortSyntax, SyntaxParam, ZeroMode,
 }
+import gleam/int
+import gleam/list
+import gleam/string
 
 pub type Parser(a) {
   Parser(run: fn(Pos, List(String)) -> Result(#(Pos, List(String), a), Failure))

@@ -1,7 +1,8 @@
 -module(lustre@server_component).
 -compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch]).
-
--export([component/1, script/0, route/1, data/1, include/1, subscribe/2, unsubscribe/1, emit/2, select/1, set_selector/1, decode_action/1, encode_patch/1]).
+-define(FILEPATH, "src/lustre/server_component.gleam").
+-export([element/2, script/0, route/1, method/1, include/2, subject/1, pid/1, register_subject/1, deregister_subject/1, register_callback/1, deregister_callback/1, emit/2, select/1, runtime_message_decoder/0, client_message_to_json/1]).
+-export_type([transport_method/0]).
 
 -if(?OTP_RELEASE >= 27).
 -define(MODULEDOC(Str), -moduledoc(Str)).
@@ -12,14 +13,10 @@
 -endif.
 
 ?MODULEDOC(
-    " > **Note**: server components are currently only supported on the **erlang**\n"
-    " > target. If it's important to you that they work on the javascript target,\n"
-    " > [open an issue](https://github.com/lustre-labs/lustre/issues/new) and tell\n"
-    " > us why it's important to you!\n"
-    "\n"
-    " Server components are an advanced feature that allows you to run entire\n"
-    " Lustre applications on the server. DOM changes are broadcasted to a small\n"
-    " client runtime and browser events are sent back to the server.\n"
+    " Server components are an advanced feature that allows you to run components\n"
+    " or full Lustre applications on the server. Updates are broadcast to a small\n"
+    " (10kb!) client runtime that patches the DOM and events are sent back to the\n"
+    " server component in real-time.\n"
     "\n"
     " ```text\n"
     " -- SERVER -----------------------------------------------------------------\n"
@@ -59,10 +56,10 @@
     "                            +----------------+\n"
     " ```\n"
     "\n"
-    " **Note**: Lustre's server component runtime is separate from your application's\n"
-    " WebSocket server. You're free to bring your own stack, connect multiple\n"
-    " clients to the same Lustre instance, or keep the application alive even when\n"
-    " no clients are connected.\n"
+    " > **Note**: Lustre's server component runtime is separate from your application's\n"
+    " > WebSocket server. You're free to bring your own stack, connect multiple\n"
+    " > clients to the same Lustre instance, or keep the application alive even when\n"
+    " > no clients are connected.\n"
     "\n"
     " Lustre server components run next to the rest of your backend code, your\n"
     " services, your database, etc. Real-time applications like chat services, games,\n"
@@ -73,10 +70,16 @@
     " ## Examples\n"
     "\n"
     " Server components are a new feature in Lustre and we're still working on the\n"
-    " best ways to use them and show them off. For now, you can find a simple\n"
-    " undocumented example in the `examples/` directory:\n"
+    " best ways to use them and show them off. Here are a few examples we've\n"
+    " developed so far:\n"
     "\n"
-    " - [`99-server-components`](https://github.com/lustre-labs/lustre/tree/main/examples/99-server-components)\n"
+    " - [Basic setup](https://github.com/lustre-labs/lustre/tree/main/examples/06-server-components/01-basic-setup)\n"
+    "\n"
+    " - [Custom attributes and events](https://github.com/lustre-labs/lustre/tree/main/examples/06-server-components/02-attributes-and-events)\n"
+    "\n"
+    " - [Decoding DOM events](https://github.com/lustre-labs/lustre/tree/main/examples/06-server-components/03-event-include)\n"
+    "\n"
+    " - [Connecting more than one client](https://github.com/lustre-labs/lustre/tree/main/examples/06-server-components/04-multiple-clients)\n"
     "\n"
     " ## Getting help\n"
     "\n"
@@ -86,118 +89,235 @@
     "\n"
 ).
 
--file("src/lustre/server_component.gleam", 101).
-?DOC(
-    " Render the Lustre Server Component client runtime. The content of your server\n"
-    " component will be rendered inside this element.\n"
-    "\n"
-    " **Note**: you must include the `lustre-server-component.mjs` script found in\n"
-    " the `priv/` directory of the Lustre package in your project's HTML or using\n"
-    " the [`script`](#script) function.\n"
-).
--spec component(list(lustre@internals@vdom:attribute(TAY))) -> lustre@internals@vdom:element(TAY).
-component(Attrs) ->
-    lustre@element:element(<<"lustre-server-component"/utf8>>, Attrs, []).
+-type transport_method() :: web_socket | server_sent_events | polling.
 
--file("src/lustre/server_component.gleam", 107).
-?DOC(" Inline the Lustre Server Component client runtime as a script tag.\n").
--spec script() -> lustre@internals@vdom:element(any()).
-script() ->
+-file("src/lustre/server_component.gleam", 141).
+?DOC(
+    " Render the server component custom element. This element acts as the thin\n"
+    " client runtime for a server component running remotely. There are a handful\n"
+    " of attributes you should provide to configure the client runtime:\n"
+    "\n"
+    " - [`route`](#route) is the URL your server component should connect to. This\n"
+    "   **must** be provided before the client runtime will do anything. The route\n"
+    "   can be a relative URL, in which case it will be resolved against the current\n"
+    "   page URL.\n"
+    "\n"
+    " - [`method`](#method) is the transport method the client runtime should use.\n"
+    "   This defaults to `WebSocket` enabling duplex communication between the client\n"
+    "   and server runtime. Other options include `ServerSentEvents` and `Polling`\n"
+    "   which are unidirectional transports.\n"
+    "\n"
+    " > **Note**: the server component runtime bundle must be included and sent to\n"
+    " > the client for this to work correctly. You can do this by including the\n"
+    " > JavaScript bundle found in Lustre's `priv/static` directory or by inlining\n"
+    " > the script source directly with the [`script`](#script) element below.\n"
+).
+-spec element(
+    list(lustre@vdom@vattr:attribute(UMR)),
+    list(lustre@vdom@vnode:element(UMR))
+) -> lustre@vdom@vnode:element(UMR).
+element(Attributes, Children) ->
     lustre@element:element(
-        <<"script"/utf8>>,
-        [lustre@attribute:attribute(<<"type"/utf8>>, <<"module"/utf8>>)],
-        [lustre@element:text(
-                <<"globalThis.customElements&&!globalThis.customElements.get(\"lustre-fragment\")&&globalThis.customElements.define(\"lustre-fragment\",class extends HTMLElement{constructor(){super()}});function k(t,e,r){let s,i=[{prev:t,next:e,parent:t.parentNode}];for(;i.length;){let{prev:o,next:n,parent:l}=i.pop();for(;n.subtree!==void 0;)n=n.subtree();if(n.content!==void 0)if(o)if(o.nodeType===Node.TEXT_NODE)o.textContent!==n.content&&(o.textContent=n.content),s??=o;else{let a=document.createTextNode(n.content);l.replaceChild(a,o),s??=a}else{let a=document.createTextNode(n.content);l.appendChild(a),s??=a}else if(n.tag!==void 0){let a=P({prev:o,next:n,dispatch:r,stack:i});o?o!==a&&l.replaceChild(a,o):l.appendChild(a),s??=a}}return s}function R(t,e,r,s=0){let i=t.parentNode;for(let o of e[0]){let n=o[0].split(\"-\"),l=o[1],a=E(i,n,s),c;if(a!==null&&a!==i)c=k(a,l,r);else{let p=E(i,n.slice(0,-1),s),g=document.createTextNode(\"\");p.appendChild(g),c=k(g,l,r)}n===\"0\"&&(t=c)}for(let o of e[1]){let n=o[0].split(\"-\");E(i,n,s).remove()}for(let o of e[2]){let n=o[0].split(\"-\"),l=o[1],a=E(i,n,s),c=x.get(a),p=[];for(let g of l[0]){let h=g[0],y=g[1];if(h.startsWith(\"data-lustre-on-\")){let m=h.slice(15),S=r(_);c.has(m)||a.addEventListener(m,w),c.set(m,S),a.setAttribute(h,y)}else(h.startsWith(\"delegate:data-\")||h.startsWith(\"delegate:aria-\"))&&a instanceof HTMLSlotElement?p.push([h.slice(10),y]):(a.setAttribute(h,y),(h===\"value\"||h===\"selected\")&&(a[h]=y));if(p.length>0)for(let m of a.assignedElements())for(let[S,A]of p)m[S]=A}for(let g of l[1])if(g.startsWith(\"data-lustre-on-\")){let h=g.slice(15);a.removeEventListener(h,w),c.delete(h)}else a.removeAttribute(g)}return t}function P({prev:t,next:e,dispatch:r,stack:s}){let i=e.namespace||\"http://www.w3.org/1999/xhtml\",o=t&&t.nodeType===Node.ELEMENT_NODE&&t.localName===e.tag&&t.namespaceURI===(e.namespace||\"http://www.w3.org/1999/xhtml\"),n=o?t:i?document.createElementNS(i,e.tag):document.createElement(e.tag),l;if(x.has(n))l=x.get(n);else{let u=new Map;x.set(n,u),l=u}let a=o?new Set(l.keys()):null,c=o?new Set(Array.from(t.attributes,u=>u.name)):null,p=null,g=null,h=null;if(o&&e.tag===\"textarea\"){let u=e.children[Symbol.iterator]().next().value?.content;u!==void 0&&(n.value=u)}let y=[];for(let u of e.attrs){let f=u[0],d=u[1];if(u.as_property)n[f]!==d&&(n[f]=d),o&&c.delete(f);else if(f.startsWith(\"on\")){let b=f.slice(2),T=r(d,b===\"input\");l.has(b)||n.addEventListener(b,w),l.set(b,T),o&&a.delete(b)}else if(f.startsWith(\"data-lustre-on-\")){let b=f.slice(15),T=r(_);l.has(b)||n.addEventListener(b,w),l.set(b,T),n.setAttribute(f,d),o&&(a.delete(b),c.delete(f))}else f.startsWith(\"delegate:data-\")||f.startsWith(\"delegate:aria-\")?(n.setAttribute(f,d),y.push([f.slice(10),d])):f===\"class\"?p=p===null?d:p+\" \"+d:f===\"style\"?g=g===null?d:g+d:f===\"dangerous-unescaped-html\"?h=d:(n.getAttribute(f)!==d&&n.setAttribute(f,d),(f===\"value\"||f===\"selected\")&&(n[f]=d),o&&c.delete(f))}if(p!==null&&(n.setAttribute(\"class\",p),o&&c.delete(\"class\")),g!==null&&(n.setAttribute(\"style\",g),o&&c.delete(\"style\")),o){for(let u of c)n.removeAttribute(u);for(let u of a)l.delete(u),n.removeEventListener(u,w)}if(e.tag===\"slot\"&&window.queueMicrotask(()=>{for(let u of n.assignedElements())for(let[f,d]of y)u.hasAttribute(f)||u.setAttribute(f,d)}),e.key!==void 0&&e.key!==\"\")n.setAttribute(\"data-lustre-key\",e.key);else if(h!==null)return n.innerHTML=h,n;let m=n.firstChild,S=null,A=null,C=null,N=v(e).next().value;if(o&&N!==void 0&&N.key!==void 0&&N.key!==\"\"){S=new Set,A=M(t),C=M(e);for(let u of v(e))m=$(m,u,n,s,C,A,S)}else for(let u of v(e))s.unshift({prev:m,next:u,parent:n}),m=m?.nextSibling;for(;m;){let u=m.nextSibling;n.removeChild(m),m=u}return n}var x=new WeakMap;function w(t){let e=t.currentTarget;if(!x.has(e)){e.removeEventListener(t.type,w);return}let r=x.get(e);if(!r.has(t.type)){e.removeEventListener(t.type,w);return}r.get(t.type)(t)}function _(t){let e=t.currentTarget,r=e.getAttribute(`data-lustre-on-${t.type}`),s=JSON.parse(e.getAttribute(\"data-lustre-data\")||\"{}\"),i=JSON.parse(e.getAttribute(\"data-lustre-include\")||\"[]\");switch(t.type){case\"input\":case\"change\":i.push(\"target.value\");break}return{tag:r,data:i.reduce((o,n)=>{let l=n.split(\".\");for(let a=0,c=o,p=t;a<l.length;a++)a===l.length-1?c[l[a]]=p[l[a]]:(c[l[a]]??={},p=p[l[a]],c=c[l[a]]);return o},{data:s})}}function M(t){let e=new Map;if(t)for(let r of v(t)){let s=r?.key||r?.getAttribute?.(\"data-lustre-key\");s&&e.set(s,r)}return e}function E(t,e,r){let s,i,o=t,n=!0;for(;[s,...i]=e,s!==void 0;)o=o.childNodes.item(n?s+r:s),n=!1,e=i;return o}function $(t,e,r,s,i,o,n){for(;t&&!i.has(t.getAttribute(\"data-lustre-key\"));){let a=t.nextSibling;r.removeChild(t),t=a}if(o.size===0)return s.unshift({prev:t,next:e,parent:r}),t=t?.nextSibling,t;if(n.has(e.key))return console.warn(`Duplicate key found in Lustre vnode: ${e.key}`),s.unshift({prev:null,next:e,parent:r}),t;n.add(e.key);let l=o.get(e.key);if(!l&&!t)return s.unshift({prev:null,next:e,parent:r}),t;if(!l&&t!==null){let a=document.createTextNode(\"\");return r.insertBefore(a,t),s.unshift({prev:a,next:e,parent:r}),t}return!l||l===t?(s.unshift({prev:t,next:e,parent:r}),t=t?.nextSibling,t):(r.insertBefore(l,t),s.unshift({prev:l,next:e,parent:r}),t)}function*v(t){for(let e of t.children)yield*F(e)}function*F(t){t.subtree!==void 0?yield*F(t.subtree()):yield t}function q(t,e){let r=[t,e];for(;r.length;){let s=r.pop(),i=r.pop();if(s===i)continue;if(!U(s)||!U(i)||!G(s,i)||D(s,i)||I(s,i)||H(s,i)||V(s,i)||z(s,i)||K(s,i))return!1;let n=Object.getPrototypeOf(s);if(n!==null&&typeof n.equals==\"function\")try{if(s.equals(i))continue;return!1}catch{}let[l,a]=j(s);for(let c of l(s))r.push(a(s,c),a(i,c))}return!0}function j(t){if(t instanceof Map)return[e=>e.keys(),(e,r)=>e.get(r)];{let e=t instanceof globalThis.Error?[\"message\"]:[];return[r=>[...e,...Object.keys(r)],(r,s)=>r[s]]}}function D(t,e){return t instanceof Date&&(t>e||t<e)}function I(t,e){return t.buffer instanceof ArrayBuffer&&t.BYTES_PER_ELEMENT&&!(t.byteLength===e.byteLength&&t.every((r,s)=>r===e[s]))}function H(t,e){return Array.isArray(t)&&t.length!==e.length}function V(t,e){return t instanceof Map&&t.size!==e.size}function z(t,e){return t instanceof Set&&(t.size!=e.size||[...t].some(r=>!e.has(r)))}function K(t,e){return t instanceof RegExp&&(t.source!==e.source||t.flags!==e.flags)}function U(t){return typeof t==\"object\"&&t!==null}function G(t,e){return typeof t!=\"object\"&&typeof e!=\"object\"&&(!t||!e)||[Promise,WeakSet,WeakMap,Function].some(s=>t instanceof s)?!1:t.constructor===e.constructor}var O=class extends HTMLElement{static get observedAttributes(){return[\"route\"]}constructor(){super(),this.attachShadow({mode:\"open\"}),this.#n=new MutationObserver(e=>{let r=[];for(let s of e)if(s.type===\"attributes\"){let{attributeName:i}=s,o=this.getAttribute(i);this[i]=o}r.length&&this.#t?.send(JSON.stringify([5,r]))})}connectedCallback(){this.#n.observe(this,{attributes:!0,attributeOldValue:!0}),this.#u().finally(()=>this.#i=!0)}attributeChangedCallback(e,r,s){switch(e){case\"route\":if(!s)this.#t?.close(),this.#t=null;else if(r!==s){let i=this.getAttribute(\"id\"),o=s+(i?`?id=${i}`:\"\"),n=window.location.protocol===\"https:\"?\"wss\":\"ws\";this.#r(`${n}://${window.location.host}${o}`)}}}messageReceivedCallback({data:e}){let[r,...s]=JSON.parse(e);switch(r){case 0:return this.#l(s);case 1:return this.#c(s);case 2:return this.#a(s)}}disconnectedCallback(){clearTimeout(this.#s),this.#t?.removeEventListener(\"close\",this.#o),this.#t?.close()}#n;#t;#s=null;#i=!1;#e=[];#a([e,r]){let s=[];for(let n of e)n in this?s.push([n,this[n]]):this.hasAttribute(n)&&s.push([n,this.getAttribute(n)]),Object.defineProperty(this,n,{get(){return this[`__mirrored__${n}`]},set(l){let a=this[`__mirrored__${n}`];q(a,l)||(this[`__mirrored__${n}`]=l,this.#t?.send(JSON.stringify([5,[[n,l]]])))}});this.#n.observe(this,{attributeFilter:e,attributeOldValue:!0,attributes:!0,characterData:!1,characterDataOldValue:!1,childList:!1,subtree:!1});let i=this.shadowRoot.childNodes[this.#e.length]??this.shadowRoot.appendChild(document.createTextNode(\"\"));k(i,r,n=>l=>{let a=JSON.parse(this.getAttribute(\"data-lustre-data\")||\"{}\"),c=n(l);c.data=W(a,c.data),this.#t?.send(JSON.stringify([4,c.tag,c.data]))}),s.length&&this.#t?.send(JSON.stringify([5,s]))}#r(e=this.#t.url){this.#t?.close(),this.#t=new WebSocket(e),this.#t.addEventListener(\"message\",r=>this.messageReceivedCallback(r)),this.#t.addEventListener(\"open\",()=>{this.dispatchEvent(new CustomEvent(\"connect\"))}),this.#t.addEventListener(\"close\",()=>{this.dispatchEvent(new CustomEvent(\"disconnect\")),this.#o()})}#o=()=>{this.#s=setTimeout(()=>{this.#t.readyState===WebSocket.CLOSED&&this.#r()},1e3)};#l([e]){let r=this.shadowRoot.childNodes[this.#e.length-1]??this.shadowRoot.appendChild(document.createTextNode(\"\"));R(r,e,i=>o=>{let n=i(o);this.#t?.send(JSON.stringify([4,n.tag,n.data]))},this.#e.length)}#c([e,r]){this.dispatchEvent(new CustomEvent(e,{detail:r}))}async#u(){let e=[];for(let s of document.querySelectorAll(\"link[rel=stylesheet]\"))s.sheet||e.push(new Promise((i,o)=>{s.addEventListener(\"load\",i),s.addEventListener(\"error\",o)}));for(await Promise.allSettled(e);this.#e.length;)this.#e.shift().remove(),this.shadowRoot.firstChild.remove();this.shadowRoot.adoptedStyleSheets=this.getRootNode().adoptedStyleSheets;let r=[];for(let s of document.styleSheets)try{this.shadowRoot.adoptedStyleSheets.push(s)}catch{try{let i=new CSSStyleSheet;for(let o of s.cssRules)i.insertRule(o.cssText,i.cssRules.length);this.shadowRoot.adoptedStyleSheets.push(i)}catch{let i=s.ownerNode.cloneNode();this.shadowRoot.prepend(i),this.#e.push(i),r.push(new Promise((o,n)=>{i.onload=o,i.onerror=n}))}}return Promise.allSettled(r)}};window.customElements.define(\"lustre-server-component\",O);var W=(t,e)=>{for(let r in e)e[r]instanceof Object&&Object.assign(e[r],W(t[r],e[r]));return Object.assign(t||{},e),t};export{O as LustreServerComponent};"/utf8>>
-            )]
+        <<"lustre-server-component"/utf8>>,
+        Attributes,
+        Children
     ).
 
--file("src/lustre/server_component.gleam", 123).
+-file("src/lustre/server_component.gleam", 153).
+?DOC(
+    " Inline the server component client runtime as a `<script>` tag. Where possible\n"
+    " you should prefer serving the pre-built client runtime from Lustre's `priv/static`\n"
+    " directory, but this inline script can be useful for development or scenarios\n"
+    " where you don't control the HTML document.\n"
+).
+-spec script() -> lustre@vdom@vnode:element(any()).
+script() ->
+    lustre@element@html:script(
+        [lustre@attribute:type_(<<"module"/utf8>>)],
+        <<"var a=class{withFields(e){let n=Object.keys(this).map(t=>t in e?e[t]:this[t]);return new this.constructor(...n)}};var It=5,ne=Math.pow(2,It),zn=ne-1,On=ne/2,Tn=ne/4;var Pe=[\" \",\"	\",`\\n`,\"\\v\",\"\\f\",\"\\r\",\"\\x85\",\"\\u2028\",\"\\u2029\"].join(\"\"),yr=new RegExp(`^[${Pe}]*`),gr=new RegExp(`[${Pe}]*$`);var y=()=>globalThis?.document,oe=\"http://www.w3.org/1999/xhtml\",le=1,ae=3,ce=11,He=!!globalThis.HTMLElement?.prototype?.moveBefore;var rt=0;var it=1;var st=2;var ut=0;var de=2;var S=class extends a{constructor(e,n,t,r,s,u){super(),this.kind=e,this.key=n,this.mapper=t,this.children=r,this.keyed_children=s,this.children_count=u}};function A(i){return i instanceof S?1+i.children_count:1}var ot=0;var lt=1;var at=2;var ct=3;var ft=\"	\";var ht=0;var mt=1;var xt=2;var he=3;var wt=4;var me=5;var xe=6;var we=7;var D=class{offset=0;#r=null;#e=()=>{};#t=!1;#n=!1;constructor(e,n,{useServerEvents:t=!1,exposeKeys:r=!1}={}){this.#r=e,this.#e=n,this.#t=t,this.#n=r}mount(e){X(this.#r,this.#p(this.#r,0,e))}#i=[];push(e){let n=this.offset;n&&(w(e.changes,t=>{switch(t.kind){case xe:case he:t.before=(t.before|0)+n;break;case we:case me:t.from=(t.from|0)+n;break}}),w(e.children,t=>{t.index=(t.index|0)+n})),this.#i.push({node:this.#r,patch:e}),this.#s()}#s(){let e=this;for(;e.#i.length;){let{node:n,patch:t}=e.#i.pop();w(t.changes,u=>{switch(u.kind){case xe:e.#u(n,u.children,u.before);break;case he:e.#a(n,u.key,u.before,u.count);break;case wt:e.#l(n,u.key,u.count);break;case we:e.#o(n,u.from,u.count);break;case me:e.#f(n,u.from,u.count,u.with);break;case ht:e.#d(n,u.content);break;case mt:e.#_(n,u.inner_html);break;case xt:e.#x(n,u.added,u.removed);break}}),t.removed&&e.#o(n,n.childNodes.length-t.removed,t.removed);let r=-1,s=null;w(t.children,u=>{let o=u.index|0,$=s&&r-o===1?s.previousSibling:L(n,o);e.#i.push({node:$,patch:u}),s=$,r=o})}}#u(e,n,t){let r=gt(),s=t|0;w(n,u=>{let o=this.#p(e,s,u);X(r,o),s+=A(u)}),$e(e,r,L(e,t))}#a(e,n,t,r){let s=vt(e,n),u=L(e,t);for(let o=0;o<r&&s!==null;++o){let $=s.nextSibling;He?e.moveBefore(s,u):$e(e,s,u),s=$}}#l(e,n,t){this.#c(e,vt(e,n),t)}#o(e,n,t){this.#c(e,L(e,n),t)}#c(e,n,t){for(;t-- >0&&n!==null;){let r=n.nextSibling,s=n[l].key;s&&e[l].keyedChildren.delete(s);for(let[u,{timeout:o}]of n[l].debouncers??[])clearTimeout(o);e.removeChild(n),n=r}}#f(e,n,t,r){this.#o(e,n,t);let s=this.#p(e,n,r);$e(e,s,L(e,n))}#d(e,n){e.data=n??\"\"}#_(e,n){e.innerHTML=n??\"\"}#x(e,n,t){w(t,r=>{let s=r.name;e[l].handlers.has(s)?(e.removeEventListener(s,be),e[l].handlers.delete(s),e[l].throttles.has(s)&&e[l].throttles.delete(s),e[l].debouncers.has(s)&&(clearTimeout(e[l].debouncers.get(s).timeout),e[l].debouncers.delete(s))):(e.removeAttribute(s),jt[s]?.removed?.(e,s))}),w(n,r=>{this.#m(e,r)})}#p(e,n,t){switch(t.kind){case lt:{let r=bt(e,n,t);return this.#h(r,t),this.#u(r,t.children),r}case at:return yt(e,n,t);case ot:{let r=gt(),s=yt(e,n,t);X(r,s);let u=n+1;return w(t.children,o=>{X(r,this.#p(e,u,o)),u+=A(o)}),r}case ct:{let r=bt(e,n,t);return this.#h(r,t),this.#_(r,t.inner_html),r}}}#h(e,{key:n,attributes:t}){this.#n&&n&&e.setAttribute(\"data-lustre-key\",n),w(t,r=>this.#m(e,r))}#m(e,n){let{debouncers:t,handlers:r,throttles:s}=e[l],{kind:u,name:o,value:$,prevent_default:je,stop_propagation:Tt,immediate:Z,include:Nt,debounce:Ee,throttle:Se}=n;switch(u){case rt:{let c=$??\"\";if(o===\"virtual:defaultValue\"){e.defaultValue=c;return}c!==e.getAttribute(o)&&e.setAttribute(o,c),jt[o]?.added?.(e,$);break}case it:e[o]=$;break;case st:{if(r.has(o)&&e.removeEventListener(o,be),e.addEventListener(o,be,{passive:je.kind===ut}),Se>0){let c=s.get(o)??{};c.delay=Se,s.set(o,c)}else s.delete(o);if(Ee>0){let c=t.get(o)??{};c.delay=Ee,t.set(o,c)}else clearTimeout(t.get(o)?.timeout),t.delete(o);r.set(o,c=>{je.kind===de&&c.preventDefault(),Tt.kind===de&&c.stopPropagation();let g=c.type,ee=c.currentTarget[l].path,te=this.#t?bn(c,Nt??[]):c,v=s.get(g);if(v){let Ae=Date.now(),Mt=v.last||0;Ae>Mt+v.delay&&(v.last=Ae,v.lastEvent=c,this.#e(te,ee,g,Z))}let B=t.get(g);B&&(clearTimeout(B.timeout),B.timeout=setTimeout(()=>{c!==s.get(g)?.lastEvent&&this.#e(te,ee,g,Z)},B.delay)),!v&&!B&&this.#e(te,ee,g,Z)});break}}}},w=(i,e)=>{if(Array.isArray(i))for(let n=0;n<i.length;n++)e(i[n]);else if(i)for(i;i.tail;i=i.tail)e(i.head)},X=(i,e)=>i.appendChild(e),$e=(i,e,n)=>i.insertBefore(e,n??null),bt=(i,e,{key:n,tag:t,namespace:r})=>{let s=y().createElementNS(r||oe,t);return P(i,s,e,n),s},yt=(i,e,{key:n,content:t})=>{let r=y().createTextNode(t??\"\");return P(i,r,e,n),r},gt=()=>y().createDocumentFragment(),L=(i,e)=>i.childNodes[e|0],l=Symbol(\"lustre\"),P=(i,e,n=0,t=\"\")=>{let r=`${t||n}`;switch(e.nodeType){case le:case ce:e[l]={key:t,path:r,keyedChildren:new Map,handlers:new Map,throttles:new Map,debouncers:new Map};break;case ae:e[l]={key:t};break}i&&i[l]&&t&&i[l].keyedChildren.set(t,new WeakRef(e)),i&&i[l]&&i[l].path&&(e[l].path=`${i[l].path}${ft}${r}`)};var vt=(i,e)=>i[l].keyedChildren.get(e).deref(),be=i=>{let n=i.currentTarget[l].handlers.get(i.type);i.type===\"submit\"&&(i.detail??={},i.detail.formData=[...new FormData(i.target).entries()]),n(i)},bn=(i,e=[])=>{let n={};(i.type===\"input\"||i.type===\"change\")&&e.push(\"target.value\"),i.type===\"submit\"&&e.push(\"detail.formData\");for(let t of e){let r=t.split(\".\");for(let s=0,u=i,o=n;s<r.length;s++){if(s===r.length-1){o[r[s]]=u[r[s]];break}o=o[r[s]]??={},u=u[r[s]]}}return n},kt=i=>({added(e){e[i]=!0},removed(e){e[i]=!1}}),yn=i=>({added(e,n){e[i]=n}}),jt={checked:kt(\"checked\"),selected:kt(\"selected\"),value:yn(\"value\"),autofocus:{added(i){queueMicrotask(()=>i.focus?.())}},autoplay:{added(i){try{i.play?.()}catch(e){console.error(e)}}}};var Et=new WeakMap;async function St(i){let e=[];for(let t of y().querySelectorAll(\"link[rel=stylesheet], style\"))t.sheet||e.push(new Promise((r,s)=>{t.addEventListener(\"load\",r),t.addEventListener(\"error\",s)}));if(await Promise.allSettled(e),!i.host.isConnected)return[];i.adoptedStyleSheets=i.host.getRootNode().adoptedStyleSheets;let n=[];for(let t of y().styleSheets)try{i.adoptedStyleSheets.push(t)}catch{try{let r=Et.get(t);if(!r){r=new CSSStyleSheet;for(let s of t.cssRules)r.insertRule(s.cssText,r.cssRules.length);Et.set(t,r)}i.adoptedStyleSheets.push(r)}catch{let r=t.ownerNode.cloneNode();i.prepend(r),n.push(r)}}return n}var At=0;var Bt=1;var Ct=2;var K=0;var zt=1;var Ot=2;var Q=3;var ye=class extends HTMLElement{static get observedAttributes(){return[\"route\",\"method\"]}#r;#e=\"ws\";#t=null;#n=null;#i=[];#s;#u=new Set;#a=new Set;#l=!1;#o=[];#c=new MutationObserver(e=>{let n=[];for(let t of e){if(t.type!==\"attributes\")continue;let r=t.attributeName;(!this.#l||this.#u.has(r))&&n.push([r,this.getAttribute(r)])}if(n.length===1){let[t,r]=n[0];this.#n?.send({kind:K,name:t,value:r})}else n.length?this.#n?.send({kind:Q,messages:n.map(([t,r])=>({kind:K,name:t,value:r}))}):this.#o.push(...n)});constructor(){super(),this.internals=this.attachInternals(),this.#c.observe(this,{attributes:!0})}connectedCallback(){for(let e of this.attributes)this.#o.push([e.name,e.value])}attributeChangedCallback(e,n,t){switch(e){case(n!==t&&\"route\"):{this.#t=new URL(t,location.href),this.#f();return}case\"method\":{let r=t.toLowerCase();if(r==this.#e)return;[\"ws\",\"sse\",\"polling\"].includes(r)&&(this.#e=r,this.#e==\"ws\"&&(this.#t.protocol==\"https:\"&&(this.#t.protocol=\"wss:\"),this.#t.protocol==\"http:\"&&(this.#t.protocol=\"ws:\")),this.#f());return}}}async messageReceivedCallback(e){switch(e.kind){case At:{for(this.#r??=this.attachShadow({mode:e.open_shadow_root?\"open\":\"closed\"}),P(null,this.#r,\"\");this.#r.firstChild;)this.#r.firstChild.remove();this.#s=new D(this.#r,(t,r,s)=>{this.#n?.send({kind:zt,path:r,name:s,event:t})},{useServerEvents:!0}),this.#u=new Set(e.observed_attributes);let n=this.#o.filter(([t])=>this.#u.has(t));n.length&&this.#n.send({kind:Q,messages:n.map(([t,r])=>({kind:K,name:t,value:r}))}),this.#o=[],this.#a=new Set(e.observed_properties);for(let t of this.#a)Object.defineProperty(this,t,{get(){return this[`_${t}`]},set(r){this[`_${t}`]=r,this.#n?.send({kind:Ot,name:t,value:r})}});e.will_adopt_styles&&await this.#d(),this.#s.mount(e.vdom),this.dispatchEvent(new CustomEvent(\"lustre:mount\"));break}case Bt:{this.#s.push(e.patch);break}case Ct:{this.dispatchEvent(new CustomEvent(e.name,{detail:e.data}));break}}}#f(){if(!this.#t||!this.#e)return;this.#n&&this.#n.close();let r={onConnect:()=>{this.#l=!0,this.dispatchEvent(new CustomEvent(\"lustre:connect\"),{detail:{route:this.#t,method:this.#e}})},onMessage:s=>{this.messageReceivedCallback(s)},onClose:()=>{this.#l=!1,this.dispatchEvent(new CustomEvent(\"lustre:close\"),{detail:{route:this.#t,method:this.#e}})}};switch(this.#e){case\"ws\":this.#n=new ge(this.#t,r);break;case\"sse\":this.#n=new ve(this.#t,r);break;case\"polling\":this.#n=new ke(this.#t,r);break}}async#d(){for(;this.#i.length;)this.#i.pop().remove(),this.#r.firstChild.remove();this.#i=await St(this.#r),this.#s.offset=this.#i.length}},ge=class{#r;#e;#t=!1;#n=[];#i;#s;#u;constructor(e,{onConnect:n,onMessage:t,onClose:r}){this.#r=e,this.#e=new WebSocket(this.#r),this.#i=n,this.#s=t,this.#u=r,this.#e.onopen=()=>{this.#i()},this.#e.onmessage=({data:s})=>{try{this.#s(JSON.parse(s))}finally{this.#n.length?this.#e.send(JSON.stringify({kind:Q,messages:this.#n})):this.#t=!1,this.#n=[]}},this.#e.onclose=()=>{this.#u()}}send(e){if(this.#t||this.#e.readyState!==WebSocket.OPEN){this.#n.push(e);return}else this.#e.send(JSON.stringify(e)),this.#t=!0}close(){this.#e.close()}},ve=class{#r;#e;#t;#n;#i;constructor(e,{onConnect:n,onMessage:t,onClose:r}){this.#r=e,this.#e=new EventSource(this.#r),this.#t=n,this.#n=t,this.#i=r,this.#e.onopen=()=>{this.#t()},this.#e.onmessage=({data:s})=>{try{this.#n(JSON.parse(s))}catch{}}}send(e){}close(){this.#e.close(),this.#i()}},ke=class{#r;#e;#t;#n;#i;#s;constructor(e,{onConnect:n,onMessage:t,onClose:r,...s}){this.#r=e,this.#n=n,this.#i=t,this.#s=r,this.#e=s.interval??5e3,this.#u().finally(()=>{this.#n(),this.#t=setInterval(()=>this.#u(),this.#e)})}async send(e){}close(){clearInterval(this.#t),this.#s()}#u(){return fetch(this.#r).then(e=>e.json()).then(this.#i).catch(console.error)}};customElements.define(\"lustre-server-component\",ye);export{ye as ServerComponent};"/utf8>>
+    ).
+
+-file("src/lustre/server_component.gleam", 168).
 ?DOC(
     " The `route` attribute tells the client runtime what route it should use to\n"
     " set up the WebSocket connection to the server. Whenever this attribute is\n"
     " changed (by a clientside Lustre app, for example), the client runtime will\n"
     " destroy the current connection and set up a new one.\n"
 ).
--spec route(binary()) -> lustre@internals@vdom:attribute(any()).
+-spec route(binary()) -> lustre@vdom@vattr:attribute(any()).
 route(Path) ->
     lustre@attribute:attribute(<<"route"/utf8>>, Path).
 
--file("src/lustre/server_component.gleam", 134).
-?DOC(
-    " Ocassionally you may want to attach custom data to an event sent to the server.\n"
-    " This could be used to include a hash of the current build to detect if the\n"
-    " event was sent from a stale client.\n"
-    "\n"
-    " Your event decoders can access this data by decoding `data` property of the\n"
-    " event object.\n"
-).
--spec data(gleam@json:json()) -> lustre@internals@vdom:attribute(any()).
-data(Json) ->
-    _pipe = Json,
-    _pipe@1 = gleam@json:to_string(_pipe),
-    lustre@attribute:attribute(<<"data-lustre-data"/utf8>>, _pipe@1).
+-file("src/lustre/server_component.gleam", 174).
+?DOC("\n").
+-spec method(transport_method()) -> lustre@vdom@vattr:attribute(any()).
+method(Value) ->
+    lustre@attribute:attribute(<<"method"/utf8>>, case Value of
+            web_socket ->
+                <<"ws"/utf8>>;
 
--file("src/lustre/server_component.gleam", 170).
+            server_sent_events ->
+                <<"sse"/utf8>>;
+
+            polling ->
+                <<"polling"/utf8>>
+        end).
+
+-file("src/lustre/server_component.gleam", 211).
 ?DOC(
     " Properties of a JavaScript event object are typically not serialisable. This\n"
-    " means if we want to pass them to the server we need to copy them into a new\n"
-    " object first.\n"
+    " means if we want to send them to the server we need to make a copy of any\n"
+    " fields we want to decode first.\n"
     "\n"
-    " This attribute tells Lustre what properties to include. Properties can come\n"
-    " from nested objects by using dot notation. For example, you could include the\n"
+    " This attribute tells Lustre what properties to include from an event. Properties\n"
+    " can come from nested fields by using dot notation. For example, you could include\n"
+    " the\n"
     " `id` of the target `element` by passing `[\"target.id\"]`.\n"
     "\n"
     " ```gleam\n"
-    " import gleam/dynamic\n"
-    " import gleam/result.{try}\n"
+    " import gleam/dynamic/decode\n"
     " import lustre/element.{type Element}\n"
     " import lustre/element/html\n"
     " import lustre/event\n"
-    " import lustre/server\n"
+    " import lustre/server_component\n"
     "\n"
     " pub fn custom_button(on_click: fn(String) -> msg) -> Element(msg) {\n"
     "   let handler = fn(event) {\n"
-    "     use target <- try(dynamic.field(\"target\", dynamic.dynamic)(event))\n"
-    "     use id <- try(dynamic.field(\"id\", dynamic.string)(target))\n"
-    "\n"
-    "     Ok(on_click(id))\n"
+    "     use id <- decode.at([\"target\", \"id\"], decode.string)\n"
+    "     decode.success(on_click(id))\n"
     "   }\n"
     "\n"
-    "   html.button([event.on_click(handler), server.include([\"target.id\"])], [\n"
-    "     element.text(\"Click me!\")\n"
-    "   ])\n"
+    "   html.button(\n"
+    "     [server_component.include([\"target.id\"]), event.on(\"click\", handler)],\n"
+    "     [html.text(\"Click me!\")],\n"
+    "   )\n"
     " }\n"
     " ```\n"
 ).
--spec include(list(binary())) -> lustre@internals@vdom:attribute(any()).
-include(Properties) ->
-    _pipe = Properties,
-    _pipe@1 = gleam@json:array(_pipe, fun gleam@json:string/1),
-    _pipe@2 = gleam@json:to_string(_pipe@1),
-    lustre@attribute:attribute(<<"data-lustre-include"/utf8>>, _pipe@2).
+-spec include(lustre@vdom@vattr:attribute(UND), list(binary())) -> lustre@vdom@vattr:attribute(UND).
+include(Event, Properties) ->
+    case Event of
+        {event, _, _, _, _, _, _, _, _, _} ->
+            _record = Event,
+            {event,
+                erlang:element(2, _record),
+                erlang:element(3, _record),
+                erlang:element(4, _record),
+                Properties,
+                erlang:element(6, _record),
+                erlang:element(7, _record),
+                erlang:element(8, _record),
+                erlang:element(9, _record),
+                erlang:element(10, _record)};
 
--file("src/lustre/server_component.gleam", 182).
+        _ ->
+            Event
+    end.
+
+-file("src/lustre/server_component.gleam", 231).
 ?DOC(
-    " A server component broadcasts patches to be applied to the DOM to any connected\n"
-    " clients. This action is used to add a new client to a running server component.\n"
+    " Recover the `Subject` of the server component runtime so that it can be used\n"
+    " in supervision trees or passed to other processes. If you want to hand out\n"
+    " different `Subject`s to send messages to your application, take a look at the\n"
+    " [`select`](#select) effect.\n"
+    "\n"
+    " > **Note**: this function is not available on the JavaScript target.\n"
 ).
--spec subscribe(binary(), fun((lustre@internals@patch:patch(TBL)) -> nil)) -> lustre@internals@runtime:action(TBL, lustre:server_component()).
-subscribe(Id, Renderer) ->
-    {subscribe, Id, Renderer}.
+-spec subject(lustre:runtime(UNH)) -> gleam@erlang@process:subject(lustre@runtime@server@runtime:message(UNH)).
+subject(Runtime) ->
+    gleam@function:identity(Runtime).
 
--file("src/lustre/server_component.gleam", 192).
+-file("src/lustre/server_component.gleam", 243).
 ?DOC(
-    " Remove a registered renderer from a server component. If no renderer with the\n"
-    " given id is found, this action has no effect.\n"
+    " Recover the `Pid` of the server component runtime so that it can be used in\n"
+    " supervision trees or passed to other processes. If you want to hand out\n"
+    " different `Subject`s to send messages to your application, take a look at the\n"
+    " [`select`](#select) effect.\n"
+    "\n"
+    " > **Note**: this function is not available on the JavaScript target.\n"
 ).
--spec unsubscribe(binary()) -> lustre@internals@runtime:action(any(), lustre:server_component()).
-unsubscribe(Id) ->
-    {unsubscribe, Id}.
+-spec pid(lustre:runtime(any())) -> gleam@erlang@process:pid_().
+pid(Runtime) ->
+    Pid@1 = case gleam@erlang@process:subject_owner(subject(Runtime)) of
+        {ok, Pid} -> Pid;
+        _assert_fail ->
+            erlang:error(#{gleam_error => let_assert,
+                        message => <<"Pattern match failed, no pattern matched the value."/utf8>>,
+                        file => <<?FILEPATH/utf8>>,
+                        module => <<"lustre/server_component"/utf8>>,
+                        function => <<"pid"/utf8>>,
+                        line => 246,
+                        value => _assert_fail,
+                        start => 20392,
+                        'end' => 20452,
+                        pattern_start => 20403,
+                        pattern_end => 20410})
+    end,
+    Pid@1.
 
--file("src/lustre/server_component.gleam", 206).
+-file("src/lustre/server_component.gleam", 262).
+?DOC(
+    " Register a `Subject` to receive messages and updates from Lustre's server\n"
+    " component runtime. The process that owns this will be monitored and the\n"
+    " subject will be gracefully removed if the process dies.\n"
+    "\n"
+    " > **Note**: if you are developing a server component for the JavaScript runtime,\n"
+    " > you should use [`register_callback`](#register_callback) instead.\n"
+).
+-spec register_subject(
+    gleam@erlang@process:subject(lustre@runtime@transport:client_message(UNP))
+) -> lustre@runtime@server@runtime:message(UNP).
+register_subject(Client) ->
+    {client_registered_subject, Client}.
+
+-file("src/lustre/server_component.gleam", 272).
+?DOC(
+    " Deregister a `Subject` to stop receiving messages and updates from Lustre's\n"
+    " server component runtime. The subject should first have been registered with\n"
+    " [`register_subject`](#register_subject) otherwise this will do nothing.\n"
+).
+-spec deregister_subject(
+    gleam@erlang@process:subject(lustre@runtime@transport:client_message(UNT))
+) -> lustre@runtime@server@runtime:message(UNT).
+deregister_subject(Client) ->
+    {client_deregistered_subject, Client}.
+
+-file("src/lustre/server_component.gleam", 286).
+?DOC(
+    " Register a callback to be called whenever the server component runtime\n"
+    " produces a message. Avoid using anonymous functions with this function, as\n"
+    " they cannot later be removed using [`deregister_callback`](#deregister_callback).\n"
+    "\n"
+    " > **Note**: server components running on the Erlang target are **strongly**\n"
+    " > encouraged to use [`register_subject`](#register_subject) instead of this\n"
+    " > function.\n"
+).
+-spec register_callback(
+    fun((lustre@runtime@transport:client_message(UNX)) -> nil)
+) -> lustre@runtime@server@runtime:message(UNX).
+register_callback(Callback) ->
+    {client_registered_callback, Callback}.
+
+-file("src/lustre/server_component.gleam", 300).
+?DOC(
+    " Deregister a callback to be called whenever the server component runtime\n"
+    " produces a message. The callback to remove is determined by function equality\n"
+    " and must be the same function that was passed to [`register_callback`](#register_callback).\n"
+    "\n"
+    " > **Note**: server components running on the Erlang target are **strongly**\n"
+    " > encouraged to use [`register_subject`](#register_subject) instead of this\n"
+    " > function.\n"
+).
+-spec deregister_callback(
+    fun((lustre@runtime@transport:client_message(UOA)) -> nil)
+) -> lustre@runtime@server@runtime:message(UOA).
+deregister_callback(Callback) ->
+    {client_deregistered_callback, Callback}.
+
+-file("src/lustre/server_component.gleam", 316).
 ?DOC(
     " Instruct any connected clients to emit a DOM event with the given name and\n"
-    " data. This lets your server component communicate to frontend the same way\n"
+    " data. This lets your server component communicate to the frontend the same way\n"
     " any other HTML elements do: you might emit a `\"change\"` event when some part\n"
     " of the server component's state changes, for example.\n"
     "\n"
@@ -208,20 +328,7 @@ unsubscribe(Id) ->
 emit(Event, Data) ->
     lustre@effect:event(Event, Data).
 
--file("src/lustre/server_component.gleam", 236).
--spec do_select(
-    fun((fun((TBZ) -> nil), gleam@erlang@process:subject(any())) -> gleam@erlang@process:selector(TBZ))
-) -> lustre@effect:effect(TBZ).
-do_select(Sel) ->
-    lustre@effect:custom(
-        fun(Dispatch, _, Select, _) ->
-            Self = gleam@erlang@process:new_subject(),
-            Selector = Sel(Dispatch, Self),
-            Select(Selector)
-        end
-    ).
-
--file("src/lustre/server_component.gleam", 229).
+-file("src/lustre/server_component.gleam", 339).
 ?DOC(
     " On the Erlang target, Lustre's server component runtime is an OTP\n"
     " [actor](https://hexdocs.pm/gleam_otp/gleam/otp/actor.html) that can be\n"
@@ -239,122 +346,38 @@ do_select(Sel) ->
     " for later use. For example you may subscribe to a pubsub service and later use\n"
     " that same `Subject` to unsubscribe.\n"
     "\n"
-    " **Note**: This effect does nothing on the JavaScript runtime, where `Subjects`\n"
-    " and `Selectors` don't exist, and is the equivalent of returning `effect.none()`.\n"
+    " > **Note**: This effect does nothing on the JavaScript runtime, where `Subject`s\n"
+    " > and `Selector`s don't exist, and is the equivalent of returning `effect.none()`.\n"
 ).
 -spec select(
-    fun((fun((TBU) -> nil), gleam@erlang@process:subject(any())) -> gleam@erlang@process:selector(TBU))
-) -> lustre@effect:effect(TBU).
+    fun((fun((UOF) -> nil), gleam@erlang@process:subject(any())) -> gleam@erlang@process:selector(UOF))
+) -> lustre@effect:effect(UOF).
 select(Sel) ->
-    do_select(Sel).
+    lustre@effect:select(Sel).
 
--file("src/lustre/server_component.gleam", 257).
-?DOC("\n").
--spec set_selector(
-    gleam@erlang@process:selector(lustre@internals@runtime:action(any(), TCF))
-) -> lustre@effect:effect(TCF).
-set_selector(_) ->
-    lustre@effect:from(
-        fun(_) ->
-            _pipe = <<"
-It looks like you're trying to use `set_selector` in a server component. The
-implementation of this effect is broken in ways that cannot be fixed without
-changing the API. Please take a look at `select` instead!
-  "/utf8>>,
-            _pipe@1 = gleam@string:trim(_pipe),
-            gleam_stdlib:println_error(_pipe@1),
-            nil
-        end
-    ).
-
--file("src/lustre/server_component.gleam", 283).
--spec decode_event(gleam@dynamic:dynamic_()) -> {ok,
-        lustre@internals@runtime:action(any(), any())} |
-    {error, list(gleam@dynamic:decode_error())}.
-decode_event(Dyn) ->
-    gleam@result:'try'(
-        (gleam@dynamic:tuple3(
-            fun gleam@dynamic:int/1,
-            fun gleam@dynamic:dynamic/1,
-            fun gleam@dynamic:dynamic/1
-        ))(Dyn),
-        fun(_use0) ->
-            {Kind, Name, Data} = _use0,
-            gleam@bool:guard(
-                Kind /= 4,
-                {error,
-                    [{decode_error,
-                            erlang:integer_to_binary(4),
-                            erlang:integer_to_binary(Kind),
-                            [<<"0"/utf8>>]}]},
-                fun() ->
-                    gleam@result:'try'(
-                        gleam@dynamic:string(Name),
-                        fun(Name@1) -> {ok, {event, Name@1, Data}} end
-                    )
-                end
-            )
-        end
-    ).
-
--file("src/lustre/server_component.gleam", 321).
--spec decode_attr(gleam@dynamic:dynamic_()) -> {ok,
-        {binary(), gleam@dynamic:dynamic_()}} |
-    {error, list(gleam@dynamic:decode_error())}.
-decode_attr(Dyn) ->
-    (gleam@dynamic:tuple2(
-        fun gleam@dynamic:string/1,
-        fun gleam@dynamic:dynamic/1
-    ))(Dyn).
-
--file("src/lustre/server_component.gleam", 304).
--spec decode_attrs(gleam@dynamic:dynamic_()) -> {ok,
-        lustre@internals@runtime:action(any(), any())} |
-    {error, list(gleam@dynamic:decode_error())}.
-decode_attrs(Dyn) ->
-    gleam@result:'try'(
-        (gleam@dynamic:tuple2(
-            fun gleam@dynamic:int/1,
-            fun gleam@dynamic:dynamic/1
-        ))(Dyn),
-        fun(_use0) ->
-            {Kind, Attrs} = _use0,
-            gleam@bool:guard(
-                Kind /= 5,
-                {error,
-                    [{decode_error,
-                            erlang:integer_to_binary(5),
-                            erlang:integer_to_binary(Kind),
-                            [<<"0"/utf8>>]}]},
-                fun() ->
-                    gleam@result:'try'(
-                        (gleam@dynamic:list(fun decode_attr/1))(Attrs),
-                        fun(Attrs@1) -> {ok, {attrs, Attrs@1}} end
-                    )
-                end
-            )
-        end
-    ).
-
--file("src/lustre/server_component.gleam", 277).
+-file("src/lustre/server_component.gleam", 352).
 ?DOC(
-    " The server component client runtime sends JSON encoded actions for the server\n"
+    " The server component client runtime sends JSON-encoded messages for the server\n"
     " runtime to execute. Because your own WebSocket server sits between the two\n"
     " parts of the runtime, you need to decode these actions and pass them to the\n"
     " server runtime yourself.\n"
 ).
--spec decode_action(gleam@dynamic:dynamic_()) -> {ok,
-        lustre@internals@runtime:action(any(), lustre:server_component())} |
-    {error, list(gleam@dynamic:decode_error())}.
-decode_action(Dyn) ->
-    (gleam@dynamic:any([fun decode_event/1, fun decode_attrs/1]))(Dyn).
+-spec runtime_message_decoder() -> gleam@dynamic@decode:decoder(lustre@runtime@server@runtime:message(any())).
+runtime_message_decoder() ->
+    gleam@dynamic@decode:map(
+        lustre@runtime@transport:server_message_decoder(),
+        fun(Field@0) -> {client_dispatched_message, Field@0} end
+    ).
 
--file("src/lustre/server_component.gleam", 331).
+-file("src/lustre/server_component.gleam", 368).
 ?DOC(
-    " Encode a DOM patch as JSON you can send to the client runtime to apply. Whenever\n"
-    " the server runtime re-renders, all subscribed clients will receive a patch\n"
-    " message they must forward to the client runtime.\n"
+    " Encode a message you can send to the client runtime to respond to. The server\n"
+    " component runtime will send messages to any registered clients to instruct\n"
+    " them to update their DOM or emit events, for example.\n"
+    "\n"
+    " Because your WebSocket server sits between the two parts of the runtime, you\n"
+    " need to encode these actions and send them to the client runtime yourself.\n"
 ).
--spec encode_patch(lustre@internals@patch:patch(any())) -> gleam@json:json().
-encode_patch(Patch) ->
-    lustre@internals@patch:patch_to_json(Patch).
+-spec client_message_to_json(lustre@runtime@transport:client_message(any())) -> gleam@json:json().
+client_message_to_json(Message) ->
+    lustre@runtime@transport:client_message_to_json(Message).

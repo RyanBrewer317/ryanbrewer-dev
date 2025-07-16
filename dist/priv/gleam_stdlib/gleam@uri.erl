@@ -985,7 +985,7 @@ origin(Uri) ->
     end.
 
 -file("src/gleam/uri.gleam", 759).
--spec drop_last(list(ELO)) -> list(ELO).
+-spec drop_last(list(DGO)) -> list(DGO).
 drop_last(Elements) ->
     gleam@list:take(Elements, erlang:length(Elements) - 1).
 

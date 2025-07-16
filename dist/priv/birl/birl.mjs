@@ -23,12 +23,16 @@ import {
   Ok,
   Error,
   toList,
+  Empty as $Empty,
+  NonEmpty as $NonEmpty,
   CustomType as $CustomType,
   makeError,
   remainderInt,
   divideInt,
   isEqual,
 } from "./gleam.mjs";
+
+const FILEPATH = "src/birl.gleam";
 
 class Time extends $CustomType {
   constructor(wall_time, offset, timezone, monotonic_time) {
@@ -118,10 +122,8 @@ export function time_of_day_to_short_string(value) {
 }
 
 export function to_unix(value) {
-  {
-    let t = value.wall_time;
-    return divideInt(t, 1_000_000);
-  }
+  let t = value.wall_time;
+  return divideInt(t, 1_000_000);
 }
 
 export function from_unix(value) {
@@ -129,10 +131,8 @@ export function from_unix(value) {
 }
 
 export function to_unix_milli(value) {
-  {
-    let t = value.wall_time;
-    return divideInt(t, 1000);
-  }
+  let t = value.wall_time;
+  return divideInt(t, 1000);
 }
 
 export function from_unix_milli(value) {
@@ -140,10 +140,8 @@ export function from_unix_milli(value) {
 }
 
 export function to_unix_micro(value) {
-  {
-    let t = value.wall_time;
-    return t;
-  }
+  let t = value.wall_time;
+  return t;
 }
 
 export function from_unix_micro(value) {
@@ -155,15 +153,19 @@ export function compare(a, b) {
   let mta = a.monotonic_time;
   let wtb = b.wall_time;
   let mtb = b.monotonic_time;
-  let $ = (() => {
-    if (mta instanceof $option.Some && mtb instanceof $option.Some) {
-      let ta = mta[0];
+  let _block;
+  if (mtb instanceof $option.Some) {
+    if (mta instanceof $option.Some) {
       let tb = mtb[0];
-      return [ta, tb];
+      let ta = mta[0];
+      _block = [ta, tb];
     } else {
-      return [wta, wtb];
+      _block = [wta, wtb];
     }
-  })();
+  } else {
+    _block = [wta, wtb];
+  }
+  let $ = _block;
   let ta = $[0];
   let tb = $[1];
   let $1 = ta === tb;
@@ -182,15 +184,19 @@ export function difference(a, b) {
   let mta = a.monotonic_time;
   let wtb = b.wall_time;
   let mtb = b.monotonic_time;
-  let $ = (() => {
-    if (mta instanceof $option.Some && mtb instanceof $option.Some) {
-      let ta = mta[0];
+  let _block;
+  if (mtb instanceof $option.Some) {
+    if (mta instanceof $option.Some) {
       let tb = mtb[0];
-      return [ta, tb];
+      let ta = mta[0];
+      _block = [ta, tb];
     } else {
-      return [wta, wtb];
+      _block = [wta, wtb];
     }
-  })();
+  } else {
+    _block = [wta, wtb];
+  }
+  let $ = _block;
   let ta = $[0];
   let tb = $[1];
   return new $duration.Duration(ta - tb);
@@ -271,33 +277,40 @@ export function weekday_to_short_string(value) {
 }
 
 export function range(a, b, s) {
-  let $ = (() => {
-    if (b instanceof $option.Some) {
-      let b$1 = b[0];
-      return $ranger.create(
-        (_) => { return true; },
-        (duration) => {
-          let value = duration[0];
-          return new $duration.Duration(-1 * value);
-        },
-        add,
-        compare,
-      )(a, b$1, s);
-    } else {
-      return $ranger.create_infinite((_) => { return true; }, add, compare)(
-        a,
-        s,
-      );
-    }
-  })();
-  if (!$.isOk()) {
+  let _block;
+  if (b instanceof $option.Some) {
+    let b$1 = b[0];
+    _block = $ranger.create(
+      (_) => { return true; },
+      (duration) => {
+        let value = duration[0];
+        return new $duration.Duration(-1 * value);
+      },
+      add,
+      compare,
+    )(a, b$1, s);
+  } else {
+    _block = $ranger.create_infinite((_) => { return true; }, add, compare)(
+      a,
+      s,
+    );
+  }
+  let $ = _block;
+  if (!($ instanceof Ok)) {
     throw makeError(
       "let_assert",
+      FILEPATH,
       "birl",
       1151,
       "range",
       "Pattern match failed, no pattern matched the value.",
-      { value: $ }
+      {
+        value: $,
+        start: 28864,
+        end: 29315,
+        pattern_start: 28875,
+        pattern_end: 28884
+      }
     )
   }
   let range$1 = $[0];
@@ -306,19 +319,17 @@ export function range(a, b, s) {
 
 export function set_timezone(value, new_timezone) {
   let $ = $list.key_find($zones.list, new_timezone);
-  if ($.isOk()) {
+  if ($ instanceof Ok) {
     let new_offset_number = $[0];
-    {
-      let t = value.wall_time;
-      let mt = value.monotonic_time;
-      let _pipe = new Time(
-        t,
-        new_offset_number * 1_000_000,
-        new $option.Some(new_timezone),
-        mt,
-      );
-      return new Ok(_pipe);
-    }
+    let t = value.wall_time;
+    let mt = value.monotonic_time;
+    let _pipe = new Time(
+      t,
+      new_offset_number * 1_000_000,
+      new $option.Some(new_timezone),
+      mt,
+    );
+    return new Ok(_pipe);
   } else {
     return new Error(undefined);
   }
@@ -335,123 +346,175 @@ function parse_offset(offset) {
     new Ok(0),
     () => {
       let $ = $regexp.from_string("([+-])");
-      if (!$.isOk()) {
+      if (!($ instanceof Ok)) {
         throw makeError(
           "let_assert",
+          FILEPATH,
           "birl",
           1332,
-          "",
+          "parse_offset",
           "Pattern match failed, no pattern matched the value.",
-          { value: $ }
+          {
+            value: $,
+            start: 34005,
+            end: 34053,
+            pattern_start: 34016,
+            pattern_end: 34022
+          }
         )
       }
       let re = $[0];
       return $result.then$(
         (() => {
           let $1 = $regexp.split(re, offset);
-          if ($1.hasLength(3) && $1.head === "" && $1.tail.head === "+") {
-            let offset$1 = $1.tail.tail.head;
-            return new Ok([1, offset$1]);
-          } else if ($1.hasLength(3) && $1.head === "" && $1.tail.head === "-") {
-            let offset$1 = $1.tail.tail.head;
-            return new Ok([-1, offset$1]);
-          } else if ($1.hasLength(1)) {
-            return new Ok([1, offset]);
-          } else {
+          if ($1 instanceof $Empty) {
             return new Error(undefined);
+          } else {
+            let $2 = $1.tail;
+            if ($2 instanceof $Empty) {
+              return new Ok([1, offset]);
+            } else {
+              let $3 = $2.tail;
+              if ($3 instanceof $Empty) {
+                return new Error(undefined);
+              } else {
+                let $4 = $3.tail;
+                if ($4 instanceof $Empty) {
+                  let $5 = $2.head;
+                  if ($5 === "+") {
+                    let $6 = $1.head;
+                    if ($6 === "") {
+                      let offset$1 = $3.head;
+                      return new Ok([1, offset$1]);
+                    } else {
+                      return new Error(undefined);
+                    }
+                  } else if ($5 === "-") {
+                    let $6 = $1.head;
+                    if ($6 === "") {
+                      let offset$1 = $3.head;
+                      return new Ok([-1, offset$1]);
+                    } else {
+                      return new Error(undefined);
+                    }
+                  } else {
+                    return new Error(undefined);
+                  }
+                } else {
+                  return new Error(undefined);
+                }
+              }
+            }
           }
         })(),
         (_use0) => {
           let sign = _use0[0];
           let offset$1 = _use0[1];
           let $1 = $string.split(offset$1, ":");
-          if ($1.hasLength(2)) {
-            let hour_str = $1.head;
-            let minute_str = $1.tail.head;
-            return $result.then$(
-              $int.parse(hour_str),
-              (hour) => {
+          if ($1 instanceof $Empty) {
+            return new Error(undefined);
+          } else {
+            let $2 = $1.tail;
+            if ($2 instanceof $Empty) {
+              let offset$2 = $1.head;
+              let $3 = $string.length(offset$2);
+              if ($3 === 1) {
                 return $result.then$(
-                  $int.parse(minute_str),
-                  (minute) => {
-                    return new Ok(sign * (hour * 60 + minute) * 60 * 1_000_000);
+                  $int.parse(offset$2),
+                  (hour) => { return new Ok(sign * hour * 3600 * 1_000_000); },
+                );
+              } else if ($3 === 2) {
+                return $result.then$(
+                  $int.parse(offset$2),
+                  (number) => {
+                    let $4 = number < 14;
+                    if ($4) {
+                      return new Ok(sign * number * 3600 * 1_000_000);
+                    } else {
+                      return new Ok(
+                        sign * ((divideInt(number, 10)) * 60 + (remainderInt(
+                          number,
+                          10
+                        ))) * 60 * 1_000_000,
+                      );
+                    }
                   },
                 );
-              },
-            );
-          } else if ($1.hasLength(1)) {
-            let offset$2 = $1.head;
-            let $2 = $string.length(offset$2);
-            if ($2 === 1) {
-              return $result.then$(
-                $int.parse(offset$2),
-                (hour) => { return new Ok(sign * hour * 3600 * 1_000_000); },
-              );
-            } else if ($2 === 2) {
-              return $result.then$(
-                $int.parse(offset$2),
-                (number) => {
-                  let $3 = number < 14;
-                  if ($3) {
-                    return new Ok(sign * number * 3600 * 1_000_000);
-                  } else {
-                    return new Ok(
-                      sign * ((divideInt(number, 10)) * 60 + (remainderInt(
-                        number,
-                        10
-                      ))) * 60 * 1_000_000,
+              } else if ($3 === 3) {
+                let $4 = $string.first(offset$2);
+                if (!($4 instanceof Ok)) {
+                  throw makeError(
+                    "let_assert",
+                    FILEPATH,
+                    "birl",
+                    1362,
+                    "parse_offset",
+                    "Pattern match failed, no pattern matched the value.",
+                    {
+                      value: $4,
+                      start: 34974,
+                      end: 35020,
+                      pattern_start: 34985,
+                      pattern_end: 34997
+                    }
+                  )
+                }
+                let hour_str = $4[0];
+                let minute_str = $string.slice(offset$2, 1, 2);
+                return $result.then$(
+                  $int.parse(hour_str),
+                  (hour) => {
+                    return $result.then$(
+                      $int.parse(minute_str),
+                      (minute) => {
+                        return new Ok(
+                          sign * (hour * 60 + minute) * 60 * 1_000_000,
+                        );
+                      },
                     );
-                  }
-                },
-              );
-            } else if ($2 === 3) {
-              let $3 = $string.first(offset$2);
-              if (!$3.isOk()) {
-                throw makeError(
-                  "let_assert",
-                  "birl",
-                  1362,
-                  "",
-                  "Pattern match failed, no pattern matched the value.",
-                  { value: $3 }
-                )
+                  },
+                );
+              } else if ($3 === 4) {
+                let hour_str = $string.slice(offset$2, 0, 2);
+                let minute_str = $string.slice(offset$2, 2, 2);
+                return $result.then$(
+                  $int.parse(hour_str),
+                  (hour) => {
+                    return $result.then$(
+                      $int.parse(minute_str),
+                      (minute) => {
+                        return new Ok(
+                          sign * (hour * 60 + minute) * 60 * 1_000_000,
+                        );
+                      },
+                    );
+                  },
+                );
+              } else {
+                return new Error(undefined);
               }
-              let hour_str = $3[0];
-              let minute_str = $string.slice(offset$2, 1, 2);
-              return $result.then$(
-                $int.parse(hour_str),
-                (hour) => {
-                  return $result.then$(
-                    $int.parse(minute_str),
-                    (minute) => {
-                      return new Ok(
-                        sign * (hour * 60 + minute) * 60 * 1_000_000,
-                      );
-                    },
-                  );
-                },
-              );
-            } else if ($2 === 4) {
-              let hour_str = $string.slice(offset$2, 0, 2);
-              let minute_str = $string.slice(offset$2, 2, 2);
-              return $result.then$(
-                $int.parse(hour_str),
-                (hour) => {
-                  return $result.then$(
-                    $int.parse(minute_str),
-                    (minute) => {
-                      return new Ok(
-                        sign * (hour * 60 + minute) * 60 * 1_000_000,
-                      );
-                    },
-                  );
-                },
-              );
             } else {
-              return new Error(undefined);
+              let $3 = $2.tail;
+              if ($3 instanceof $Empty) {
+                let hour_str = $1.head;
+                let minute_str = $2.head;
+                return $result.then$(
+                  $int.parse(hour_str),
+                  (hour) => {
+                    return $result.then$(
+                      $int.parse(minute_str),
+                      (minute) => {
+                        return new Ok(
+                          sign * (hour * 60 + minute) * 60 * 1_000_000,
+                        );
+                      },
+                    );
+                  },
+                );
+              } else {
+                return new Error(undefined);
+              }
             }
-          } else {
-            return new Error(undefined);
           }
         },
       );
@@ -463,13 +526,11 @@ export function set_offset(value, new_offset) {
   return $result.then$(
     parse_offset(new_offset),
     (new_offset_number) => {
-      {
-        let t = value.wall_time;
-        let timezone = value.timezone;
-        let mt = value.monotonic_time;
-        let _pipe = new Time(t, new_offset_number, timezone, mt);
-        return new Ok(_pipe);
-      }
+      let t = value.wall_time;
+      let timezone = value.timezone;
+      let mt = value.monotonic_time;
+      let _pipe = new Time(t, new_offset_number, timezone, mt);
+      return new Ok(_pipe);
     },
   );
 }
@@ -484,84 +545,105 @@ function generate_offset(offset) {
         let _pipe$1 = $duration.new$(_pipe);
         return $duration.decompose(_pipe$1);
       })();
-      if ($.hasLength(2) &&
-      $.head[1] instanceof $duration.Hour &&
-      $.tail.head[1] instanceof $duration.Minute) {
-        let hour = $.head[0];
-        let minute = $.tail.head[0];
-        let _pipe = toList([
-          (() => {
-            let $1 = hour > 0;
-            if ($1) {
-              return $string.concat(
-                toList([
-                  "+",
-                  (() => {
-                    let _pipe = hour;
-                    let _pipe$1 = $int.to_string(_pipe);
-                    return $string.pad_start(_pipe$1, 2, "0");
-                  })(),
-                ]),
-              );
-            } else {
-              return $string.concat(
-                toList([
-                  "-",
-                  (() => {
-                    let _pipe = hour;
-                    let _pipe$1 = $int.absolute_value(_pipe);
-                    let _pipe$2 = $int.to_string(_pipe$1);
-                    return $string.pad_start(_pipe$2, 2, "0");
-                  })(),
-                ]),
-              );
-            }
-          })(),
-          (() => {
-            let _pipe = minute;
-            let _pipe$1 = $int.absolute_value(_pipe);
-            let _pipe$2 = $int.to_string(_pipe$1);
-            return $string.pad_start(_pipe$2, 2, "0");
-          })(),
-        ]);
-        let _pipe$1 = $string.join(_pipe, ":");
-        return new Ok(_pipe$1);
-      } else if ($.hasLength(1) && $.head[1] instanceof $duration.Hour) {
-        let hour = $.head[0];
-        let _pipe = toList([
-          (() => {
-            let $1 = hour > 0;
-            if ($1) {
-              return $string.concat(
-                toList([
-                  "+",
-                  (() => {
-                    let _pipe = hour;
-                    let _pipe$1 = $int.to_string(_pipe);
-                    return $string.pad_start(_pipe$1, 2, "0");
-                  })(),
-                ]),
-              );
-            } else {
-              return $string.concat(
-                toList([
-                  "-",
-                  (() => {
-                    let _pipe = hour;
-                    let _pipe$1 = $int.absolute_value(_pipe);
-                    let _pipe$2 = $int.to_string(_pipe$1);
-                    return $string.pad_start(_pipe$2, 2, "0");
-                  })(),
-                ]),
-              );
-            }
-          })(),
-          "00",
-        ]);
-        let _pipe$1 = $string.join(_pipe, ":");
-        return new Ok(_pipe$1);
-      } else {
+      if ($ instanceof $Empty) {
         return new Error(undefined);
+      } else {
+        let $1 = $.tail;
+        if ($1 instanceof $Empty) {
+          let $2 = $.head[1];
+          if ($2 instanceof $duration.Hour) {
+            let hour = $.head[0];
+            let _pipe = toList([
+              (() => {
+                let $3 = hour > 0;
+                if ($3) {
+                  return $string.concat(
+                    toList([
+                      "+",
+                      (() => {
+                        let _pipe = hour;
+                        let _pipe$1 = $int.to_string(_pipe);
+                        return $string.pad_start(_pipe$1, 2, "0");
+                      })(),
+                    ]),
+                  );
+                } else {
+                  return $string.concat(
+                    toList([
+                      "-",
+                      (() => {
+                        let _pipe = hour;
+                        let _pipe$1 = $int.absolute_value(_pipe);
+                        let _pipe$2 = $int.to_string(_pipe$1);
+                        return $string.pad_start(_pipe$2, 2, "0");
+                      })(),
+                    ]),
+                  );
+                }
+              })(),
+              "00",
+            ]);
+            let _pipe$1 = $string.join(_pipe, ":");
+            return new Ok(_pipe$1);
+          } else {
+            return new Error(undefined);
+          }
+        } else {
+          let $2 = $1.tail;
+          if ($2 instanceof $Empty) {
+            let $3 = $1.head[1];
+            if ($3 instanceof $duration.Minute) {
+              let $4 = $.head[1];
+              if ($4 instanceof $duration.Hour) {
+                let minute = $1.head[0];
+                let hour = $.head[0];
+                let _pipe = toList([
+                  (() => {
+                    let $5 = hour > 0;
+                    if ($5) {
+                      return $string.concat(
+                        toList([
+                          "+",
+                          (() => {
+                            let _pipe = hour;
+                            let _pipe$1 = $int.to_string(_pipe);
+                            return $string.pad_start(_pipe$1, 2, "0");
+                          })(),
+                        ]),
+                      );
+                    } else {
+                      return $string.concat(
+                        toList([
+                          "-",
+                          (() => {
+                            let _pipe = hour;
+                            let _pipe$1 = $int.absolute_value(_pipe);
+                            let _pipe$2 = $int.to_string(_pipe$1);
+                            return $string.pad_start(_pipe$2, 2, "0");
+                          })(),
+                        ]),
+                      );
+                    }
+                  })(),
+                  (() => {
+                    let _pipe = minute;
+                    let _pipe$1 = $int.absolute_value(_pipe);
+                    let _pipe$2 = $int.to_string(_pipe$1);
+                    return $string.pad_start(_pipe$2, 2, "0");
+                  })(),
+                ]);
+                let _pipe$1 = $string.join(_pipe, ":");
+                return new Ok(_pipe$1);
+              } else {
+                return new Error(undefined);
+              }
+            } else {
+              return new Error(undefined);
+            }
+          } else {
+            return new Error(undefined);
+          }
+        }
       }
     },
   );
@@ -570,14 +652,21 @@ function generate_offset(offset) {
 export function get_offset(value) {
   let offset = value.offset;
   let $ = generate_offset(offset);
-  if (!$.isOk()) {
+  if (!($ instanceof Ok)) {
     throw makeError(
       "let_assert",
+      FILEPATH,
       "birl",
       1208,
       "get_offset",
       "Pattern match failed, no pattern matched the value.",
-      { value: $ }
+      {
+        value: $,
+        start: 30429,
+        end: 30476,
+        pattern_start: 30440,
+        pattern_end: 30450
+      }
     )
   }
   let offset$1 = $[0];
@@ -593,10 +682,12 @@ function is_invalid_date(date) {
     (code) => {
       if (code === 45) {
         return false;
-      } else if ((code >= 48) && (code <= 57)) {
-        return false;
       } else {
-        return true;
+        if ((code >= 48) && (code <= 57)) {
+          return false;
+        } else {
+          return true;
+        }
       }
     },
   );
@@ -620,44 +711,102 @@ function is_invalid_time(time) {
 
 function parse_section(section, pattern_string, default$) {
   let $ = $regexp.from_string(pattern_string);
-  if (!$.isOk()) {
+  if (!($ instanceof Ok)) {
     throw makeError(
       "let_assert",
+      FILEPATH,
       "birl",
       1527,
       "parse_section",
       "Pattern match failed, no pattern matched the value.",
-      { value: $ }
+      {
+        value: $,
+        start: 38997,
+        end: 39056,
+        pattern_start: 39008,
+        pattern_end: 39019
+      }
     )
   }
   let pattern = $[0];
   let $1 = $regexp.scan(pattern, section);
-  if ($1.hasLength(1) &&
-  $1.head instanceof $regexp.Match &&
-  $1.head.submatches.hasLength(1) &&
-  $1.head.submatches.head instanceof $option.Some) {
-    let major = $1.head.submatches.head[0];
-    return toList([$int.parse(major), new Ok(default$), new Ok(default$)]);
-  } else if ($1.hasLength(1) &&
-  $1.head instanceof $regexp.Match &&
-  $1.head.submatches.hasLength(2) &&
-  $1.head.submatches.head instanceof $option.Some &&
-  $1.head.submatches.tail.head instanceof $option.Some) {
-    let major = $1.head.submatches.head[0];
-    let middle = $1.head.submatches.tail.head[0];
-    return toList([$int.parse(major), $int.parse(middle), new Ok(default$)]);
-  } else if ($1.hasLength(1) &&
-  $1.head instanceof $regexp.Match &&
-  $1.head.submatches.hasLength(3) &&
-  $1.head.submatches.head instanceof $option.Some &&
-  $1.head.submatches.tail.head instanceof $option.Some &&
-  $1.head.submatches.tail.tail.head instanceof $option.Some) {
-    let major = $1.head.submatches.head[0];
-    let middle = $1.head.submatches.tail.head[0];
-    let minor = $1.head.submatches.tail.tail.head[0];
-    return toList([$int.parse(major), $int.parse(middle), $int.parse(minor)]);
-  } else {
+  if ($1 instanceof $Empty) {
     return toList([new Error(undefined)]);
+  } else {
+    let $2 = $1.tail;
+    if ($2 instanceof $Empty) {
+      let $3 = $1.head.submatches;
+      if ($3 instanceof $Empty) {
+        return toList([new Error(undefined)]);
+      } else {
+        let $4 = $3.tail;
+        if ($4 instanceof $Empty) {
+          let $5 = $3.head;
+          if ($5 instanceof $option.Some) {
+            let major = $5[0];
+            return toList([
+              $int.parse(major),
+              new Ok(default$),
+              new Ok(default$),
+            ]);
+          } else {
+            return toList([new Error(undefined)]);
+          }
+        } else {
+          let $5 = $4.tail;
+          if ($5 instanceof $Empty) {
+            let $6 = $4.head;
+            if ($6 instanceof $option.Some) {
+              let $7 = $3.head;
+              if ($7 instanceof $option.Some) {
+                let middle = $6[0];
+                let major = $7[0];
+                return toList([
+                  $int.parse(major),
+                  $int.parse(middle),
+                  new Ok(default$),
+                ]);
+              } else {
+                return toList([new Error(undefined)]);
+              }
+            } else {
+              return toList([new Error(undefined)]);
+            }
+          } else {
+            let $6 = $5.tail;
+            if ($6 instanceof $Empty) {
+              let $7 = $5.head;
+              if ($7 instanceof $option.Some) {
+                let $8 = $4.head;
+                if ($8 instanceof $option.Some) {
+                  let $9 = $3.head;
+                  if ($9 instanceof $option.Some) {
+                    let minor = $7[0];
+                    let middle = $8[0];
+                    let major = $9[0];
+                    return toList([
+                      $int.parse(major),
+                      $int.parse(middle),
+                      $int.parse(minor),
+                    ]);
+                  } else {
+                    return toList([new Error(undefined)]);
+                  }
+                } else {
+                  return toList([new Error(undefined)]);
+                }
+              } else {
+                return toList([new Error(undefined)]);
+              }
+            } else {
+              return toList([new Error(undefined)]);
+            }
+          }
+        }
+      }
+    } else {
+      return toList([new Error(undefined)]);
+    }
   }
 }
 
@@ -666,63 +815,113 @@ function parse_date_section(date) {
     is_invalid_date(date),
     new Error(undefined),
     () => {
-      let _pipe = (() => {
-        let $ = $string.contains(date, "-");
-        if ($) {
-          let $1 = $regexp.from_string(
-            "(\\d{4})(?:-(1[0-2]|0?[0-9]))?(?:-(3[0-1]|[1-2][0-9]|0?[0-9]))?",
-          );
-          if (!$1.isOk()) {
-            throw makeError(
-              "let_assert",
-              "birl",
-              1447,
-              "",
-              "Pattern match failed, no pattern matched the value.",
-              { value: $1 }
-            )
-          }
-          let dash_pattern = $1[0];
-          let $2 = $regexp.scan(dash_pattern, date);
-          if ($2.hasLength(1) &&
-          $2.head instanceof $regexp.Match &&
-          $2.head.submatches.hasLength(1) &&
-          $2.head.submatches.head instanceof $option.Some) {
-            let major = $2.head.submatches.head[0];
-            return toList([$int.parse(major), new Ok(1), new Ok(1)]);
-          } else if ($2.hasLength(1) &&
-          $2.head instanceof $regexp.Match &&
-          $2.head.submatches.hasLength(2) &&
-          $2.head.submatches.head instanceof $option.Some &&
-          $2.head.submatches.tail.head instanceof $option.Some) {
-            let major = $2.head.submatches.head[0];
-            let middle = $2.head.submatches.tail.head[0];
-            return toList([$int.parse(major), $int.parse(middle), new Ok(1)]);
-          } else if ($2.hasLength(1) &&
-          $2.head instanceof $regexp.Match &&
-          $2.head.submatches.hasLength(3) &&
-          $2.head.submatches.head instanceof $option.Some &&
-          $2.head.submatches.tail.head instanceof $option.Some &&
-          $2.head.submatches.tail.tail.head instanceof $option.Some) {
-            let major = $2.head.submatches.head[0];
-            let middle = $2.head.submatches.tail.head[0];
-            let minor = $2.head.submatches.tail.tail.head[0];
-            return toList([
-              $int.parse(major),
-              $int.parse(middle),
-              $int.parse(minor),
-            ]);
-          } else {
-            return toList([new Error(undefined)]);
-          }
-        } else {
-          return parse_section(
-            date,
-            "(\\d{4})(1[0-2]|0?[0-9])?(3[0-1]|[1-2][0-9]|0?[0-9])?",
-            1,
-          );
+      let _block;
+      let $ = $string.contains(date, "-");
+      if ($) {
+        let $1 = $regexp.from_string(
+          "(\\d{4})(?:-(1[0-2]|0?[0-9]))?(?:-(3[0-1]|[1-2][0-9]|0?[0-9]))?",
+        );
+        if (!($1 instanceof Ok)) {
+          throw makeError(
+            "let_assert",
+            FILEPATH,
+            "birl",
+            1447,
+            "parse_date_section",
+            "Pattern match failed, no pattern matched the value.",
+            {
+              value: $1,
+              start: 37206,
+              end: 37350,
+              pattern_start: 37217,
+              pattern_end: 37233
+            }
+          )
         }
-      })();
+        let dash_pattern = $1[0];
+        let $2 = $regexp.scan(dash_pattern, date);
+        if ($2 instanceof $Empty) {
+          _block = toList([new Error(undefined)]);
+        } else {
+          let $3 = $2.tail;
+          if ($3 instanceof $Empty) {
+            let $4 = $2.head.submatches;
+            if ($4 instanceof $Empty) {
+              _block = toList([new Error(undefined)]);
+            } else {
+              let $5 = $4.tail;
+              if ($5 instanceof $Empty) {
+                let $6 = $4.head;
+                if ($6 instanceof $option.Some) {
+                  let major = $6[0];
+                  _block = toList([$int.parse(major), new Ok(1), new Ok(1)]);
+                } else {
+                  _block = toList([new Error(undefined)]);
+                }
+              } else {
+                let $6 = $5.tail;
+                if ($6 instanceof $Empty) {
+                  let $7 = $5.head;
+                  if ($7 instanceof $option.Some) {
+                    let $8 = $4.head;
+                    if ($8 instanceof $option.Some) {
+                      let middle = $7[0];
+                      let major = $8[0];
+                      _block = toList([
+                        $int.parse(major),
+                        $int.parse(middle),
+                        new Ok(1),
+                      ]);
+                    } else {
+                      _block = toList([new Error(undefined)]);
+                    }
+                  } else {
+                    _block = toList([new Error(undefined)]);
+                  }
+                } else {
+                  let $7 = $6.tail;
+                  if ($7 instanceof $Empty) {
+                    let $8 = $6.head;
+                    if ($8 instanceof $option.Some) {
+                      let $9 = $5.head;
+                      if ($9 instanceof $option.Some) {
+                        let $10 = $4.head;
+                        if ($10 instanceof $option.Some) {
+                          let minor = $8[0];
+                          let middle = $9[0];
+                          let major = $10[0];
+                          _block = toList([
+                            $int.parse(major),
+                            $int.parse(middle),
+                            $int.parse(minor),
+                          ]);
+                        } else {
+                          _block = toList([new Error(undefined)]);
+                        }
+                      } else {
+                        _block = toList([new Error(undefined)]);
+                      }
+                    } else {
+                      _block = toList([new Error(undefined)]);
+                    }
+                  } else {
+                    _block = toList([new Error(undefined)]);
+                  }
+                }
+              }
+            }
+          } else {
+            _block = toList([new Error(undefined)]);
+          }
+        }
+      } else {
+        _block = parse_section(
+          date,
+          "(\\d{4})(1[0-2]|0?[0-9])?(3[0-1]|[1-2][0-9]|0?[0-9])?",
+          1,
+        );
+      }
+      let _pipe = _block;
       return $list.try_map(_pipe, $function.identity);
     },
   );
@@ -745,48 +944,81 @@ function parse_time_section(time) {
 
 export function parse_time_of_day(value) {
   let $ = $regexp.from_string("(.*)([+|\\-].*)");
-  if (!$.isOk()) {
+  if (!($ instanceof Ok)) {
     throw makeError(
       "let_assert",
+      FILEPATH,
       "birl",
       405,
       "parse_time_of_day",
       "Pattern match failed, no pattern matched the value.",
-      { value: $ }
+      {
+        value: $,
+        start: 9469,
+        end: 9538,
+        pattern_start: 9480,
+        pattern_end: 9498
+      }
     )
   }
   let offset_pattern = $[0];
-  let time_string = (() => {
-    let $1 = $string.starts_with(value, "T");
-    let $2 = $string.starts_with(value, "t");
-    if ($1) {
-      return $string.drop_start(value, 1);
-    } else if ($2) {
-      return $string.drop_start(value, 1);
-    } else {
-      return value;
-    }
-  })();
+  let _block;
+  let $1 = $string.starts_with(value, "T");
+  let $2 = $string.starts_with(value, "t");
+  if ($1) {
+    _block = $string.drop_start(value, 1);
+  } else if ($2) {
+    _block = $string.drop_start(value, 1);
+  } else {
+    _block = value;
+  }
+  let time_string = _block;
   return $result.then$(
     (() => {
-      let $1 = $string.ends_with(time_string, "Z") || $string.ends_with(
+      let $3 = $string.ends_with(time_string, "Z") || $string.ends_with(
         time_string,
         "z",
       );
-      if ($1) {
+      if ($3) {
         return new Ok([$string.drop_end(value, 1), "+00:00"]);
       } else {
-        let $2 = $regexp.scan(offset_pattern, value);
-        if ($2.hasLength(1) &&
-        $2.head instanceof $regexp.Match &&
-        $2.head.submatches.hasLength(2) &&
-        $2.head.submatches.head instanceof $option.Some &&
-        $2.head.submatches.tail.head instanceof $option.Some) {
-          let time_string$1 = $2.head.submatches.head[0];
-          let offset_string = $2.head.submatches.tail.head[0];
-          return new Ok([time_string$1, offset_string]);
-        } else {
+        let $4 = $regexp.scan(offset_pattern, value);
+        if ($4 instanceof $Empty) {
           return new Error(undefined);
+        } else {
+          let $5 = $4.tail;
+          if ($5 instanceof $Empty) {
+            let $6 = $4.head.submatches;
+            if ($6 instanceof $Empty) {
+              return new Error(undefined);
+            } else {
+              let $7 = $6.tail;
+              if ($7 instanceof $Empty) {
+                return new Error(undefined);
+              } else {
+                let $8 = $7.tail;
+                if ($8 instanceof $Empty) {
+                  let $9 = $7.head;
+                  if ($9 instanceof $option.Some) {
+                    let $10 = $6.head;
+                    if ($10 instanceof $option.Some) {
+                      let offset_string = $9[0];
+                      let time_string$1 = $10[0];
+                      return new Ok([time_string$1, offset_string]);
+                    } else {
+                      return new Error(undefined);
+                    }
+                  } else {
+                    return new Error(undefined);
+                  }
+                } else {
+                  return new Error(undefined);
+                }
+              }
+            }
+          } else {
+            return new Error(undefined);
+          }
         }
       }
     })(),
@@ -796,58 +1028,99 @@ export function parse_time_of_day(value) {
       let time_string$2 = $string.replace(time_string$1, ":", "");
       return $result.then$(
         (() => {
-          let $1 = $string.split(time_string$2, ".");
-          let $2 = $string.split(time_string$2, ",");
-          if ($1.hasLength(1) && $2.hasLength(1)) {
-            return new Ok([time_string$2, new Ok(0)]);
-          } else if ($1.hasLength(2) && $2.hasLength(1)) {
-            let time_string$3 = $1.head;
-            let milli_seconds_string = $1.tail.head;
-            return new Ok(
-              [
-                time_string$3,
-                (() => {
-                  let _pipe = milli_seconds_string;
-                  let _pipe$1 = $string.slice(_pipe, 0, 3);
-                  let _pipe$2 = $string.pad_end(_pipe$1, 3, "0");
-                  return $int.parse(_pipe$2);
-                })(),
-              ],
-            );
-          } else if ($1.hasLength(1) && $2.hasLength(2)) {
-            let time_string$3 = $2.head;
-            let milli_seconds_string = $2.tail.head;
-            return new Ok(
-              [
-                time_string$3,
-                (() => {
-                  let _pipe = milli_seconds_string;
-                  let _pipe$1 = $string.slice(_pipe, 0, 3);
-                  let _pipe$2 = $string.pad_end(_pipe$1, 3, "0");
-                  return $int.parse(_pipe$2);
-                })(),
-              ],
-            );
-          } else {
+          let $3 = $string.split(time_string$2, ".");
+          let $4 = $string.split(time_string$2, ",");
+          if ($4 instanceof $Empty) {
             return new Error(undefined);
+          } else {
+            let $5 = $4.tail;
+            if ($5 instanceof $Empty) {
+              if ($3 instanceof $Empty) {
+                return new Error(undefined);
+              } else {
+                let $6 = $3.tail;
+                if ($6 instanceof $Empty) {
+                  return new Ok([time_string$2, new Ok(0)]);
+                } else {
+                  let $7 = $6.tail;
+                  if ($7 instanceof $Empty) {
+                    let time_string$3 = $3.head;
+                    let milli_seconds_string = $6.head;
+                    return new Ok(
+                      [
+                        time_string$3,
+                        (() => {
+                          let _pipe = milli_seconds_string;
+                          let _pipe$1 = $string.slice(_pipe, 0, 3);
+                          let _pipe$2 = $string.pad_end(_pipe$1, 3, "0");
+                          return $int.parse(_pipe$2);
+                        })(),
+                      ],
+                    );
+                  } else {
+                    return new Error(undefined);
+                  }
+                }
+              }
+            } else {
+              let $6 = $5.tail;
+              if ($6 instanceof $Empty) {
+                if ($3 instanceof $Empty) {
+                  return new Error(undefined);
+                } else {
+                  let $7 = $3.tail;
+                  if ($7 instanceof $Empty) {
+                    let time_string$3 = $4.head;
+                    let milli_seconds_string = $5.head;
+                    return new Ok(
+                      [
+                        time_string$3,
+                        (() => {
+                          let _pipe = milli_seconds_string;
+                          let _pipe$1 = $string.slice(_pipe, 0, 3);
+                          let _pipe$2 = $string.pad_end(_pipe$1, 3, "0");
+                          return $int.parse(_pipe$2);
+                        })(),
+                      ],
+                    );
+                  } else {
+                    return new Error(undefined);
+                  }
+                }
+              } else {
+                return new Error(undefined);
+              }
+            }
           }
         })(),
         (_use0) => {
           let time_string$3 = _use0[0];
           let milli_seconds_result = _use0[1];
-          if (milli_seconds_result.isOk()) {
+          if (milli_seconds_result instanceof Ok) {
             let milli_seconds = milli_seconds_result[0];
             return $result.then$(
               parse_time_section(time_string$3),
               (time_of_day) => {
-                if (!time_of_day.hasLength(3)) {
+                if (
+                  time_of_day instanceof $Empty ||
+                  time_of_day.tail instanceof $Empty ||
+                  time_of_day.tail.tail instanceof $Empty ||
+                  time_of_day.tail.tail.tail instanceof $NonEmpty
+                ) {
                   throw makeError(
                     "let_assert",
+                    FILEPATH,
                     "birl",
                     457,
-                    "",
+                    "parse_time_of_day",
                     "Pattern match failed, no pattern matched the value.",
-                    { value: time_of_day }
+                    {
+                      value: time_of_day,
+                      start: 10868,
+                      end: 10915,
+                      pattern_start: 10879,
+                      pattern_end: 10901
+                    }
                   )
                 }
                 let hour = time_of_day.head;
@@ -881,72 +1154,113 @@ export function parse_time_of_day(value) {
 }
 
 export function parse_naive_time_of_day(value) {
-  let time_string = (() => {
-    let $ = $string.starts_with(value, "T");
-    let $1 = $string.starts_with(value, "t");
-    if ($) {
-      return $string.drop_start(value, 1);
-    } else if ($1) {
-      return $string.drop_start(value, 1);
-    } else {
-      return value;
-    }
-  })();
+  let _block;
+  let $ = $string.starts_with(value, "T");
+  let $1 = $string.starts_with(value, "t");
+  if ($) {
+    _block = $string.drop_start(value, 1);
+  } else if ($1) {
+    _block = $string.drop_start(value, 1);
+  } else {
+    _block = value;
+  }
+  let time_string = _block;
   let time_string$1 = $string.replace(time_string, ":", "");
   return $result.then$(
     (() => {
-      let $ = $string.split(time_string$1, ".");
-      let $1 = $string.split(time_string$1, ",");
-      if ($.hasLength(1) && $1.hasLength(1)) {
-        return new Ok([time_string$1, new Ok(0)]);
-      } else if ($.hasLength(2) && $1.hasLength(1)) {
-        let time_string$2 = $.head;
-        let milli_seconds_string = $.tail.head;
-        return new Ok(
-          [
-            time_string$2,
-            (() => {
-              let _pipe = milli_seconds_string;
-              let _pipe$1 = $string.slice(_pipe, 0, 3);
-              let _pipe$2 = $string.pad_end(_pipe$1, 3, "0");
-              return $int.parse(_pipe$2);
-            })(),
-          ],
-        );
-      } else if ($.hasLength(1) && $1.hasLength(2)) {
-        let time_string$2 = $1.head;
-        let milli_seconds_string = $1.tail.head;
-        return new Ok(
-          [
-            time_string$2,
-            (() => {
-              let _pipe = milli_seconds_string;
-              let _pipe$1 = $string.slice(_pipe, 0, 3);
-              let _pipe$2 = $string.pad_end(_pipe$1, 3, "0");
-              return $int.parse(_pipe$2);
-            })(),
-          ],
-        );
-      } else {
+      let $2 = $string.split(time_string$1, ".");
+      let $3 = $string.split(time_string$1, ",");
+      if ($3 instanceof $Empty) {
         return new Error(undefined);
+      } else {
+        let $4 = $3.tail;
+        if ($4 instanceof $Empty) {
+          if ($2 instanceof $Empty) {
+            return new Error(undefined);
+          } else {
+            let $5 = $2.tail;
+            if ($5 instanceof $Empty) {
+              return new Ok([time_string$1, new Ok(0)]);
+            } else {
+              let $6 = $5.tail;
+              if ($6 instanceof $Empty) {
+                let time_string$2 = $2.head;
+                let milli_seconds_string = $5.head;
+                return new Ok(
+                  [
+                    time_string$2,
+                    (() => {
+                      let _pipe = milli_seconds_string;
+                      let _pipe$1 = $string.slice(_pipe, 0, 3);
+                      let _pipe$2 = $string.pad_end(_pipe$1, 3, "0");
+                      return $int.parse(_pipe$2);
+                    })(),
+                  ],
+                );
+              } else {
+                return new Error(undefined);
+              }
+            }
+          }
+        } else {
+          let $5 = $4.tail;
+          if ($5 instanceof $Empty) {
+            if ($2 instanceof $Empty) {
+              return new Error(undefined);
+            } else {
+              let $6 = $2.tail;
+              if ($6 instanceof $Empty) {
+                let time_string$2 = $3.head;
+                let milli_seconds_string = $4.head;
+                return new Ok(
+                  [
+                    time_string$2,
+                    (() => {
+                      let _pipe = milli_seconds_string;
+                      let _pipe$1 = $string.slice(_pipe, 0, 3);
+                      let _pipe$2 = $string.pad_end(_pipe$1, 3, "0");
+                      return $int.parse(_pipe$2);
+                    })(),
+                  ],
+                );
+              } else {
+                return new Error(undefined);
+              }
+            }
+          } else {
+            return new Error(undefined);
+          }
+        }
       }
     })(),
     (_use0) => {
       let time_string$2 = _use0[0];
       let milli_seconds_result = _use0[1];
-      if (milli_seconds_result.isOk()) {
+      if (milli_seconds_result instanceof Ok) {
         let milli_seconds = milli_seconds_result[0];
         return $result.then$(
           parse_time_section(time_string$2),
           (time_of_day) => {
-            if (!time_of_day.hasLength(3)) {
+            if (
+              time_of_day instanceof $Empty ||
+              time_of_day.tail instanceof $Empty ||
+              time_of_day.tail.tail instanceof $Empty ||
+              time_of_day.tail.tail.tail instanceof $NonEmpty
+            ) {
               throw makeError(
                 "let_assert",
+                FILEPATH,
                 "birl",
                 506,
-                "",
+                "parse_naive_time_of_day",
                 "Pattern match failed, no pattern matched the value.",
-                { value: time_of_day }
+                {
+                  value: time_of_day,
+                  start: 12235,
+                  end: 12282,
+                  pattern_start: 12246,
+                  pattern_end: 12268
+                }
               )
             }
             let hour = time_of_day.head;
@@ -1044,7 +1358,7 @@ export function now_with_offset(offset) {
 
 export function now_with_timezone(timezone) {
   let $ = $list.key_find($zones.list, timezone);
-  if ($.isOk()) {
+  if ($ instanceof Ok) {
     let offset = $[0];
     let now$1 = ffi_now();
     let monotonic_now$1 = ffi_monotonic_now();
@@ -1065,34 +1379,39 @@ export function monotonic_now() {
 }
 
 function to_parts(value) {
-  {
-    let t = value.wall_time;
-    let o = value.offset;
-    let $ = ffi_to_parts(t, o);
-    let date = $[0];
-    let time = $[1];
-    let $1 = generate_offset(o);
-    if (!$1.isOk()) {
-      throw makeError(
-        "let_assert",
-        "birl",
-        1324,
-        "to_parts",
-        "Pattern match failed, no pattern matched the value.",
-        { value: $1 }
-      )
-    }
-    let offset = $1[0];
-    return [date, time, offset];
+  let t = value.wall_time;
+  let o = value.offset;
+  let $ = ffi_to_parts(t, o);
+  let date = $[0];
+  let time = $[1];
+  let $1 = generate_offset(o);
+  if (!($1 instanceof Ok)) {
+    throw makeError(
+      "let_assert",
+      FILEPATH,
+      "birl",
+      1324,
+      "to_parts",
+      "Pattern match failed, no pattern matched the value.",
+      {
+        value: $1,
+        start: 33803,
+        end: 33845,
+        pattern_start: 33814,
+        pattern_end: 33824
+      }
+    )
   }
+  let offset = $1[0];
+  return [date, time, offset];
 }
 
 export function to_date_string(value) {
   let $ = to_parts(value);
+  let offset = $[2];
   let year = $[0][0];
   let month$1 = $[0][1];
   let day = $[0][2];
-  let offset = $[2];
   return (((($int.to_string(year) + "-") + (() => {
     let _pipe = month$1;
     let _pipe$1 = $int.to_string(_pipe);
@@ -1122,11 +1441,11 @@ export function to_naive_date_string(value) {
 
 export function to_time_string(value) {
   let $ = to_parts(value);
+  let offset = $[2];
   let hour = $[1][0];
   let minute = $[1][1];
   let second = $[1][2];
   let milli_second = $[1][3];
-  let offset = $[2];
   return (((((((() => {
     let _pipe = hour;
     let _pipe$1 = $int.to_string(_pipe);
@@ -1173,14 +1492,14 @@ export function to_naive_time_string(value) {
 
 export function to_iso8601(value) {
   let $ = to_parts(value);
-  let year = $[0][0];
-  let month$1 = $[0][1];
-  let day = $[0][2];
+  let offset = $[2];
   let hour = $[1][0];
   let minute = $[1][1];
   let second = $[1][2];
   let milli_second = $[1][3];
-  let offset = $[2];
+  let year = $[0][0];
+  let month$1 = $[0][1];
+  let day = $[0][2];
   return (((((((((((($int.to_string(year) + "-") + (() => {
     let _pipe = month$1;
     let _pipe$1 = $int.to_string(_pipe);
@@ -1210,13 +1529,13 @@ export function to_iso8601(value) {
 
 export function to_naive(value) {
   let $ = to_parts(value);
-  let year = $[0][0];
-  let month$1 = $[0][1];
-  let day = $[0][2];
   let hour = $[1][0];
   let minute = $[1][1];
   let second = $[1][2];
   let milli_second = $[1][3];
+  let year = $[0][0];
+  let month$1 = $[0][1];
+  let day = $[0][2];
   return ((((((((((($int.to_string(year) + "-") + (() => {
     let _pipe = month$1;
     let _pipe$1 = $int.to_string(_pipe);
@@ -1248,14 +1567,21 @@ export function month(value) {
   let $ = to_parts(value);
   let month$1 = $[0][1];
   let $1 = month_from_int(month$1);
-  if (!$1.isOk()) {
+  if (!($1 instanceof Ok)) {
     throw makeError(
       "let_assert",
+      FILEPATH,
       "birl",
       1109,
       "month",
       "Pattern match failed, no pattern matched the value.",
-      { value: $1 }
+      {
+        value: $1,
+        start: 27988,
+        end: 28032,
+        pattern_start: 27999,
+        pattern_end: 28008
+      }
     )
   }
   let month$2 = $1[0];
@@ -1355,14 +1681,21 @@ function from_parts(date, time, offset) {
 
 export function parse(value) {
   let $ = $regexp.from_string("(.*)([+|\\-].*)");
-  if (!$.isOk()) {
+  if (!($ instanceof Ok)) {
     throw makeError(
       "let_assert",
+      FILEPATH,
       "birl",
       298,
       "parse",
       "Pattern match failed, no pattern matched the value.",
-      { value: $ }
+      {
+        value: $,
+        start: 6155,
+        end: 6224,
+        pattern_start: 6166,
+        pattern_end: 6184
+      }
     )
   }
   let offset_pattern = $[0];
@@ -1372,22 +1705,206 @@ export function parse(value) {
       let $1 = $string.split(value$1, "T");
       let $2 = $string.split(value$1, "t");
       let $3 = $string.split(value$1, " ");
-      if ($1.hasLength(2)) {
-        let day_string = $1.head;
-        let time_string = $1.tail.head;
-        return new Ok([day_string, time_string]);
-      } else if ($2.hasLength(2)) {
-        let day_string = $2.head;
-        let time_string = $2.tail.head;
-        return new Ok([day_string, time_string]);
-      } else if ($3.hasLength(2)) {
-        let day_string = $3.head;
-        let time_string = $3.tail.head;
-        return new Ok([day_string, time_string]);
-      } else if ($1.hasLength(1) && $2.hasLength(1) && $3.hasLength(1)) {
-        return new Ok([value$1, "00"]);
+      if ($1 instanceof $Empty) {
+        if ($2 instanceof $Empty) {
+          if ($3 instanceof $Empty) {
+            return new Error(undefined);
+          } else {
+            let $4 = $3.tail;
+            if ($4 instanceof $Empty) {
+              return new Error(undefined);
+            } else {
+              let $5 = $4.tail;
+              if ($5 instanceof $Empty) {
+                let day_string = $3.head;
+                let time_string = $4.head;
+                return new Ok([day_string, time_string]);
+              } else {
+                return new Error(undefined);
+              }
+            }
+          }
+        } else {
+          let $4 = $2.tail;
+          if ($4 instanceof $Empty) {
+            if ($3 instanceof $Empty) {
+              return new Error(undefined);
+            } else {
+              let $5 = $3.tail;
+              if ($5 instanceof $Empty) {
+                return new Error(undefined);
+              } else {
+                let $6 = $5.tail;
+                if ($6 instanceof $Empty) {
+                  let day_string = $3.head;
+                  let time_string = $5.head;
+                  return new Ok([day_string, time_string]);
+                } else {
+                  return new Error(undefined);
+                }
+              }
+            }
+          } else {
+            let $5 = $4.tail;
+            if ($5 instanceof $Empty) {
+              let day_string = $2.head;
+              let time_string = $4.head;
+              return new Ok([day_string, time_string]);
+            } else if ($3 instanceof $Empty) {
+              return new Error(undefined);
+            } else {
+              let $6 = $3.tail;
+              if ($6 instanceof $Empty) {
+                return new Error(undefined);
+              } else {
+                let $7 = $6.tail;
+                if ($7 instanceof $Empty) {
+                  let day_string = $3.head;
+                  let time_string = $6.head;
+                  return new Ok([day_string, time_string]);
+                } else {
+                  return new Error(undefined);
+                }
+              }
+            }
+          }
+        }
       } else {
-        return new Error(undefined);
+        let $4 = $1.tail;
+        if ($4 instanceof $Empty) {
+          if ($2 instanceof $Empty) {
+            if ($3 instanceof $Empty) {
+              return new Error(undefined);
+            } else {
+              let $5 = $3.tail;
+              if ($5 instanceof $Empty) {
+                return new Error(undefined);
+              } else {
+                let $6 = $5.tail;
+                if ($6 instanceof $Empty) {
+                  let day_string = $3.head;
+                  let time_string = $5.head;
+                  return new Ok([day_string, time_string]);
+                } else {
+                  return new Error(undefined);
+                }
+              }
+            }
+          } else {
+            let $5 = $2.tail;
+            if ($5 instanceof $Empty) {
+              if ($3 instanceof $Empty) {
+                return new Error(undefined);
+              } else {
+                let $6 = $3.tail;
+                if ($6 instanceof $Empty) {
+                  return new Ok([value$1, "00"]);
+                } else {
+                  let $7 = $6.tail;
+                  if ($7 instanceof $Empty) {
+                    let day_string = $3.head;
+                    let time_string = $6.head;
+                    return new Ok([day_string, time_string]);
+                  } else {
+                    return new Error(undefined);
+                  }
+                }
+              }
+            } else {
+              let $6 = $5.tail;
+              if ($6 instanceof $Empty) {
+                let day_string = $2.head;
+                let time_string = $5.head;
+                return new Ok([day_string, time_string]);
+              } else if ($3 instanceof $Empty) {
+                return new Error(undefined);
+              } else {
+                let $7 = $3.tail;
+                if ($7 instanceof $Empty) {
+                  return new Error(undefined);
+                } else {
+                  let $8 = $7.tail;
+                  if ($8 instanceof $Empty) {
+                    let day_string = $3.head;
+                    let time_string = $7.head;
+                    return new Ok([day_string, time_string]);
+                  } else {
+                    return new Error(undefined);
+                  }
+                }
+              }
+            }
+          }
+        } else {
+          let $5 = $4.tail;
+          if ($5 instanceof $Empty) {
+            let day_string = $1.head;
+            let time_string = $4.head;
+            return new Ok([day_string, time_string]);
+          } else if ($2 instanceof $Empty) {
+            if ($3 instanceof $Empty) {
+              return new Error(undefined);
+            } else {
+              let $6 = $3.tail;
+              if ($6 instanceof $Empty) {
+                return new Error(undefined);
+              } else {
+                let $7 = $6.tail;
+                if ($7 instanceof $Empty) {
+                  let day_string = $3.head;
+                  let time_string = $6.head;
+                  return new Ok([day_string, time_string]);
+                } else {
+                  return new Error(undefined);
+                }
+              }
+            }
+          } else {
+            let $6 = $2.tail;
+            if ($6 instanceof $Empty) {
+              if ($3 instanceof $Empty) {
+                return new Error(undefined);
+              } else {
+                let $7 = $3.tail;
+                if ($7 instanceof $Empty) {
+                  return new Error(undefined);
+                } else {
+                  let $8 = $7.tail;
+                  if ($8 instanceof $Empty) {
+                    let day_string = $3.head;
+                    let time_string = $7.head;
+                    return new Ok([day_string, time_string]);
+                  } else {
+                    return new Error(undefined);
+                  }
+                }
+              }
+            } else {
+              let $7 = $6.tail;
+              if ($7 instanceof $Empty) {
+                let day_string = $2.head;
+                let time_string = $6.head;
+                return new Ok([day_string, time_string]);
+              } else if ($3 instanceof $Empty) {
+                return new Error(undefined);
+              } else {
+                let $8 = $3.tail;
+                if ($8 instanceof $Empty) {
+                  return new Error(undefined);
+                } else {
+                  let $9 = $8.tail;
+                  if ($9 instanceof $Empty) {
+                    let day_string = $3.head;
+                    let time_string = $8.head;
+                    return new Ok([day_string, time_string]);
+                  } else {
+                    return new Error(undefined);
+                  }
+                }
+              }
+            }
+          }
+        }
       }
     })(),
     (_use0) => {
@@ -1411,26 +1928,312 @@ export function parse(value) {
             );
           } else {
             let $2 = $regexp.scan(offset_pattern, offsetted_time_string$1);
-            if ($2.hasLength(1) &&
-            $2.head instanceof $regexp.Match &&
-            $2.head.submatches.hasLength(2) &&
-            $2.head.submatches.head instanceof $option.Some &&
-            $2.head.submatches.tail.head instanceof $option.Some) {
-              let time_string = $2.head.submatches.head[0];
-              let offset_string = $2.head.submatches.tail.head[0];
-              return new Ok([day_string$1, time_string, offset_string]);
-            } else {
+            if ($2 instanceof $Empty) {
               let $3 = $regexp.scan(offset_pattern, day_string$1);
-              if ($3.hasLength(1) &&
-              $3.head instanceof $regexp.Match &&
-              $3.head.submatches.hasLength(2) &&
-              $3.head.submatches.head instanceof $option.Some &&
-              $3.head.submatches.tail.head instanceof $option.Some) {
-                let day_string$2 = $3.head.submatches.head[0];
-                let offset_string = $3.head.submatches.tail.head[0];
-                return new Ok([day_string$2, "00", offset_string]);
-              } else {
+              if ($3 instanceof $Empty) {
                 return new Error(undefined);
+              } else {
+                let $4 = $3.tail;
+                if ($4 instanceof $Empty) {
+                  let $5 = $3.head.submatches;
+                  if ($5 instanceof $Empty) {
+                    return new Error(undefined);
+                  } else {
+                    let $6 = $5.tail;
+                    if ($6 instanceof $Empty) {
+                      return new Error(undefined);
+                    } else {
+                      let $7 = $6.tail;
+                      if ($7 instanceof $Empty) {
+                        let $8 = $6.head;
+                        if ($8 instanceof $option.Some) {
+                          let $9 = $5.head;
+                          if ($9 instanceof $option.Some) {
+                            let offset_string = $8[0];
+                            let day_string$2 = $9[0];
+                            return new Ok([day_string$2, "00", offset_string]);
+                          } else {
+                            return new Error(undefined);
+                          }
+                        } else {
+                          return new Error(undefined);
+                        }
+                      } else {
+                        return new Error(undefined);
+                      }
+                    }
+                  }
+                } else {
+                  return new Error(undefined);
+                }
+              }
+            } else {
+              let $3 = $2.tail;
+              if ($3 instanceof $Empty) {
+                let $4 = $2.head.submatches;
+                if ($4 instanceof $Empty) {
+                  let $5 = $regexp.scan(offset_pattern, day_string$1);
+                  if ($5 instanceof $Empty) {
+                    return new Error(undefined);
+                  } else {
+                    let $6 = $5.tail;
+                    if ($6 instanceof $Empty) {
+                      let $7 = $5.head.submatches;
+                      if ($7 instanceof $Empty) {
+                        return new Error(undefined);
+                      } else {
+                        let $8 = $7.tail;
+                        if ($8 instanceof $Empty) {
+                          return new Error(undefined);
+                        } else {
+                          let $9 = $8.tail;
+                          if ($9 instanceof $Empty) {
+                            let $10 = $8.head;
+                            if ($10 instanceof $option.Some) {
+                              let $11 = $7.head;
+                              if ($11 instanceof $option.Some) {
+                                let offset_string = $10[0];
+                                let day_string$2 = $11[0];
+                                return new Ok(
+                                  [day_string$2, "00", offset_string],
+                                );
+                              } else {
+                                return new Error(undefined);
+                              }
+                            } else {
+                              return new Error(undefined);
+                            }
+                          } else {
+                            return new Error(undefined);
+                          }
+                        }
+                      }
+                    } else {
+                      return new Error(undefined);
+                    }
+                  }
+                } else {
+                  let $5 = $4.tail;
+                  if ($5 instanceof $Empty) {
+                    let $6 = $regexp.scan(offset_pattern, day_string$1);
+                    if ($6 instanceof $Empty) {
+                      return new Error(undefined);
+                    } else {
+                      let $7 = $6.tail;
+                      if ($7 instanceof $Empty) {
+                        let $8 = $6.head.submatches;
+                        if ($8 instanceof $Empty) {
+                          return new Error(undefined);
+                        } else {
+                          let $9 = $8.tail;
+                          if ($9 instanceof $Empty) {
+                            return new Error(undefined);
+                          } else {
+                            let $10 = $9.tail;
+                            if ($10 instanceof $Empty) {
+                              let $11 = $9.head;
+                              if ($11 instanceof $option.Some) {
+                                let $12 = $8.head;
+                                if ($12 instanceof $option.Some) {
+                                  let offset_string = $11[0];
+                                  let day_string$2 = $12[0];
+                                  return new Ok(
+                                    [day_string$2, "00", offset_string],
+                                  );
+                                } else {
+                                  return new Error(undefined);
+                                }
+                              } else {
+                                return new Error(undefined);
+                              }
+                            } else {
+                              return new Error(undefined);
+                            }
+                          }
+                        }
+                      } else {
+                        return new Error(undefined);
+                      }
+                    }
+                  } else {
+                    let $6 = $5.tail;
+                    if ($6 instanceof $Empty) {
+                      let $7 = $5.head;
+                      if ($7 instanceof $option.Some) {
+                        let $8 = $4.head;
+                        if ($8 instanceof $option.Some) {
+                          let offset_string = $7[0];
+                          let time_string = $8[0];
+                          return new Ok(
+                            [day_string$1, time_string, offset_string],
+                          );
+                        } else {
+                          let $9 = $regexp.scan(offset_pattern, day_string$1);
+                          if ($9 instanceof $Empty) {
+                            return new Error(undefined);
+                          } else {
+                            let $10 = $9.tail;
+                            if ($10 instanceof $Empty) {
+                              let $11 = $9.head.submatches;
+                              if ($11 instanceof $Empty) {
+                                return new Error(undefined);
+                              } else {
+                                let $12 = $11.tail;
+                                if ($12 instanceof $Empty) {
+                                  return new Error(undefined);
+                                } else {
+                                  let $13 = $12.tail;
+                                  if ($13 instanceof $Empty) {
+                                    let $14 = $12.head;
+                                    if ($14 instanceof $option.Some) {
+                                      let $15 = $11.head;
+                                      if ($15 instanceof $option.Some) {
+                                        let offset_string = $14[0];
+                                        let day_string$2 = $15[0];
+                                        return new Ok(
+                                          [day_string$2, "00", offset_string],
+                                        );
+                                      } else {
+                                        return new Error(undefined);
+                                      }
+                                    } else {
+                                      return new Error(undefined);
+                                    }
+                                  } else {
+                                    return new Error(undefined);
+                                  }
+                                }
+                              }
+                            } else {
+                              return new Error(undefined);
+                            }
+                          }
+                        }
+                      } else {
+                        let $8 = $regexp.scan(offset_pattern, day_string$1);
+                        if ($8 instanceof $Empty) {
+                          return new Error(undefined);
+                        } else {
+                          let $9 = $8.tail;
+                          if ($9 instanceof $Empty) {
+                            let $10 = $8.head.submatches;
+                            if ($10 instanceof $Empty) {
+                              return new Error(undefined);
+                            } else {
+                              let $11 = $10.tail;
+                              if ($11 instanceof $Empty) {
+                                return new Error(undefined);
+                              } else {
+                                let $12 = $11.tail;
+                                if ($12 instanceof $Empty) {
+                                  let $13 = $11.head;
+                                  if ($13 instanceof $option.Some) {
+                                    let $14 = $10.head;
+                                    if ($14 instanceof $option.Some) {
+                                      let offset_string = $13[0];
+                                      let day_string$2 = $14[0];
+                                      return new Ok(
+                                        [day_string$2, "00", offset_string],
+                                      );
+                                    } else {
+                                      return new Error(undefined);
+                                    }
+                                  } else {
+                                    return new Error(undefined);
+                                  }
+                                } else {
+                                  return new Error(undefined);
+                                }
+                              }
+                            }
+                          } else {
+                            return new Error(undefined);
+                          }
+                        }
+                      }
+                    } else {
+                      let $7 = $regexp.scan(offset_pattern, day_string$1);
+                      if ($7 instanceof $Empty) {
+                        return new Error(undefined);
+                      } else {
+                        let $8 = $7.tail;
+                        if ($8 instanceof $Empty) {
+                          let $9 = $7.head.submatches;
+                          if ($9 instanceof $Empty) {
+                            return new Error(undefined);
+                          } else {
+                            let $10 = $9.tail;
+                            if ($10 instanceof $Empty) {
+                              return new Error(undefined);
+                            } else {
+                              let $11 = $10.tail;
+                              if ($11 instanceof $Empty) {
+                                let $12 = $10.head;
+                                if ($12 instanceof $option.Some) {
+                                  let $13 = $9.head;
+                                  if ($13 instanceof $option.Some) {
+                                    let offset_string = $12[0];
+                                    let day_string$2 = $13[0];
+                                    return new Ok(
+                                      [day_string$2, "00", offset_string],
+                                    );
+                                  } else {
+                                    return new Error(undefined);
+                                  }
+                                } else {
+                                  return new Error(undefined);
+                                }
+                              } else {
+                                return new Error(undefined);
+                              }
+                            }
+                          }
+                        } else {
+                          return new Error(undefined);
+                        }
+                      }
+                    }
+                  }
+                }
+              } else {
+                let $4 = $regexp.scan(offset_pattern, day_string$1);
+                if ($4 instanceof $Empty) {
+                  return new Error(undefined);
+                } else {
+                  let $5 = $4.tail;
+                  if ($5 instanceof $Empty) {
+                    let $6 = $4.head.submatches;
+                    if ($6 instanceof $Empty) {
+                      return new Error(undefined);
+                    } else {
+                      let $7 = $6.tail;
+                      if ($7 instanceof $Empty) {
+                        return new Error(undefined);
+                      } else {
+                        let $8 = $7.tail;
+                        if ($8 instanceof $Empty) {
+                          let $9 = $7.head;
+                          if ($9 instanceof $option.Some) {
+                            let $10 = $6.head;
+                            if ($10 instanceof $option.Some) {
+                              let offset_string = $9[0];
+                              let day_string$2 = $10[0];
+                              return new Ok([day_string$2, "00", offset_string]);
+                            } else {
+                              return new Error(undefined);
+                            }
+                          } else {
+                            return new Error(undefined);
+                          }
+                        } else {
+                          return new Error(undefined);
+                        }
+                      }
+                    }
+                  } else {
+                    return new Error(undefined);
+                  }
+                }
               }
             }
           }
@@ -1444,56 +2247,97 @@ export function parse(value) {
             (() => {
               let $1 = $string.split(time_string$1, ".");
               let $2 = $string.split(time_string$1, ",");
-              if ($1.hasLength(1) && $2.hasLength(1)) {
-                return new Ok([time_string$1, new Ok(0)]);
-              } else if ($1.hasLength(2) && $2.hasLength(1)) {
-                let time_string$2 = $1.head;
-                let milli_seconds_string = $1.tail.head;
-                return new Ok(
-                  [
-                    time_string$2,
-                    (() => {
-                      let _pipe = milli_seconds_string;
-                      let _pipe$1 = $string.slice(_pipe, 0, 3);
-                      let _pipe$2 = $string.pad_end(_pipe$1, 3, "0");
-                      return $int.parse(_pipe$2);
-                    })(),
-                  ],
-                );
-              } else if ($1.hasLength(1) && $2.hasLength(2)) {
-                let time_string$2 = $2.head;
-                let milli_seconds_string = $2.tail.head;
-                return new Ok(
-                  [
-                    time_string$2,
-                    (() => {
-                      let _pipe = milli_seconds_string;
-                      let _pipe$1 = $string.slice(_pipe, 0, 3);
-                      let _pipe$2 = $string.pad_end(_pipe$1, 3, "0");
-                      return $int.parse(_pipe$2);
-                    })(),
-                  ],
-                );
-              } else {
+              if ($2 instanceof $Empty) {
                 return new Error(undefined);
+              } else {
+                let $3 = $2.tail;
+                if ($3 instanceof $Empty) {
+                  if ($1 instanceof $Empty) {
+                    return new Error(undefined);
+                  } else {
+                    let $4 = $1.tail;
+                    if ($4 instanceof $Empty) {
+                      return new Ok([time_string$1, new Ok(0)]);
+                    } else {
+                      let $5 = $4.tail;
+                      if ($5 instanceof $Empty) {
+                        let time_string$2 = $1.head;
+                        let milli_seconds_string = $4.head;
+                        return new Ok(
+                          [
+                            time_string$2,
+                            (() => {
+                              let _pipe = milli_seconds_string;
+                              let _pipe$1 = $string.slice(_pipe, 0, 3);
+                              let _pipe$2 = $string.pad_end(_pipe$1, 3, "0");
+                              return $int.parse(_pipe$2);
+                            })(),
+                          ],
+                        );
+                      } else {
+                        return new Error(undefined);
+                      }
+                    }
+                  }
+                } else {
+                  let $4 = $3.tail;
+                  if ($4 instanceof $Empty) {
+                    if ($1 instanceof $Empty) {
+                      return new Error(undefined);
+                    } else {
+                      let $5 = $1.tail;
+                      if ($5 instanceof $Empty) {
+                        let time_string$2 = $2.head;
+                        let milli_seconds_string = $3.head;
+                        return new Ok(
+                          [
+                            time_string$2,
+                            (() => {
+                              let _pipe = milli_seconds_string;
+                              let _pipe$1 = $string.slice(_pipe, 0, 3);
+                              let _pipe$2 = $string.pad_end(_pipe$1, 3, "0");
+                              return $int.parse(_pipe$2);
+                            })(),
+                          ],
+                        );
+                      } else {
+                        return new Error(undefined);
+                      }
+                    }
+                  } else {
+                    return new Error(undefined);
+                  }
+                }
               }
             })(),
             (_use0) => {
               let time_string$2 = _use0[0];
               let milli_seconds_result = _use0[1];
-              if (milli_seconds_result.isOk()) {
+              if (milli_seconds_result instanceof Ok) {
                 let milli_seconds = milli_seconds_result[0];
                 return $result.then$(
                   parse_date_section(day_string$2),
                   (day) => {
-                    if (!day.hasLength(3)) {
+                    if (
+                      day instanceof $Empty ||
+                      day.tail instanceof $Empty ||
+                      day.tail.tail instanceof $Empty ||
+                      day.tail.tail.tail instanceof $NonEmpty
+                    ) {
                       throw makeError(
                         "let_assert",
+                        FILEPATH,
                         "birl",
                         370,
-                        "",
+                        "parse",
                         "Pattern match failed, no pattern matched the value.",
-                        { value: day }
+                        {
+                          value: day,
+                          start: 8278,
+                          end: 8314,
+                          pattern_start: 8289,
+                          pattern_end: 8308
+                        }
                       )
                     }
                     let year = day.head;
@@ -1502,14 +2346,26 @@ export function parse(value) {
                     return $result.then$(
                       parse_time_section(time_string$2),
                       (time_of_day) => {
-                        if (!time_of_day.hasLength(3)) {
+                        if (
+                          time_of_day instanceof $Empty ||
+                          time_of_day.tail instanceof $Empty ||
+                          time_of_day.tail.tail instanceof $Empty ||
+                          time_of_day.tail.tail.tail instanceof $NonEmpty
+                        ) {
                           throw makeError(
                             "let_assert",
+                            FILEPATH,
                             "birl",
                             373,
-                            "",
+                            "parse",
                             "Pattern match failed, no pattern matched the value.",
-                            { value: time_of_day }
+                            {
+                              value: time_of_day,
+                              start: 8392,
+                              end: 8439,
+                              pattern_start: 8403,
+                              pattern_end: 8425
+                            }
                           )
                         }
                         let hour = time_of_day.head;
@@ -1542,22 +2398,206 @@ export function from_naive(value) {
       let $ = $string.split(value$1, "T");
       let $1 = $string.split(value$1, "t");
       let $2 = $string.split(value$1, " ");
-      if ($.hasLength(2)) {
-        let day_string = $.head;
-        let time_string = $.tail.head;
-        return new Ok([day_string, time_string]);
-      } else if ($1.hasLength(2)) {
-        let day_string = $1.head;
-        let time_string = $1.tail.head;
-        return new Ok([day_string, time_string]);
-      } else if ($2.hasLength(2)) {
-        let day_string = $2.head;
-        let time_string = $2.tail.head;
-        return new Ok([day_string, time_string]);
-      } else if ($.hasLength(1) && $1.hasLength(1) && $2.hasLength(1)) {
-        return new Ok([value$1, "00"]);
+      if ($ instanceof $Empty) {
+        if ($1 instanceof $Empty) {
+          if ($2 instanceof $Empty) {
+            return new Error(undefined);
+          } else {
+            let $3 = $2.tail;
+            if ($3 instanceof $Empty) {
+              return new Error(undefined);
+            } else {
+              let $4 = $3.tail;
+              if ($4 instanceof $Empty) {
+                let day_string = $2.head;
+                let time_string = $3.head;
+                return new Ok([day_string, time_string]);
+              } else {
+                return new Error(undefined);
+              }
+            }
+          }
+        } else {
+          let $3 = $1.tail;
+          if ($3 instanceof $Empty) {
+            if ($2 instanceof $Empty) {
+              return new Error(undefined);
+            } else {
+              let $4 = $2.tail;
+              if ($4 instanceof $Empty) {
+                return new Error(undefined);
+              } else {
+                let $5 = $4.tail;
+                if ($5 instanceof $Empty) {
+                  let day_string = $2.head;
+                  let time_string = $4.head;
+                  return new Ok([day_string, time_string]);
+                } else {
+                  return new Error(undefined);
+                }
+              }
+            }
+          } else {
+            let $4 = $3.tail;
+            if ($4 instanceof $Empty) {
+              let day_string = $1.head;
+              let time_string = $3.head;
+              return new Ok([day_string, time_string]);
+            } else if ($2 instanceof $Empty) {
+              return new Error(undefined);
+            } else {
+              let $5 = $2.tail;
+              if ($5 instanceof $Empty) {
+                return new Error(undefined);
+              } else {
+                let $6 = $5.tail;
+                if ($6 instanceof $Empty) {
+                  let day_string = $2.head;
+                  let time_string = $5.head;
+                  return new Ok([day_string, time_string]);
+                } else {
+                  return new Error(undefined);
+                }
+              }
+            }
+          }
+        }
       } else {
-        return new Error(undefined);
+        let $3 = $.tail;
+        if ($3 instanceof $Empty) {
+          if ($1 instanceof $Empty) {
+            if ($2 instanceof $Empty) {
+              return new Error(undefined);
+            } else {
+              let $4 = $2.tail;
+              if ($4 instanceof $Empty) {
+                return new Error(undefined);
+              } else {
+                let $5 = $4.tail;
+                if ($5 instanceof $Empty) {
+                  let day_string = $2.head;
+                  let time_string = $4.head;
+                  return new Ok([day_string, time_string]);
+                } else {
+                  return new Error(undefined);
+                }
+              }
+            }
+          } else {
+            let $4 = $1.tail;
+            if ($4 instanceof $Empty) {
+              if ($2 instanceof $Empty) {
+                return new Error(undefined);
+              } else {
+                let $5 = $2.tail;
+                if ($5 instanceof $Empty) {
+                  return new Ok([value$1, "00"]);
+                } else {
+                  let $6 = $5.tail;
+                  if ($6 instanceof $Empty) {
+                    let day_string = $2.head;
+                    let time_string = $5.head;
+                    return new Ok([day_string, time_string]);
+                  } else {
+                    return new Error(undefined);
+                  }
+                }
+              }
+            } else {
+              let $5 = $4.tail;
+              if ($5 instanceof $Empty) {
+                let day_string = $1.head;
+                let time_string = $4.head;
+                return new Ok([day_string, time_string]);
+              } else if ($2 instanceof $Empty) {
+                return new Error(undefined);
+              } else {
+                let $6 = $2.tail;
+                if ($6 instanceof $Empty) {
+                  return new Error(undefined);
+                } else {
+                  let $7 = $6.tail;
+                  if ($7 instanceof $Empty) {
+                    let day_string = $2.head;
+                    let time_string = $6.head;
+                    return new Ok([day_string, time_string]);
+                  } else {
+                    return new Error(undefined);
+                  }
+                }
+              }
+            }
+          }
+        } else {
+          let $4 = $3.tail;
+          if ($4 instanceof $Empty) {
+            let day_string = $.head;
+            let time_string = $3.head;
+            return new Ok([day_string, time_string]);
+          } else if ($1 instanceof $Empty) {
+            if ($2 instanceof $Empty) {
+              return new Error(undefined);
+            } else {
+              let $5 = $2.tail;
+              if ($5 instanceof $Empty) {
+                return new Error(undefined);
+              } else {
+                let $6 = $5.tail;
+                if ($6 instanceof $Empty) {
+                  let day_string = $2.head;
+                  let time_string = $5.head;
+                  return new Ok([day_string, time_string]);
+                } else {
+                  return new Error(undefined);
+                }
+              }
+            }
+          } else {
+            let $5 = $1.tail;
+            if ($5 instanceof $Empty) {
+              if ($2 instanceof $Empty) {
+                return new Error(undefined);
+              } else {
+                let $6 = $2.tail;
+                if ($6 instanceof $Empty) {
+                  return new Error(undefined);
+                } else {
+                  let $7 = $6.tail;
+                  if ($7 instanceof $Empty) {
+                    let day_string = $2.head;
+                    let time_string = $6.head;
+                    return new Ok([day_string, time_string]);
+                  } else {
+                    return new Error(undefined);
+                  }
+                }
+              }
+            } else {
+              let $6 = $5.tail;
+              if ($6 instanceof $Empty) {
+                let day_string = $1.head;
+                let time_string = $5.head;
+                return new Ok([day_string, time_string]);
+              } else if ($2 instanceof $Empty) {
+                return new Error(undefined);
+              } else {
+                let $7 = $2.tail;
+                if ($7 instanceof $Empty) {
+                  return new Error(undefined);
+                } else {
+                  let $8 = $7.tail;
+                  if ($8 instanceof $Empty) {
+                    let day_string = $2.head;
+                    let time_string = $7.head;
+                    return new Ok([day_string, time_string]);
+                  } else {
+                    return new Error(undefined);
+                  }
+                }
+              }
+            }
+          }
+        }
       }
     })(),
     (_use0) => {
@@ -1570,56 +2610,97 @@ export function from_naive(value) {
         (() => {
           let $ = $string.split(time_string$2, ".");
           let $1 = $string.split(time_string$2, ",");
-          if ($.hasLength(1) && $1.hasLength(1)) {
-            return new Ok([time_string$2, new Ok(0)]);
-          } else if ($.hasLength(2) && $1.hasLength(1)) {
-            let time_string$3 = $.head;
-            let milli_seconds_string = $.tail.head;
-            return new Ok(
-              [
-                time_string$3,
-                (() => {
-                  let _pipe = milli_seconds_string;
-                  let _pipe$1 = $string.slice(_pipe, 0, 3);
-                  let _pipe$2 = $string.pad_end(_pipe$1, 3, "0");
-                  return $int.parse(_pipe$2);
-                })(),
-              ],
-            );
-          } else if ($.hasLength(1) && $1.hasLength(2)) {
-            let time_string$3 = $1.head;
-            let milli_seconds_string = $1.tail.head;
-            return new Ok(
-              [
-                time_string$3,
-                (() => {
-                  let _pipe = milli_seconds_string;
-                  let _pipe$1 = $string.slice(_pipe, 0, 3);
-                  let _pipe$2 = $string.pad_end(_pipe$1, 3, "0");
-                  return $int.parse(_pipe$2);
-                })(),
-              ],
-            );
-          } else {
+          if ($1 instanceof $Empty) {
             return new Error(undefined);
+          } else {
+            let $2 = $1.tail;
+            if ($2 instanceof $Empty) {
+              if ($ instanceof $Empty) {
+                return new Error(undefined);
+              } else {
+                let $3 = $.tail;
+                if ($3 instanceof $Empty) {
+                  return new Ok([time_string$2, new Ok(0)]);
+                } else {
+                  let $4 = $3.tail;
+                  if ($4 instanceof $Empty) {
+                    let time_string$3 = $.head;
+                    let milli_seconds_string = $3.head;
+                    return new Ok(
+                      [
+                        time_string$3,
+                        (() => {
+                          let _pipe = milli_seconds_string;
+                          let _pipe$1 = $string.slice(_pipe, 0, 3);
+                          let _pipe$2 = $string.pad_end(_pipe$1, 3, "0");
+                          return $int.parse(_pipe$2);
+                        })(),
+                      ],
+                    );
+                  } else {
+                    return new Error(undefined);
+                  }
+                }
+              }
+            } else {
+              let $3 = $2.tail;
+              if ($3 instanceof $Empty) {
+                if ($ instanceof $Empty) {
+                  return new Error(undefined);
+                } else {
+                  let $4 = $.tail;
+                  if ($4 instanceof $Empty) {
+                    let time_string$3 = $1.head;
+                    let milli_seconds_string = $2.head;
+                    return new Ok(
+                      [
+                        time_string$3,
+                        (() => {
+                          let _pipe = milli_seconds_string;
+                          let _pipe$1 = $string.slice(_pipe, 0, 3);
+                          let _pipe$2 = $string.pad_end(_pipe$1, 3, "0");
+                          return $int.parse(_pipe$2);
+                        })(),
+                      ],
+                    );
+                  } else {
+                    return new Error(undefined);
+                  }
+                }
+              } else {
+                return new Error(undefined);
+              }
+            }
           }
         })(),
         (_use0) => {
           let time_string$3 = _use0[0];
           let milli_seconds_result = _use0[1];
-          if (milli_seconds_result.isOk()) {
+          if (milli_seconds_result instanceof Ok) {
             let milli_seconds = milli_seconds_result[0];
             return $result.then$(
               parse_date_section(day_string$1),
               (day) => {
-                if (!day.hasLength(3)) {
+                if (
+                  day instanceof $Empty ||
+                  day.tail instanceof $Empty ||
+                  day.tail.tail instanceof $Empty ||
+                  day.tail.tail.tail instanceof $NonEmpty
+                ) {
                   throw makeError(
                     "let_assert",
+                    FILEPATH,
                     "birl",
                     622,
-                    "",
+                    "from_naive",
                     "Pattern match failed, no pattern matched the value.",
-                    { value: day }
+                    {
+                      value: day,
+                      start: 14936,
+                      end: 14972,
+                      pattern_start: 14947,
+                      pattern_end: 14966
+                    }
                   )
                 }
                 let year = day.head;
@@ -1628,14 +2709,26 @@ export function from_naive(value) {
                 return $result.then$(
                   parse_time_section(time_string$3),
                   (time_of_day) => {
-                    if (!time_of_day.hasLength(3)) {
+                    if (
+                      time_of_day instanceof $Empty ||
+                      time_of_day.tail instanceof $Empty ||
+                      time_of_day.tail.tail instanceof $Empty ||
+                      time_of_day.tail.tail.tail instanceof $NonEmpty
+                    ) {
                       throw makeError(
                         "let_assert",
+                        FILEPATH,
                         "birl",
                         625,
-                        "",
+                        "from_naive",
                         "Pattern match failed, no pattern matched the value.",
-                        { value: time_of_day }
+                        {
+                          value: time_of_day,
+                          start: 15050,
+                          end: 15097,
+                          pattern_start: 15061,
+                          pattern_end: 15083
+                        }
                       )
                     }
                     let hour = time_of_day.head;
@@ -1667,14 +2760,21 @@ export function set_day(value, day) {
   let month$1 = day.month;
   let date = day.date;
   let $1 = from_parts([year, month$1, date], time, offset);
-  if (!$1.isOk()) {
+  if (!($1 instanceof Ok)) {
     throw makeError(
       "let_assert",
+      FILEPATH,
       "birl",
       1215,
       "set_day",
       "Pattern match failed, no pattern matched the value.",
-      { value: $1 }
+      {
+        value: $1,
+        start: 30617,
+        end: 30690,
+        pattern_start: 30628,
+        pattern_end: 30641
+      }
     )
   }
   let new_value = $1[0];
@@ -1695,14 +2795,21 @@ export function set_time_of_day(value, time) {
   let second = time.second;
   let milli_second = time.milli_second;
   let $1 = from_parts(date, [hour, minute, second, milli_second], offset);
-  if (!$1.isOk()) {
+  if (!($1 instanceof Ok)) {
     throw makeError(
       "let_assert",
+      FILEPATH,
       "birl",
       1233,
       "set_time_of_day",
       "Pattern match failed, no pattern matched the value.",
-      { value: $1 }
+      {
+        value: $1,
+        start: 31084,
+        end: 31178,
+        pattern_start: 31095,
+        pattern_end: 31108
+      }
     )
   }
   let new_value = $1[0];
@@ -1715,23 +2822,28 @@ export function set_time_of_day(value, time) {
 }
 
 export function weekday(value) {
-  {
-    let t = value.wall_time;
-    let o = value.offset;
-    let $ = weekday_from_int(ffi_weekday(t, o));
-    if (!$.isOk()) {
-      throw makeError(
-        "let_assert",
-        "birl",
-        1043,
-        "weekday",
-        "Pattern match failed, no pattern matched the value.",
-        { value: $ }
-      )
-    }
-    let weekday$1 = $[0];
-    return weekday$1;
+  let t = value.wall_time;
+  let o = value.offset;
+  let $ = weekday_from_int(ffi_weekday(t, o));
+  if (!($ instanceof Ok)) {
+    throw makeError(
+      "let_assert",
+      FILEPATH,
+      "birl",
+      1043,
+      "weekday",
+      "Pattern match failed, no pattern matched the value.",
+      {
+        value: $,
+        start: 26474,
+        end: 26534,
+        pattern_start: 26485,
+        pattern_end: 26496
+      }
+    )
   }
+  let weekday$1 = $[0];
+  return weekday$1;
 }
 
 export function string_weekday(value) {
@@ -1746,23 +2858,30 @@ export function short_string_weekday(value) {
 
 export function to_http(value) {
   let $ = set_offset(value, "Z");
-  if (!$.isOk()) {
+  if (!($ instanceof Ok)) {
     throw makeError(
       "let_assert",
+      FILEPATH,
       "birl",
       640,
       "to_http",
       "Pattern match failed, no pattern matched the value.",
-      { value: $ }
+      {
+        value: $,
+        start: 15380,
+        end: 15425,
+        pattern_start: 15391,
+        pattern_end: 15400
+      }
     )
   }
   let value$1 = $[0];
   let $1 = to_parts(value$1);
-  let year = $1[0][0];
-  let day = $1[0][2];
   let hour = $1[1][0];
   let minute = $1[1][1];
   let second = $1[1][2];
+  let year = $1[0][0];
+  let day = $1[0][2];
   let short_weekday = short_string_weekday(value$1);
   let short_month = short_string_month(value$1);
   return ((((((((((((short_weekday + ", ") + (() => {
@@ -1786,21 +2905,21 @@ export function to_http(value) {
 
 export function to_http_with_offset(value) {
   let $ = to_parts(value);
-  let year = $[0][0];
-  let day = $[0][2];
+  let offset = $[2];
   let hour = $[1][0];
   let minute = $[1][1];
   let second = $[1][2];
-  let offset = $[2];
+  let year = $[0][0];
+  let day = $[0][2];
   let short_weekday = short_string_weekday(value);
   let short_month = short_string_month(value);
-  let offset$1 = (() => {
-    if (offset === "Z") {
-      return "GMT";
-    } else {
-      return offset;
-    }
-  })();
+  let _block;
+  if (offset === "Z") {
+    _block = "GMT";
+  } else {
+    _block = offset;
+  }
+  let offset$1 = _block;
   return (((((((((((((short_weekday + ", ") + (() => {
     let _pipe = day;
     let _pipe$1 = $int.to_string(_pipe);
@@ -1869,260 +2988,310 @@ const string_to_units = /* @__PURE__ */ toList([
 
 export function parse_relative(origin, legible_difference) {
   let $ = $string.split(legible_difference, " ");
-  if ($.hasLength(3) && $.head === "in") {
-    let amount_string = $.tail.head;
-    let unit = $.tail.tail.head;
-    let unit$1 = (() => {
-      let $1 = $string.ends_with(unit, "s");
-      if (!$1) {
-        return unit;
-      } else {
-        return $string.drop_end(unit, 1);
-      }
-    })();
-    return $result.then$(
-      $int.parse(amount_string),
-      (amount) => {
-        return $result.then$(
-          $list.key_find(string_to_units, unit$1),
-          (unit) => {
-            return new Ok(add(origin, $duration.new$(toList([[amount, unit]]))));
-          },
-        );
-      },
-    );
-  } else if ($.hasLength(3) && $.tail.tail.head === "from now") {
-    let amount_string = $.head;
-    let unit = $.tail.head;
-    let unit$1 = (() => {
-      let $1 = $string.ends_with(unit, "s");
-      if (!$1) {
-        return unit;
-      } else {
-        return $string.drop_end(unit, 1);
-      }
-    })();
-    return $result.then$(
-      $int.parse(amount_string),
-      (amount) => {
-        return $result.then$(
-          $list.key_find(string_to_units, unit$1),
-          (unit) => {
-            return new Ok(add(origin, $duration.new$(toList([[amount, unit]]))));
-          },
-        );
-      },
-    );
-  } else if ($.hasLength(3) && $.tail.tail.head === "later") {
-    let amount_string = $.head;
-    let unit = $.tail.head;
-    let unit$1 = (() => {
-      let $1 = $string.ends_with(unit, "s");
-      if (!$1) {
-        return unit;
-      } else {
-        return $string.drop_end(unit, 1);
-      }
-    })();
-    return $result.then$(
-      $int.parse(amount_string),
-      (amount) => {
-        return $result.then$(
-          $list.key_find(string_to_units, unit$1),
-          (unit) => {
-            return new Ok(add(origin, $duration.new$(toList([[amount, unit]]))));
-          },
-        );
-      },
-    );
-  } else if ($.hasLength(3) && $.tail.tail.head === "ahead") {
-    let amount_string = $.head;
-    let unit = $.tail.head;
-    let unit$1 = (() => {
-      let $1 = $string.ends_with(unit, "s");
-      if (!$1) {
-        return unit;
-      } else {
-        return $string.drop_end(unit, 1);
-      }
-    })();
-    return $result.then$(
-      $int.parse(amount_string),
-      (amount) => {
-        return $result.then$(
-          $list.key_find(string_to_units, unit$1),
-          (unit) => {
-            return new Ok(add(origin, $duration.new$(toList([[amount, unit]]))));
-          },
-        );
-      },
-    );
-  } else if ($.hasLength(3) && $.tail.tail.head === "in the future") {
-    let amount_string = $.head;
-    let unit = $.tail.head;
-    let unit$1 = (() => {
-      let $1 = $string.ends_with(unit, "s");
-      if (!$1) {
-        return unit;
-      } else {
-        return $string.drop_end(unit, 1);
-      }
-    })();
-    return $result.then$(
-      $int.parse(amount_string),
-      (amount) => {
-        return $result.then$(
-          $list.key_find(string_to_units, unit$1),
-          (unit) => {
-            return new Ok(add(origin, $duration.new$(toList([[amount, unit]]))));
-          },
-        );
-      },
-    );
-  } else if ($.hasLength(3) && $.tail.tail.head === "hence") {
-    let amount_string = $.head;
-    let unit = $.tail.head;
-    let unit$1 = (() => {
-      let $1 = $string.ends_with(unit, "s");
-      if (!$1) {
-        return unit;
-      } else {
-        return $string.drop_end(unit, 1);
-      }
-    })();
-    return $result.then$(
-      $int.parse(amount_string),
-      (amount) => {
-        return $result.then$(
-          $list.key_find(string_to_units, unit$1),
-          (unit) => {
-            return new Ok(add(origin, $duration.new$(toList([[amount, unit]]))));
-          },
-        );
-      },
-    );
-  } else if ($.hasLength(3) && $.tail.tail.head === "ago") {
-    let amount_string = $.head;
-    let unit = $.tail.head;
-    let unit$1 = (() => {
-      let $1 = $string.ends_with(unit, "s");
-      if (!$1) {
-        return unit;
-      } else {
-        return $string.drop_end(unit, 1);
-      }
-    })();
-    return $result.then$(
-      $int.parse(amount_string),
-      (amount) => {
-        return $result.then$(
-          $list.key_find(string_to_units, unit$1),
-          (unit) => {
-            return new Ok(
-              subtract(origin, $duration.new$(toList([[amount, unit]]))),
-            );
-          },
-        );
-      },
-    );
-  } else if ($.hasLength(3) && $.tail.tail.head === "before") {
-    let amount_string = $.head;
-    let unit = $.tail.head;
-    let unit$1 = (() => {
-      let $1 = $string.ends_with(unit, "s");
-      if (!$1) {
-        return unit;
-      } else {
-        return $string.drop_end(unit, 1);
-      }
-    })();
-    return $result.then$(
-      $int.parse(amount_string),
-      (amount) => {
-        return $result.then$(
-          $list.key_find(string_to_units, unit$1),
-          (unit) => {
-            return new Ok(
-              subtract(origin, $duration.new$(toList([[amount, unit]]))),
-            );
-          },
-        );
-      },
-    );
-  } else if ($.hasLength(3) && $.tail.tail.head === "earlier") {
-    let amount_string = $.head;
-    let unit = $.tail.head;
-    let unit$1 = (() => {
-      let $1 = $string.ends_with(unit, "s");
-      if (!$1) {
-        return unit;
-      } else {
-        return $string.drop_end(unit, 1);
-      }
-    })();
-    return $result.then$(
-      $int.parse(amount_string),
-      (amount) => {
-        return $result.then$(
-          $list.key_find(string_to_units, unit$1),
-          (unit) => {
-            return new Ok(
-              subtract(origin, $duration.new$(toList([[amount, unit]]))),
-            );
-          },
-        );
-      },
-    );
-  } else if ($.hasLength(3) && $.tail.tail.head === "since") {
-    let amount_string = $.head;
-    let unit = $.tail.head;
-    let unit$1 = (() => {
-      let $1 = $string.ends_with(unit, "s");
-      if (!$1) {
-        return unit;
-      } else {
-        return $string.drop_end(unit, 1);
-      }
-    })();
-    return $result.then$(
-      $int.parse(amount_string),
-      (amount) => {
-        return $result.then$(
-          $list.key_find(string_to_units, unit$1),
-          (unit) => {
-            return new Ok(
-              subtract(origin, $duration.new$(toList([[amount, unit]]))),
-            );
-          },
-        );
-      },
-    );
-  } else if ($.hasLength(3) && $.tail.tail.head === "in the past") {
-    let amount_string = $.head;
-    let unit = $.tail.head;
-    let unit$1 = (() => {
-      let $1 = $string.ends_with(unit, "s");
-      if (!$1) {
-        return unit;
-      } else {
-        return $string.drop_end(unit, 1);
-      }
-    })();
-    return $result.then$(
-      $int.parse(amount_string),
-      (amount) => {
-        return $result.then$(
-          $list.key_find(string_to_units, unit$1),
-          (unit) => {
-            return new Ok(
-              subtract(origin, $duration.new$(toList([[amount, unit]]))),
-            );
-          },
-        );
-      },
-    );
-  } else {
+  if ($ instanceof $Empty) {
     return new Error(undefined);
+  } else {
+    let $1 = $.tail;
+    if ($1 instanceof $Empty) {
+      return new Error(undefined);
+    } else {
+      let $2 = $1.tail;
+      if ($2 instanceof $Empty) {
+        return new Error(undefined);
+      } else {
+        let $3 = $2.tail;
+        if ($3 instanceof $Empty) {
+          let $4 = $.head;
+          if ($4 === "in") {
+            let amount_string = $1.head;
+            let unit = $2.head;
+            let _block;
+            let $5 = $string.ends_with(unit, "s");
+            if ($5) {
+              _block = $string.drop_end(unit, 1);
+            } else {
+              _block = unit;
+            }
+            let unit$1 = _block;
+            return $result.then$(
+              $int.parse(amount_string),
+              (amount) => {
+                return $result.then$(
+                  $list.key_find(string_to_units, unit$1),
+                  (unit) => {
+                    return new Ok(
+                      add(origin, $duration.new$(toList([[amount, unit]]))),
+                    );
+                  },
+                );
+              },
+            );
+          } else {
+            let $5 = $2.head;
+            if ($5 === "from now") {
+              let amount_string = $4;
+              let unit = $1.head;
+              let _block;
+              let $6 = $string.ends_with(unit, "s");
+              if ($6) {
+                _block = $string.drop_end(unit, 1);
+              } else {
+                _block = unit;
+              }
+              let unit$1 = _block;
+              return $result.then$(
+                $int.parse(amount_string),
+                (amount) => {
+                  return $result.then$(
+                    $list.key_find(string_to_units, unit$1),
+                    (unit) => {
+                      return new Ok(
+                        add(origin, $duration.new$(toList([[amount, unit]]))),
+                      );
+                    },
+                  );
+                },
+              );
+            } else if ($5 === "later") {
+              let amount_string = $4;
+              let unit = $1.head;
+              let _block;
+              let $6 = $string.ends_with(unit, "s");
+              if ($6) {
+                _block = $string.drop_end(unit, 1);
+              } else {
+                _block = unit;
+              }
+              let unit$1 = _block;
+              return $result.then$(
+                $int.parse(amount_string),
+                (amount) => {
+                  return $result.then$(
+                    $list.key_find(string_to_units, unit$1),
+                    (unit) => {
+                      return new Ok(
+                        add(origin, $duration.new$(toList([[amount, unit]]))),
+                      );
+                    },
+                  );
+                },
+              );
+            } else if ($5 === "ahead") {
+              let amount_string = $4;
+              let unit = $1.head;
+              let _block;
+              let $6 = $string.ends_with(unit, "s");
+              if ($6) {
+                _block = $string.drop_end(unit, 1);
+              } else {
+                _block = unit;
+              }
+              let unit$1 = _block;
+              return $result.then$(
+                $int.parse(amount_string),
+                (amount) => {
+                  return $result.then$(
+                    $list.key_find(string_to_units, unit$1),
+                    (unit) => {
+                      return new Ok(
+                        add(origin, $duration.new$(toList([[amount, unit]]))),
+                      );
+                    },
+                  );
+                },
+              );
+            } else if ($5 === "in the future") {
+              let amount_string = $4;
+              let unit = $1.head;
+              let _block;
+              let $6 = $string.ends_with(unit, "s");
+              if ($6) {
+                _block = $string.drop_end(unit, 1);
+              } else {
+                _block = unit;
+              }
+              let unit$1 = _block;
+              return $result.then$(
+                $int.parse(amount_string),
+                (amount) => {
+                  return $result.then$(
+                    $list.key_find(string_to_units, unit$1),
+                    (unit) => {
+                      return new Ok(
+                        add(origin, $duration.new$(toList([[amount, unit]]))),
+                      );
+                    },
+                  );
+                },
+              );
+            } else if ($5 === "hence") {
+              let amount_string = $4;
+              let unit = $1.head;
+              let _block;
+              let $6 = $string.ends_with(unit, "s");
+              if ($6) {
+                _block = $string.drop_end(unit, 1);
+              } else {
+                _block = unit;
+              }
+              let unit$1 = _block;
+              return $result.then$(
+                $int.parse(amount_string),
+                (amount) => {
+                  return $result.then$(
+                    $list.key_find(string_to_units, unit$1),
+                    (unit) => {
+                      return new Ok(
+                        add(origin, $duration.new$(toList([[amount, unit]]))),
+                      );
+                    },
+                  );
+                },
+              );
+            } else if ($5 === "ago") {
+              let amount_string = $4;
+              let unit = $1.head;
+              let _block;
+              let $6 = $string.ends_with(unit, "s");
+              if ($6) {
+                _block = $string.drop_end(unit, 1);
+              } else {
+                _block = unit;
+              }
+              let unit$1 = _block;
+              return $result.then$(
+                $int.parse(amount_string),
+                (amount) => {
+                  return $result.then$(
+                    $list.key_find(string_to_units, unit$1),
+                    (unit) => {
+                      return new Ok(
+                        subtract(
+                          origin,
+                          $duration.new$(toList([[amount, unit]])),
+                        ),
+                      );
+                    },
+                  );
+                },
+              );
+            } else if ($5 === "before") {
+              let amount_string = $4;
+              let unit = $1.head;
+              let _block;
+              let $6 = $string.ends_with(unit, "s");
+              if ($6) {
+                _block = $string.drop_end(unit, 1);
+              } else {
+                _block = unit;
+              }
+              let unit$1 = _block;
+              return $result.then$(
+                $int.parse(amount_string),
+                (amount) => {
+                  return $result.then$(
+                    $list.key_find(string_to_units, unit$1),
+                    (unit) => {
+                      return new Ok(
+                        subtract(
+                          origin,
+                          $duration.new$(toList([[amount, unit]])),
+                        ),
+                      );
+                    },
+                  );
+                },
+              );
+            } else if ($5 === "earlier") {
+              let amount_string = $4;
+              let unit = $1.head;
+              let _block;
+              let $6 = $string.ends_with(unit, "s");
+              if ($6) {
+                _block = $string.drop_end(unit, 1);
+              } else {
+                _block = unit;
+              }
+              let unit$1 = _block;
+              return $result.then$(
+                $int.parse(amount_string),
+                (amount) => {
+                  return $result.then$(
+                    $list.key_find(string_to_units, unit$1),
+                    (unit) => {
+                      return new Ok(
+                        subtract(
+                          origin,
+                          $duration.new$(toList([[amount, unit]])),
+                        ),
+                      );
+                    },
+                  );
+                },
+              );
+            } else if ($5 === "since") {
+              let amount_string = $4;
+              let unit = $1.head;
+              let _block;
+              let $6 = $string.ends_with(unit, "s");
+              if ($6) {
+                _block = $string.drop_end(unit, 1);
+              } else {
+                _block = unit;
+              }
+              let unit$1 = _block;
+              return $result.then$(
+                $int.parse(amount_string),
+                (amount) => {
+                  return $result.then$(
+                    $list.key_find(string_to_units, unit$1),
+                    (unit) => {
+                      return new Ok(
+                        subtract(
+                          origin,
+                          $duration.new$(toList([[amount, unit]])),
+                        ),
+                      );
+                    },
+                  );
+                },
+              );
+            } else if ($5 === "in the past") {
+              let amount_string = $4;
+              let unit = $1.head;
+              let _block;
+              let $6 = $string.ends_with(unit, "s");
+              if ($6) {
+                _block = $string.drop_end(unit, 1);
+              } else {
+                _block = unit;
+              }
+              let unit$1 = _block;
+              return $result.then$(
+                $int.parse(amount_string),
+                (amount) => {
+                  return $result.then$(
+                    $list.key_find(string_to_units, unit$1),
+                    (unit) => {
+                      return new Ok(
+                        subtract(
+                          origin,
+                          $duration.new$(toList([[amount, unit]])),
+                        ),
+                      );
+                    },
+                  );
+                },
+              );
+            } else {
+              return new Error(undefined);
+            }
+          }
+        } else {
+          return new Error(undefined);
+        }
+      }
+    }
   }
 }
 
@@ -2141,34 +3310,42 @@ export function legible_difference(a, b) {
     let _pipe = difference(a, b);
     return $duration.blur(_pipe);
   })();
-  if ($[1] instanceof $duration.MicroSecond) {
+  let $1 = $[1];
+  if ($1 instanceof $duration.MicroSecond) {
     return "just now";
-  } else if ($[1] instanceof $duration.MilliSecond) {
+  } else if ($1 instanceof $duration.MilliSecond) {
     return "just now";
   } else {
     let amount = $[0];
-    let unit = $[1];
-    let $1 = $list.key_find(units_to_string, unit);
-    if (!$1.isOk()) {
+    let unit = $1;
+    let $2 = $list.key_find(units_to_string, unit);
+    if (!($2 instanceof Ok)) {
       throw makeError(
         "let_assert",
+        FILEPATH,
         "birl",
         973,
         "legible_difference",
         "Pattern match failed, no pattern matched the value.",
-        { value: $1 }
+        {
+          value: $2,
+          start: 24758,
+          end: 24816,
+          pattern_start: 24769,
+          pattern_end: 24777
+        }
       )
     }
-    let unit$1 = $1[0];
+    let unit$1 = $2[0];
     let is_negative = amount < 0;
     let amount$1 = $int.absolute_value(amount);
-    let unit$2 = (() => {
-      if (amount$1 === 1) {
-        return unit$1;
-      } else {
-        return unit$1 + "s";
-      }
-    })();
+    let _block;
+    if (amount$1 === 1) {
+      _block = unit$1;
+    } else {
+      _block = unit$1 + "s";
+    }
+    let unit$2 = _block;
     if (is_negative) {
       return (("in " + $int.to_string(amount$1)) + " ") + unit$2;
     } else {
@@ -2241,158 +3418,277 @@ export function from_http(value) {
         () => {
           let rest$1 = $string.trim(rest);
           let $ = $regexp.from_string("\\s+");
-          if (!$.isOk()) {
+          if (!($ instanceof Ok)) {
             throw makeError(
               "let_assert",
+              FILEPATH,
               "birl",
               747,
-              "",
+              "from_http",
               "Pattern match failed, no pattern matched the value.",
-              { value: $ }
+              {
+                value: $,
+                start: 17571,
+                end: 17633,
+                pattern_start: 17582,
+                pattern_end: 17604
+              }
             )
           }
           let whitespace_pattern = $[0];
           let $1 = $regexp.split(whitespace_pattern, rest$1);
-          if ($1.hasLength(5)) {
-            let day_string = $1.head;
-            let month_string = $1.tail.head;
-            let year_string = $1.tail.tail.head;
-            let time_string = $1.tail.tail.tail.head;
-            let offset_string = $1.tail.tail.tail.tail.head;
-            let time_string$1 = $string.replace(time_string, ":", "");
-            let $2 = $int.parse(day_string);
-            let $3 = (() => {
-              let _pipe = $list.index_map(
-                month_strings,
-                (month, index) => {
-                  let strings = month[1];
-                  return [index, strings[0], strings[1]];
-                },
-              );
-              return $list.find(
-                _pipe,
-                (month) => {
-                  return (month[1] === month_string) || (month[2] === month_string);
-                },
-              );
-            })();
-            let $4 = $int.parse(year_string);
-            let $5 = parse_time_section(time_string$1);
-            if ($2.isOk() &&
-            $3.isOk() &&
-            $4.isOk() &&
-            $5.isOk() &&
-            $5[0].hasLength(3)) {
-              let day = $2[0];
-              let month_index = $3[0][0];
-              let year = $4[0];
-              let hour = $5[0].head;
-              let minute = $5[0].tail.head;
-              let second = $5[0].tail.tail.head;
-              let $6 = from_parts(
-                [year, month_index + 1, day],
-                [hour, minute, second, 0],
-                (() => {
-                  if (offset_string === "GMT") {
-                    return "Z";
-                  } else {
-                    return offset_string;
-                  }
-                })(),
-              );
-              if ($6.isOk()) {
-                let value$2 = $6[0];
-                let correct_weekday = string_weekday(value$2);
-                let correct_short_weekday = short_string_weekday(value$2);
-                let $7 = $list.contains(
-                  toList([correct_weekday, correct_short_weekday]),
-                  weekday$1,
-                );
-                if ($7) {
-                  return new Ok(value$2);
-                } else {
-                  return new Error(undefined);
-                }
-              } else {
-                return new Error(undefined);
-              }
-            } else {
-              return new Error(undefined);
-            }
-          } else if ($1.hasLength(3)) {
-            let day_string = $1.head;
-            let time_string = $1.tail.head;
-            let offset_string = $1.tail.tail.head;
-            let $2 = $string.split(day_string, "-");
-            if ($2.hasLength(3)) {
-              let day_string$1 = $2.head;
-              let month_string = $2.tail.head;
-              let year_string = $2.tail.tail.head;
-              let time_string$1 = $string.replace(time_string, ":", "");
-              let $3 = $int.parse(day_string$1);
-              let $4 = (() => {
-                let _pipe = $list.index_map(
-                  month_strings,
-                  (month, index) => {
-                    let strings = month[1];
-                    return [index, strings[0], strings[1]];
-                  },
-                );
-                return $list.find(
-                  _pipe,
-                  (month) => {
-                    return (month[1] === month_string) || (month[2] === month_string);
-                  },
-                );
-              })();
-              let $5 = $int.parse(year_string);
-              let $6 = parse_time_section(time_string$1);
-              if ($3.isOk() &&
-              $4.isOk() &&
-              $5.isOk() &&
-              $6.isOk() &&
-              $6[0].hasLength(3)) {
-                let day = $3[0];
-                let month_index = $4[0][0];
-                let year = $5[0];
-                let hour = $6[0].head;
-                let minute = $6[0].tail.head;
-                let second = $6[0].tail.tail.head;
-                let $7 = from_parts(
-                  [year, month_index + 1, day],
-                  [hour, minute, second, 0],
-                  (() => {
-                    if (offset_string === "GMT") {
-                      return "Z";
-                    } else {
-                      return offset_string;
-                    }
-                  })(),
-                );
-                if ($7.isOk()) {
-                  let value$2 = $7[0];
-                  let correct_weekday = string_weekday(value$2);
-                  let correct_short_weekday = short_string_weekday(value$2);
-                  let $8 = $list.contains(
-                    toList([correct_weekday, correct_short_weekday]),
-                    weekday$1,
-                  );
-                  if ($8) {
-                    return new Ok(value$2);
-                  } else {
-                    return new Error(undefined);
-                  }
-                } else {
-                  return new Error(undefined);
-                }
-              } else {
-                return new Error(undefined);
-              }
-            } else {
-              return new Error(undefined);
-            }
-          } else {
+          if ($1 instanceof $Empty) {
             return new Error(undefined);
+          } else {
+            let $2 = $1.tail;
+            if ($2 instanceof $Empty) {
+              return new Error(undefined);
+            } else {
+              let $3 = $2.tail;
+              if ($3 instanceof $Empty) {
+                return new Error(undefined);
+              } else {
+                let $4 = $3.tail;
+                if ($4 instanceof $Empty) {
+                  let day_string = $1.head;
+                  let time_string = $2.head;
+                  let offset_string = $3.head;
+                  let $5 = $string.split(day_string, "-");
+                  if ($5 instanceof $Empty) {
+                    return new Error(undefined);
+                  } else {
+                    let $6 = $5.tail;
+                    if ($6 instanceof $Empty) {
+                      return new Error(undefined);
+                    } else {
+                      let $7 = $6.tail;
+                      if ($7 instanceof $Empty) {
+                        return new Error(undefined);
+                      } else {
+                        let $8 = $7.tail;
+                        if ($8 instanceof $Empty) {
+                          let day_string$1 = $5.head;
+                          let month_string = $6.head;
+                          let year_string = $7.head;
+                          let time_string$1 = $string.replace(
+                            time_string,
+                            ":",
+                            "",
+                          );
+                          let $9 = $int.parse(day_string$1);
+                          let $10 = (() => {
+                            let _pipe = $list.index_map(
+                              month_strings,
+                              (month, index) => {
+                                let strings = month[1];
+                                return [index, strings[0], strings[1]];
+                              },
+                            );
+                            return $list.find(
+                              _pipe,
+                              (month) => {
+                                return (month[1] === month_string) || (month[2] === month_string);
+                              },
+                            );
+                          })();
+                          let $11 = $int.parse(year_string);
+                          let $12 = parse_time_section(time_string$1);
+                          if ($12 instanceof Ok) {
+                            let $13 = $12[0];
+                            if ($13 instanceof $Empty) {
+                              return new Error(undefined);
+                            } else {
+                              let $14 = $13.tail;
+                              if ($14 instanceof $Empty) {
+                                return new Error(undefined);
+                              } else {
+                                let $15 = $14.tail;
+                                if ($15 instanceof $Empty) {
+                                  return new Error(undefined);
+                                } else {
+                                  let $16 = $15.tail;
+                                  if ($16 instanceof $Empty) {
+                                    if ($11 instanceof Ok) {
+                                      if ($10 instanceof Ok) {
+                                        if ($9 instanceof Ok) {
+                                          let hour = $13.head;
+                                          let minute = $14.head;
+                                          let second = $15.head;
+                                          let year = $11[0];
+                                          let month_index = $10[0][0];
+                                          let day = $9[0];
+                                          let $17 = from_parts(
+                                            [year, month_index + 1, day],
+                                            [hour, minute, second, 0],
+                                            (() => {
+                                              if (offset_string === "GMT") {
+                                                return "Z";
+                                              } else {
+                                                return offset_string;
+                                              }
+                                            })(),
+                                          );
+                                          if ($17 instanceof Ok) {
+                                            let value$2 = $17[0];
+                                            let correct_weekday = string_weekday(
+                                              value$2,
+                                            );
+                                            let correct_short_weekday = short_string_weekday(
+                                              value$2,
+                                            );
+                                            let $18 = $list.contains(
+                                              toList([
+                                                correct_weekday,
+                                                correct_short_weekday,
+                                              ]),
+                                              weekday$1,
+                                            );
+                                            if ($18) {
+                                              return new Ok(value$2);
+                                            } else {
+                                              return new Error(undefined);
+                                            }
+                                          } else {
+                                            return new Error(undefined);
+                                          }
+                                        } else {
+                                          return new Error(undefined);
+                                        }
+                                      } else {
+                                        return new Error(undefined);
+                                      }
+                                    } else {
+                                      return new Error(undefined);
+                                    }
+                                  } else {
+                                    return new Error(undefined);
+                                  }
+                                }
+                              }
+                            }
+                          } else {
+                            return new Error(undefined);
+                          }
+                        } else {
+                          return new Error(undefined);
+                        }
+                      }
+                    }
+                  }
+                } else {
+                  let $5 = $4.tail;
+                  if ($5 instanceof $Empty) {
+                    return new Error(undefined);
+                  } else {
+                    let $6 = $5.tail;
+                    if ($6 instanceof $Empty) {
+                      let day_string = $1.head;
+                      let month_string = $2.head;
+                      let year_string = $3.head;
+                      let time_string = $4.head;
+                      let offset_string = $5.head;
+                      let time_string$1 = $string.replace(time_string, ":", "");
+                      let $7 = $int.parse(day_string);
+                      let $8 = (() => {
+                        let _pipe = $list.index_map(
+                          month_strings,
+                          (month, index) => {
+                            let strings = month[1];
+                            return [index, strings[0], strings[1]];
+                          },
+                        );
+                        return $list.find(
+                          _pipe,
+                          (month) => {
+                            return (month[1] === month_string) || (month[2] === month_string);
+                          },
+                        );
+                      })();
+                      let $9 = $int.parse(year_string);
+                      let $10 = parse_time_section(time_string$1);
+                      if ($10 instanceof Ok) {
+                        let $11 = $10[0];
+                        if ($11 instanceof $Empty) {
+                          return new Error(undefined);
+                        } else {
+                          let $12 = $11.tail;
+                          if ($12 instanceof $Empty) {
+                            return new Error(undefined);
+                          } else {
+                            let $13 = $12.tail;
+                            if ($13 instanceof $Empty) {
+                              return new Error(undefined);
+                            } else {
+                              let $14 = $13.tail;
+                              if ($14 instanceof $Empty) {
+                                if ($9 instanceof Ok) {
+                                  if ($8 instanceof Ok) {
+                                    if ($7 instanceof Ok) {
+                                      let hour = $11.head;
+                                      let minute = $12.head;
+                                      let second = $13.head;
+                                      let year = $9[0];
+                                      let month_index = $8[0][0];
+                                      let day = $7[0];
+                                      let $15 = from_parts(
+                                        [year, month_index + 1, day],
+                                        [hour, minute, second, 0],
+                                        (() => {
+                                          if (offset_string === "GMT") {
+                                            return "Z";
+                                          } else {
+                                            return offset_string;
+                                          }
+                                        })(),
+                                      );
+                                      if ($15 instanceof Ok) {
+                                        let value$2 = $15[0];
+                                        let correct_weekday = string_weekday(
+                                          value$2,
+                                        );
+                                        let correct_short_weekday = short_string_weekday(
+                                          value$2,
+                                        );
+                                        let $16 = $list.contains(
+                                          toList([
+                                            correct_weekday,
+                                            correct_short_weekday,
+                                          ]),
+                                          weekday$1,
+                                        );
+                                        if ($16) {
+                                          return new Ok(value$2);
+                                        } else {
+                                          return new Error(undefined);
+                                        }
+                                      } else {
+                                        return new Error(undefined);
+                                      }
+                                    } else {
+                                      return new Error(undefined);
+                                    }
+                                  } else {
+                                    return new Error(undefined);
+                                  }
+                                } else {
+                                  return new Error(undefined);
+                                }
+                              } else {
+                                return new Error(undefined);
+                              }
+                            }
+                          }
+                        }
+                      } else {
+                        return new Error(undefined);
+                      }
+                    } else {
+                      return new Error(undefined);
+                    }
+                  }
+                }
+              }
+            }
           }
         },
       );

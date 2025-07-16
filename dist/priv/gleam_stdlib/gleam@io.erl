@@ -114,7 +114,7 @@ println_error(String) ->
     " with some types having the same runtime representation results in it not\n"
     " always being possible to correctly choose which Gleam syntax to show.\n"
 ).
--spec debug(EDB) -> EDB.
+-spec debug(CNV) -> CNV.
 debug(Term) ->
     _pipe = Term,
     _pipe@1 = gleam@string:inspect(_pipe),

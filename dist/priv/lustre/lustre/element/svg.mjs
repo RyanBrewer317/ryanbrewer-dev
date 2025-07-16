@@ -2,51 +2,52 @@ import { toList } from "../../gleam.mjs";
 import * as $attribute from "../../lustre/attribute.mjs";
 import * as $element from "../../lustre/element.mjs";
 import { namespaced, text as inline_text } from "../../lustre/element.mjs";
+import * as $constants from "../../lustre/internals/constants.mjs";
 
 const namespace = "http://www.w3.org/2000/svg";
 
 export function animate(attrs) {
-  return namespaced(namespace, "animate", attrs, toList([]));
+  return namespaced(namespace, "animate", attrs, $constants.empty_list);
 }
 
 export function animate_motion(attrs) {
-  return namespaced(namespace, "animateMotion", attrs, toList([]));
+  return namespaced(namespace, "animateMotion", attrs, $constants.empty_list);
 }
 
 export function animate_transform(attrs) {
-  return namespaced(namespace, "animateTransform", attrs, toList([]));
+  return namespaced(namespace, "animateTransform", attrs, $constants.empty_list);
 }
 
 export function mpath(attrs) {
-  return namespaced(namespace, "mpath", attrs, toList([]));
+  return namespaced(namespace, "mpath", attrs, $constants.empty_list);
 }
 
 export function set(attrs) {
-  return namespaced(namespace, "set", attrs, toList([]));
+  return namespaced(namespace, "set", attrs, $constants.empty_list);
 }
 
 export function circle(attrs) {
-  return namespaced(namespace, "circle", attrs, toList([]));
+  return namespaced(namespace, "circle", attrs, $constants.empty_list);
 }
 
 export function ellipse(attrs) {
-  return namespaced(namespace, "ellipse", attrs, toList([]));
+  return namespaced(namespace, "ellipse", attrs, $constants.empty_list);
 }
 
 export function line(attrs) {
-  return namespaced(namespace, "line", attrs, toList([]));
+  return namespaced(namespace, "line", attrs, $constants.empty_list);
 }
 
 export function polygon(attrs) {
-  return namespaced(namespace, "polygon", attrs, toList([]));
+  return namespaced(namespace, "polygon", attrs, $constants.empty_list);
 }
 
 export function polyline(attrs) {
-  return namespaced(namespace, "polyline", attrs, toList([]));
+  return namespaced(namespace, "polyline", attrs, $constants.empty_list);
 }
 
 export function rect(attrs) {
-  return namespaced(namespace, "rect", attrs, toList([]));
+  return namespaced(namespace, "rect", attrs, $constants.empty_list);
 }
 
 export function a(attrs, children) {
@@ -102,23 +103,28 @@ export function title(attrs, children) {
 }
 
 export function fe_blend(attrs) {
-  return namespaced(namespace, "feBlend", attrs, toList([]));
+  return namespaced(namespace, "feBlend", attrs, $constants.empty_list);
 }
 
 export function fe_color_matrix(attrs) {
-  return namespaced(namespace, "feColorMatrix", attrs, toList([]));
+  return namespaced(namespace, "feColorMatrix", attrs, $constants.empty_list);
 }
 
 export function fe_component_transfer(attrs) {
-  return namespaced(namespace, "feComponentTransfer", attrs, toList([]));
+  return namespaced(
+    namespace,
+    "feComponentTransfer",
+    attrs,
+    $constants.empty_list,
+  );
 }
 
 export function fe_composite(attrs) {
-  return namespaced(namespace, "feComposite", attrs, toList([]));
+  return namespaced(namespace, "feComposite", attrs, $constants.empty_list);
 }
 
 export function fe_convolve_matrix(attrs) {
-  return namespaced(namespace, "feConvolveMatrix", attrs, toList([]));
+  return namespaced(namespace, "feConvolveMatrix", attrs, $constants.empty_list);
 }
 
 export function fe_diffuse_lighting(attrs, children) {
@@ -126,39 +132,44 @@ export function fe_diffuse_lighting(attrs, children) {
 }
 
 export function fe_displacement_map(attrs) {
-  return namespaced(namespace, "feDisplacementMap", attrs, toList([]));
+  return namespaced(
+    namespace,
+    "feDisplacementMap",
+    attrs,
+    $constants.empty_list,
+  );
 }
 
 export function fe_drop_shadow(attrs) {
-  return namespaced(namespace, "feDropShadow", attrs, toList([]));
+  return namespaced(namespace, "feDropShadow", attrs, $constants.empty_list);
 }
 
 export function fe_flood(attrs) {
-  return namespaced(namespace, "feFlood", attrs, toList([]));
+  return namespaced(namespace, "feFlood", attrs, $constants.empty_list);
 }
 
 export function fe_func_a(attrs) {
-  return namespaced(namespace, "feFuncA", attrs, toList([]));
+  return namespaced(namespace, "feFuncA", attrs, $constants.empty_list);
 }
 
 export function fe_func_b(attrs) {
-  return namespaced(namespace, "feFuncB", attrs, toList([]));
+  return namespaced(namespace, "feFuncB", attrs, $constants.empty_list);
 }
 
 export function fe_func_g(attrs) {
-  return namespaced(namespace, "feFuncG", attrs, toList([]));
+  return namespaced(namespace, "feFuncG", attrs, $constants.empty_list);
 }
 
 export function fe_func_r(attrs) {
-  return namespaced(namespace, "feFuncR", attrs, toList([]));
+  return namespaced(namespace, "feFuncR", attrs, $constants.empty_list);
 }
 
 export function fe_gaussian_blur(attrs) {
-  return namespaced(namespace, "feGaussianBlur", attrs, toList([]));
+  return namespaced(namespace, "feGaussianBlur", attrs, $constants.empty_list);
 }
 
 export function fe_image(attrs) {
-  return namespaced(namespace, "feImage", attrs, toList([]));
+  return namespaced(namespace, "feImage", attrs, $constants.empty_list);
 }
 
 export function fe_merge(attrs, children) {
@@ -166,15 +177,15 @@ export function fe_merge(attrs, children) {
 }
 
 export function fe_merge_node(attrs) {
-  return namespaced(namespace, "feMergeNode", attrs, toList([]));
+  return namespaced(namespace, "feMergeNode", attrs, $constants.empty_list);
 }
 
 export function fe_morphology(attrs) {
-  return namespaced(namespace, "feMorphology", attrs, toList([]));
+  return namespaced(namespace, "feMorphology", attrs, $constants.empty_list);
 }
 
 export function fe_offset(attrs) {
-  return namespaced(namespace, "feOffset", attrs, toList([]));
+  return namespaced(namespace, "feOffset", attrs, $constants.empty_list);
 }
 
 export function fe_specular_lighting(attrs, children) {
@@ -186,7 +197,7 @@ export function fe_tile(attrs, children) {
 }
 
 export function fe_turbulence(attrs) {
-  return namespaced(namespace, "feTurbulence", attrs, toList([]));
+  return namespaced(namespace, "feTurbulence", attrs, $constants.empty_list);
 }
 
 export function linear_gradient(attrs, children) {
@@ -198,15 +209,15 @@ export function radial_gradient(attrs, children) {
 }
 
 export function stop(attrs) {
-  return namespaced(namespace, "stop", attrs, toList([]));
+  return namespaced(namespace, "stop", attrs, $constants.empty_list);
 }
 
 export function image(attrs) {
-  return namespaced(namespace, "image", attrs, toList([]));
+  return namespaced(namespace, "image", attrs, $constants.empty_list);
 }
 
 export function path(attrs) {
-  return namespaced(namespace, "path", attrs, toList([]));
+  return namespaced(namespace, "path", attrs, $constants.empty_list);
 }
 
 export function text(attrs, content) {
@@ -214,19 +225,19 @@ export function text(attrs, content) {
 }
 
 export function use_(attrs) {
-  return namespaced(namespace, "use", attrs, toList([]));
+  return namespaced(namespace, "use", attrs, $constants.empty_list);
 }
 
 export function fe_distant_light(attrs) {
-  return namespaced(namespace, "feDistantLight", attrs, toList([]));
+  return namespaced(namespace, "feDistantLight", attrs, $constants.empty_list);
 }
 
 export function fe_point_light(attrs) {
-  return namespaced(namespace, "fePointLight", attrs, toList([]));
+  return namespaced(namespace, "fePointLight", attrs, $constants.empty_list);
 }
 
 export function fe_spot_light(attrs) {
-  return namespaced(namespace, "feSpotLight", attrs, toList([]));
+  return namespaced(namespace, "feSpotLight", attrs, $constants.empty_list);
 }
 
 export function clip_path(attrs, children) {

@@ -42,7 +42,7 @@ export function set_body(response, body) {
 }
 
 export function try_map(response, transform) {
-  return $result.then$(
+  return $result.try$(
     transform(response.body),
     (body) => { return new Ok(set_body(response, body)); },
   );
@@ -89,16 +89,16 @@ export function set_cookie(response, name, value, attributes) {
 }
 
 export function expire_cookie(response, name, attributes) {
-  let attrs = (() => {
-    let _record = attributes;
-    return new $cookie.Attributes(
-      new $option.Some(0),
-      _record.domain,
-      _record.path,
-      _record.secure,
-      _record.http_only,
-      _record.same_site,
-    );
-  })();
+  let _block;
+  let _record = attributes;
+  _block = new $cookie.Attributes(
+    new $option.Some(0),
+    _record.domain,
+    _record.path,
+    _record.secure,
+    _record.http_only,
+    _record.same_site,
+  );
+  let attrs = _block;
   return set_cookie(response, name, "", attrs);
 }

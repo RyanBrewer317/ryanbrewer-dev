@@ -11,6 +11,8 @@ import * as $calendar from "../../gleam_time/gleam/time/calendar.mjs";
 import * as $timestamp from "../../gleam_time/gleam/time/timestamp.mjs";
 import { makeError, divideFloat } from "../gleam.mjs";
 
+const FILEPATH = "src/pages/feed.gleam";
+
 function pad(i) {
   let $ = i < 10;
   if ($) {
@@ -21,27 +23,28 @@ function pad(i) {
 }
 
 function day(ts) {
-  let weekday = (() => {
-    let _pipe = ts;
-    let _pipe$1 = $timestamp.to_unix_seconds(_pipe);
-    let _pipe$2 = ((n) => { return divideFloat(n, 86_400.0); })(_pipe$1);
-    let _pipe$3 = $float.truncate(_pipe$2);
-    let _pipe$4 = ((n) => { return n + 4; })(_pipe$3);
-    let _pipe$5 = $int.modulo(_pipe$4, 7);
-    return $result.lazy_unwrap(
-      _pipe$5,
-      () => {
-        throw makeError(
-          "panic",
-          "pages/feed",
-          80,
-          "",
-          "`panic` expression evaluated.",
-          {}
-        )
-      },
-    );
-  })();
+  let _block;
+  let _pipe = ts;
+  let _pipe$1 = $timestamp.to_unix_seconds(_pipe);
+  let _pipe$2 = ((n) => { return divideFloat(n, 86_400.0); })(_pipe$1);
+  let _pipe$3 = $float.truncate(_pipe$2);
+  let _pipe$4 = ((n) => { return n + 4; })(_pipe$3);
+  let _pipe$5 = $int.modulo(_pipe$4, 7);
+  _block = $result.lazy_unwrap(
+    _pipe$5,
+    () => {
+      throw makeError(
+        "panic",
+        FILEPATH,
+        "pages/feed",
+        80,
+        "day",
+        "`panic` expression evaluated.",
+        {}
+      )
+    },
+  );
+  let weekday = _block;
   if (weekday === 0) {
     return "Sun";
   } else if (weekday === 1) {
@@ -59,6 +62,7 @@ function day(ts) {
   } else {
     throw makeError(
       "panic",
+      FILEPATH,
       "pages/feed",
       89,
       "day",
@@ -106,11 +110,18 @@ export function feed(posts) {
       if (!($ instanceof Some)) {
         throw makeError(
           "let_assert",
+          FILEPATH,
           "pages/feed",
           19,
-          "",
+          "feed",
           "Pattern match failed, no pattern matched the value.",
-          { value: $ }
+          {
+            value: $,
+            start: 647,
+            end: 685,
+            pattern_start: 658,
+            pattern_end: 673
+          }
         )
       }
       let post_date = $[0];

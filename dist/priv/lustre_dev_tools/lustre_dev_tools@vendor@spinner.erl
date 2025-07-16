@@ -1,6 +1,6 @@
 -module(lustre_dev_tools@vendor@spinner).
 -compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch]).
-
+-define(FILEPATH, "src/lustre_dev_tools/vendor/spinner.gleam").
 -export([with_frames/2, with_colour/2, set_text/2, stop/1, start/1, new/1]).
 -export_type([spinner/0, state/0, builder/0]).
 
@@ -77,26 +77,30 @@ start(Builder) ->
             Init,
             fun(_use0, _) ->
                 {state, Text, _, Colour} = _use0,
-                _assert_subject = gleam@deque:pop_front(Frames),
-                {ok, {Frame, Frames@1}} = case _assert_subject of
-                    {ok, {_, _}} -> _assert_subject;
+                {Frame@1, Frames@2} = case gleam@deque:pop_front(Frames) of
+                    {ok, {Frame, Frames@1}} -> {Frame, Frames@1};
                     _assert_fail ->
                         erlang:error(#{gleam_error => let_assert,
                                     message => <<"Pattern match failed, no pattern matched the value."/utf8>>,
-                                    value => _assert_fail,
+                                    file => <<?FILEPATH/utf8>>,
                                     module => <<"lustre_dev_tools/vendor/spinner"/utf8>>,
                                     function => <<"start"/utf8>>,
-                                    line => 238})
+                                    line => 238,
+                                    value => _assert_fail,
+                                    start => 11862,
+                                    'end' => 11919,
+                                    pattern_start => 11873,
+                                    pattern_end => 11893})
                 end,
-                Frames@2 = gleam@deque:push_back(Frames@1, Frame),
+                Frames@3 = gleam@deque:push_back(Frames@2, Frame@1),
                 gleam_stdlib:print(
                     <<<<<<<<<<"\x{001b}[?25l"/utf8, "\x{001b}[2K"/utf8>>/binary,
                                     "\r"/utf8>>/binary,
-                                (Colour(Frame))/binary>>/binary,
+                                (Colour(Frame@1))/binary>>/binary,
                             " "/utf8>>/binary,
                         Text/binary>>
                 ),
-                {state, Text, Frames@2, Colour}
+                {state, Text, Frames@3, Colour}
             end
         )
     end,

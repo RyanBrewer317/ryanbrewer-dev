@@ -1,8 +1,18 @@
 -module(glisten@internal@telemetry).
 -compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch]).
-
+-define(FILEPATH, "src/glisten/internal/telemetry.gleam").
 -export([log/4, span/3, attach_many/3, attach/4, configure_logger/0]).
 -export_type([data/0, event/0, time_unit/0]).
+
+-if(?OTP_RELEASE >= 27).
+-define(MODULEDOC(Str), -moduledoc(Str)).
+-define(DOC(Str), -doc(Str)).
+-else.
+-define(MODULEDOC(Str), -compile([])).
+-define(DOC(Str), -compile([])).
+-endif.
+
+?MODULEDOC(false).
 
 -type data() :: {data,
         integer(),
@@ -20,7 +30,8 @@
 
 -type time_unit() :: native | microsecond.
 
--file("/home/alex/gleams/glisten/src/glisten/internal/telemetry.gleam", 43).
+-file("src/glisten/internal/telemetry.gleam", 43).
+?DOC(false).
 -spec log(
     list(event()),
     gleam@dict:dict(gleam@erlang@atom:atom_(), gleam@dynamic:dynamic_()),
@@ -33,7 +44,7 @@ log(Path, Measurements, _, _) ->
             Measurements,
             erlang:binary_to_atom(<<"duration"/utf8>>)
         ),
-        _pipe@3 = gleam@result:then(_pipe, fun(Val) -> _pipe@1 = Val,
+        _pipe@3 = gleam@result:'try'(_pipe, fun(Val) -> _pipe@1 = Val,
                 _pipe@2 = gleam@dynamic@decode:run(
                     _pipe@1,
                     {decoder, fun gleam@dynamic@decode:decode_int/1}
@@ -60,12 +71,13 @@ log(Path, Measurements, _, _) ->
         <<(gleam@string:inspect(Path))/binary, Duration_string/binary>>
     ).
 
--file("/home/alex/gleams/glisten/src/glisten/internal/telemetry.gleam", 65).
+-file("src/glisten/internal/telemetry.gleam", 65).
+?DOC(false).
 -spec span(
     list(event()),
     gleam@dict:dict(binary(), gleam@dynamic:dynamic_()),
-    fun(() -> JHK)
-) -> JHK.
+    fun(() -> HGF)
+) -> HGF.
 span(Path, Metadata, Wrapping) ->
     telemetry:span(
         Path,
@@ -76,7 +88,8 @@ span(Path, Metadata, Wrapping) ->
         end
     ).
 
--file("/home/alex/gleams/glisten/src/glisten/internal/telemetry.gleam", 82).
+-file("src/glisten/internal/telemetry.gleam", 82).
+?DOC(false).
 -spec attach_many(
     binary(),
     list(list(event())),
@@ -85,7 +98,8 @@ span(Path, Metadata, Wrapping) ->
 attach_many(Id, Path, Handler) ->
     telemetry:attach_many(Id, Path, Handler, nil).
 
--file("/home/alex/gleams/glisten/src/glisten/internal/telemetry.gleam", 111).
+-file("src/glisten/internal/telemetry.gleam", 111).
+?DOC(false).
 -spec attach(
     binary(),
     list(event()),
@@ -95,7 +109,8 @@ attach_many(Id, Path, Handler) ->
 attach(Id, Event, Handler, Config) ->
     telemetry:attach(Id, Event, Handler, Config).
 
--file("/home/alex/gleams/glisten/src/glisten/internal/telemetry.gleam", 130).
+-file("src/glisten/internal/telemetry.gleam", 130).
+?DOC(false).
 -spec configure_logger() -> nil.
 configure_logger() ->
     attach_many(

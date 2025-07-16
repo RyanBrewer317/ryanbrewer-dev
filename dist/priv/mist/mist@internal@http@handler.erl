@@ -1,6 +1,6 @@
 -module(mist@internal@http@handler).
 -compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch]).
-
+-define(FILEPATH, "src/mist/internal/http/handler.gleam").
 -export([initial_state/0, call/5]).
 -export_type([state/0]).
 
@@ -16,145 +16,64 @@
 
 -type state() :: {state, gleam@option:option(gleam@erlang@process:timer())}.
 
--file("src/mist/internal/http/handler.gleam", 27).
+-file("src/mist/internal/http/handler.gleam", 30).
 ?DOC(false).
 -spec initial_state() -> state().
 initial_state() ->
     {state, none}.
 
--file("src/mist/internal/http/handler.gleam", 67).
+-file("src/mist/internal/http/handler.gleam", 70).
 ?DOC(false).
 -spec log_and_error(
-    gleam@erlang:crash(),
+    gleam@dynamic:dynamic_(),
     glisten@socket:socket(),
     glisten@transport:transport(),
     gleam@http@request:request(mist@internal@http:connection()),
     mist@internal@http:http_version()
-) -> gleam@erlang@process:exit_reason().
+) -> {ok, nil} | {error, binary()}.
 log_and_error(Error, Socket, Transport, Req, Version) ->
-    case Error of
-        {exited, Msg} ->
-            logging:log(error, gleam@string:inspect(Error)),
-            Resp = begin
-                _pipe = gleam@http@response:new(500),
-                _pipe@1 = gleam@http@response:set_body(
-                    _pipe,
-                    gleam@bytes_tree:from_bit_array(
-                        <<"Internal Server Error"/utf8>>
-                    )
-                ),
-                _pipe@2 = gleam@http@response:prepend_header(
-                    _pipe@1,
-                    <<"content-length"/utf8>>,
-                    <<"21"/utf8>>
-                ),
-                mist@internal@http:add_default_headers(
-                    _pipe@2,
-                    erlang:element(2, Req) =:= head
-                )
-            end,
-            Resp@1 = case Version of
-                http1 ->
-                    mist@internal@http:connection_close(Resp);
+    logging:log(error, gleam@string:inspect(Error)),
+    Resp = begin
+        _pipe = gleam@http@response:new(500),
+        _pipe@1 = gleam@http@response:set_body(
+            _pipe,
+            gleam@bytes_tree:from_bit_array(<<"Internal Server Error"/utf8>>)
+        ),
+        _pipe@2 = gleam@http@response:prepend_header(
+            _pipe@1,
+            <<"content-length"/utf8>>,
+            <<"21"/utf8>>
+        ),
+        mist@internal@http:add_default_headers(
+            _pipe@2,
+            erlang:element(2, Req) =:= head
+        )
+    end,
+    Resp@1 = case Version of
+        http1 ->
+            mist@internal@http:connection_close(Resp);
 
-                _ ->
-                    mist@internal@http:maybe_keep_alive(Resp)
-            end,
-            _ = begin
-                _pipe@3 = Resp@1,
-                _pipe@4 = mist@internal@encoder:to_bytes_tree(
-                    _pipe@3,
-                    mist@internal@http:version_to_string(Version)
-                ),
-                glisten@transport:send(Transport, Socket, _pipe@4)
-            end,
-            _ = glisten@transport:close(Transport, Socket),
-            {abnormal, gleam@string:inspect(Msg)};
+        _ ->
+            mist@internal@http:maybe_keep_alive(Resp)
+    end,
+    _ = begin
+        _pipe@3 = Resp@1,
+        _pipe@4 = mist@internal@encoder:to_bytes_tree(
+            _pipe@3,
+            mist@internal@http:version_to_string(Version)
+        ),
+        glisten@transport:send(Transport, Socket, _pipe@4)
+    end,
+    _ = glisten@transport:close(Transport, Socket),
+    {error, gleam@string:inspect(Error)}.
 
-        {thrown, Msg} ->
-            logging:log(error, gleam@string:inspect(Error)),
-            Resp = begin
-                _pipe = gleam@http@response:new(500),
-                _pipe@1 = gleam@http@response:set_body(
-                    _pipe,
-                    gleam@bytes_tree:from_bit_array(
-                        <<"Internal Server Error"/utf8>>
-                    )
-                ),
-                _pipe@2 = gleam@http@response:prepend_header(
-                    _pipe@1,
-                    <<"content-length"/utf8>>,
-                    <<"21"/utf8>>
-                ),
-                mist@internal@http:add_default_headers(
-                    _pipe@2,
-                    erlang:element(2, Req) =:= head
-                )
-            end,
-            Resp@1 = case Version of
-                http1 ->
-                    mist@internal@http:connection_close(Resp);
-
-                _ ->
-                    mist@internal@http:maybe_keep_alive(Resp)
-            end,
-            _ = begin
-                _pipe@3 = Resp@1,
-                _pipe@4 = mist@internal@encoder:to_bytes_tree(
-                    _pipe@3,
-                    mist@internal@http:version_to_string(Version)
-                ),
-                glisten@transport:send(Transport, Socket, _pipe@4)
-            end,
-            _ = glisten@transport:close(Transport, Socket),
-            {abnormal, gleam@string:inspect(Msg)};
-
-        {errored, Msg} ->
-            logging:log(error, gleam@string:inspect(Error)),
-            Resp = begin
-                _pipe = gleam@http@response:new(500),
-                _pipe@1 = gleam@http@response:set_body(
-                    _pipe,
-                    gleam@bytes_tree:from_bit_array(
-                        <<"Internal Server Error"/utf8>>
-                    )
-                ),
-                _pipe@2 = gleam@http@response:prepend_header(
-                    _pipe@1,
-                    <<"content-length"/utf8>>,
-                    <<"21"/utf8>>
-                ),
-                mist@internal@http:add_default_headers(
-                    _pipe@2,
-                    erlang:element(2, Req) =:= head
-                )
-            end,
-            Resp@1 = case Version of
-                http1 ->
-                    mist@internal@http:connection_close(Resp);
-
-                _ ->
-                    mist@internal@http:maybe_keep_alive(Resp)
-            end,
-            _ = begin
-                _pipe@3 = Resp@1,
-                _pipe@4 = mist@internal@encoder:to_bytes_tree(
-                    _pipe@3,
-                    mist@internal@http:version_to_string(Version)
-                ),
-                glisten@transport:send(Transport, Socket, _pipe@4)
-            end,
-            _ = glisten@transport:close(Transport, Socket),
-            {abnormal, gleam@string:inspect(Msg)}
-    end.
-
--file("src/mist/internal/http/handler.gleam", 101).
+-file("src/mist/internal/http/handler.gleam", 100).
 ?DOC(false).
 -spec close_or_set_timer(
     gleam@http@response:response(gleam@bytes_tree:bytes_tree()),
     mist@internal@http:connection(),
     gleam@erlang@process:subject(glisten@internal@handler:message(any()))
-) -> {ok, state()} | {error, gleam@erlang@process:exit_reason()}.
+) -> {ok, state()} | {error, {ok, nil} | {error, binary()}}.
 close_or_set_timer(Resp, Conn, Sender) ->
     case gleam@http@response:get_header(Resp, <<"connection"/utf8>>) of
         {ok, <<"close"/utf8>>} ->
@@ -162,7 +81,7 @@ close_or_set_timer(Resp, Conn, Sender) ->
                 erlang:element(4, Conn),
                 erlang:element(3, Conn)
             ),
-            {error, normal};
+            {error, {ok, nil}};
 
         _ ->
             Timer = gleam@erlang@process:send_after(
@@ -173,7 +92,7 @@ close_or_set_timer(Resp, Conn, Sender) ->
             {ok, {state, {some, Timer}}}
     end.
 
--file("src/mist/internal/http/handler.gleam", 159).
+-file("src/mist/internal/http/handler.gleam", 158).
 ?DOC(false).
 -spec handle_file_body(
     gleam@http@response:response(mist@internal@http:response_data()),
@@ -183,15 +102,23 @@ close_or_set_timer(Resp, Conn, Sender) ->
 ) -> {ok, gleam@http@response:response(gleam@bytes_tree:bytes_tree())} |
     {error, glisten@socket:socket_reason()}.
 handle_file_body(Resp, Body, Conn, Http_version) ->
-    {file, File_descriptor, Offset, Length} = case Body of
-        {file, _, _, _} -> Body;
+    {File_descriptor@1, Offset@1, Length@1} = case Body of
+        {file, File_descriptor, Offset, Length} -> {
+        File_descriptor,
+            Offset,
+            Length};
         _assert_fail ->
             erlang:error(#{gleam_error => let_assert,
                         message => <<"Pattern match failed, no pattern matched the value."/utf8>>,
-                        value => _assert_fail,
+                        file => <<?FILEPATH/utf8>>,
                         module => <<"mist/internal/http/handler"/utf8>>,
                         function => <<"handle_file_body"/utf8>>,
-                        line => 165})
+                        line => 164,
+                        value => _assert_fail,
+                        start => 4696,
+                        'end' => 4751,
+                        pattern_start => 4707,
+                        pattern_end => 4744})
     end,
     Resp@1 = begin
         _pipe = Resp,
@@ -200,7 +127,7 @@ handle_file_body(Resp, Body, Conn, Http_version) ->
         gleam@http@response:prepend_header(
             _pipe@2,
             <<"content-length"/utf8>>,
-            erlang:integer_to_binary(Length - Offset)
+            erlang:integer_to_binary(Length@1 - Offset@1)
         )
     end,
     Resp@2 = case Http_version of
@@ -224,15 +151,15 @@ handle_file_body(Resp, Body, Conn, Http_version) ->
             erlang:element(3, Conn),
             _pipe@4
         ),
-        _pipe@7 = gleam@result:then(
+        _pipe@7 = gleam@result:'try'(
             _pipe@5,
             fun(_) ->
                 _pipe@6 = mist@internal@file:sendfile(
                     erlang:element(4, Conn),
-                    File_descriptor,
+                    File_descriptor@1,
                     erlang:element(3, Conn),
-                    Offset,
-                    Length,
+                    Offset@1,
+                    Length@1,
                     []
                 ),
                 gleam@result:map_error(
@@ -250,7 +177,7 @@ handle_file_body(Resp, Body, Conn, Http_version) ->
         ),
         gleam@result:replace(_pipe@7, Resp@2)
     end,
-    case mist_ffi:file_close(File_descriptor) of
+    case mist_ffi:file_close(File_descriptor@1) of
         {ok, _} ->
             nil;
 
@@ -263,7 +190,7 @@ handle_file_body(Resp, Body, Conn, Http_version) ->
     end,
     Return.
 
--file("src/mist/internal/http/handler.gleam", 219).
+-file("src/mist/internal/http/handler.gleam", 218).
 ?DOC(false).
 -spec handle_bytes_tree_body(
     gleam@http@response:response(mist@internal@http:response_data()),
@@ -301,13 +228,13 @@ handle_bytes_tree_body(Resp, Body, Conn, Req, Version) ->
     ),
     gleam@result:replace(_pipe@4, Resp@2).
 
--file("src/mist/internal/http/handler.gleam", 246).
+-file("src/mist/internal/http/handler.gleam", 245).
 ?DOC(false).
 -spec int_to_hex(integer()) -> binary().
 int_to_hex(Int) ->
     erlang:integer_to_list(Int, 16).
 
--file("src/mist/internal/http/handler.gleam", 121).
+-file("src/mist/internal/http/handler.gleam", 120).
 ?DOC(false).
 -spec handle_chunked_body(
     gleam@http@response:response(mist@internal@http:response_data()),
@@ -329,7 +256,7 @@ handle_chunked_body(Resp, Body, Conn, Version) ->
         erlang:element(3, Conn),
         Initial_payload
     ),
-    _pipe@8 = gleam@result:then(_pipe, fun(_) -> _pipe@1 = Body,
+    _pipe@8 = gleam@result:'try'(_pipe, fun(_) -> _pipe@1 = Body,
             _pipe@2 = gleam@yielder:append(
                 _pipe@1,
                 gleam@yielder:from_list([gleam@bytes_tree:new()])
@@ -370,7 +297,7 @@ handle_chunked_body(Resp, Body, Conn, Version) ->
         end
     ).
 
--file("src/mist/internal/http/handler.gleam", 31).
+-file("src/mist/internal/http/handler.gleam", 34).
 ?DOC(false).
 -spec call(
     gleam@http@request:request(mist@internal@http:connection()),
@@ -378,9 +305,9 @@ handle_chunked_body(Resp, Body, Conn, Version) ->
     mist@internal@http:connection(),
     gleam@erlang@process:subject(glisten@internal@handler:message(any())),
     mist@internal@http:http_version()
-) -> {ok, state()} | {error, gleam@erlang@process:exit_reason()}.
+) -> {ok, state()} | {error, {ok, nil} | {error, binary()}}.
 call(Req, Handler, Conn, Sender, Version) ->
-    _pipe = gleam_erlang_ffi:rescue(fun() -> Handler(Req) end),
+    _pipe = mist_ffi:rescue(fun() -> Handler(Req) end),
     _pipe@1 = gleam@result:map_error(
         _pipe,
         fun(_capture) ->
@@ -393,14 +320,14 @@ call(Req, Handler, Conn, Sender, Version) ->
             )
         end
     ),
-    gleam@result:then(_pipe@1, fun(Resp) -> case Resp of
+    gleam@result:'try'(_pipe@1, fun(Resp) -> case Resp of
                 {response, _, _, {websocket, Selector}} ->
                     _ = gleam_erlang_ffi:select(Selector),
-                    {error, normal};
+                    {error, {ok, nil}};
 
                 {response, _, _, {server_sent_events, Selector}} ->
                     _ = gleam_erlang_ffi:select(Selector),
-                    {error, normal};
+                    {error, {ok, nil}};
 
                 {response, _, _, Body} = Resp@1 ->
                     _pipe@2 = case Body of
@@ -422,12 +349,13 @@ call(Req, Handler, Conn, Sender, Version) ->
                         _ ->
                             erlang:error(#{gleam_error => panic,
                                     message => <<"This shouldn't ever happen 🤞"/utf8>>,
+                                    file => <<?FILEPATH/utf8>>,
                                     module => <<"mist/internal/http/handler"/utf8>>,
                                     function => <<"call"/utf8>>,
-                                    line => 58})
+                                    line => 61})
                     end,
-                    _pipe@3 = gleam@result:replace_error(_pipe@2, normal),
-                    gleam@result:then(
+                    _pipe@3 = gleam@result:replace_error(_pipe@2, {ok, nil}),
+                    gleam@result:'try'(
                         _pipe@3,
                         fun(_capture@1) ->
                             close_or_set_timer(_capture@1, Conn, Sender)

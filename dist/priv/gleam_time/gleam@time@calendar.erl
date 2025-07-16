@@ -1,7 +1,7 @@
 -module(gleam@time@calendar).
 -compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch]).
-
--export([local_offset/0, month_to_string/1, month_to_int/1, month_from_int/1]).
+-define(FILEPATH, "src/gleam/time/calendar.gleam").
+-export([local_offset/0, month_to_string/1, month_to_int/1, month_from_int/1, is_leap_year/1, is_valid_date/1, is_valid_time_of_day/1]).
 -export_type([date/0, time_of_day/0, month/0]).
 
 -if(?OTP_RELEASE >= 27).
@@ -240,3 +240,141 @@ month_from_int(Month) ->
         _ ->
             {error, nil}
     end.
+
+-file("src/gleam/time/calendar.gleam", 235).
+?DOC(
+    " Determines if a given year is a leap year.\n"
+    "\n"
+    " A leap year occurs every 4 years, except for years divisible by 100,\n"
+    " unless they are also divisible by 400.\n"
+    "\n"
+    " # Examples\n"
+    "\n"
+    " ```gleam\n"
+    " is_leap_year(2024)\n"
+    " // -> True\n"
+    " ```\n"
+    "\n"
+    " ```gleam\n"
+    " is_leap_year(2023)\n"
+    " // -> False\n"
+    " ```\n"
+).
+-spec is_leap_year(integer()) -> boolean().
+is_leap_year(Year) ->
+    case (Year rem 400) =:= 0 of
+        true ->
+            true;
+
+        false ->
+            case (Year rem 100) =:= 0 of
+                true ->
+                    false;
+
+                false ->
+                    (Year rem 4) =:= 0
+            end
+    end.
+
+-file("src/gleam/time/calendar.gleam", 199).
+?DOC(
+    " Checks if a given date is valid.\n"
+    "\n"
+    " This function properly accounts for leap years when validating February days.\n"
+    " A leap year occurs every 4 years, except for years divisible by 100,\n"
+    " unless they are also divisible by 400.\n"
+    "\n"
+    " # Examples\n"
+    "\n"
+    " ```gleam\n"
+    " is_valid_date(Date(2023, April, 15))\n"
+    " // -> True\n"
+    " ```\n"
+    "\n"
+    " ```gleam\n"
+    " is_valid_date(Date(2023, April, 31))\n"
+    " // -> False\n"
+    " ```\n"
+    "\n"
+    " ```gleam\n"
+    " is_valid_date(Date(2024, February, 29))\n"
+    " // -> True (2024 is a leap year)\n"
+    " ```\n"
+).
+-spec is_valid_date(date()) -> boolean().
+is_valid_date(Date) ->
+    {date, Year, Month, Day} = Date,
+    case Day < 1 of
+        true ->
+            false;
+
+        false ->
+            case Month of
+                january ->
+                    Day =< 31;
+
+                march ->
+                    Day =< 31;
+
+                may ->
+                    Day =< 31;
+
+                july ->
+                    Day =< 31;
+
+                august ->
+                    Day =< 31;
+
+                october ->
+                    Day =< 31;
+
+                december ->
+                    Day =< 31;
+
+                april ->
+                    Day =< 30;
+
+                june ->
+                    Day =< 30;
+
+                september ->
+                    Day =< 30;
+
+                november ->
+                    Day =< 30;
+
+                february ->
+                    Max_february_days = case is_leap_year(Year) of
+                        true ->
+                            29;
+
+                        false ->
+                            28
+                    end,
+                    Day =< Max_february_days
+            end
+    end.
+
+-file("src/gleam/time/calendar.gleam", 258).
+?DOC(
+    " Checks if a time of day is valid.\n"
+    "\n"
+    " Validates that hours are 0-23, minutes are 0-59, seconds are 0-59,\n"
+    " and nanoseconds are 0-999,999,999.\n"
+    "\n"
+    " # Examples\n"
+    "\n"
+    " ```gleam\n"
+    " is_valid_time_of_day(TimeOfDay(12, 30, 45, 123456789))\n"
+    " // -> True\n"
+    " ```\n"
+).
+-spec is_valid_time_of_day(time_of_day()) -> boolean().
+is_valid_time_of_day(Time) ->
+    {time_of_day, Hours, Minutes, Seconds, Nanoseconds} = Time,
+    (((((((Hours >= 0) andalso (Hours =< 23)) andalso (Minutes >= 0)) andalso (Minutes
+    =< 59))
+    andalso (Seconds >= 0))
+    andalso (Seconds =< 59))
+    andalso (Nanoseconds >= 0))
+    andalso (Nanoseconds =< 999999999).

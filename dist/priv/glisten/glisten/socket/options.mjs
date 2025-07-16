@@ -12,18 +12,18 @@ export class Once extends $CustomType {}
 export class Passive extends $CustomType {}
 
 export class Count extends $CustomType {
-  constructor(x0) {
+  constructor($0) {
     super();
-    this[0] = x0;
+    this[0] = $0;
   }
 }
 
 export class Active extends $CustomType {}
 
 export class Address extends $CustomType {
-  constructor(x0) {
+  constructor($0) {
     super();
-    this[0] = x0;
+    this[0] = $0;
   }
 }
 
@@ -31,120 +31,121 @@ export class Any extends $CustomType {}
 
 export class Loopback extends $CustomType {}
 
-export class Backlog extends $CustomType {
-  constructor(x0) {
+export class CertKeyFiles extends $CustomType {
+  constructor(certfile, keyfile) {
     super();
-    this[0] = x0;
+    this.certfile = certfile;
+    this.keyfile = keyfile;
+  }
+}
+
+export class Backlog extends $CustomType {
+  constructor($0) {
+    super();
+    this[0] = $0;
   }
 }
 
 export class Nodelay extends $CustomType {
-  constructor(x0) {
+  constructor($0) {
     super();
-    this[0] = x0;
+    this[0] = $0;
   }
 }
 
 export class Linger extends $CustomType {
-  constructor(x0) {
+  constructor($0) {
     super();
-    this[0] = x0;
+    this[0] = $0;
   }
 }
 
 export class SendTimeout extends $CustomType {
-  constructor(x0) {
+  constructor($0) {
     super();
-    this[0] = x0;
+    this[0] = $0;
   }
 }
 
 export class SendTimeoutClose extends $CustomType {
-  constructor(x0) {
+  constructor($0) {
     super();
-    this[0] = x0;
+    this[0] = $0;
   }
 }
 
 export class Reuseaddr extends $CustomType {
-  constructor(x0) {
+  constructor($0) {
     super();
-    this[0] = x0;
+    this[0] = $0;
   }
 }
 
 export class ActiveMode extends $CustomType {
-  constructor(x0) {
+  constructor($0) {
     super();
-    this[0] = x0;
+    this[0] = $0;
   }
 }
 
 export class Mode extends $CustomType {
-  constructor(x0) {
+  constructor($0) {
     super();
-    this[0] = x0;
+    this[0] = $0;
   }
 }
 
-export class Certfile extends $CustomType {
-  constructor(x0) {
+export class CertKeyConfig extends $CustomType {
+  constructor($0) {
     super();
-    this[0] = x0;
-  }
-}
-
-export class Keyfile extends $CustomType {
-  constructor(x0) {
-    super();
-    this[0] = x0;
+    this[0] = $0;
   }
 }
 
 export class AlpnPreferredProtocols extends $CustomType {
-  constructor(x0) {
+  constructor($0) {
     super();
-    this[0] = x0;
+    this[0] = $0;
   }
 }
 
 export class Ipv6 extends $CustomType {}
 
 export class Buffer extends $CustomType {
-  constructor(x0) {
+  constructor($0) {
     super();
-    this[0] = x0;
+    this[0] = $0;
   }
 }
 
 export class Ip extends $CustomType {
-  constructor(x0) {
+  constructor($0) {
     super();
-    this[0] = x0;
+    this[0] = $0;
   }
 }
 
 export class IpV4 extends $CustomType {
-  constructor(x0, x1, x2, x3) {
+  constructor($0, $1, $2, $3) {
     super();
-    this[0] = x0;
-    this[1] = x1;
-    this[2] = x2;
-    this[3] = x3;
+    this[0] = $0;
+    this[1] = $1;
+    this[2] = $2;
+    this[3] = $3;
   }
 }
 
 export class IpV6 extends $CustomType {
-  constructor(x0, x1, x2, x3, x4, x5, x6, x7) {
+  constructor($0, $1, $2, $3, $4, $5, $6, $7) {
     super();
-    this[0] = x0;
-    this[1] = x1;
-    this[2] = x2;
-    this[3] = x3;
-    this[4] = x4;
-    this[5] = x5;
-    this[6] = x6;
-    this[7] = x7;
+    this[0] = $0;
+    this[1] = $1;
+    this[2] = $2;
+    this[3] = $3;
+    this[4] = $4;
+    this[5] = $5;
+    this[6] = $6;
+    this[7] = $7;
   }
 }
 

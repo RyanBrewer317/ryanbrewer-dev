@@ -1,6 +1,6 @@
 import * as $exception from "../exception/exception.mjs";
 import * as $crypto from "../gleam_crypto/gleam/crypto.mjs";
-import * as $erlang from "../gleam_erlang/gleam/erlang.mjs";
+import * as $application from "../gleam_erlang/gleam/erlang/application.mjs";
 import * as $atom from "../gleam_erlang/gleam/erlang/atom.mjs";
 import * as $http from "../gleam_http/gleam/http.mjs";
 import * as $cookie from "../gleam_http/gleam/http/cookie.mjs";
@@ -21,6 +21,7 @@ import * as $result from "../gleam_stdlib/gleam/result.mjs";
 import * as $string from "../gleam_stdlib/gleam/string.mjs";
 import * as $string_tree from "../gleam_stdlib/gleam/string_tree.mjs";
 import * as $uri from "../gleam_stdlib/gleam/uri.mjs";
+import * as $houdini from "../houdini/houdini.mjs";
 import * as $logging from "../logging/logging.mjs";
 import * as $marceau from "../marceau/marceau.mjs";
 import * as $simplifile from "../simplifile/simplifile.mjs";
@@ -28,27 +29,27 @@ import {
   Ok,
   Error,
   toList,
-  prepend as listPrepend,
   CustomType as $CustomType,
   makeError,
   isEqual,
   toBitArray,
-  bitArraySlice,
   stringBits,
 } from "./gleam.mjs";
 import * as $internal from "./wisp/internal.mjs";
 
+const FILEPATH = "src/wisp.gleam";
+
 export class Text extends $CustomType {
-  constructor(x0) {
+  constructor($0) {
     super();
-    this[0] = x0;
+    this[0] = $0;
   }
 }
 
 export class Bytes extends $CustomType {
-  constructor(x0) {
+  constructor($0) {
     super();
-    this[0] = x0;
+    this[0] = $0;
   }
 }
 
@@ -196,14 +197,18 @@ export function string_body(response, content) {
   return $response.set_body(_pipe, new Text($string_tree.from_string(content)));
 }
 
+export function escape_html(content) {
+  return $houdini.escape(content);
+}
+
 export function method_not_allowed(methods) {
-  let allowed = (() => {
-    let _pipe = methods;
-    let _pipe$1 = $list.map(_pipe, $http.method_to_string);
-    let _pipe$2 = $list.sort(_pipe$1, $string.compare);
-    let _pipe$3 = $string.join(_pipe$2, ", ");
-    return $string.uppercase(_pipe$3);
-  })();
+  let _block;
+  let _pipe = methods;
+  let _pipe$1 = $list.map(_pipe, $http.method_to_string);
+  let _pipe$2 = $list.sort(_pipe$1, $string.compare);
+  let _pipe$3 = $string.join(_pipe$2, ", ");
+  _block = $string.uppercase(_pipe$3);
+  let allowed = _block;
   return new HttpResponse(405, toList([["allow", allowed]]), new Empty());
 }
 
@@ -257,10 +262,10 @@ export function internal_server_error() {
 }
 
 function decrement_body_quota(quotas, size) {
-  let quotas$1 = (() => {
-    let _record = quotas;
-    return new Quotas(quotas.body - size, _record.files);
-  })();
+  let _block;
+  let _record = quotas;
+  _block = new Quotas(quotas.body - size, _record.files);
+  let quotas$1 = _block;
   let $ = quotas$1.body < 0;
   if ($) {
     return new Error(entity_too_large());
@@ -271,18 +276,18 @@ function decrement_body_quota(quotas, size) {
 
 function decrement_quota(quota, size) {
   let $ = quota - size;
-  if ($ < 0) {
-    let quota$1 = $;
+  let quota$1 = $;
+  if (quota$1 < 0) {
     return new Error(entity_too_large());
   } else {
-    let quota$1 = $;
-    return new Ok(quota$1);
+    let quota$2 = $;
+    return new Ok(quota$2);
   }
 }
 
 function buffered_read(reader, chunk_size) {
   let $ = reader.buffer;
-  if ($.bitSize == 0) {
+  if ($.bitSize === 0) {
     return reader.reader(chunk_size);
   } else {
     return new Ok(new $internal.Chunk(reader.buffer, reader.reader));
@@ -290,17 +295,17 @@ function buffered_read(reader, chunk_size) {
 }
 
 export function set_max_body_size(request, size) {
-  let _pipe = (() => {
-    let _record = request.body;
-    return new $internal.Connection(
-      _record.reader,
-      size,
-      _record.max_files_size,
-      _record.read_chunk_size,
-      _record.secret_key_base,
-      _record.temporary_directory,
-    );
-  })();
+  let _block;
+  let _record = request.body;
+  _block = new $internal.Connection(
+    _record.reader,
+    size,
+    _record.max_files_size,
+    _record.read_chunk_size,
+    _record.secret_key_base,
+    _record.temporary_directory,
+  );
+  let _pipe = _block;
   return ((_capture) => { return $request.set_body(request, _capture); })(_pipe);
 }
 
@@ -313,24 +318,25 @@ export function set_secret_key_base(request, key) {
   if ($) {
     throw makeError(
       "panic",
+      FILEPATH,
       "wisp",
-      704,
+      582,
       "set_secret_key_base",
       "Secret key base must be at least 64 bytes long",
       {}
     )
   } else {
-    let _pipe = (() => {
-      let _record = request.body;
-      return new $internal.Connection(
-        _record.reader,
-        _record.max_body_size,
-        _record.max_files_size,
-        _record.read_chunk_size,
-        key,
-        _record.temporary_directory,
-      );
-    })();
+    let _block;
+    let _record = request.body;
+    _block = new $internal.Connection(
+      _record.reader,
+      _record.max_body_size,
+      _record.max_files_size,
+      _record.read_chunk_size,
+      key,
+      _record.temporary_directory,
+    );
+    let _pipe = _block;
     return ((_capture) => { return $request.set_body(request, _capture); })(
       _pipe,
     );
@@ -342,17 +348,17 @@ export function get_secret_key_base(request) {
 }
 
 export function set_max_files_size(request, size) {
-  let _pipe = (() => {
-    let _record = request.body;
-    return new $internal.Connection(
-      _record.reader,
-      _record.max_body_size,
-      size,
-      _record.read_chunk_size,
-      _record.secret_key_base,
-      _record.temporary_directory,
-    );
-  })();
+  let _block;
+  let _record = request.body;
+  _block = new $internal.Connection(
+    _record.reader,
+    _record.max_body_size,
+    size,
+    _record.read_chunk_size,
+    _record.secret_key_base,
+    _record.temporary_directory,
+  );
+  let _pipe = _block;
   return ((_capture) => { return $request.set_body(request, _capture); })(_pipe);
 }
 
@@ -361,17 +367,17 @@ export function get_max_files_size(request) {
 }
 
 export function set_read_chunk_size(request, size) {
-  let _pipe = (() => {
-    let _record = request.body;
-    return new $internal.Connection(
-      _record.reader,
-      _record.max_body_size,
-      _record.max_files_size,
-      size,
-      _record.secret_key_base,
-      _record.temporary_directory,
-    );
-  })();
+  let _block;
+  let _record = request.body;
+  _block = new $internal.Connection(
+    _record.reader,
+    _record.max_body_size,
+    _record.max_files_size,
+    size,
+    _record.secret_key_base,
+    _record.temporary_directory,
+  );
+  let _pipe = _block;
   return ((_capture) => { return $request.set_body(request, _capture); })(_pipe);
 }
 
@@ -409,9 +415,9 @@ export function method_override(request) {
                 (method) => {
                   if (method instanceof $http.Put) {
                     return $request.set_method(request, method);
-                  } else if (method instanceof $http.Patch) {
-                    return $request.set_method(request, method);
                   } else if (method instanceof $http.Delete) {
+                    return $request.set_method(request, method);
+                  } else if (method instanceof $http.Patch) {
                     return $request.set_method(request, method);
                   } else {
                     return request;
@@ -431,9 +437,7 @@ function read_body_loop(reader, read_chunk_size, max_body_size, accumulator) {
   return $result.try$(
     reader(read_chunk_size),
     (chunk) => {
-      if (chunk instanceof $internal.ReadingFinished) {
-        return new Ok(accumulator);
-      } else {
+      if (chunk instanceof $internal.Chunk) {
         let chunk$1 = chunk[0];
         let next = chunk.next;
         let accumulator$1 = $bit_array.append(accumulator, chunk$1);
@@ -448,6 +452,8 @@ function read_body_loop(reader, read_chunk_size, max_body_size, accumulator) {
             accumulator$1,
           );
         }
+      } else {
+        return new Ok(accumulator);
       }
     },
   );
@@ -465,7 +471,7 @@ export function read_body_to_bitstring(request) {
 
 export function require_bit_array_body(request, next) {
   let $ = read_body_to_bitstring(request);
-  if ($.isOk()) {
+  if ($ instanceof Ok) {
     let body = $[0];
     return next(body);
   } else {
@@ -475,12 +481,20 @@ export function require_bit_array_body(request, next) {
 
 export function require_content_type(request, expected, next) {
   let $ = $list.key_find(request.headers, "content-type");
-  if ($.isOk()) {
+  if ($ instanceof Ok) {
     let content_type = $[0];
     let $1 = $string.split_once(content_type, ";");
-    if ($1.isOk() && ($1[0][0] === expected)) {
+    if ($1 instanceof Ok) {
       let content_type$1 = $1[0][0];
-      return next();
+      if (content_type$1 === expected) {
+        return next();
+      } else {
+        if (content_type$1 === expected) {
+          return next();
+        } else {
+          return unsupported_media_type(toList([expected]));
+        }
+      }
     } else if (content_type === expected) {
       return next();
     } else {
@@ -566,24 +580,24 @@ function multipart_body(
             let done = output.done;
             let remaining = output.remaining;
             let used = (size_read - $bit_array.byte_size(remaining)) - 2;
-            let used$1 = (() => {
-              if (done) {
-                return (used - 4) - $string.byte_size(boundary);
-              } else {
-                return used;
-              }
-            })();
+            let _block;
+            if (done) {
+              _block = (used - 4) - $string.byte_size(boundary);
+            } else {
+              _block = used;
+            }
+            let used$1 = _block;
             return $result.try$(
               decrement_quota(quota, used$1),
               (quota) => {
                 let reader$2 = new BufferedReader(reader$1, remaining);
-                let reader$3 = (() => {
-                  if (done) {
-                    return new $option.None();
-                  } else {
-                    return new $option.Some(reader$2);
-                  }
-                })();
+                let _block$1;
+                if (done) {
+                  _block$1 = new $option.None();
+                } else {
+                  _block$1 = new $option.Some(reader$2);
+                }
+                let reader$3 = _block$1;
                 return $result.map(
                   append(data, parsed),
                   (value) => { return [reader$3, quota, value]; },
@@ -658,7 +672,7 @@ function sort_keys(pairs) {
 }
 
 function or_400(result, next) {
-  if (result.isOk()) {
+  if (result instanceof Ok) {
     let value = result[0];
     return next(value);
   } else {
@@ -668,7 +682,7 @@ function or_400(result, next) {
 
 export function require_string_body(request, next) {
   let $ = read_body_to_bitstring(request);
-  if ($.isOk()) {
+  if ($ instanceof Ok) {
     let body = $[0];
     return or_400($bit_array.to_string(body), next);
   } else {
@@ -685,7 +699,7 @@ export function require_json(request, next) {
         request,
         (body) => {
           return or_400(
-            $json.decode(body, (var0) => { return new Ok(var0); }),
+            $json.parse(body, $decode.dynamic),
             (json) => { return next(json); },
           );
         },
@@ -707,67 +721,6 @@ function require_urlencoded_form(request, next) {
       );
     },
   );
-}
-
-function handle_etag(resp, req, file_info) {
-  let etag = $internal.generate_etag(file_info.size, file_info.mtime_seconds);
-  let $ = $request.get_header(req, "if-none-match");
-  if ($.isOk() && ($[0] === etag)) {
-    let old_etag = $[0];
-    return response(304);
-  } else {
-    return $response.set_header(resp, "etag", etag);
-  }
-}
-
-export function serve_static(req, prefix, directory, handler) {
-  let path = $internal.remove_preceeding_slashes(req.path);
-  let prefix$1 = $internal.remove_preceeding_slashes(prefix);
-  let $ = req.method;
-  let $1 = $string.starts_with(path, prefix$1);
-  if ($ instanceof $http.Get && $1) {
-    let path$1 = (() => {
-      let _pipe = path;
-      let _pipe$1 = $string.drop_start(_pipe, $string.length(prefix$1));
-      let _pipe$2 = $string.replace(_pipe$1, "..", "");
-      return ((_capture) => { return $internal.join_path(directory, _capture); })(
-        _pipe$2,
-      );
-    })();
-    let file_type = (() => {
-      let _pipe = req.path;
-      let _pipe$1 = $string.split(_pipe, ".");
-      let _pipe$2 = $list.last(_pipe$1);
-      return $result.unwrap(_pipe$2, "");
-    })();
-    let mime_type = $marceau.extension_to_mime_type(file_type);
-    let content_type = (() => {
-      if (mime_type === "application/json") {
-        return mime_type + "; charset=utf-8";
-      } else if (mime_type.startsWith("text/")) {
-        return mime_type + "; charset=utf-8";
-      } else {
-        return mime_type;
-      }
-    })();
-    let $2 = $simplifile.file_info(path$1);
-    if ($2.isOk()) {
-      let file_info = $2[0];
-      let $3 = $simplifile.file_info_type(file_info);
-      if ($3 instanceof $simplifile.File) {
-        let _pipe = $response.new$(200);
-        let _pipe$1 = $response.set_header(_pipe, "content-type", content_type);
-        let _pipe$2 = $response.set_body(_pipe$1, new File(path$1));
-        return handle_etag(_pipe$2, req, file_info);
-      } else {
-        return handler();
-      }
-    } else {
-      return handler();
-    }
-  } else {
-    return handler();
-  }
 }
 
 export function handle_head(req, handler) {
@@ -795,8 +748,14 @@ export function new_temporary_file(request) {
 
 export function delete_temporary_files(request) {
   let $ = $simplifile.delete$(request.body.temporary_directory);
-  if (!$.isOk() && $[0] instanceof $simplifile.Enoent) {
-    return new Ok(undefined);
+  if ($ instanceof Error) {
+    let $1 = $[0];
+    if ($1 instanceof $simplifile.Enoent) {
+      return new Ok(undefined);
+    } else {
+      let other = $;
+      return other;
+    }
   } else {
     let other = $;
     return other;
@@ -843,28 +802,28 @@ export function verify_signed_message(request, message) {
 }
 
 export function set_cookie(response, request, name, value, security, max_age) {
-  let attributes = (() => {
-    let _record = $cookie.defaults(new $http.Https());
-    return new $cookie.Attributes(
-      new $option.Some(max_age),
-      _record.domain,
-      _record.path,
-      _record.secure,
-      _record.http_only,
-      _record.same_site,
+  let _block;
+  let _record = $cookie.defaults(new $http.Https());
+  _block = new $cookie.Attributes(
+    new $option.Some(max_age),
+    _record.domain,
+    _record.path,
+    _record.secure,
+    _record.http_only,
+    _record.same_site,
+  );
+  let attributes = _block;
+  let _block$1;
+  if (security instanceof PlainText) {
+    _block$1 = $bit_array.base64_encode(toBitArray([stringBits(value)]), false);
+  } else {
+    _block$1 = sign_message(
+      request,
+      toBitArray([stringBits(value)]),
+      new $crypto.Sha512(),
     );
-  })();
-  let value$1 = (() => {
-    if (security instanceof PlainText) {
-      return $bit_array.base64_encode(toBitArray([stringBits(value)]), false);
-    } else {
-      return sign_message(
-        request,
-        toBitArray([stringBits(value)]),
-        new $crypto.Sha512(),
-      );
-    }
-  })();
+  }
+  let value$1 = _block$1;
   let _pipe = response;
   return $response.set_cookie(_pipe, name, value$1, attributes);
 }
@@ -909,157 +868,78 @@ export const path_segments = $request.path_segments;
 
 export const set_header = $response.set_header;
 
-export const priv_directory = $erlang.priv_directory;
+function handle_etag(resp, req, file_info) {
+  let etag = $internal.generate_etag(file_info.size, file_info.mtime_seconds);
+  let $ = $request.get_header(req, "if-none-match");
+  if ($ instanceof Ok) {
+    let old_etag = $[0];
+    if (old_etag === etag) {
+      let _pipe = response(304);
+      return set_header(_pipe, "etag", etag);
+    } else {
+      return $response.set_header(resp, "etag", etag);
+    }
+  } else {
+    return $response.set_header(resp, "etag", etag);
+  }
+}
 
-function do_escape_html_regular(
-  loop$bin,
-  loop$skip,
-  loop$original,
-  loop$acc,
-  loop$len
-) {
-  while (true) {
-    let bin = loop$bin;
-    let skip = loop$skip;
-    let original = loop$original;
-    let acc = loop$acc;
-    let len = loop$len;
-    if (bin.byteAt(0) === 60 && bin.bitSize >= 8) {
-      let rest = bitArraySlice(bin, 8);
-      let $ = $bit_array.slice(original, skip, len);
-      if (!$.isOk()) {
-        throw makeError(
-          "let_assert",
-          "wisp",
-          402,
-          "do_escape_html_regular",
-          "Pattern match failed, no pattern matched the value.",
-          { value: $ }
-        )
-      }
-      let slice = $[0];
-      let acc$1 = listPrepend(
-        toBitArray([stringBits("&lt;")]),
-        listPrepend(slice, acc),
-      );
-      return do_escape_html(rest, (skip + len) + 1, original, acc$1);
-    } else if (bin.byteAt(0) === 62 && bin.bitSize >= 8) {
-      let rest = bitArraySlice(bin, 8);
-      let $ = $bit_array.slice(original, skip, len);
-      if (!$.isOk()) {
-        throw makeError(
-          "let_assert",
-          "wisp",
-          408,
-          "do_escape_html_regular",
-          "Pattern match failed, no pattern matched the value.",
-          { value: $ }
-        )
-      }
-      let slice = $[0];
-      let acc$1 = listPrepend(
-        toBitArray([stringBits("&gt;")]),
-        listPrepend(slice, acc),
-      );
-      return do_escape_html(rest, (skip + len) + 1, original, acc$1);
-    } else if (bin.byteAt(0) === 38 && bin.bitSize >= 8) {
-      let rest = bitArraySlice(bin, 8);
-      let $ = $bit_array.slice(original, skip, len);
-      if (!$.isOk()) {
-        throw makeError(
-          "let_assert",
-          "wisp",
-          414,
-          "do_escape_html_regular",
-          "Pattern match failed, no pattern matched the value.",
-          { value: $ }
-        )
-      }
-      let slice = $[0];
-      let acc$1 = listPrepend(
-        toBitArray([stringBits("&amp;")]),
-        listPrepend(slice, acc),
-      );
-      return do_escape_html(rest, (skip + len) + 1, original, acc$1);
-    } else if (bin.bitSize >= 8) {
-      let rest = bitArraySlice(bin, 8);
-      loop$bin = rest;
-      loop$skip = skip;
-      loop$original = original;
-      loop$acc = acc;
-      loop$len = len + 1;
-    } else if (bin.bitSize == 0) {
-      if (skip === 0) {
-        return toList([original]);
+export function serve_static(req, prefix, directory, handler) {
+  let path = $internal.remove_preceeding_slashes(req.path);
+  let prefix$1 = $internal.remove_preceeding_slashes(prefix);
+  let $ = req.method;
+  let $1 = $string.starts_with(path, prefix$1);
+  if ($1) {
+    if ($ instanceof $http.Get) {
+      let _block;
+      let _pipe = path;
+      let _pipe$1 = $string.drop_start(_pipe, $string.length(prefix$1));
+      let _pipe$2 = $string.replace(_pipe$1, "..", "");
+      _block = ((_capture) => {
+        return $internal.join_path(directory, _capture);
+      })(_pipe$2);
+      let path$1 = _block;
+      let _block$1;
+      let _pipe$3 = req.path;
+      let _pipe$4 = $string.split(_pipe$3, ".");
+      let _pipe$5 = $list.last(_pipe$4);
+      _block$1 = $result.unwrap(_pipe$5, "");
+      let file_type = _block$1;
+      let mime_type = $marceau.extension_to_mime_type(file_type);
+      let _block$2;
+      if (mime_type === "application/json") {
+        _block$2 = mime_type + "; charset=utf-8";
+      } else if (mime_type.startsWith("text/")) {
+        _block$2 = mime_type + "; charset=utf-8";
       } else {
-        let $ = $bit_array.slice(original, skip, len);
-        if (!$.isOk()) {
-          throw makeError(
-            "let_assert",
-            "wisp",
-            428,
-            "do_escape_html_regular",
-            "Pattern match failed, no pattern matched the value.",
-            { value: $ }
-          )
+        _block$2 = mime_type;
+      }
+      let content_type = _block$2;
+      let $2 = $simplifile.file_info(path$1);
+      if ($2 instanceof Ok) {
+        let file_info = $2[0];
+        let $3 = $simplifile.file_info_type(file_info);
+        if ($3 instanceof $simplifile.File) {
+          let _pipe$6 = $response.new$(200);
+          let _pipe$7 = $response.set_header(
+            _pipe$6,
+            "content-type",
+            content_type,
+          );
+          let _pipe$8 = $response.set_body(_pipe$7, new File(path$1));
+          return handle_etag(_pipe$8, req, file_info);
+        } else {
+          return handler();
         }
-        let slice = $[0];
-        return listPrepend(slice, acc);
+      } else {
+        return handler();
       }
     } else {
-      throw makeError(
-        "panic",
-        "wisp",
-        433,
-        "do_escape_html_regular",
-        "non byte aligned string, all strings should be byte aligned",
-        {}
-      )
+      return handler();
     }
+  } else {
+    return handler();
   }
 }
 
-function do_escape_html(loop$bin, loop$skip, loop$original, loop$acc) {
-  while (true) {
-    let bin = loop$bin;
-    let skip = loop$skip;
-    let original = loop$original;
-    let acc = loop$acc;
-    if (bin.byteAt(0) === 60 && bin.bitSize >= 8) {
-      let rest = bitArraySlice(bin, 8);
-      let acc$1 = listPrepend(toBitArray([stringBits("&lt;")]), acc);
-      loop$bin = rest;
-      loop$skip = skip + 1;
-      loop$original = original;
-      loop$acc = acc$1;
-    } else if (bin.byteAt(0) === 62 && bin.bitSize >= 8) {
-      let rest = bitArraySlice(bin, 8);
-      let acc$1 = listPrepend(toBitArray([stringBits("&gt;")]), acc);
-      loop$bin = rest;
-      loop$skip = skip + 1;
-      loop$original = original;
-      loop$acc = acc$1;
-    } else if (bin.byteAt(0) === 38 && bin.bitSize >= 8) {
-      let rest = bitArraySlice(bin, 8);
-      let acc$1 = listPrepend(toBitArray([stringBits("&amp;")]), acc);
-      loop$bin = rest;
-      loop$skip = skip + 1;
-      loop$original = original;
-      loop$acc = acc$1;
-    } else if (bin.bitSize >= 8) {
-      let rest = bitArraySlice(bin, 8);
-      return do_escape_html_regular(rest, skip, original, acc, 1);
-    } else if (bin.bitSize == 0) {
-      return acc;
-    } else {
-      throw makeError(
-        "panic",
-        "wisp",
-        367,
-        "do_escape_html",
-        "non byte aligned string, all strings should be byte aligned",
-        {}
-      )
-    }
-  }
-}
+export const priv_directory = $application.priv_directory;

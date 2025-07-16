@@ -6,12 +6,16 @@
 
 -module(simplifile_erl).
 
+% We call the 
+-compile({no_auto_import,[link/2]}).
+
 %% API
 -export([
     append_bits/2,
     create_directory/1,
     create_dir_all/1,
     delete_file/1,
+    create_link/2,
     create_symlink/2,
     delete/1,
     delete_directory/1,
@@ -97,11 +101,17 @@ read_bits(Filename) ->
 
 %% Write bytes to a file
 write_bits(Filename, Contents) ->
-    posix_result(file:write_file(Filename, Contents)).
+    case bit_size(Contents) rem 8 of
+        0 -> posix_result(file:write_file(Filename, Contents));
+        _ -> {error, einval}
+    end.
 
 %% Append bytes to a file
 append_bits(Filename, Contents) ->
-    posix_result(file:write_file(Filename, Contents, [append])).
+    case bit_size(Contents) rem 8 of
+        0 -> posix_result(file:write_file(Filename, Contents, [append]));
+        _ -> {error, einval}
+    end.
 
 %% Delete the file at the given path
 delete_file(Filename) ->
@@ -114,6 +124,10 @@ create_directory(Dir) ->
 %% Create a symbolic link New to the file or directory Existing (does not need to exist).
 create_symlink(Existing, New) ->
     posix_result(file:make_symlink(Existing, New)).
+
+%% Create a "hard link" New to the file or directory Existing.
+create_link(Existing, New) ->
+    posix_result(file:make_link(Existing, New)).
 
 %% List the contents of a directory
 read_directory(Dir) ->

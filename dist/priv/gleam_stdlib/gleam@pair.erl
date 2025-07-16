@@ -22,7 +22,7 @@
     " // -> 1\n"
     " ```\n"
 ).
--spec first({YA, any()}) -> YA.
+-spec first({COF, any()}) -> COF.
 first(Pair) ->
     {A, _} = Pair,
     A.
@@ -38,7 +38,7 @@ first(Pair) ->
     " // -> 2\n"
     " ```\n"
 ).
--spec second({any(), YD}) -> YD.
+-spec second({any(), COI}) -> COI.
 second(Pair) ->
     {_, A} = Pair,
     A.
@@ -54,7 +54,7 @@ second(Pair) ->
     " // -> #(2, 1)\n"
     " ```\n"
 ).
--spec swap({YE, YF}) -> {YF, YE}.
+-spec swap({COJ, COK}) -> {COK, COJ}.
 swap(Pair) ->
     {A, B} = Pair,
     {B, A}.
@@ -71,7 +71,7 @@ swap(Pair) ->
     " // -> #(2, 2)\n"
     " ```\n"
 ).
--spec map_first({YG, YH}, fun((YG) -> YI)) -> {YI, YH}.
+-spec map_first({COL, COM}, fun((COL) -> CON)) -> {CON, COM}.
 map_first(Pair, Fun) ->
     {A, B} = Pair,
     {Fun(A), B}.
@@ -88,7 +88,7 @@ map_first(Pair, Fun) ->
     " // -> #(1, 4)\n"
     " ```\n"
 ).
--spec map_second({YJ, YK}, fun((YK) -> YL)) -> {YJ, YL}.
+-spec map_second({COO, COP}, fun((COP) -> COQ)) -> {COO, COQ}.
 map_second(Pair, Fun) ->
     {A, B} = Pair,
     {A, Fun(B)}.
@@ -105,6 +105,6 @@ map_second(Pair, Fun) ->
     " // -> #(1, 2)\n"
     " ```\n"
 ).
--spec new(YM, YN) -> {YM, YN}.
+-spec new(COR, COS) -> {COR, COS}.
 new(First, Second) ->
     {First, Second}.

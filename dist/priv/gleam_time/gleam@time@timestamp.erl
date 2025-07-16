@@ -1,6 +1,6 @@
 -module(gleam@time@timestamp).
 -compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch]).
-
+-define(FILEPATH, "src/gleam/time/timestamp.gleam").
 -export([compare/2, system_time/0, difference/2, add/2, to_calendar/2, to_rfc3339/2, from_unix_seconds/1, from_unix_seconds_and_nanoseconds/2, to_unix_seconds/1, to_unix_seconds_and_nanoseconds/1, from_calendar/3, parse_rfc3339/1]).
 -export_type([timestamp/0]).
 
@@ -59,7 +59,7 @@
 
 -opaque timestamp() :: {timestamp, integer(), integer()}.
 
--file("src/gleam/time/timestamp.gleam", 113).
+-file("src/gleam/time/timestamp.gleam", 116).
 ?DOC(
     " Ensure the time is represented with `nanoseconds` being positive and less\n"
     " than 1 second.\n"
@@ -87,7 +87,7 @@ normalise(Timestamp) ->
             {timestamp, Seconds - 1, Multiplier + Nanoseconds}
     end.
 
--file("src/gleam/time/timestamp.gleam", 135).
+-file("src/gleam/time/timestamp.gleam", 138).
 ?DOC(
     " Compare one timestamp to another, indicating whether the first is further\n"
     " into the future (greater) or further into the past (lesser) than the\n"
@@ -107,7 +107,7 @@ compare(Left, Right) ->
         gleam@int:compare(erlang:element(3, Left), erlang:element(3, Right))
     ).
 
--file("src/gleam/time/timestamp.gleam", 154).
+-file("src/gleam/time/timestamp.gleam", 157).
 ?DOC(
     " Get the current system time.\n"
     "\n"
@@ -126,7 +126,7 @@ system_time() ->
     {Seconds, Nanoseconds} = gleam_time_ffi:system_time(),
     normalise({timestamp, Seconds, Nanoseconds}).
 
--file("src/gleam/time/timestamp.gleam", 174).
+-file("src/gleam/time/timestamp.gleam", 177).
 ?DOC(
     " Calculate the difference between two timestamps.\n"
     "\n"
@@ -149,7 +149,7 @@ difference(Left, Right) ->
     ),
     gleam@time@duration:add(Seconds, Nanoseconds).
 
--file("src/gleam/time/timestamp.gleam", 189).
+-file("src/gleam/time/timestamp.gleam", 192).
 ?DOC(
     " Add a duration to a timestamp.\n"
     "\n"
@@ -170,18 +170,18 @@ add(Timestamp, Duration) ->
         erlang:element(3, Timestamp) + Nanoseconds},
     normalise(_pipe).
 
--file("src/gleam/time/timestamp.gleam", 256).
+-file("src/gleam/time/timestamp.gleam", 259).
 -spec pad_digit(integer(), integer()) -> binary().
 pad_digit(Digit, Desired_length) ->
     _pipe = erlang:integer_to_binary(Digit),
     gleam@string:pad_start(_pipe, Desired_length, <<"0"/utf8>>).
 
--file("src/gleam/time/timestamp.gleam", 302).
+-file("src/gleam/time/timestamp.gleam", 305).
 -spec duration_to_minutes(gleam@time@duration:duration()) -> integer().
 duration_to_minutes(Duration) ->
     erlang:round(gleam@time@duration:to_seconds(Duration) / 60.0).
 
--file("src/gleam/time/timestamp.gleam", 364).
+-file("src/gleam/time/timestamp.gleam", 367).
 -spec modulo(integer(), integer()) -> integer().
 modulo(N, M) ->
     case gleam@int:modulo(N, M) of
@@ -192,7 +192,7 @@ modulo(N, M) ->
             0
     end.
 
--file("src/gleam/time/timestamp.gleam", 371).
+-file("src/gleam/time/timestamp.gleam", 374).
 -spec floored_div(integer(), float()) -> integer().
 floored_div(Numerator, Denominator) ->
     N = case Denominator of
@@ -202,7 +202,7 @@ floored_div(Numerator, Denominator) ->
     end,
     erlang:round(math:floor(N)).
 
--file("src/gleam/time/timestamp.gleam", 377).
+-file("src/gleam/time/timestamp.gleam", 380).
 -spec to_civil(integer()) -> {integer(), integer(), integer()}.
 to_civil(Minutes) ->
     Raw_day = floored_div(Minutes, (60.0 * 24.0)) + 719468,
@@ -238,7 +238,7 @@ to_civil(Minutes) ->
     end,
     {Year@1, Month, Day}.
 
--file("src/gleam/time/timestamp.gleam", 306).
+-file("src/gleam/time/timestamp.gleam", 309).
 -spec to_calendar_from_offset(timestamp(), integer()) -> {integer(),
     integer(),
     integer(),
@@ -257,7 +257,7 @@ to_calendar_from_offset(Timestamp, Offset) ->
     {Year, Month, Day} = to_civil(Total_minutes),
     {Year, Month, Day, Hours, Minutes, Seconds}.
 
--file("src/gleam/time/timestamp.gleam", 275).
+-file("src/gleam/time/timestamp.gleam", 278).
 ?DOC(
     " Convert a `Timestamp` to calendar time, suitable for presenting to a human\n"
     " to read.\n"
@@ -324,7 +324,7 @@ to_calendar(Timestamp, Offset) ->
     Time = {time_of_day, Hours, Minutes, Seconds, Nanoseconds},
     {Date, Time}.
 
--file("src/gleam/time/timestamp.gleam", 440).
+-file("src/gleam/time/timestamp.gleam", 443).
 -spec do_remove_trailing_zeros(list(integer())) -> list(integer()).
 do_remove_trailing_zeros(Reversed_digits) ->
     case Reversed_digits of
@@ -338,14 +338,14 @@ do_remove_trailing_zeros(Reversed_digits) ->
             lists:reverse(Reversed_digits@1)
     end.
 
--file("src/gleam/time/timestamp.gleam", 434).
+-file("src/gleam/time/timestamp.gleam", 437).
 ?DOC(" Given a list of digits, return new list with any trailing zeros removed.\n").
 -spec remove_trailing_zeros(list(integer())) -> list(integer()).
 remove_trailing_zeros(Digits) ->
     Reversed_digits = lists:reverse(Digits),
     do_remove_trailing_zeros(Reversed_digits).
 
--file("src/gleam/time/timestamp.gleam", 455).
+-file("src/gleam/time/timestamp.gleam", 458).
 -spec do_get_zero_padded_digits(integer(), list(integer()), integer()) -> list(integer()).
 do_get_zero_padded_digits(Number, Digits, Count) ->
     case Number of
@@ -361,7 +361,7 @@ do_get_zero_padded_digits(Number, Digits, Count) ->
             do_get_zero_padded_digits(Number@4, [Digit | Digits], Count + 1)
     end.
 
--file("src/gleam/time/timestamp.gleam", 451).
+-file("src/gleam/time/timestamp.gleam", 454).
 ?DOC(
     " Returns the list of digits of `number`.  If the number of digits is less \n"
     " than 9, the result is zero-padded at the front.\n"
@@ -370,7 +370,7 @@ do_get_zero_padded_digits(Number, Digits, Count) ->
 get_zero_padded_digits(Number) ->
     do_get_zero_padded_digits(Number, [], 0).
 
--file("src/gleam/time/timestamp.gleam", 414).
+-file("src/gleam/time/timestamp.gleam", 417).
 ?DOC(
     " Converts nanoseconds into a `String` representation of fractional seconds.\n"
     " \n"
@@ -400,7 +400,7 @@ show_second_fraction(Nanoseconds) ->
             <<"."/utf8, Second_fraction_part/binary>>
     end.
 
--file("src/gleam/time/timestamp.gleam", 234).
+-file("src/gleam/time/timestamp.gleam", 237).
 ?DOC(
     " Convert a timestamp to a RFC 3339 formatted time string, with an offset\n"
     " supplied as an additional argument.\n"
@@ -479,13 +479,13 @@ to_rfc3339(Timestamp, Offset) ->
                 (N2(Offset_minutes))/binary>>
     end.
 
--file("src/gleam/time/timestamp.gleam", 584).
+-file("src/gleam/time/timestamp.gleam", 587).
 -spec is_leap_year(integer()) -> boolean().
 is_leap_year(Year) ->
     ((Year rem 4) =:= 0) andalso (((Year rem 100) /= 0) orelse ((Year rem 400)
     =:= 0)).
 
--file("src/gleam/time/timestamp.gleam", 688).
+-file("src/gleam/time/timestamp.gleam", 691).
 -spec parse_sign(bitstring()) -> {ok, {binary(), bitstring()}} | {error, nil}.
 parse_sign(Bytes) ->
     case Bytes of
@@ -499,7 +499,7 @@ parse_sign(Bytes) ->
             {error, nil}
     end.
 
--file("src/gleam/time/timestamp.gleam", 735).
+-file("src/gleam/time/timestamp.gleam", 738).
 ?DOC(" Accept the given value from `bytes` and move past it if found.\n").
 -spec accept_byte(bitstring(), integer()) -> {ok, bitstring()} | {error, nil}.
 accept_byte(Bytes, Value) ->
@@ -511,7 +511,7 @@ accept_byte(Bytes, Value) ->
             {error, nil}
     end.
 
--file("src/gleam/time/timestamp.gleam", 751).
+-file("src/gleam/time/timestamp.gleam", 756).
 -spec accept_empty(bitstring()) -> {ok, nil} | {error, nil}.
 accept_empty(Bytes) ->
     case Bytes of
@@ -522,7 +522,7 @@ accept_empty(Bytes) ->
             {error, nil}
     end.
 
--file("src/gleam/time/timestamp.gleam", 811).
+-file("src/gleam/time/timestamp.gleam", 816).
 ?DOC(
     " Note: It is the callers responsibility to ensure the inputs are valid.\n"
     " \n"
@@ -539,7 +539,7 @@ julian_day_from_ymd(Year, Month, Day) ->
     + (Adjusted_year div 400))
     - 32045.
 
--file("src/gleam/time/timestamp.gleam", 830).
+-file("src/gleam/time/timestamp.gleam", 835).
 ?DOC(
     " Create a timestamp from a number of seconds since 00:00:00 UTC on 1 January\n"
     " 1970.\n"
@@ -548,7 +548,7 @@ julian_day_from_ymd(Year, Month, Day) ->
 from_unix_seconds(Seconds) ->
     {timestamp, Seconds, 0}.
 
--file("src/gleam/time/timestamp.gleam", 845).
+-file("src/gleam/time/timestamp.gleam", 850).
 ?DOC(
     " Create a timestamp from a number of seconds and nanoseconds since 00:00:00\n"
     " UTC on 1 January 1970.\n"
@@ -566,7 +566,7 @@ from_unix_seconds_and_nanoseconds(Seconds, Nanoseconds) ->
     _pipe = {timestamp, Seconds, Nanoseconds},
     normalise(_pipe).
 
--file("src/gleam/time/timestamp.gleam", 859).
+-file("src/gleam/time/timestamp.gleam", 864).
 ?DOC(
     " Convert the timestamp to a number of seconds since 00:00:00 UTC on 1\n"
     " January 1970.\n"
@@ -580,7 +580,7 @@ to_unix_seconds(Timestamp) ->
     Nanoseconds = erlang:float(erlang:element(3, Timestamp)),
     Seconds + (Nanoseconds / 1000000000.0).
 
--file("src/gleam/time/timestamp.gleam", 868).
+-file("src/gleam/time/timestamp.gleam", 873).
 ?DOC(
     " Convert the timestamp to a number of seconds and nanoseconds since 00:00:00\n"
     " UTC on 1 January 1970. There is no loss of precision with this conversion\n"
@@ -590,7 +590,7 @@ to_unix_seconds(Timestamp) ->
 to_unix_seconds_and_nanoseconds(Timestamp) ->
     {erlang:element(2, Timestamp), erlang:element(3, Timestamp)}.
 
--file("src/gleam/time/timestamp.gleam", 696).
+-file("src/gleam/time/timestamp.gleam", 699).
 -spec offset_to_seconds(binary(), integer(), integer()) -> integer().
 offset_to_seconds(Sign, Hours, Minutes) ->
     Abs_seconds = (Hours * 3600) + (Minutes * 60),
@@ -602,7 +602,7 @@ offset_to_seconds(Sign, Hours, Minutes) ->
             Abs_seconds
     end.
 
--file("src/gleam/time/timestamp.gleam", 790).
+-file("src/gleam/time/timestamp.gleam", 795).
 ?DOC(
     " `julian_seconds_from_parts(year, month, day, hours, minutes, seconds)` \n"
     " returns the number of Julian \n"
@@ -624,7 +624,7 @@ julian_seconds_from_parts(Year, Month, Day, Hours, Minutes, Seconds) ->
     Julian_day_seconds = julian_day_from_ymd(Year, Month, Day) * 86400,
     ((Julian_day_seconds + (Hours * 3600)) + (Minutes * 60)) + Seconds.
 
--file("src/gleam/time/timestamp.gleam", 635).
+-file("src/gleam/time/timestamp.gleam", 638).
 -spec do_parse_second_fraction_as_nanoseconds(bitstring(), integer(), integer()) -> {ok,
         {integer(), bitstring()}} |
     {error, any()}.
@@ -650,7 +650,7 @@ do_parse_second_fraction_as_nanoseconds(Bytes, Acc, Power) ->
             {ok, {Acc, Bytes}}
     end.
 
--file("src/gleam/time/timestamp.gleam", 615).
+-file("src/gleam/time/timestamp.gleam", 618).
 -spec parse_second_fraction_as_nanoseconds(bitstring()) -> {ok,
         {integer(), bitstring()}} |
     {error, nil}.
@@ -670,7 +670,7 @@ parse_second_fraction_as_nanoseconds(Bytes) ->
             {ok, {0, Bytes}}
     end.
 
--file("src/gleam/time/timestamp.gleam", 714).
+-file("src/gleam/time/timestamp.gleam", 717).
 -spec do_parse_digits(bitstring(), integer(), integer(), integer()) -> {ok,
         {integer(), bitstring()}} |
     {error, nil}.
@@ -691,19 +691,19 @@ do_parse_digits(Bytes, Count, Acc, K) ->
             {error, nil}
     end.
 
--file("src/gleam/time/timestamp.gleam", 707).
+-file("src/gleam/time/timestamp.gleam", 710).
 ?DOC(" Parse and return the given number of digits from the given bytes.\n").
 -spec parse_digits(bitstring(), integer()) -> {ok, {integer(), bitstring()}} |
     {error, nil}.
 parse_digits(Bytes, Count) ->
     do_parse_digits(Bytes, Count, 0, 0).
 
--file("src/gleam/time/timestamp.gleam", 546).
+-file("src/gleam/time/timestamp.gleam", 549).
 -spec parse_year(bitstring()) -> {ok, {integer(), bitstring()}} | {error, nil}.
 parse_year(Bytes) ->
     parse_digits(Bytes, 4).
 
--file("src/gleam/time/timestamp.gleam", 550).
+-file("src/gleam/time/timestamp.gleam", 553).
 -spec parse_month(bitstring()) -> {ok, {integer(), bitstring()}} | {error, nil}.
 parse_month(Bytes) ->
     gleam@result:'try'(
@@ -720,7 +720,7 @@ parse_month(Bytes) ->
         end
     ).
 
--file("src/gleam/time/timestamp.gleam", 558).
+-file("src/gleam/time/timestamp.gleam", 561).
 -spec parse_day(bitstring(), integer(), integer()) -> {ok,
         {integer(), bitstring()}} |
     {error, nil}.
@@ -784,7 +784,7 @@ parse_day(Bytes, Year, Month) ->
         end
     ).
 
--file("src/gleam/time/timestamp.gleam", 588).
+-file("src/gleam/time/timestamp.gleam", 591).
 -spec parse_hours(bitstring()) -> {ok, {integer(), bitstring()}} | {error, nil}.
 parse_hours(Bytes) ->
     gleam@result:'try'(
@@ -801,7 +801,7 @@ parse_hours(Bytes) ->
         end
     ).
 
--file("src/gleam/time/timestamp.gleam", 596).
+-file("src/gleam/time/timestamp.gleam", 599).
 -spec parse_minutes(bitstring()) -> {ok, {integer(), bitstring()}} |
     {error, nil}.
 parse_minutes(Bytes) ->
@@ -819,7 +819,7 @@ parse_minutes(Bytes) ->
         end
     ).
 
--file("src/gleam/time/timestamp.gleam", 604).
+-file("src/gleam/time/timestamp.gleam", 607).
 -spec parse_seconds(bitstring()) -> {ok, {integer(), bitstring()}} |
     {error, nil}.
 parse_seconds(Bytes) ->
@@ -837,7 +837,7 @@ parse_seconds(Bytes) ->
         end
     ).
 
--file("src/gleam/time/timestamp.gleam", 677).
+-file("src/gleam/time/timestamp.gleam", 680).
 -spec parse_numeric_offset(bitstring()) -> {ok, {integer(), bitstring()}} |
     {error, nil}.
 parse_numeric_offset(Bytes) ->
@@ -871,7 +871,7 @@ parse_numeric_offset(Bytes) ->
         end
     ).
 
--file("src/gleam/time/timestamp.gleam", 669).
+-file("src/gleam/time/timestamp.gleam", 672).
 -spec parse_offset(bitstring()) -> {ok, {integer(), bitstring()}} | {error, nil}.
 parse_offset(Bytes) ->
     case Bytes of
@@ -885,19 +885,19 @@ parse_offset(Bytes) ->
             parse_numeric_offset(Bytes)
     end.
 
--file("src/gleam/time/timestamp.gleam", 742).
+-file("src/gleam/time/timestamp.gleam", 745).
 -spec accept_date_time_separator(bitstring()) -> {ok, bitstring()} |
     {error, nil}.
 accept_date_time_separator(Bytes) ->
     case Bytes of
-        <<Byte, Remaining_bytes/binary>> when (Byte =:= 16#54) orelse (Byte =:= 16#74) ->
+        <<Byte, Remaining_bytes/binary>> when ((Byte =:= 16#54) orelse (Byte =:= 16#74)) orelse (Byte =:= 16#20) ->
             {ok, Remaining_bytes};
 
         _ ->
             {error, nil}
     end.
 
--file("src/gleam/time/timestamp.gleam", 760).
+-file("src/gleam/time/timestamp.gleam", 765).
 ?DOC(" Note: The caller of this function must ensure that all inputs are valid.\n").
 -spec from_date_time(
     integer(),
@@ -933,7 +933,7 @@ from_date_time(
         Second_fraction_as_nanoseconds},
     normalise(_pipe).
 
--file("src/gleam/time/timestamp.gleam", 333).
+-file("src/gleam/time/timestamp.gleam", 336).
 ?DOC(
     " Create a `Timestamp` from a human-readable calendar time.\n"
     "\n"
@@ -1003,7 +1003,7 @@ from_calendar(Date, Time, Offset) ->
         erlang:round(gleam@time@duration:to_seconds(Offset))
     ).
 
--file("src/gleam/time/timestamp.gleam", 506).
+-file("src/gleam/time/timestamp.gleam", 509).
 ?DOC(
     " Parses an [RFC 3339 formatted time string][spec] into a `Timestamp`.\n"
     "\n"
@@ -1029,8 +1029,8 @@ from_calendar(Date, Time, Offset) ->
     "   RFC 3339 <https://datatracker.ietf.org/doc/html/rfc3339#section-5.6>.\n"
     " - The `T` and `Z` characters may alternatively be lower case `t` or `z`, \n"
     "   respectively.\n"
-    " - Full dates and full times must be separated by `T` or `t`, not any other \n"
-    "   character such as a space (` `).\n"
+    " - Full dates and full times must be separated by `T` or `t`. A space is also \n"
+    "   permitted.\n"
     " - Leap seconds rules are not considered.  That is, any timestamp may \n"
     "   specify digts `00` - `60` for the seconds.\n"
     " - Any part of a fractional second that cannot be represented in the \n"

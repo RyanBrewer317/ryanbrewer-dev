@@ -1,6 +1,6 @@
 -module(mist@internal@encoder).
 -compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch]).
-
+-define(FILEPATH, "src/mist/internal/encoder.gleam").
 -export([status_to_bit_array/1, encode_headers/1, response_builder/3, to_bytes_tree/2]).
 
 -if(?OTP_RELEASE >= 27).

@@ -1,7 +1,9 @@
 import * as $option from "../../gleam_stdlib/gleam/option.mjs";
 import { None, Some } from "../../gleam_stdlib/gleam/option.mjs";
 import * as $string from "../../gleam_stdlib/gleam/string.mjs";
-import { toList, makeError, isEqual } from "../gleam.mjs";
+import { Ok, Error, toList, makeError, isEqual } from "../gleam.mjs";
+
+const FILEPATH = "src/gleeunit/should.gleam";
 
 export function equal(a, b) {
   let $ = isEqual(a, b);
@@ -10,14 +12,15 @@ export function equal(a, b) {
   } else {
     throw makeError(
       "panic",
+      FILEPATH,
       "gleeunit/should",
-      15,
+      10,
       "equal",
       $string.concat(
         toList([
-          "\n\t",
+          "\n",
           $string.inspect(a),
-          "\n\tshould equal \n\t",
+          "\nshould equal\n",
           $string.inspect(b),
         ]),
       ),
@@ -33,14 +36,15 @@ export function not_equal(a, b) {
   } else {
     throw makeError(
       "panic",
+      FILEPATH,
       "gleeunit/should",
-      29,
+      23,
       "not_equal",
       $string.concat(
         toList([
           "\n",
           $string.inspect(a),
-          "\nshould not equal \n",
+          "\nshould not equal\n",
           $string.inspect(b),
         ]),
       ),
@@ -50,14 +54,15 @@ export function not_equal(a, b) {
 }
 
 export function be_ok(a) {
-  if (a.isOk()) {
+  if (a instanceof Ok) {
     let value = a[0];
     return value;
   } else {
     throw makeError(
       "panic",
+      FILEPATH,
       "gleeunit/should",
-      42,
+      35,
       "be_ok",
       $string.concat(toList(["\n", $string.inspect(a), "\nshould be ok"])),
       {}
@@ -66,14 +71,15 @@ export function be_ok(a) {
 }
 
 export function be_error(a) {
-  if (!a.isOk()) {
+  if (a instanceof Error) {
     let error = a[0];
     return error;
   } else {
     throw makeError(
       "panic",
+      FILEPATH,
       "gleeunit/should",
-      50,
+      42,
       "be_error",
       $string.concat(toList(["\n", $string.inspect(a), "\nshould be error"])),
       {}
@@ -88,8 +94,9 @@ export function be_some(a) {
   } else {
     throw makeError(
       "panic",
+      FILEPATH,
       "gleeunit/should",
-      57,
+      49,
       "be_some",
       $string.concat(toList(["\n", $string.inspect(a), "\nshould be some"])),
       {}
@@ -103,8 +110,9 @@ export function be_none(a) {
   } else {
     throw makeError(
       "panic",
+      FILEPATH,
       "gleeunit/should",
-      64,
+      56,
       "be_none",
       $string.concat(toList(["\n", $string.inspect(a), "\nshould be none"])),
       {}

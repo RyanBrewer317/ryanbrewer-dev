@@ -77,7 +77,7 @@ function get_temp_directory() {
       );
     },
   );
-  if (temp.isOk()) {
+  if (temp instanceof Ok) {
     let temp$1 = temp[0];
     return temp$1;
   } else {
@@ -101,20 +101,20 @@ export function create(temp_file, fun) {
     "",
   );
   let path = $filepath.join(temp, name);
-  let result = (() => {
-    if (kind instanceof File) {
-      return $simplifile.create_file(path);
-    } else {
-      return $simplifile.create_directory(path);
-    }
-  })();
-  if (!result.isOk()) {
-    let error = result[0];
-    return new Error(error);
+  let _block;
+  if (kind instanceof File) {
+    _block = $simplifile.create_file(path);
   } else {
+    _block = $simplifile.create_directory(path);
+  }
+  let result = _block;
+  if (result instanceof Ok) {
     return $exception.defer(
       () => { return $simplifile.delete$(path); },
       () => { return new Ok(fun(path)); },
     );
+  } else {
+    let error = result[0];
+    return new Error(error);
   }
 }

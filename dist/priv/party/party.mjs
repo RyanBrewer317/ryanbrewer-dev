@@ -4,10 +4,13 @@ import {
   Ok,
   Error,
   toList,
+  Empty as $Empty,
   prepend as listPrepend,
   CustomType as $CustomType,
   makeError,
 } from "./gleam.mjs";
+
+const FILEPATH = "src/party.gleam";
 
 export class Unexpected extends $CustomType {
   constructor(pos, error) {
@@ -41,10 +44,8 @@ class Parser extends $CustomType {
 }
 
 export function run(p, src, pos) {
-  {
-    let f = p.parse;
-    return f(src, pos);
-  }
+  let f = p.parse;
+  return f(src, pos);
 }
 
 export function pos() {
@@ -56,7 +57,9 @@ export function satisfy(pred) {
     (source, pos) => {
       let row = pos.row;
       let col = pos.col;
-      if (source.atLeastLength(1)) {
+      if (source instanceof $Empty) {
+        return new Error(new Unexpected(pos, "EOF"));
+      } else {
         let h = source.head;
         let t = source.tail;
         let $ = pred(h);
@@ -69,8 +72,6 @@ export function satisfy(pred) {
         } else {
           return new Error(new Unexpected(pos, h));
         }
-      } else {
-        return new Error(new Unexpected(pos, "EOF"));
       }
     },
   );
@@ -95,29 +96,33 @@ export function either(p, q) {
 export function choice(ps) {
   return new Parser(
     (source, pos) => {
-      if (ps.hasLength(0)) {
+      if (ps instanceof $Empty) {
         throw makeError(
           "panic",
+          FILEPATH,
           "party",
           149,
-          "",
+          "choice",
           "choice doesn't accept an empty list of parsers",
           {}
         )
-      } else if (ps.hasLength(1)) {
-        let p = ps.head;
-        return run(p, source, pos);
       } else {
-        let p = ps.head;
-        let t = ps.tail;
-        let $ = run(p, source, pos);
-        if ($.isOk()) {
-          let x = $[0][0];
-          let r = $[0][1];
-          let pos2 = $[0][2];
-          return new Ok([x, r, pos2]);
+        let $ = ps.tail;
+        if ($ instanceof $Empty) {
+          let p = ps.head;
+          return run(p, source, pos);
         } else {
-          return run(choice(t), source, pos);
+          let p = ps.head;
+          let t = $;
+          let $1 = run(p, source, pos);
+          if ($1 instanceof Ok) {
+            let x = $1[0][0];
+            let r = $1[0][1];
+            let pos2 = $1[0][2];
+            return new Ok([x, r, pos2]);
+          } else {
+            return run(choice(t), source, pos);
+          }
         }
       }
     },
@@ -128,9 +133,7 @@ export function many(p) {
   return new Parser(
     (source, pos) => {
       let $ = run(p, source, pos);
-      if (!$.isOk()) {
-        return new Ok([toList([]), source, pos]);
-      } else {
+      if ($ instanceof Ok) {
         let x = $[0][0];
         let r = $[0][1];
         let pos2 = $[0][2];
@@ -138,6 +141,8 @@ export function many(p) {
           run(many(p), r, pos2),
           (res) => { return [listPrepend(x, res[0]), res[1], res[2]]; },
         );
+      } else {
+        return new Ok([toList([]), source, pos]);
       }
     },
   );
@@ -147,10 +152,7 @@ export function many1(p) {
   return new Parser(
     (source, pos) => {
       let $ = run(p, source, pos);
-      if (!$.isOk()) {
-        let e = $[0];
-        return new Error(e);
-      } else {
+      if ($ instanceof Ok) {
         let x = $[0][0];
         let r = $[0][1];
         let pos2 = $[0][2];
@@ -158,6 +160,9 @@ export function many1(p) {
           run(many(p), r, pos2),
           (res) => { return [listPrepend(x, res[0]), res[1], res[2]]; },
         );
+      } else {
+        let e = $[0];
+        return new Error(e);
       }
     },
   );
@@ -167,7 +172,7 @@ export function map(p, f) {
   return new Parser(
     (source, pos) => {
       let $ = run(p, source, pos);
-      if ($.isOk()) {
+      if ($ instanceof Ok) {
         let x = $[0][0];
         let r = $[0][1];
         let pos2 = $[0][2];
@@ -184,12 +189,12 @@ export function try$(p, f) {
   return new Parser(
     (source, pos) => {
       let $ = run(p, source, pos);
-      if ($.isOk()) {
+      if ($ instanceof Ok) {
         let x = $[0][0];
         let r = $[0][1];
         let pos2 = $[0][2];
         let $1 = f(x);
-        if ($1.isOk()) {
+        if ($1 instanceof Ok) {
           let a = $1[0];
           return new Ok([a, r, pos2]);
         } else {
@@ -208,19 +213,19 @@ export function error_map(p, f) {
   return new Parser(
     (source, pos) => {
       let $ = run(p, source, pos);
-      if ($.isOk()) {
+      if ($ instanceof Ok) {
         let res = $[0];
         return new Ok(res);
       } else {
         let e = $[0];
-        if (e instanceof UserError) {
-          let pos$1 = e.pos;
-          let e$1 = e.error;
-          return new Error(new UserError(pos$1, f(e$1)));
-        } else {
+        if (e instanceof Unexpected) {
           let pos$1 = e.pos;
           let s = e.error;
           return new Error(new Unexpected(pos$1, s));
+        } else {
+          let pos$1 = e.pos;
+          let e$1 = e.error;
+          return new Error(new UserError(pos$1, f(e$1)));
         }
       }
     },
@@ -231,7 +236,7 @@ export function perhaps(p) {
   return new Parser(
     (source, pos) => {
       let $ = run(p, source, pos);
-      if ($.isOk()) {
+      if ($ instanceof Ok) {
         let x = $[0][0];
         let r = $[0][1];
         let pos2 = $[0][2];
@@ -247,12 +252,12 @@ export function not(p) {
   return new Parser(
     (source, pos) => {
       let $ = run(p, source, pos);
-      if ($.isOk()) {
-        if (source.atLeastLength(1)) {
+      if ($ instanceof Ok) {
+        if (source instanceof $Empty) {
+          return new Error(new Unexpected(pos, "EOF"));
+        } else {
           let h = source.head;
           return new Error(new Unexpected(pos, h));
-        } else {
-          return new Error(new Unexpected(pos, "EOF"));
         }
       } else {
         return new Ok([undefined, source, pos]);
@@ -264,7 +269,7 @@ export function not(p) {
 export function end() {
   return new Parser(
     (source, pos) => {
-      if (source.hasLength(0)) {
+      if (source instanceof $Empty) {
         return new Ok([undefined, source, pos]);
       } else {
         let h = source.head;
@@ -282,7 +287,7 @@ export function do$(p, f) {
   return new Parser(
     (source, pos) => {
       let $ = run(p, source, pos);
-      if ($.isOk()) {
+      if ($ instanceof Ok) {
         let x = $[0][0];
         let r = $[0][1];
         let pos2 = $[0][2];
@@ -304,22 +309,26 @@ export function drop(p, f) {
 }
 
 export function all(ps) {
-  if (ps.hasLength(1)) {
-    let p = ps.head;
-    return p;
-  } else if (ps.atLeastLength(1)) {
-    let h = ps.head;
-    let t = ps.tail;
-    return do$(h, (_) => { return all(t); });
-  } else {
+  if (ps instanceof $Empty) {
     throw makeError(
       "panic",
+      FILEPATH,
       "party",
       314,
       "all",
       "all(parsers) doesn't accept an empty list of parsers",
       {}
     )
+  } else {
+    let $ = ps.tail;
+    if ($ instanceof $Empty) {
+      let p = ps.head;
+      return p;
+    } else {
+      let h = ps.head;
+      let t = $;
+      return do$(h, (_) => { return all(t); });
+    }
   }
 }
 
@@ -355,7 +364,7 @@ export function sep(parser, s) {
   return do$(
     perhaps(sep1(parser, s)),
     (res) => {
-      if (res.isOk()) {
+      if (res instanceof Ok) {
         let sequence = res[0];
         return return$(sequence);
       } else {
@@ -367,7 +376,7 @@ export function sep(parser, s) {
 
 export function string(s) {
   let $ = $string.pop_grapheme(s);
-  if ($.isOk()) {
+  if ($ instanceof Ok) {
     let h = $[0][0];
     let t = $[0][1];
     return do$(
@@ -381,7 +390,7 @@ export function string(s) {
 
 export function go(p, src) {
   let $ = run(p, $string.to_graphemes(src), new Position(1, 1));
-  if ($.isOk()) {
+  if ($ instanceof Ok) {
     let x = $[0][0];
     return new Ok(x);
   } else {
@@ -439,7 +448,7 @@ export function whitespace1() {
 export function fail() {
   return new Parser(
     (source, pos) => {
-      if (source.hasLength(0)) {
+      if (source instanceof $Empty) {
         return new Error(new Unexpected(pos, "EOF"));
       } else {
         let h = source.head;
@@ -477,9 +486,7 @@ export function stateful_many(state, p) {
   return new Parser(
     (source, pos) => {
       let $ = run(p, source, pos);
-      if (!$.isOk()) {
-        return new Ok([[toList([]), state], source, pos]);
-      } else {
+      if ($ instanceof Ok) {
         let f = $[0][0];
         let r = $[0][1];
         let pos2 = $[0][2];
@@ -489,13 +496,15 @@ export function stateful_many(state, p) {
         return $result.map(
           run(stateful_many(s, p), r, pos2),
           (res) => {
-            let rest = res[0][0];
-            let s2 = res[0][1];
             let r2 = res[1];
             let pos3 = res[2];
+            let rest = res[0][0];
+            let s2 = res[0][1];
             return [[listPrepend(x, rest), s2], r2, pos3];
           },
         );
+      } else {
+        return new Ok([[toList([]), state], source, pos]);
       }
     },
   );
@@ -505,10 +514,7 @@ export function stateful_many1(state, p) {
   return new Parser(
     (source, pos) => {
       let $ = run(p, source, pos);
-      if (!$.isOk()) {
-        let e = $[0];
-        return new Error(e);
-      } else {
+      if ($ instanceof Ok) {
         let f = $[0][0];
         let r = $[0][1];
         let pos2 = $[0][2];
@@ -518,13 +524,16 @@ export function stateful_many1(state, p) {
         return $result.map(
           run(stateful_many(s, p), r, pos2),
           (res) => {
-            let rest = res[0][0];
-            let s$1 = res[0][1];
             let r2 = res[1];
             let pos3 = res[2];
+            let rest = res[0][0];
+            let s$1 = res[0][1];
             return [[listPrepend(x, rest), s$1], r2, pos3];
           },
         );
+      } else {
+        let e = $[0];
+        return new Error(e);
       }
     },
   );

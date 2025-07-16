@@ -1,12 +1,12 @@
 -module(glisten@transport).
 -compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch]).
-
+-define(FILEPATH, "src/glisten/transport.gleam").
 -export([controlling_process/3, listen/3, accept_timeout/3, accept/2, handshake/2, receive_timeout/4, 'receive'/3, send/3, close/2, shutdown/2, set_opts/3, negotiated_protocol/2, decode_ip/0, peername/2, socket_info/1, get_socket_opts/3, set_buffer_size/2, sockname/2]).
 -export_type([transport/0]).
 
 -type transport() :: tcp | ssl.
 
--file("/home/alex/gleams/glisten/src/glisten/transport.gleam", 18).
+-file("src/glisten/transport.gleam", 18).
 -spec controlling_process(
     transport(),
     glisten@socket:socket(),
@@ -21,7 +21,7 @@ controlling_process(Transport, Socket, Pid) ->
             glisten_ssl_ffi:controlling_process(Socket, Pid)
     end.
 
--file("/home/alex/gleams/glisten/src/glisten/transport.gleam", 29).
+-file("src/glisten/transport.gleam", 29).
 -spec listen(transport(), integer(), list(glisten@socket@options:tcp_option())) -> {ok,
         glisten@socket:listen_socket()} |
     {error, glisten@socket:socket_reason()}.
@@ -34,7 +34,7 @@ listen(Transport, Port, Opts) ->
             glisten@ssl:listen(Port, Opts)
     end.
 
--file("/home/alex/gleams/glisten/src/glisten/transport.gleam", 40).
+-file("src/glisten/transport.gleam", 40).
 -spec accept_timeout(transport(), glisten@socket:listen_socket(), integer()) -> {ok,
         glisten@socket:socket()} |
     {error, glisten@socket:socket_reason()}.
@@ -47,7 +47,7 @@ accept_timeout(Transport, Socket, Timeout) ->
             ssl:transport_accept(Socket, Timeout)
     end.
 
--file("/home/alex/gleams/glisten/src/glisten/transport.gleam", 51).
+-file("src/glisten/transport.gleam", 51).
 -spec accept(transport(), glisten@socket:listen_socket()) -> {ok,
         glisten@socket:socket()} |
     {error, glisten@socket:socket_reason()}.
@@ -60,7 +60,7 @@ accept(Transport, Socket) ->
             ssl:transport_accept(Socket)
     end.
 
--file("/home/alex/gleams/glisten/src/glisten/transport.gleam", 61).
+-file("src/glisten/transport.gleam", 61).
 -spec handshake(transport(), glisten@socket:socket()) -> {ok,
         glisten@socket:socket()} |
     {error, nil}.
@@ -73,7 +73,7 @@ handshake(Transport, Socket) ->
             ssl:handshake(Socket)
     end.
 
--file("/home/alex/gleams/glisten/src/glisten/transport.gleam", 68).
+-file("src/glisten/transport.gleam", 68).
 -spec receive_timeout(
     transport(),
     glisten@socket:socket(),
@@ -89,7 +89,7 @@ receive_timeout(Transport, Socket, Amount, Timeout) ->
             ssl:recv(Socket, Amount, Timeout)
     end.
 
--file("/home/alex/gleams/glisten/src/glisten/transport.gleam", 80).
+-file("src/glisten/transport.gleam", 80).
 -spec 'receive'(transport(), glisten@socket:socket(), integer()) -> {ok,
         bitstring()} |
     {error, glisten@socket:socket_reason()}.
@@ -102,7 +102,7 @@ receive_timeout(Transport, Socket, Amount, Timeout) ->
             ssl:recv(Socket, Amount)
     end.
 
--file("/home/alex/gleams/glisten/src/glisten/transport.gleam", 91).
+-file("src/glisten/transport.gleam", 91).
 -spec send(transport(), glisten@socket:socket(), gleam@bytes_tree:bytes_tree()) -> {ok,
         nil} |
     {error, glisten@socket:socket_reason()}.
@@ -115,7 +115,7 @@ send(Transport, Socket, Data) ->
             glisten_ssl_ffi:send(Socket, Data)
     end.
 
--file("/home/alex/gleams/glisten/src/glisten/transport.gleam", 102).
+-file("src/glisten/transport.gleam", 102).
 -spec close(transport(), glisten@socket:socket()) -> {ok, nil} |
     {error, glisten@socket:socket_reason()}.
 close(Transport, Socket) ->
@@ -127,7 +127,7 @@ close(Transport, Socket) ->
             glisten_ssl_ffi:close(Socket)
     end.
 
--file("/home/alex/gleams/glisten/src/glisten/transport.gleam", 109).
+-file("src/glisten/transport.gleam", 109).
 -spec shutdown(transport(), glisten@socket:socket()) -> {ok, nil} |
     {error, glisten@socket:socket_reason()}.
 shutdown(Transport, Socket) ->
@@ -139,7 +139,7 @@ shutdown(Transport, Socket) ->
             glisten@ssl:shutdown(Socket)
     end.
 
--file("/home/alex/gleams/glisten/src/glisten/transport.gleam", 119).
+-file("src/glisten/transport.gleam", 119).
 -spec set_opts(
     transport(),
     glisten@socket:socket(),
@@ -154,7 +154,7 @@ set_opts(Transport, Socket, Opts) ->
             glisten@ssl:set_opts(Socket, Opts)
     end.
 
--file("/home/alex/gleams/glisten/src/glisten/transport.gleam", 130).
+-file("src/glisten/transport.gleam", 130).
 -spec negotiated_protocol(transport(), glisten@socket:socket()) -> {ok,
         binary()} |
     {error, binary()}.
@@ -167,7 +167,7 @@ negotiated_protocol(Transport, Socket) ->
             glisten_ssl_ffi:negotiated_protocol(Socket)
     end.
 
--file("/home/alex/gleams/glisten/src/glisten/transport.gleam", 140).
+-file("src/glisten/transport.gleam", 140).
 -spec decode_ipv4() -> gleam@dynamic@decode:decoder(glisten@socket@options:ip_address()).
 decode_ipv4() ->
     gleam@dynamic@decode:field(
@@ -198,7 +198,7 @@ decode_ipv4() ->
         end
     ).
 
--file("/home/alex/gleams/glisten/src/glisten/transport.gleam", 148).
+-file("src/glisten/transport.gleam", 148).
 -spec decode_ipv6() -> gleam@dynamic@decode:decoder(glisten@socket@options:ip_address()).
 decode_ipv6() ->
     gleam@dynamic@decode:field(
@@ -311,12 +311,12 @@ decode_ipv6() ->
         end
     ).
 
--file("/home/alex/gleams/glisten/src/glisten/transport.gleam", 168).
+-file("src/glisten/transport.gleam", 168).
 -spec decode_ip() -> gleam@dynamic@decode:decoder(glisten@socket@options:ip_address()).
 decode_ip() ->
     gleam@dynamic@decode:one_of(decode_ipv6(), [decode_ipv4()]).
 
--file("/home/alex/gleams/glisten/src/glisten/transport.gleam", 172).
+-file("src/glisten/transport.gleam", 172).
 -spec peername(transport(), glisten@socket:socket()) -> {ok,
         {glisten@socket@options:ip_address(), integer()}} |
     {error, nil}.
@@ -328,7 +328,7 @@ peername(Transport, Socket) ->
         ssl ->
             ssl:peername(Socket)
     end,
-    gleam@result:then(
+    gleam@result:'try'(
         _pipe,
         fun(Pair) ->
             {Ip_address, Port} = Pair,
@@ -338,12 +338,12 @@ peername(Transport, Socket) ->
         end
     ).
 
--file("/home/alex/gleams/glisten/src/glisten/transport.gleam", 192).
+-file("src/glisten/transport.gleam", 192).
 -spec socket_info(glisten@socket:socket()) -> gleam@dict:dict(gleam@erlang@atom:atom_(), gleam@dynamic:dynamic_()).
 socket_info(Socket) ->
     socket:info(Socket).
 
--file("/home/alex/gleams/glisten/src/glisten/transport.gleam", 194).
+-file("src/glisten/transport.gleam", 194).
 -spec get_socket_opts(
     transport(),
     glisten@socket:socket(),
@@ -359,7 +359,7 @@ get_socket_opts(Transport, Socket, Opts) ->
             ssl:getopts(Socket, Opts)
     end.
 
--file("/home/alex/gleams/glisten/src/glisten/transport.gleam", 205).
+-file("src/glisten/transport.gleam", 205).
 -spec set_buffer_size(transport(), glisten@socket:socket()) -> {ok, nil} |
     {error, nil}.
 set_buffer_size(Transport, Socket) ->
@@ -368,7 +368,7 @@ set_buffer_size(Transport, Socket) ->
         Socket,
         [erlang:binary_to_atom(<<"recbuf"/utf8>>)]
     ),
-    _pipe@3 = gleam@result:then(_pipe, fun(P) -> case P of
+    _pipe@3 = gleam@result:'try'(_pipe, fun(P) -> case P of
                 [{_, Value}] ->
                     _pipe@1 = Value,
                     _pipe@2 = gleam@dynamic@decode:run(
@@ -380,12 +380,12 @@ set_buffer_size(Transport, Socket) ->
                 _ ->
                     {error, nil}
             end end),
-    gleam@result:then(
+    gleam@result:'try'(
         _pipe@3,
         fun(Value@1) -> set_opts(Transport, Socket, [{buffer, Value@1}]) end
     ).
 
--file("/home/alex/gleams/glisten/src/glisten/transport.gleam", 221).
+-file("src/glisten/transport.gleam", 221).
 -spec sockname(transport(), glisten@socket:listen_socket()) -> {ok,
         {glisten@socket@options:ip_address(), integer()}} |
     {error, glisten@socket:socket_reason()}.
@@ -397,7 +397,7 @@ sockname(Transport, Socket) ->
         ssl ->
             ssl:sockname(Socket)
     end,
-    gleam@result:then(
+    gleam@result:'try'(
         _pipe,
         fun(Pair) ->
             {Maybe_ip, Port} = Pair,

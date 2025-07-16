@@ -57,34 +57,52 @@ export function approximate(duration) {
   let millisecond = microsecond * 1000;
   let $ = undefined;
   if (s < 0) {
-    let $1 = (() => {
-      let _pipe = new Duration(- s, - ns);
-      let _pipe$1 = normalise(_pipe);
-      return approximate(_pipe$1);
-    })();
+    let _block;
+    let _pipe = new Duration(- s, - ns);
+    let _pipe$1 = normalise(_pipe);
+    _block = approximate(_pipe$1);
+    let $1 = _block;
     let amount = $1[0];
     let unit = $1[1];
     return [- amount, unit];
-  } else if (s >= year) {
-    return [divideInt(s, year), new Year()];
-  } else if (s >= month) {
-    return [divideInt(s, month), new Month()];
-  } else if (s >= week) {
-    return [divideInt(s, week), new Week()];
-  } else if (s >= day) {
-    return [divideInt(s, day), new Day()];
-  } else if (s >= hour) {
-    return [divideInt(s, hour), new Hour()];
-  } else if (s >= minute) {
-    return [divideInt(s, minute), new Minute()];
-  } else if (s > 0) {
-    return [s, new Second()];
-  } else if (ns >= millisecond) {
-    return [divideInt(ns, millisecond), new Millisecond()];
-  } else if (ns >= microsecond) {
-    return [divideInt(ns, microsecond), new Microsecond()];
   } else {
-    return [ns, new Nanosecond()];
+    if (s >= year) {
+      return [divideInt(s, year), new Year()];
+    } else {
+      if (s >= month) {
+        return [divideInt(s, month), new Month()];
+      } else {
+        if (s >= week) {
+          return [divideInt(s, week), new Week()];
+        } else {
+          if (s >= day) {
+            return [divideInt(s, day), new Day()];
+          } else {
+            if (s >= hour) {
+              return [divideInt(s, hour), new Hour()];
+            } else {
+              if (s >= minute) {
+                return [divideInt(s, minute), new Minute()];
+              } else {
+                if (s > 0) {
+                  return [s, new Second()];
+                } else {
+                  if (ns >= millisecond) {
+                    return [divideInt(ns, millisecond), new Millisecond()];
+                  } else {
+                    if (ns >= microsecond) {
+                      return [divideInt(ns, microsecond), new Microsecond()];
+                    } else {
+                      return [ns, new Nanosecond()];
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
   }
 }
 
@@ -166,18 +184,20 @@ export function to_iso8601_string(duration) {
       return (out + $int.to_string(value)) + unit;
     }
   };
-  let output = (() => {
-    let _pipe = "P";
-    let _pipe$1 = add$1(_pipe, days, "D");
-    let _pipe$2 = $string.append(_pipe$1, "T");
-    let _pipe$3 = add$1(_pipe$2, hours$1, "H");
-    return add$1(_pipe$3, minutes$1, "M");
-  })();
+  let _block;
+  let _pipe = "P";
+  let _pipe$1 = add$1(_pipe, days, "D");
+  let _pipe$2 = $string.append(_pipe$1, "T");
+  let _pipe$3 = add$1(_pipe$2, hours$1, "H");
+  _block = add$1(_pipe$3, minutes$1, "M");
+  let output = _block;
   let $3 = duration.nanoseconds;
-  if (seconds$1 === 0 && $3 === 0) {
-    return output;
-  } else if ($3 === 0) {
-    return (output + $int.to_string(seconds$1)) + "S";
+  if ($3 === 0) {
+    if (seconds$1 === 0) {
+      return output;
+    } else {
+      return (output + $int.to_string(seconds$1)) + "S";
+    }
   } else {
     let f = nanosecond_digits(duration.nanoseconds, 0, "");
     return (((output + $int.to_string(seconds$1)) + ".") + f) + "S";

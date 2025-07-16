@@ -13,10 +13,14 @@ import {
   Ok,
   Error,
   toList,
+  Empty as $Empty,
+  NonEmpty as $NonEmpty,
   prepend as listPrepend,
   CustomType as $CustomType,
   makeError,
 } from "../gleam.mjs";
+
+const FILEPATH = "src/lustre/ssg.gleam";
 
 class Config extends $CustomType {
   constructor(out_dir, static_dir, static_assets, routes, use_index_routes) {
@@ -118,14 +122,21 @@ export function use_index_routes(config) {
 
 function routify(path) {
   let $ = $regexp.from_string("\\s+");
-  if (!$.isOk()) {
+  if (!($ instanceof Ok)) {
     throw makeError(
       "let_assert",
+      FILEPATH,
       "lustre/ssg",
-      459,
+      458,
       "routify",
       "Pattern match failed, no pattern matched the value.",
-      { value: $ }
+      {
+        value: $,
+        start: 16849,
+        end: 16903,
+        pattern_start: 16860,
+        pattern_end: 16874
+      }
     )
   }
   let whitespace = $[0];
@@ -173,7 +184,8 @@ export function add_static_xml(config, path, page) {
 }
 
 export function add_dynamic_route(config, path, data, page) {
-  let route = (() => {
+  let _block;
+  {
     let path$1 = routify(path);
     let pages = $dict.map_values(
       data,
@@ -181,8 +193,9 @@ export function add_dynamic_route(config, path, data, page) {
         return $element.map(page(data), (_) => { return undefined; });
       },
     );
-    return new Dynamic(path$1, pages);
-  })();
+    _block = new Dynamic(path$1, pages);
+  }
+  let route = _block;
   let _record = config;
   return new Config(
     _record.out_dir,
@@ -216,36 +229,53 @@ function trim_slash(path) {
 
 function last_segment(path) {
   let $ = $regexp.from_string("(.*/)+?(.+)");
-  if (!$.isOk()) {
+  if (!($ instanceof Ok)) {
     throw makeError(
       "let_assert",
+      FILEPATH,
       "lustre/ssg",
-      474,
+      473,
       "last_segment",
       "Pattern match failed, no pattern matched the value.",
-      { value: $ }
+      {
+        value: $,
+        start: 17179,
+        end: 17238,
+        pattern_start: 17190,
+        pattern_end: 17202
+      }
     )
   }
   let segments = $[0];
   let $1 = $regexp.scan(segments, path);
   if (
-    !$1.hasLength(1) ||
+    $1 instanceof $Empty ||
+    $1.tail instanceof $NonEmpty ||
     !($1.head instanceof $regexp.Match) ||
-    !$1.head.submatches.hasLength(2) ||
-    !($1.head.submatches.head instanceof Some) ||
-    !($1.head.submatches.tail.head instanceof Some)
+    $1.head.submatches instanceof $Empty ||
+    $1.head.submatches.tail instanceof $Empty ||
+    $1.head.submatches.tail.tail instanceof $NonEmpty ||
+    !($1.head.submatches.tail.head instanceof Some) ||
+    !($1.head.submatches.head instanceof Some)
   ) {
     throw makeError(
       "let_assert",
+      FILEPATH,
       "lustre/ssg",
-      475,
+      474,
       "last_segment",
       "Pattern match failed, no pattern matched the value.",
-      { value: $1 }
+      {
+        value: $1,
+        start: 17241,
+        end: 17353,
+        pattern_start: 17252,
+        pattern_end: 17319
+      }
     )
   }
-  let leading = $1.head.submatches.head[0];
   let last = $1.head.submatches.tail.head[0];
+  let leading = $1.head.submatches.head[0];
   return [leading, last];
 }
 
@@ -261,14 +291,14 @@ function do_build(config) {
     (temp) => {
       return $result.try$(
         (() => {
-          let _pipe = (() => {
-            if (static_dir instanceof Some) {
-              let path = static_dir[0];
-              return $simplifile.copy_directory(path, temp);
-            } else {
-              return $simplifile.create_directory_all(temp);
-            }
-          })();
+          let _block;
+          if (static_dir instanceof Some) {
+            let path = static_dir[0];
+            _block = $simplifile.copy_directory(path, temp);
+          } else {
+            _block = $simplifile.create_directory_all(temp);
+          }
+          let _pipe = _block;
           return $result.map_error(
             _pipe,
             (var0) => { return new CannotCreateTempDirectory(var0); },
@@ -306,57 +336,62 @@ function do_build(config) {
                   return $list.try_map(
                     routes$1,
                     (route) => {
-                      if (route instanceof Static && route.path === "/") {
-                        let el = route.page;
-                        let path = temp + "/index.html";
-                        let _pipe = el;
-                        let _pipe$1 = $element.to_document_string(_pipe);
-                        let _pipe$2 = ((_capture) => {
-                          return $simplifile.write(path, _capture);
-                        })(_pipe$1);
-                        return $result.map_error(
-                          _pipe$2,
-                          (_capture) => {
-                            return new CannotGenerateRoute(_capture, path);
-                          },
-                        );
-                      } else if (route instanceof Static && (use_index_routes$1)) {
-                        let path = route.path;
-                        let el = route.page;
-                        let $ = $simplifile.create_directory_all(temp + path);
-                        
-                        let path$1 = (temp + trim_slash(path)) + "/index.html";
-                        let _pipe = el;
-                        let _pipe$1 = $element.to_document_string(_pipe);
-                        let _pipe$2 = ((_capture) => {
-                          return $simplifile.write(path$1, _capture);
-                        })(_pipe$1);
-                        return $result.map_error(
-                          _pipe$2,
-                          (_capture) => {
-                            return new CannotGenerateRoute(_capture, path$1);
-                          },
-                        );
-                      } else if (route instanceof Static) {
-                        let path = route.path;
-                        let el = route.page;
-                        let $ = last_segment(path);
-                        let path$1 = $[0];
-                        let name = $[1];
-                        let $1 = $simplifile.create_directory_all(temp + path$1);
-                        
-                        let path$2 = (((temp + trim_slash(path$1)) + "/") + name) + ".html";
-                        let _pipe = el;
-                        let _pipe$1 = $element.to_document_string(_pipe);
-                        let _pipe$2 = ((_capture) => {
-                          return $simplifile.write(path$2, _capture);
-                        })(_pipe$1);
-                        return $result.map_error(
-                          _pipe$2,
-                          (_capture) => {
-                            return new CannotGenerateRoute(_capture, path$2);
-                          },
-                        );
+                      if (route instanceof Static) {
+                        let $ = route.path;
+                        if ($ === "/") {
+                          let el = route.page;
+                          let path = temp + "/index.html";
+                          let _pipe = el;
+                          let _pipe$1 = $element.to_document_string(_pipe);
+                          let _pipe$2 = ((_capture) => {
+                            return $simplifile.write(path, _capture);
+                          })(_pipe$1);
+                          return $result.map_error(
+                            _pipe$2,
+                            (_capture) => {
+                              return new CannotGenerateRoute(_capture, path);
+                            },
+                          );
+                        } else if (use_index_routes$1) {
+                          let path = $;
+                          let el = route.page;
+                          let $1 = $simplifile.create_directory_all(temp + path);
+                          
+                          let path$1 = (temp + trim_slash(path)) + "/index.html";
+                          let _pipe = el;
+                          let _pipe$1 = $element.to_document_string(_pipe);
+                          let _pipe$2 = ((_capture) => {
+                            return $simplifile.write(path$1, _capture);
+                          })(_pipe$1);
+                          return $result.map_error(
+                            _pipe$2,
+                            (_capture) => {
+                              return new CannotGenerateRoute(_capture, path$1);
+                            },
+                          );
+                        } else {
+                          let path = $;
+                          let el = route.page;
+                          let $1 = last_segment(path);
+                          let path$1 = $1[0];
+                          let name = $1[1];
+                          let $2 = $simplifile.create_directory_all(
+                            temp + path$1,
+                          );
+                          
+                          let path$2 = (((temp + trim_slash(path$1)) + "/") + name) + ".html";
+                          let _pipe = el;
+                          let _pipe$1 = $element.to_document_string(_pipe);
+                          let _pipe$2 = ((_capture) => {
+                            return $simplifile.write(path$2, _capture);
+                          })(_pipe$1);
+                          return $result.map_error(
+                            _pipe$2,
+                            (_capture) => {
+                              return new CannotGenerateRoute(_capture, path$2);
+                            },
+                          );
+                        }
                       } else if (route instanceof Dynamic) {
                         let path = route.path;
                         let pages = route.pages;
@@ -417,10 +452,10 @@ function do_build(config) {
                 (_) => {
                   return $result.try$(
                     (() => {
-                      let $ = (() => {
-                        let _pipe = $simplifile.is_directory(out_dir$1);
-                        return $result.unwrap(_pipe, false);
-                      })();
+                      let $ = $result.unwrap(
+                        $simplifile.is_directory(out_dir$1),
+                        false,
+                      );
                       if ($) {
                         let _pipe = $simplifile.delete$(out_dir$1);
                         return $result.map_error(
@@ -461,7 +496,7 @@ function do_build(config) {
 
 export function build(config) {
   let $ = do_build(config);
-  if ($.isOk()) {
+  if ($ instanceof Ok) {
     let result = $[0];
     return result;
   } else {

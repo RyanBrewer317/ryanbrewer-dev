@@ -1,6 +1,6 @@
 -module(wisp@testing).
 -compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch]).
-
+-define(FILEPATH, "src/wisp/testing.gleam").
 -export([string_body/1, bit_array_body/1, request/4, get/2, post/3, post_form/3, post_json/3, head/2, put/3, put_form/3, put_json/3, delete/3, delete_form/3, delete_json/3, trace/2, connect/2, options/2, patch/3, patch_form/3, patch_json/3, set_cookie/4]).
 
 -if(?OTP_RELEASE >= 27).
@@ -31,32 +31,40 @@ string_body(Response) ->
 
         {bytes, Bytes} ->
             Data = erlang:list_to_bitstring(Bytes),
-            _assert_subject = gleam@bit_array:to_string(Data),
-            {ok, String} = case _assert_subject of
-                {ok, _} -> _assert_subject;
+            String@1 = case gleam@bit_array:to_string(Data) of
+                {ok, String} -> String;
                 _assert_fail ->
                     erlang:error(#{gleam_error => let_assert,
                                 message => <<"Pattern match failed, no pattern matched the value."/utf8>>,
-                                value => _assert_fail,
+                                file => <<?FILEPATH/utf8>>,
                                 module => <<"wisp/testing"/utf8>>,
                                 function => <<"string_body"/utf8>>,
-                                line => 233})
+                                line => 233,
+                                value => _assert_fail,
+                                start => 7349,
+                                'end' => 7398,
+                                pattern_start => 7360,
+                                pattern_end => 7370})
             end,
-            String;
+            String@1;
 
         {file, Path} ->
-            _assert_subject@1 = simplifile:read(Path),
-            {ok, Contents} = case _assert_subject@1 of
-                {ok, _} -> _assert_subject@1;
+            Contents@1 = case simplifile:read(Path) of
+                {ok, Contents} -> Contents;
                 _assert_fail@1 ->
                     erlang:error(#{gleam_error => let_assert,
                                 message => <<"Pattern match failed, no pattern matched the value."/utf8>>,
-                                value => _assert_fail@1,
+                                file => <<?FILEPATH/utf8>>,
                                 module => <<"wisp/testing"/utf8>>,
                                 function => <<"string_body"/utf8>>,
-                                line => 237})
+                                line => 237,
+                                value => _assert_fail@1,
+                                start => 7444,
+                                'end' => 7491,
+                                pattern_start => 7455,
+                                pattern_end => 7467})
             end,
-            Contents
+            Contents@1
     end.
 
 -file("src/wisp/testing.gleam", 250).
@@ -81,18 +89,22 @@ bit_array_body(Response) ->
             erlang:list_to_bitstring(gleam_stdlib:wrap_list(Tree@1));
 
         {file, Path} ->
-            _assert_subject = simplifile_erl:read_bits(Path),
-            {ok, Contents} = case _assert_subject of
-                {ok, _} -> _assert_subject;
+            Contents@1 = case simplifile_erl:read_bits(Path) of
+                {ok, Contents} -> Contents;
                 _assert_fail ->
                     erlang:error(#{gleam_error => let_assert,
                                 message => <<"Pattern match failed, no pattern matched the value."/utf8>>,
-                                value => _assert_fail,
+                                file => <<?FILEPATH/utf8>>,
                                 module => <<"wisp/testing"/utf8>>,
                                 function => <<"bit_array_body"/utf8>>,
-                                line => 256})
+                                line => 256,
+                                value => _assert_fail,
+                                start => 7935,
+                                'end' => 7987,
+                                pattern_start => 7946,
+                                pattern_end => 7958})
             end,
-            Contents
+            Contents@1
     end.
 
 -file("src/wisp/testing.gleam", 29).

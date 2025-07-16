@@ -1,4 +1,4 @@
-import { Ok, Error, CustomType as $CustomType } from "../../gleam.mjs";
+import { Ok, Error, CustomType as $CustomType, remainderInt } from "../../gleam.mjs";
 import * as $duration from "../../gleam/time/duration.mjs";
 import { local_time_offset_seconds } from "../../gleam_time_ffi.mjs";
 
@@ -133,6 +133,72 @@ export function month_from_int(month) {
   } else {
     return new Error(undefined);
   }
+}
+
+export function is_leap_year(year) {
+  let $ = (remainderInt(year, 400)) === 0;
+  if ($) {
+    return true;
+  } else {
+    let $1 = (remainderInt(year, 100)) === 0;
+    if ($1) {
+      return false;
+    } else {
+      return (remainderInt(year, 4)) === 0;
+    }
+  }
+}
+
+export function is_valid_date(date) {
+  let year = date.year;
+  let month = date.month;
+  let day = date.day;
+  let $ = day < 1;
+  if ($) {
+    return false;
+  } else {
+    if (month instanceof January) {
+      return day <= 31;
+    } else if (month instanceof February) {
+      let _block;
+      let $1 = is_leap_year(year);
+      if ($1) {
+        _block = 29;
+      } else {
+        _block = 28;
+      }
+      let max_february_days = _block;
+      return day <= max_february_days;
+    } else if (month instanceof March) {
+      return day <= 31;
+    } else if (month instanceof April) {
+      return day <= 30;
+    } else if (month instanceof May) {
+      return day <= 31;
+    } else if (month instanceof June) {
+      return day <= 30;
+    } else if (month instanceof July) {
+      return day <= 31;
+    } else if (month instanceof August) {
+      return day <= 31;
+    } else if (month instanceof September) {
+      return day <= 30;
+    } else if (month instanceof October) {
+      return day <= 31;
+    } else if (month instanceof November) {
+      return day <= 30;
+    } else {
+      return day <= 31;
+    }
+  }
+}
+
+export function is_valid_time_of_day(time) {
+  let hours = time.hours;
+  let minutes = time.minutes;
+  let seconds = time.seconds;
+  let nanoseconds = time.nanoseconds;
+  return (((((((hours >= 0) && (hours <= 23)) && (minutes >= 0)) && (minutes <= 59)) && (seconds >= 0)) && (seconds <= 59)) && (nanoseconds >= 0)) && (nanoseconds <= 999_999_999);
 }
 
 export const utc_offset = $duration.empty;

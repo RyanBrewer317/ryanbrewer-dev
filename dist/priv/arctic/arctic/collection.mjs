@@ -12,7 +12,7 @@ import * as $snag from "../../snag/snag.mjs";
 import * as $arctic from "../arctic.mjs";
 import { Collection, RawPage } from "../arctic.mjs";
 import * as $parse from "../arctic/parse.mjs";
-import { Ok, toList, prepend as listPrepend } from "../gleam.mjs";
+import { Ok, toList, Empty as $Empty, prepend as listPrepend } from "../gleam.mjs";
 
 export function with_parser(c, parser) {
   let _record = c;
@@ -29,24 +29,33 @@ export function with_parser(c, parser) {
 
 export function default_parser() {
   return (src_name, src) => {
-    let parser = (() => {
-      let _pipe = $parse.new$(undefined);
-      let _pipe$1 = $parse.add_inline_rule(
-        _pipe,
-        "*",
-        "*",
-        $parse.wrap_inline($html.i),
-      );
-      let _pipe$2 = $parse.add_prefix_rule(
-        _pipe$1,
-        "#",
-        $parse.wrap_prefix($html.h1),
-      );
-      return $parse.add_static_component(
-        _pipe$2,
-        "image",
-        (args, label, data) => {
-          if (args.hasLength(1)) {
+    let _block;
+    let _pipe = $parse.new$(undefined);
+    let _pipe$1 = $parse.add_inline_rule(
+      _pipe,
+      "*",
+      "*",
+      $parse.wrap_inline($html.i),
+    );
+    let _pipe$2 = $parse.add_prefix_rule(
+      _pipe$1,
+      "#",
+      $parse.wrap_prefix($html.h1),
+    );
+    _block = $parse.add_static_component(
+      _pipe$2,
+      "image",
+      (args, label, data) => {
+        if (args instanceof $Empty) {
+          let pos = $parse.get_pos(data);
+          return $snag.error(
+            (((("bad @image arguments `" + $string.join(args, ", ")) + "` at ") + $int.to_string(
+              pos.line,
+            )) + ":") + $int.to_string(pos.column),
+          );
+        } else {
+          let $ = args.tail;
+          if ($ instanceof $Empty) {
             let url = args.head;
             return new Ok(
               [
@@ -62,9 +71,10 @@ export function default_parser() {
               )) + ":") + $int.to_string(pos.column),
             );
           }
-        },
-      );
-    })();
+        }
+      },
+    );
+    let parser = _block;
     return $parse.parse(parser, src_name, src);
   };
 }

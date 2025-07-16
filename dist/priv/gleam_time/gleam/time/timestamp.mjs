@@ -9,6 +9,7 @@ import {
   Ok,
   Error,
   toList,
+  Empty as $Empty,
   prepend as listPrepend,
   CustomType as $CustomType,
   remainderInt,
@@ -84,7 +85,7 @@ function duration_to_minutes(duration) {
 
 function modulo(n, m) {
   let $ = $int.modulo(n, m);
-  if ($.isOk()) {
+  if ($ instanceof Ok) {
     let n$1 = $[0];
     return n$1;
   } else {
@@ -99,14 +100,14 @@ function floored_div(numerator, denominator) {
 
 function to_civil(minutes) {
   let raw_day = floored_div(minutes, (60.0 * 24.0)) + 719_468;
-  let era = (() => {
-    let $ = raw_day >= 0;
-    if ($) {
-      return divideInt(raw_day, 146_097);
-    } else {
-      return divideInt((raw_day - 146_096), 146_097);
-    }
-  })();
+  let _block;
+  let $ = raw_day >= 0;
+  if ($) {
+    _block = divideInt(raw_day, 146_097);
+  } else {
+    _block = divideInt((raw_day - 146_096), 146_097);
+  }
+  let era = _block;
   let day_of_era = raw_day - era * 146_097;
   let year_of_era = divideInt(
     (((day_of_era - (divideInt(day_of_era, 1460))) + (divideInt(
@@ -121,23 +122,23 @@ function to_civil(minutes) {
     4
   ))) - (divideInt(year_of_era, 100)));
   let mp = divideInt((5 * day_of_year + 2), 153);
-  let month = (() => {
-    let $ = mp < 10;
-    if ($) {
-      return mp + 3;
-    } else {
-      return mp - 9;
-    }
-  })();
+  let _block$1;
+  let $1 = mp < 10;
+  if ($1) {
+    _block$1 = mp + 3;
+  } else {
+    _block$1 = mp - 9;
+  }
+  let month = _block$1;
   let day = (day_of_year - (divideInt((153 * mp + 2), 5))) + 1;
-  let year$1 = (() => {
-    let $ = month <= 2;
-    if ($) {
-      return year + 1;
-    } else {
-      return year;
-    }
-  })();
+  let _block$2;
+  let $2 = month <= 2;
+  if ($2) {
+    _block$2 = year + 1;
+  } else {
+    _block$2 = year;
+  }
+  let year$1 = _block$2;
   return [year$1, month, day];
 }
 
@@ -163,33 +164,33 @@ export function to_calendar(timestamp, offset) {
   let hours = $[3];
   let minutes = $[4];
   let seconds = $[5];
-  let month$1 = (() => {
-    if (month === 1) {
-      return new $calendar.January();
-    } else if (month === 2) {
-      return new $calendar.February();
-    } else if (month === 3) {
-      return new $calendar.March();
-    } else if (month === 4) {
-      return new $calendar.April();
-    } else if (month === 5) {
-      return new $calendar.May();
-    } else if (month === 6) {
-      return new $calendar.June();
-    } else if (month === 7) {
-      return new $calendar.July();
-    } else if (month === 8) {
-      return new $calendar.August();
-    } else if (month === 9) {
-      return new $calendar.September();
-    } else if (month === 10) {
-      return new $calendar.October();
-    } else if (month === 11) {
-      return new $calendar.November();
-    } else {
-      return new $calendar.December();
-    }
-  })();
+  let _block;
+  if (month === 1) {
+    _block = new $calendar.January();
+  } else if (month === 2) {
+    _block = new $calendar.February();
+  } else if (month === 3) {
+    _block = new $calendar.March();
+  } else if (month === 4) {
+    _block = new $calendar.April();
+  } else if (month === 5) {
+    _block = new $calendar.May();
+  } else if (month === 6) {
+    _block = new $calendar.June();
+  } else if (month === 7) {
+    _block = new $calendar.July();
+  } else if (month === 8) {
+    _block = new $calendar.August();
+  } else if (month === 9) {
+    _block = new $calendar.September();
+  } else if (month === 10) {
+    _block = new $calendar.October();
+  } else if (month === 11) {
+    _block = new $calendar.November();
+  } else {
+    _block = new $calendar.December();
+  }
+  let month$1 = _block;
   let nanoseconds = timestamp.nanoseconds;
   let date = new $calendar.Date(year, month$1, day);
   let time = new $calendar.TimeOfDay(hours, minutes, seconds, nanoseconds);
@@ -199,15 +200,17 @@ export function to_calendar(timestamp, offset) {
 function do_remove_trailing_zeros(loop$reversed_digits) {
   while (true) {
     let reversed_digits = loop$reversed_digits;
-    if (reversed_digits.hasLength(0)) {
+    if (reversed_digits instanceof $Empty) {
       return toList([]);
-    } else if (reversed_digits.atLeastLength(1) && (reversed_digits.head === 0)) {
-      let digit = reversed_digits.head;
-      let digits = reversed_digits.tail;
-      loop$reversed_digits = digits;
     } else {
-      let reversed_digits$1 = reversed_digits;
-      return $list.reverse(reversed_digits$1);
+      let digit = reversed_digits.head;
+      if (digit === 0) {
+        let digits = reversed_digits.tail;
+        loop$reversed_digits = digits;
+      } else {
+        let reversed_digits$1 = reversed_digits;
+        return $list.reverse(reversed_digits$1);
+      }
     }
   }
 }
@@ -222,21 +225,23 @@ function do_get_zero_padded_digits(loop$number, loop$digits, loop$count) {
     let number = loop$number;
     let digits = loop$digits;
     let count = loop$count;
-    if ((number <= 0) && (count >= 9)) {
-      let number$1 = number;
+    let number$1 = number;
+    if ((number$1 <= 0) && (count >= 9)) {
       return digits;
-    } else if (number <= 0) {
-      let number$1 = number;
-      loop$number = number$1;
-      loop$digits = listPrepend(0, digits);
-      loop$count = count + 1;
     } else {
-      let number$1 = number;
-      let digit = remainderInt(number$1, 10);
-      let number$2 = floored_div(number$1, 10.0);
-      loop$number = number$2;
-      loop$digits = listPrepend(digit, digits);
-      loop$count = count + 1;
+      let number$2 = number;
+      if (number$2 <= 0) {
+        loop$number = number$2;
+        loop$digits = listPrepend(0, digits);
+        loop$count = count + 1;
+      } else {
+        let number$3 = number;
+        let digit = remainderInt(number$3, 10);
+        let number$4 = floored_div(number$3, 10.0);
+        loop$number = number$4;
+        loop$digits = listPrepend(digit, digits);
+        loop$count = count + 1;
+      }
     }
   }
 }
@@ -252,13 +257,13 @@ function show_second_fraction(nanoseconds) {
   } else if ($ instanceof $order.Eq) {
     return "";
   } else {
-    let second_fraction_part = (() => {
-      let _pipe = nanoseconds;
-      let _pipe$1 = get_zero_padded_digits(_pipe);
-      let _pipe$2 = remove_trailing_zeros(_pipe$1);
-      let _pipe$3 = $list.map(_pipe$2, $int.to_string);
-      return $string.join(_pipe$3, "");
-    })();
+    let _block;
+    let _pipe = nanoseconds;
+    let _pipe$1 = get_zero_padded_digits(_pipe);
+    let _pipe$2 = remove_trailing_zeros(_pipe$1);
+    let _pipe$3 = $list.map(_pipe$2, $int.to_string);
+    _block = $string.join(_pipe$3, "");
+    let second_fraction_part = _block;
     return "." + second_fraction_part;
   }
 }
@@ -282,12 +287,12 @@ export function to_rfc3339(timestamp, offset) {
   let out$3 = ((((out$2 + n2(hours)) + ":") + n2(minutes)) + ":") + n2(seconds);
   let out$4 = out$3 + show_second_fraction(timestamp.nanoseconds);
   let $1 = $int.compare(offset$1, 0);
-  if ($1 instanceof $order.Eq) {
-    return out$4 + "Z";
-  } else if ($1 instanceof $order.Gt) {
-    return (((out$4 + "+") + n2(offset_hours)) + ":") + n2(offset_minutes);
-  } else {
+  if ($1 instanceof $order.Lt) {
     return (((out$4 + "-") + n2(offset_hours)) + ":") + n2(offset_minutes);
+  } else if ($1 instanceof $order.Eq) {
+    return out$4 + "Z";
+  } else {
+    return (((out$4 + "+") + n2(offset_hours)) + ":") + n2(offset_minutes);
   }
 }
 
@@ -299,32 +304,49 @@ function is_leap_year(year) {
 }
 
 function parse_sign(bytes) {
-  if (bytes.byteAt(0) === 43 &&
-  (bytes.bitSize >= 8 && (bytes.bitSize - 8) % 8 === 0)) {
-    let remaining_bytes = bitArraySlice(bytes, 8);
-    return new Ok(["+", remaining_bytes]);
-  } else if (bytes.byteAt(0) === 45 &&
-  (bytes.bitSize >= 8 && (bytes.bitSize - 8) % 8 === 0)) {
-    let remaining_bytes = bitArraySlice(bytes, 8);
-    return new Ok(["-", remaining_bytes]);
+  if (bytes.bitSize >= 8) {
+    if (bytes.byteAt(0) === 43) {
+      if ((bytes.bitSize - 8) % 8 === 0) {
+        let remaining_bytes = bitArraySlice(bytes, 8);
+        return new Ok(["+", remaining_bytes]);
+      } else {
+        return new Error(undefined);
+      }
+    } else if (bytes.byteAt(0) === 45) {
+      if ((bytes.bitSize - 8) % 8 === 0) {
+        let remaining_bytes = bitArraySlice(bytes, 8);
+        return new Ok(["-", remaining_bytes]);
+      } else {
+        return new Error(undefined);
+      }
+    } else {
+      return new Error(undefined);
+    }
   } else {
     return new Error(undefined);
   }
 }
 
 function accept_byte(bytes, value) {
-  if ((bytes.bitSize >= 8 && (bytes.bitSize - 8) % 8 === 0) &&
-  (bytes.byteAt(0) === value)) {
-    let byte = bytes.byteAt(0);
-    let remaining_bytes = bitArraySlice(bytes, 8);
-    return new Ok(remaining_bytes);
+  if (bytes.bitSize >= 8) {
+    if ((bytes.bitSize - 8) % 8 === 0) {
+      let byte = bytes.byteAt(0);
+      if (byte === value) {
+        let remaining_bytes = bitArraySlice(bytes, 8);
+        return new Ok(remaining_bytes);
+      } else {
+        return new Error(undefined);
+      }
+    } else {
+      return new Error(undefined);
+    }
   } else {
     return new Error(undefined);
   }
 }
 
 function accept_empty(bytes) {
-  if (bytes.bitSize == 0) {
+  if (bytes.bitSize === 0) {
     return new Ok(undefined);
   } else {
     return new Error(undefined);
@@ -400,21 +422,29 @@ function do_parse_second_fraction_as_nanoseconds(
     let acc = loop$acc;
     let power = loop$power;
     let power$1 = divideInt(power, 10);
-    if ((bytes.bitSize >= 8 && (bytes.bitSize - 8) % 8 === 0) &&
-    (((0x30 <= bytes.byteAt(0)) && (bytes.byteAt(0) <= 0x39)) && (power$1 < 1))) {
-      let byte = bytes.byteAt(0);
-      let remaining_bytes = bitArraySlice(bytes, 8);
-      loop$bytes = remaining_bytes;
-      loop$acc = acc;
-      loop$power = power$1;
-    } else if ((bytes.bitSize >= 8 && (bytes.bitSize - 8) % 8 === 0) &&
-    ((0x30 <= bytes.byteAt(0)) && (bytes.byteAt(0) <= 0x39))) {
-      let byte = bytes.byteAt(0);
-      let remaining_bytes = bitArraySlice(bytes, 8);
-      let digit = byte - 0x30;
-      loop$bytes = remaining_bytes;
-      loop$acc = acc + digit * power$1;
-      loop$power = power$1;
+    if (bytes.bitSize >= 8) {
+      if ((bytes.bitSize - 8) % 8 === 0) {
+        let byte = bytes.byteAt(0);
+        if (((0x30 <= byte) && (byte <= 0x39)) && (power$1 < 1)) {
+          let remaining_bytes = bitArraySlice(bytes, 8);
+          loop$bytes = remaining_bytes;
+          loop$acc = acc;
+          loop$power = power$1;
+        } else {
+          let byte$1 = bytes.byteAt(0);
+          if ((0x30 <= byte$1) && (byte$1 <= 0x39)) {
+            let remaining_bytes = bitArraySlice(bytes, 8);
+            let digit = byte$1 - 0x30;
+            loop$bytes = remaining_bytes;
+            loop$acc = acc + digit * power$1;
+            loop$power = power$1;
+          } else {
+            return new Ok([acc, bytes]);
+          }
+        }
+      } else {
+        return new Ok([acc, bytes]);
+      }
     } else {
       return new Ok([acc, bytes]);
     }
@@ -422,19 +452,38 @@ function do_parse_second_fraction_as_nanoseconds(
 }
 
 function parse_second_fraction_as_nanoseconds(bytes) {
-  if (bytes.byteAt(0) === 46 &&
-  (bytes.bitSize >= 16 && (bytes.bitSize - 16) % 8 === 0) &&
-  ((0x30 <= bytes.byteAt(1)) && (bytes.byteAt(1) <= 0x39))) {
-    let byte = bytes.byteAt(1);
-    let remaining_bytes = bitArraySlice(bytes, 16);
-    return do_parse_second_fraction_as_nanoseconds(
-      toBitArray([byte, remaining_bytes]),
-      0,
-      nanoseconds_per_second,
-    );
-  } else if (bytes.byteAt(0) === 46 &&
-  (bytes.bitSize >= 8 && (bytes.bitSize - 8) % 8 === 0)) {
-    return new Error(undefined);
+  if (bytes.bitSize >= 8) {
+    if (bytes.byteAt(0) === 46) {
+      if (bytes.bitSize >= 16) {
+        if ((bytes.bitSize - 16) % 8 === 0) {
+          let byte = bytes.byteAt(1);
+          if ((0x30 <= byte) && (byte <= 0x39)) {
+            let remaining_bytes = bitArraySlice(bytes, 16);
+            return do_parse_second_fraction_as_nanoseconds(
+              toBitArray([byte, remaining_bytes]),
+              0,
+              nanoseconds_per_second,
+            );
+          } else {
+            if ((bytes.bitSize - 8) % 8 === 0) {
+              return new Error(undefined);
+            } else {
+              return new Ok([0, bytes]);
+            }
+          }
+        } else if ((bytes.bitSize - 8) % 8 === 0) {
+          return new Error(undefined);
+        } else {
+          return new Ok([0, bytes]);
+        }
+      } else if ((bytes.bitSize - 8) % 8 === 0) {
+        return new Error(undefined);
+      } else {
+        return new Ok([0, bytes]);
+      }
+    } else {
+      return new Ok([0, bytes]);
+    }
   } else {
     return new Ok([0, bytes]);
   }
@@ -448,16 +497,25 @@ function do_parse_digits(loop$bytes, loop$count, loop$acc, loop$k) {
     let k = loop$k;
     if (k >= count) {
       return new Ok([acc, bytes]);
-    } else if ((bytes.bitSize >= 8 && (bytes.bitSize - 8) % 8 === 0) &&
-    ((0x30 <= bytes.byteAt(0)) && (bytes.byteAt(0) <= 0x39))) {
-      let byte = bytes.byteAt(0);
-      let remaining_bytes = bitArraySlice(bytes, 8);
-      loop$bytes = remaining_bytes;
-      loop$count = count;
-      loop$acc = acc * 10 + (byte - 0x30);
-      loop$k = k + 1;
     } else {
-      return new Error(undefined);
+      if (bytes.bitSize >= 8) {
+        if ((bytes.bitSize - 8) % 8 === 0) {
+          let byte = bytes.byteAt(0);
+          if ((0x30 <= byte) && (byte <= 0x39)) {
+            let remaining_bytes = bitArraySlice(bytes, 8);
+            loop$bytes = remaining_bytes;
+            loop$count = count;
+            loop$acc = acc * 10 + (byte - 0x30);
+            loop$k = k + 1;
+          } else {
+            return new Error(undefined);
+          }
+        } else {
+          return new Error(undefined);
+        }
+      } else {
+        return new Error(undefined);
+      }
     }
   }
 }
@@ -620,14 +678,24 @@ function parse_numeric_offset(bytes) {
 }
 
 function parse_offset(bytes) {
-  if (bytes.byteAt(0) === 90 &&
-  (bytes.bitSize >= 8 && (bytes.bitSize - 8) % 8 === 0)) {
-    let remaining_bytes = bitArraySlice(bytes, 8);
-    return new Ok([0, remaining_bytes]);
-  } else if (bytes.byteAt(0) === 122 &&
-  (bytes.bitSize >= 8 && (bytes.bitSize - 8) % 8 === 0)) {
-    let remaining_bytes = bitArraySlice(bytes, 8);
-    return new Ok([0, remaining_bytes]);
+  if (bytes.bitSize >= 8) {
+    if (bytes.byteAt(0) === 90) {
+      if ((bytes.bitSize - 8) % 8 === 0) {
+        let remaining_bytes = bitArraySlice(bytes, 8);
+        return new Ok([0, remaining_bytes]);
+      } else {
+        return parse_numeric_offset(bytes);
+      }
+    } else if (bytes.byteAt(0) === 122) {
+      if ((bytes.bitSize - 8) % 8 === 0) {
+        let remaining_bytes = bitArraySlice(bytes, 8);
+        return new Ok([0, remaining_bytes]);
+      } else {
+        return parse_numeric_offset(bytes);
+      }
+    } else {
+      return parse_numeric_offset(bytes);
+    }
   } else {
     return parse_numeric_offset(bytes);
   }
@@ -637,12 +705,21 @@ const byte_t_lowercase = 0x74;
 
 const byte_t_uppercase = 0x54;
 
+const byte_space = 0x20;
+
 function accept_date_time_separator(bytes) {
-  if ((bytes.bitSize >= 8 && (bytes.bitSize - 8) % 8 === 0) &&
-  ((bytes.byteAt(0) === 0x54) || (bytes.byteAt(0) === 0x74))) {
-    let byte = bytes.byteAt(0);
-    let remaining_bytes = bitArraySlice(bytes, 8);
-    return new Ok(remaining_bytes);
+  if (bytes.bitSize >= 8) {
+    if ((bytes.bitSize - 8) % 8 === 0) {
+      let byte = bytes.byteAt(0);
+      if (((byte === 0x54) || (byte === 0x74)) || (byte === 0x20)) {
+        let remaining_bytes = bitArraySlice(bytes, 8);
+        return new Ok(remaining_bytes);
+      } else {
+        return new Error(undefined);
+      }
+    } else {
+      return new Error(undefined);
+    }
   } else {
     return new Error(undefined);
   }
@@ -677,34 +754,34 @@ function from_date_time(
 }
 
 export function from_calendar(date, time, offset) {
-  let month = (() => {
-    let $ = date.month;
-    if ($ instanceof $calendar.January) {
-      return 1;
-    } else if ($ instanceof $calendar.February) {
-      return 2;
-    } else if ($ instanceof $calendar.March) {
-      return 3;
-    } else if ($ instanceof $calendar.April) {
-      return 4;
-    } else if ($ instanceof $calendar.May) {
-      return 5;
-    } else if ($ instanceof $calendar.June) {
-      return 6;
-    } else if ($ instanceof $calendar.July) {
-      return 7;
-    } else if ($ instanceof $calendar.August) {
-      return 8;
-    } else if ($ instanceof $calendar.September) {
-      return 9;
-    } else if ($ instanceof $calendar.October) {
-      return 10;
-    } else if ($ instanceof $calendar.November) {
-      return 11;
-    } else {
-      return 12;
-    }
-  })();
+  let _block;
+  let $ = date.month;
+  if ($ instanceof $calendar.January) {
+    _block = 1;
+  } else if ($ instanceof $calendar.February) {
+    _block = 2;
+  } else if ($ instanceof $calendar.March) {
+    _block = 3;
+  } else if ($ instanceof $calendar.April) {
+    _block = 4;
+  } else if ($ instanceof $calendar.May) {
+    _block = 5;
+  } else if ($ instanceof $calendar.June) {
+    _block = 6;
+  } else if ($ instanceof $calendar.July) {
+    _block = 7;
+  } else if ($ instanceof $calendar.August) {
+    _block = 8;
+  } else if ($ instanceof $calendar.September) {
+    _block = 9;
+  } else if ($ instanceof $calendar.October) {
+    _block = 10;
+  } else if ($ instanceof $calendar.November) {
+    _block = 11;
+  } else {
+    _block = 12;
+  }
+  let month = _block;
   return from_date_time(
     date.year,
     month,

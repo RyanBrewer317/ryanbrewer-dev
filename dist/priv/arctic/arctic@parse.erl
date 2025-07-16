@@ -1,6 +1,6 @@
 -module(arctic@parse).
 -compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch]).
-
+-define(FILEPATH, "src/arctic/parse.gleam").
 -export([get_pos/1, get_metadata/1, get_state/1, with_state/2, new/1, add_inline_rule/4, add_prefix_rule/3, add_static_component/3, add_dynamic_component/2, wrap_inline/1, wrap_inline_with_attributes/2, wrap_prefix/1, wrap_prefix_with_attributes/2, parse/3]).
 -export_type([parsed_page/0, parse_result/1, parse_error/0, arctic_parser/1, parse_data/1, position/0, inline_rule/1, prefix_rule/1, component/1, parser_builder/1]).
 
@@ -14,48 +14,48 @@
 
 -type parsed_page() :: {parsed_page,
         gleam@dict:dict(binary(), binary()),
-        list(gleam@option:option(lustre@internals@vdom:element(nil)))}.
+        list(gleam@option:option(lustre@vdom@vnode:element(nil)))}.
 
--type parse_result(WZJ) :: {parse_result, WZJ, list(parse_error())}.
+-type parse_result(XOI) :: {parse_result, XOI, list(parse_error())}.
 
 -type parse_error() :: {parse_error, position(), binary()}.
 
--type arctic_parser(WZK) :: {arctic_parser,
-        fun((binary(), parse_data(WZK)) -> parse_result(gleam@option:option({lustre@internals@vdom:element(nil),
-            WZK})))}.
+-type arctic_parser(XOJ) :: {arctic_parser,
+        fun((binary(), parse_data(XOJ)) -> parse_result(gleam@option:option({lustre@vdom@vnode:element(nil),
+            XOJ})))}.
 
--opaque parse_data(WZL) :: {parse_data,
+-opaque parse_data(XOK) :: {parse_data,
         position(),
         gleam@dict:dict(binary(), binary()),
-        WZL}.
+        XOK}.
 
 -type position() :: {position, integer(), integer()}.
 
--type inline_rule(WZM) :: {inline_rule,
+-type inline_rule(XOL) :: {inline_rule,
         binary(),
         binary(),
-        fun((lustre@internals@vdom:element(nil), list(binary()), parse_data(WZM)) -> {ok,
-                {lustre@internals@vdom:element(nil), WZM}} |
+        fun((lustre@vdom@vnode:element(nil), list(binary()), parse_data(XOL)) -> {ok,
+                {lustre@vdom@vnode:element(nil), XOL}} |
             {error, snag:snag()})}.
 
--type prefix_rule(WZN) :: {prefix_rule,
+-type prefix_rule(XOM) :: {prefix_rule,
         binary(),
-        fun((lustre@internals@vdom:element(nil), parse_data(WZN)) -> {ok,
-                {lustre@internals@vdom:element(nil), WZN}} |
+        fun((lustre@vdom@vnode:element(nil), parse_data(XOM)) -> {ok,
+                {lustre@vdom@vnode:element(nil), XOM}} |
             {error, snag:snag()})}.
 
--type component(WZO) :: {static_component,
+-type component(XON) :: {static_component,
         binary(),
-        fun((list(binary()), binary(), parse_data(WZO)) -> {ok,
-                {lustre@internals@vdom:element(nil), WZO}} |
+        fun((list(binary()), binary(), parse_data(XON)) -> {ok,
+                {lustre@vdom@vnode:element(nil), XON}} |
             {error, snag:snag()})} |
     {dynamic_component, binary()}.
 
--opaque parser_builder(WZP) :: {parser_builder,
-        list(inline_rule(WZP)),
-        list(prefix_rule(WZP)),
-        list(component(WZP)),
-        WZP}.
+-opaque parser_builder(XOO) :: {parser_builder,
+        list(inline_rule(XOO)),
+        list(prefix_rule(XOO)),
+        list(component(XOO)),
+        XOO}.
 
 -file("src/arctic/parse.gleam", 49).
 -spec get_pos(parse_data(any())) -> position().
@@ -68,17 +68,17 @@ get_metadata(Data) ->
     erlang:element(3, Data).
 
 -file("src/arctic/parse.gleam", 57).
--spec get_state(parse_data(WZW)) -> WZW.
+-spec get_state(parse_data(XOV)) -> XOV.
 get_state(Data) ->
     erlang:element(4, Data).
 
 -file("src/arctic/parse.gleam", 61).
--spec with_pos(parse_data(WZY), position()) -> parse_data(WZY).
+-spec with_pos(parse_data(XOX), position()) -> parse_data(XOX).
 with_pos(Data, Pos) ->
     {parse_data, Pos, erlang:element(3, Data), erlang:element(4, Data)}.
 
 -file("src/arctic/parse.gleam", 65).
--spec with_state(parse_data(XAB), XAB) -> parse_data(XAB).
+-spec with_state(parse_data(XPA), XPA) -> parse_data(XPA).
 with_state(Data, State) ->
     {parse_data, erlang:element(2, Data), erlang:element(3, Data), State}.
 
@@ -87,7 +87,7 @@ with_state(Data, State) ->
     " Create a new parser builder, with no rules or components.\n"
     " It only has an initial state.\n"
 ).
--spec new(XAE) -> parser_builder(XAE).
+-spec new(XPD) -> parser_builder(XPD).
 new(Start_state) ->
     {parser_builder, [], [], [], Start_state}.
 
@@ -103,13 +103,13 @@ new(Start_state) ->
     " `[here](https://example.com) is a link`\n"
 ).
 -spec add_inline_rule(
-    parser_builder(XAG),
+    parser_builder(XPF),
     binary(),
     binary(),
-    fun((lustre@internals@vdom:element(nil), list(binary()), parse_data(XAG)) -> {ok,
-            {lustre@internals@vdom:element(nil), XAG}} |
+    fun((lustre@vdom@vnode:element(nil), list(binary()), parse_data(XPF)) -> {ok,
+            {lustre@vdom@vnode:element(nil), XPF}} |
         {error, snag:snag()})
-) -> parser_builder(XAG).
+) -> parser_builder(XPF).
 add_inline_rule(P, Left, Right, Action) ->
     {parser_builder,
         [{inline_rule, Left, Right, Action} | erlang:element(2, P)],
@@ -127,12 +127,12 @@ add_inline_rule(P, Left, Right, Action) ->
     " and that the position in the file is given, so you can produce better `snag` error messages.\n"
 ).
 -spec add_prefix_rule(
-    parser_builder(XAO),
+    parser_builder(XPN),
     binary(),
-    fun((lustre@internals@vdom:element(nil), parse_data(XAO)) -> {ok,
-            {lustre@internals@vdom:element(nil), XAO}} |
+    fun((lustre@vdom@vnode:element(nil), parse_data(XPN)) -> {ok,
+            {lustre@vdom@vnode:element(nil), XPN}} |
         {error, snag:snag()})
-) -> parser_builder(XAO).
+) -> parser_builder(XPN).
 add_prefix_rule(P, Prefix, Action) ->
     {parser_builder,
         erlang:element(2, P),
@@ -158,12 +158,12 @@ add_prefix_rule(P, Prefix, Action) ->
     " and that the position in the file is given, so you can produce better `snag` error messages.\n"
 ).
 -spec add_static_component(
-    parser_builder(XAV),
+    parser_builder(XPU),
     binary(),
-    fun((list(binary()), binary(), parse_data(XAV)) -> {ok,
-            {lustre@internals@vdom:element(nil), XAV}} |
+    fun((list(binary()), binary(), parse_data(XPU)) -> {ok,
+            {lustre@vdom@vnode:element(nil), XPU}} |
         {error, snag:snag()})
-) -> parser_builder(XAV).
+) -> parser_builder(XPU).
 add_static_component(P, Name, Action) ->
     {parser_builder,
         erlang:element(2, P),
@@ -190,7 +190,7 @@ add_static_component(P, Name, Action) ->
     " </component_name>\n"
     " ```\n"
 ).
--spec add_dynamic_component(parser_builder(XBC), binary()) -> parser_builder(XBC).
+-spec add_dynamic_component(parser_builder(XQB), binary()) -> parser_builder(XQB).
 add_dynamic_component(P, Name) ->
     {parser_builder,
         erlang:element(2, P),
@@ -204,9 +204,9 @@ add_dynamic_component(P, Name) ->
     " For example, `wrap_inline(html.i)` italicizes.\n"
 ).
 -spec wrap_inline(
-    fun((list(lustre@internals@vdom:attribute(any())), list(lustre@internals@vdom:element(nil))) -> lustre@internals@vdom:element(nil))
-) -> fun((lustre@internals@vdom:element(nil), any(), parse_data(XJR)) -> {ok,
-        {lustre@internals@vdom:element(nil), XJR}} |
+    fun((list(lustre@vdom@vattr:attribute(any())), list(lustre@vdom@vnode:element(nil))) -> lustre@vdom@vnode:element(nil))
+) -> fun((lustre@vdom@vnode:element(nil), any(), parse_data(XWK)) -> {ok,
+        {lustre@vdom@vnode:element(nil), XWK}} |
     {error, any()}).
 wrap_inline(W) ->
     fun(El, _, Data) -> {ok, {W([], [El]), get_state(Data)}} end.
@@ -219,10 +219,10 @@ wrap_inline(W) ->
     " makes something a link to arctic-framework.org.\n"
 ).
 -spec wrap_inline_with_attributes(
-    fun((list(lustre@internals@vdom:attribute(XBP)), list(lustre@internals@vdom:element(nil))) -> lustre@internals@vdom:element(nil)),
-    list(lustre@internals@vdom:attribute(XBP))
-) -> fun((lustre@internals@vdom:element(nil), any(), parse_data(XJY)) -> {ok,
-        {lustre@internals@vdom:element(nil), XJY}} |
+    fun((list(lustre@vdom@vattr:attribute(XQO)), list(lustre@vdom@vnode:element(nil))) -> lustre@vdom@vnode:element(nil)),
+    list(lustre@vdom@vattr:attribute(XQO))
+) -> fun((lustre@vdom@vnode:element(nil), any(), parse_data(XWR)) -> {ok,
+        {lustre@vdom@vnode:element(nil), XWR}} |
     {error, any()}).
 wrap_inline_with_attributes(W, Attrs) ->
     fun(El, _, Data) -> {ok, {W(Attrs, [El]), get_state(Data)}} end.
@@ -233,9 +233,9 @@ wrap_inline_with_attributes(W, Attrs) ->
     " For example, `wrap_prefix(html.h1)` makes a paragraph a header.\n"
 ).
 -spec wrap_prefix(
-    fun((list(lustre@internals@vdom:attribute(any())), list(lustre@internals@vdom:element(nil))) -> lustre@internals@vdom:element(nil))
-) -> fun((lustre@internals@vdom:element(nil), parse_data(XKF)) -> {ok,
-        {lustre@internals@vdom:element(nil), XKF}} |
+    fun((list(lustre@vdom@vattr:attribute(any())), list(lustre@vdom@vnode:element(nil))) -> lustre@vdom@vnode:element(nil))
+) -> fun((lustre@vdom@vnode:element(nil), parse_data(XWY)) -> {ok,
+        {lustre@vdom@vnode:element(nil), XWY}} |
     {error, any()}).
 wrap_prefix(W) ->
     fun(El, Data) -> {ok, {W([], [El]), get_state(Data)}} end.
@@ -248,10 +248,10 @@ wrap_prefix(W) ->
     " makes a paragraph a link to arctic-framework.org.\n"
 ).
 -spec wrap_prefix_with_attributes(
-    fun((list(lustre@internals@vdom:attribute(XCF)), list(lustre@internals@vdom:element(nil))) -> lustre@internals@vdom:element(nil)),
-    list(lustre@internals@vdom:attribute(XCF))
-) -> fun((lustre@internals@vdom:element(nil), parse_data(XKL)) -> {ok,
-        {lustre@internals@vdom:element(nil), XKL}} |
+    fun((list(lustre@vdom@vattr:attribute(XRE)), list(lustre@vdom@vnode:element(nil))) -> lustre@vdom@vnode:element(nil)),
+    list(lustre@vdom@vattr:attribute(XRE))
+) -> fun((lustre@vdom@vnode:element(nil), parse_data(XXE)) -> {ok,
+        {lustre@vdom@vnode:element(nil), XXE}} |
     {error, any()}).
 wrap_prefix_with_attributes(W, Attrs) ->
     fun(El, Data) -> {ok, {W(Attrs, [El]), get_state(Data)}} end.
@@ -363,20 +363,25 @@ escaped_char() ->
                                                                     <<"}"/utf8>>
                                                                 ),
                                                                 fun(_) ->
-                                                                    _assert_subject = gleam@int:base_parse(
+                                                                    Code@1 = case gleam@int:base_parse(
                                                                         Code_str,
                                                                         16
-                                                                    ),
-                                                                    {ok, Code} = case _assert_subject of
-                                                                        {ok, _} -> _assert_subject;
+                                                                    ) of
+                                                                        {ok,
+                                                                            Code} -> Code;
                                                                         _assert_fail ->
                                                                             erlang:error(
                                                                                     #{gleam_error => let_assert,
                                                                                         message => <<"Pattern match failed, no pattern matched the value."/utf8>>,
-                                                                                        value => _assert_fail,
+                                                                                        file => <<?FILEPATH/utf8>>,
                                                                                         module => <<"arctic/parse"/utf8>>,
                                                                                         function => <<"escaped_char"/utf8>>,
-                                                                                        line => 396}
+                                                                                        line => 396,
+                                                                                        value => _assert_fail,
+                                                                                        start => 11916,
+                                                                                        'end' => 11966,
+                                                                                        pattern_start => 11927,
+                                                                                        pattern_end => 11935}
                                                                                 )
                                                                     end,
                                                                     party:do(
@@ -388,7 +393,7 @@ escaped_char() ->
                                                                                 _
                                                                             ) ->
                                                                                 _pipe = gleam@string:utf_codepoint(
-                                                                                    Code
+                                                                                    Code@1
                                                                                 ),
                                                                                 gleam@result:map_error(
                                                                                     _pipe,
@@ -432,9 +437,9 @@ escaped_char() ->
     ).
 
 -file("src/arctic/parse.gleam", 467).
--spec invert_res({ok, {XPL, XPE}} | {error, XPI}, parse_data(XPE)) -> {{ok, XPL} |
-        {error, XPI},
-    parse_data(XPE)}.
+-spec invert_res({ok, {YCE, YBX}} | {error, YCB}, parse_data(YBX)) -> {{ok, YCE} |
+        {error, YCB},
+    parse_data(YBX)}.
 invert_res(Res, D) ->
     case Res of
         {ok, {El, State}} ->
@@ -449,7 +454,7 @@ invert_res(Res, D) ->
     end.
 
 -file("src/arctic/parse.gleam", 580).
--spec parse_component(list(component(XEC))) -> arctic_parser(XEC).
+-spec parse_component(list(component(XTB))) -> arctic_parser(XTB).
 parse_component(Components) ->
     {arctic_parser,
         fun(Src, Data) ->
@@ -750,10 +755,10 @@ parse_component(Components) ->
         end}.
 
 -file("src/arctic/parse.gleam", 411).
--spec parse_inline_rule(list(inline_rule(XCY)), parse_data(XCY)) -> party:parser(fun((parse_data(XCY)) -> {{ok,
-            lustre@internals@vdom:element(nil)} |
+-spec parse_inline_rule(list(inline_rule(XRX)), parse_data(XRX)) -> party:parser(fun((parse_data(XRX)) -> {{ok,
+            lustre@vdom@vnode:element(nil)} |
         {error, snag:snag()},
-    parse_data(XCY)}), snag:snag()).
+    parse_data(XRX)}), snag:snag()).
 parse_inline_rule(Inline_rules, Data) ->
     party:choice(
         gleam@list:map(
@@ -900,10 +905,10 @@ parse_inline_rule(Inline_rules, Data) ->
 
 -file("src/arctic/parse.gleam", 474).
 -spec parse_markup(
-    list(inline_rule(XDL)),
+    list(inline_rule(XSK)),
     party:parser(nil, snag:snag()),
-    parse_data(XDL)
-) -> party:parser({ok, {lustre@internals@vdom:element(nil), parse_data(XDL)}} |
+    parse_data(XSK)
+) -> party:parser({ok, {lustre@vdom@vnode:element(nil), parse_data(XSK)}} |
     {error, snag:snag()}, snag:snag()).
 parse_markup(Inline_rules, Terminator, Data) ->
     _pipe = party:choice(
@@ -945,7 +950,7 @@ parse_markup(Inline_rules, Terminator, Data) ->
     ).
 
 -file("src/arctic/parse.gleam", 496).
--spec parse_text(list(inline_rule(XDW)), list(prefix_rule(XDW))) -> arctic_parser(XDW).
+-spec parse_text(list(inline_rule(XSV)), list(prefix_rule(XSV))) -> arctic_parser(XSV).
 parse_text(Inline_rules, Prefix_rules) ->
     {arctic_parser,
         fun(Src, Data) ->

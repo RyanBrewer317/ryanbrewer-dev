@@ -22,7 +22,7 @@ function thumbnail(name, artist, url) {
         toList([
           $attribute.width(400),
           $attribute.controls(true),
-          $attribute.style(toList([["margin-top", "15pt"]])),
+          $attribute.style("margin-top", "15pt"),
         ]),
         toList([
           $html.source(

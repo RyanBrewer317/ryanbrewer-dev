@@ -1,8 +1,8 @@
 -module(mist@internal@http2@handler).
 -compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch]).
-
+-define(FILEPATH, "src/mist/internal/http2/handler.gleam").
 -export([send_hpack_context/2, receive_hpack_context/2, append_data/2, upgrade/3, call/3]).
--export_type([message/0, pending_send/0, state/0]).
+-export_type([pending_send/0, state/0]).
 
 -if(?OTP_RELEASE >= 27).
 -define(MODULEDOC(Str), -moduledoc(Str)).
@@ -14,10 +14,6 @@
 
 ?MODULEDOC(false).
 
--type message() :: {send,
-        mist@internal@http2@frame:stream_identifier(mist@internal@http2@frame:frame()),
-        gleam@http@response:response(mist@internal@http:response_data())}.
-
 -type pending_send() :: pending_send.
 
 -type state() :: {state,
@@ -25,14 +21,14 @@
         mist@internal@buffer:buffer(),
         list(pending_send()),
         mist@internal@http2:hpack_context(),
-        gleam@erlang@process:subject(message()),
+        gleam@erlang@process:subject(mist@internal@http2@stream:send_message()),
         mist@internal@http2:hpack_context(),
         integer(),
         integer(),
         mist@internal@http2:http2_settings(),
         gleam@dict:dict(mist@internal@http2@frame:stream_identifier(mist@internal@http2@frame:frame()), mist@internal@http2@stream:state())}.
 
--file("src/mist/internal/http2/handler.gleam", 44).
+-file("src/mist/internal/http2/handler.gleam", 38).
 ?DOC(false).
 -spec send_hpack_context(state(), mist@internal@http2:hpack_context()) -> state().
 send_hpack_context(State, Context) ->
@@ -49,7 +45,7 @@ send_hpack_context(State, Context) ->
         erlang:element(10, _record),
         erlang:element(11, _record)}.
 
--file("src/mist/internal/http2/handler.gleam", 48).
+-file("src/mist/internal/http2/handler.gleam", 42).
 ?DOC(false).
 -spec receive_hpack_context(state(), mist@internal@http2:hpack_context()) -> state().
 receive_hpack_context(State, Context) ->
@@ -66,7 +62,7 @@ receive_hpack_context(State, Context) ->
         erlang:element(10, _record),
         erlang:element(11, _record)}.
 
--file("src/mist/internal/http2/handler.gleam", 52).
+-file("src/mist/internal/http2/handler.gleam", 46).
 ?DOC(false).
 -spec append_data(state(), bitstring()) -> state().
 append_data(State, Data) ->
@@ -83,42 +79,52 @@ append_data(State, Data) ->
         erlang:element(10, _record),
         erlang:element(11, _record)}.
 
--file("src/mist/internal/http2/handler.gleam", 56).
+-file("src/mist/internal/http2/handler.gleam", 50).
 ?DOC(false).
 -spec upgrade(
     bitstring(),
     mist@internal@http:connection(),
-    gleam@erlang@process:subject(message())
-) -> {ok, state()} | {error, gleam@erlang@process:exit_reason()}.
-upgrade(_, Conn, _) ->
-    _ = mist@internal@http2:default_settings(),
+    gleam@erlang@process:subject(mist@internal@http2@stream:send_message())
+) -> {ok, state()} | {error, binary()}.
+upgrade(Data, Conn, Self) ->
+    Initial_settings = mist@internal@http2:default_settings(),
     Settings_frame = {settings, false, []},
-    _assert_subject = mist@internal@http2:send_frame(
-        Settings_frame,
-        erlang:element(3, Conn),
-        erlang:element(4, Conn)
-    ),
-    {ok, _} = case _assert_subject of
-        {ok, _} -> _assert_subject;
-        _assert_fail ->
-            erlang:error(#{gleam_error => let_assert,
-                        message => <<"Pattern match failed, no pattern matched the value."/utf8>>,
-                        value => _assert_fail,
-                        module => <<"mist/internal/http2/handler"/utf8>>,
-                        function => <<"upgrade"/utf8>>,
-                        line => 64})
+    Sent = begin
+        _pipe = mist@internal@http2:send_frame(
+            Settings_frame,
+            erlang:element(3, Conn),
+            erlang:element(4, Conn)
+        ),
+        gleam@result:replace_error(
+            _pipe,
+            <<"Failed to send settings frame"/utf8>>
+        )
     end,
-    logging:log(error, <<"HTTP/2 currently not supported"/utf8>>),
-    {error, {abnormal, <<"HTTP/2 currently not supported"/utf8>>}}.
+    gleam@result:map(
+        Sent,
+        fun(_) ->
+            {state,
+                none,
+                mist@internal@buffer:new(Data),
+                [],
+                hpack:new_context(erlang:element(2, Initial_settings)),
+                Self,
+                hpack:new_context(erlang:element(2, Initial_settings)),
+                65535,
+                65535,
+                Initial_settings,
+                maps:new()}
+        end
+    ).
 
--file("src/mist/internal/http2/handler.gleam", 118).
+-file("src/mist/internal/http2/handler.gleam", 106).
 ?DOC(false).
 -spec handle_frame(
     mist@internal@http2@frame:frame(),
     state(),
     mist@internal@http:connection(),
     fun((gleam@http@request:request(mist@internal@http:connection())) -> gleam@http@response:response(mist@internal@http:response_data()))
-) -> {ok, state()} | {error, gleam@erlang@process:exit_reason()}.
+) -> {ok, state()} | {error, binary()}.
 handle_frame(Frame, State, Conn, Handler) ->
     case {erlang:element(2, State), Frame} of
         {{some, {header, {continued, Existing}, End_stream, Id1, Priority}},
@@ -209,10 +215,9 @@ handle_frame(Frame, State, Conn, Handler) ->
                     _pipe@1 = gleam_stdlib:map_get(_pipe, Identifier),
                     _pipe@2 = gleam@result:replace_error(
                         _pipe@1,
-                        {abnormal,
-                            <<"Window update for non-existent stream"/utf8>>}
+                        <<"Window update for non-existent stream"/utf8>>
                     ),
-                    gleam@result:then(
+                    gleam@result:'try'(
                         _pipe@2,
                         fun(Stream) ->
                             case mist@internal@http2@flow_control:update_send_window(
@@ -252,8 +257,7 @@ handle_frame(Frame, State, Conn, Handler) ->
 
                                 _ ->
                                     {error,
-                                        {abnormal,
-                                            <<"Failed to update send window"/utf8>>}}
+                                        <<"Failed to update send window"/utf8>>}
                             end
                         end
                     )
@@ -264,59 +268,63 @@ handle_frame(Frame, State, Conn, Handler) ->
                 {initial, <<>>},
                 erlang:element(3, Conn),
                 erlang:element(4, Conn)},
-            _assert_subject = mist_ffi:hpack_decode(
+            {Headers@1, Context@1} = case mist_ffi:hpack_decode(
                 erlang:element(5, State),
                 Data@2
-            ),
-            {ok, {Headers, Context}} = case _assert_subject of
-                {ok, {_, _}} -> _assert_subject;
+            ) of
+                {ok, {Headers, Context}} -> {Headers, Context};
                 _assert_fail ->
                     erlang:error(#{gleam_error => let_assert,
                                 message => <<"Pattern match failed, no pattern matched the value."/utf8>>,
-                                value => _assert_fail,
+                                file => <<?FILEPATH/utf8>>,
                                 module => <<"mist/internal/http2/handler"/utf8>>,
                                 function => <<"handle_frame"/utf8>>,
-                                line => 213})
+                                line => 199,
+                                value => _assert_fail,
+                                start => 5568,
+                                'end' => 5666,
+                                pattern_start => 5579,
+                                pattern_end => 5602})
             end,
             Pending_content_length = begin
-                _pipe@3 = Headers,
+                _pipe@3 = Headers@1,
                 _pipe@4 = gleam@list:key_find(
                     _pipe@3,
                     <<"content-length"/utf8>>
                 ),
-                _pipe@5 = gleam@result:then(
+                _pipe@5 = gleam@result:'try'(
                     _pipe@4,
                     fun gleam_stdlib:parse_int/1
                 ),
                 gleam@option:from_result(_pipe@5)
             end,
-            _assert_subject@1 = mist@internal@http2@stream:new(
+            New_stream@2 = case mist@internal@http2@stream:new(
+                Identifier@1,
                 Handler,
-                Headers,
+                Headers@1,
                 Conn@1,
-                fun(Resp) ->
-                    gleam@erlang@process:send(
-                        erlang:element(6, State),
-                        {send, Identifier@1, Resp}
-                    )
-                end,
+                erlang:element(6, State),
                 End_stream@2
-            ),
-            {ok, New_stream@1} = case _assert_subject@1 of
-                {ok, _} -> _assert_subject@1;
+            ) of
+                {ok, New_stream@1} -> New_stream@1;
                 _assert_fail@1 ->
                     erlang:error(#{gleam_error => let_assert,
                                 message => <<"Pattern match failed, no pattern matched the value."/utf8>>,
-                                value => _assert_fail@1,
+                                file => <<?FILEPATH/utf8>>,
                                 module => <<"mist/internal/http2/handler"/utf8>>,
                                 function => <<"handle_frame"/utf8>>,
-                                line => 222})
+                                line => 208,
+                                value => _assert_fail@1,
+                                start => 5832,
+                                'end' => 6085,
+                                pattern_start => 5843,
+                                pattern_end => 5857})
             end,
-            gleam@erlang@process:send(New_stream@1, ready),
+            gleam@erlang@process:send(erlang:element(3, New_stream@2), ready),
             Stream_state = {state,
                 Identifier@1,
                 open,
-                New_stream@1,
+                erlang:element(3, New_stream@2),
                 erlang:element(5, erlang:element(10, State)),
                 erlang:element(5, erlang:element(10, State)),
                 Pending_content_length},
@@ -332,7 +340,7 @@ handle_frame(Frame, State, Conn, Handler) ->
                         erlang:element(2, _record@6),
                         erlang:element(3, _record@6),
                         erlang:element(4, _record@6),
-                        Context,
+                        Context@1,
                         erlang:element(6, _record@6),
                         erlang:element(7, _record@6),
                         erlang:element(8, _record@6),
@@ -357,12 +365,12 @@ handle_frame(Frame, State, Conn, Handler) ->
             ),
             _pipe@9 = gleam@result:replace_error(
                 _pipe@8,
-                {abnormal, <<"Stream failed to receive data"/utf8>>}
+                <<"Stream failed to receive data"/utf8>>
             ),
             gleam@result:map(
                 _pipe@9,
                 fun(Update@1) ->
-                    {New_stream@2, Increment} = Update@1,
+                    {New_stream@3, Increment} = Update@1,
                     _ = case Conn_window_increment > 0 of
                         true ->
                             mist@internal@http2:send_frame(
@@ -390,7 +398,7 @@ handle_frame(Frame, State, Conn, Handler) ->
                             {ok, nil}
                     end,
                     gleam@erlang@process:send(
-                        erlang:element(4, New_stream@2),
+                        erlang:element(4, New_stream@3),
                         {data, Data@3, End_stream@3}
                     ),
                     _record@7 = State,
@@ -407,7 +415,7 @@ handle_frame(Frame, State, Conn, Handler) ->
                         gleam@dict:insert(
                             erlang:element(11, State),
                             Identifier@2,
-                            New_stream@2
+                            New_stream@3
                         )}
                 end
             );
@@ -427,29 +435,29 @@ handle_frame(Frame, State, Conn, Handler) ->
             _pipe@11 = gleam@result:replace(_pipe@10, State),
             gleam@result:replace_error(
                 _pipe@11,
-                {abnormal, <<"Failed to respond to settings ACK"/utf8>>}
+                <<"Failed to respond to settings ACK"/utf8>>
             );
 
         {none, {go_away, _, _, _}} ->
             logging:log(debug, <<"byteeee~~"/utf8>>),
-            {error, normal};
+            {error, <<"Going away..."/utf8>>};
 
         {_, Frame@1} ->
             logging:log(
                 debug,
                 <<"Ignoring frame: "/utf8,
-                    (gleam@erlang:format(Frame@1))/binary>>
+                    (gleam@string:inspect(Frame@1))/binary>>
             ),
             {ok, State}
     end.
 
--file("src/mist/internal/http2/handler.gleam", 91).
+-file("src/mist/internal/http2/handler.gleam", 81).
 ?DOC(false).
 -spec call(
     state(),
     mist@internal@http:connection(),
     fun((gleam@http@request:request(mist@internal@http:connection())) -> gleam@http@response:response(mist@internal@http:response_data()))
-) -> {ok, state()} | {error, gleam@erlang@process:exit_reason()}.
+) -> {ok, state()} | {error, {ok, nil} | {error, binary()}}.
 call(State, Conn, Handler) ->
     case mist@internal@http2@frame:decode(
         erlang:element(3, erlang:element(3, State))
@@ -474,7 +482,7 @@ call(State, Conn, Handler) ->
                     call(Updated, Conn, Handler);
 
                 {error, Reason} ->
-                    {error, Reason}
+                    {error, {error, Reason}}
             end;
 
         {error, no_error} ->

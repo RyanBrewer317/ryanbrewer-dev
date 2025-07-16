@@ -1,6 +1,6 @@
 -module(gleeunit@should).
 -compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch]).
-
+-define(FILEPATH, "src/gleeunit/should.gleam").
 -export([equal/2, not_equal/2, be_ok/1, be_error/1, be_some/1, be_none/1, be_true/1, be_false/1, fail/0]).
 
 -if(?OTP_RELEASE >= 27).
@@ -11,36 +11,92 @@
 -define(DOC(Str), -compile([])).
 -endif.
 
-?MODULEDOC(
-    " A module for testing your Gleam code. The functions found here are\n"
-    " compatible with the Erlang eunit test framework.\n"
-    "\n"
-    " More information on running eunit can be found in [the rebar3\n"
-    " documentation](https://rebar3.org/docs/testing/eunit/).\n"
-).
+?MODULEDOC(" Use the `assert` keyword instead of this module.\n").
 
--file("src/gleeunit/should.gleam", 11).
--spec equal(FNO, FNO) -> nil.
+-file("src/gleeunit/should.gleam", 6).
+-spec equal(DRY, DRY) -> nil.
 equal(A, B) ->
-    gleeunit_ffi:should_equal(A, B).
+    case A =:= B of
+        true ->
+            nil;
 
--file("src/gleeunit/should.gleam", 25).
--spec not_equal(FNP, FNP) -> nil.
+        _ ->
+            erlang:error(#{gleam_error => panic,
+                    message => erlang:list_to_binary(
+                        [<<"\n"/utf8>>,
+                            gleam@string:inspect(A),
+                            <<"\nshould equal\n"/utf8>>,
+                            gleam@string:inspect(B)]
+                    ),
+                    file => <<?FILEPATH/utf8>>,
+                    module => <<"gleeunit/should"/utf8>>,
+                    function => <<"equal"/utf8>>,
+                    line => 10})
+    end.
+
+-file("src/gleeunit/should.gleam", 19).
+-spec not_equal(DRZ, DRZ) -> nil.
 not_equal(A, B) ->
-    gleeunit_ffi:should_not_equal(A, B).
+    case A /= B of
+        true ->
+            nil;
+
+        _ ->
+            erlang:error(#{gleam_error => panic,
+                    message => erlang:list_to_binary(
+                        [<<"\n"/utf8>>,
+                            gleam@string:inspect(A),
+                            <<"\nshould not equal\n"/utf8>>,
+                            gleam@string:inspect(B)]
+                    ),
+                    file => <<?FILEPATH/utf8>>,
+                    module => <<"gleeunit/should"/utf8>>,
+                    function => <<"not_equal"/utf8>>,
+                    line => 23})
+    end.
+
+-file("src/gleeunit/should.gleam", 32).
+-spec be_ok({ok, DSA} | {error, any()}) -> DSA.
+be_ok(A) ->
+    case A of
+        {ok, Value} ->
+            Value;
+
+        _ ->
+            erlang:error(#{gleam_error => panic,
+                    message => erlang:list_to_binary(
+                        [<<"\n"/utf8>>,
+                            gleam@string:inspect(A),
+                            <<"\nshould be ok"/utf8>>]
+                    ),
+                    file => <<?FILEPATH/utf8>>,
+                    module => <<"gleeunit/should"/utf8>>,
+                    function => <<"be_ok"/utf8>>,
+                    line => 35})
+    end.
 
 -file("src/gleeunit/should.gleam", 39).
--spec be_ok({ok, FNQ} | {error, any()}) -> FNQ.
-be_ok(A) ->
-    gleeunit_ffi:should_be_ok(A).
-
--file("src/gleeunit/should.gleam", 47).
--spec be_error({ok, any()} | {error, FNV}) -> FNV.
+-spec be_error({ok, any()} | {error, DSF}) -> DSF.
 be_error(A) ->
-    gleeunit_ffi:should_be_error(A).
+    case A of
+        {error, Error} ->
+            Error;
 
--file("src/gleeunit/should.gleam", 54).
--spec be_some(gleam@option:option(FNY)) -> FNY.
+        _ ->
+            erlang:error(#{gleam_error => panic,
+                    message => erlang:list_to_binary(
+                        [<<"\n"/utf8>>,
+                            gleam@string:inspect(A),
+                            <<"\nshould be error"/utf8>>]
+                    ),
+                    file => <<?FILEPATH/utf8>>,
+                    module => <<"gleeunit/should"/utf8>>,
+                    function => <<"be_error"/utf8>>,
+                    line => 42})
+    end.
+
+-file("src/gleeunit/should.gleam", 46).
+-spec be_some(gleam@option:option(DSI)) -> DSI.
 be_some(A) ->
     case A of
         {some, Value} ->
@@ -48,17 +104,18 @@ be_some(A) ->
 
         _ ->
             erlang:error(#{gleam_error => panic,
-                    message => gleam@string:concat(
+                    message => erlang:list_to_binary(
                         [<<"\n"/utf8>>,
                             gleam@string:inspect(A),
                             <<"\nshould be some"/utf8>>]
                     ),
+                    file => <<?FILEPATH/utf8>>,
                     module => <<"gleeunit/should"/utf8>>,
                     function => <<"be_some"/utf8>>,
-                    line => 57})
+                    line => 49})
     end.
 
--file("src/gleeunit/should.gleam", 61).
+-file("src/gleeunit/should.gleam", 53).
 -spec be_none(gleam@option:option(any())) -> nil.
 be_none(A) ->
     case A of
@@ -67,29 +124,30 @@ be_none(A) ->
 
         _ ->
             erlang:error(#{gleam_error => panic,
-                    message => gleam@string:concat(
+                    message => erlang:list_to_binary(
                         [<<"\n"/utf8>>,
                             gleam@string:inspect(A),
                             <<"\nshould be none"/utf8>>]
                     ),
+                    file => <<?FILEPATH/utf8>>,
                     module => <<"gleeunit/should"/utf8>>,
                     function => <<"be_none"/utf8>>,
-                    line => 64})
+                    line => 56})
     end.
 
--file("src/gleeunit/should.gleam", 68).
+-file("src/gleeunit/should.gleam", 60).
 -spec be_true(boolean()) -> nil.
 be_true(Actual) ->
     _pipe = Actual,
-    gleeunit_ffi:should_equal(_pipe, true).
+    equal(_pipe, true).
 
--file("src/gleeunit/should.gleam", 73).
+-file("src/gleeunit/should.gleam", 65).
 -spec be_false(boolean()) -> nil.
 be_false(Actual) ->
     _pipe = Actual,
-    gleeunit_ffi:should_equal(_pipe, false).
+    equal(_pipe, false).
 
--file("src/gleeunit/should.gleam", 78).
+-file("src/gleeunit/should.gleam", 70).
 -spec fail() -> nil.
 fail() ->
     be_true(false).

@@ -14,6 +14,7 @@ import {
   Ok,
   Error,
   toList,
+  Empty as $Empty,
   prepend as listPrepend,
   CustomType as $CustomType,
   makeError,
@@ -21,6 +22,8 @@ import {
 import * as $constraint from "./glint/constraint.mjs";
 import * as $help from "./glint/internal/help.mjs";
 import { exit } from "node:process";
+
+const FILEPATH = "src/glint.gleam";
 
 class Config extends $CustomType {
   constructor(pretty_help, name, as_module, description, exit, indent_width, max_output_width, min_first_column_width, column_gap) {
@@ -55,16 +58,16 @@ class Glint extends $CustomType {
 }
 
 export class EqArgs extends $CustomType {
-  constructor(x0) {
+  constructor($0) {
     super();
-    this[0] = x0;
+    this[0] = $0;
   }
 }
 
 export class MinArgs extends $CustomType {
-  constructor(x0) {
+  constructor($0) {
     super();
-    this[0] = x0;
+    this[0] = $0;
   }
 }
 
@@ -107,65 +110,65 @@ class CommandNode extends $CustomType {
 }
 
 export class Out extends $CustomType {
-  constructor(x0) {
+  constructor($0) {
     super();
-    this[0] = x0;
+    this[0] = $0;
   }
 }
 
 export class Help extends $CustomType {
-  constructor(x0) {
+  constructor($0) {
     super();
-    this[0] = x0;
+    this[0] = $0;
   }
 }
 
 class B extends $CustomType {
-  constructor(x0) {
+  constructor($0) {
     super();
-    this[0] = x0;
+    this[0] = $0;
   }
 }
 
 class I extends $CustomType {
-  constructor(x0) {
+  constructor($0) {
     super();
-    this[0] = x0;
+    this[0] = $0;
   }
 }
 
 class LI extends $CustomType {
-  constructor(x0) {
+  constructor($0) {
     super();
-    this[0] = x0;
+    this[0] = $0;
   }
 }
 
 class F extends $CustomType {
-  constructor(x0) {
+  constructor($0) {
     super();
-    this[0] = x0;
+    this[0] = $0;
   }
 }
 
 class LF extends $CustomType {
-  constructor(x0) {
+  constructor($0) {
     super();
-    this[0] = x0;
+    this[0] = $0;
   }
 }
 
 class S extends $CustomType {
-  constructor(x0) {
+  constructor($0) {
     super();
-    this[0] = x0;
+    this[0] = $0;
   }
 }
 
 class LS extends $CustomType {
-  constructor(x0) {
+  constructor($0) {
     super();
-    this[0] = x0;
+    this[0] = $0;
   }
 }
 
@@ -437,14 +440,21 @@ export function named_arg(name, f) {
   let cmd = f(
     (named_args) => {
       let $ = $dict.get(named_args.internal, name);
-      if (!$.isOk()) {
+      if (!($ instanceof Ok)) {
         throw makeError(
           "let_assert",
+          FILEPATH,
           "glint",
           394,
-          "",
+          "named_arg",
           "Pattern match failed, no pattern matched the value.",
-          { value: $ }
+          {
+            value: $,
+            start: 11174,
+            end: 11230,
+            pattern_start: 11185,
+            pattern_end: 11192
+          }
         )
       }
       let arg = $[0];
@@ -464,18 +474,22 @@ export function named_arg(name, f) {
 function args_compare(expected, actual) {
   return $result.map_error(
     (() => {
-      if (expected instanceof EqArgs && (actual === expected[0])) {
+      if (expected instanceof EqArgs) {
         let expected$1 = expected[0];
-        return new Ok(undefined);
-      } else if (expected instanceof MinArgs && (actual >= expected[0])) {
-        let expected$1 = expected[0];
-        return new Ok(undefined);
-      } else if (expected instanceof EqArgs) {
-        let expected$1 = expected[0];
-        return new Error($int.to_string(expected$1));
+        if (actual === expected$1) {
+          return new Ok(undefined);
+        } else {
+          let expected$2 = expected[0];
+          return new Error($int.to_string(expected$2));
+        }
       } else {
         let expected$1 = expected[0];
-        return new Error("at least " + $int.to_string(expected$1));
+        if (actual >= expected$1) {
+          return new Ok(undefined);
+        } else {
+          let expected$2 = expected[0];
+          return new Error("at least " + $int.to_string(expected$2));
+        }
       }
     })(),
     (err) => {
@@ -490,38 +504,59 @@ function args_compare(expected, actual) {
 
 export function default_pretty_help() {
   let $ = $colour.from_rgb255(182, 255, 234);
-  if (!$.isOk()) {
+  if (!($ instanceof Ok)) {
     throw makeError(
       "let_assert",
+      FILEPATH,
       "glint",
       643,
       "default_pretty_help",
       "Pattern match failed, no pattern matched the value.",
-      { value: $ }
+      {
+        value: $,
+        start: 18767,
+        end: 18830,
+        pattern_start: 18778,
+        pattern_end: 18794
+      }
     )
   }
   let usage_colour = $[0];
   let $1 = $colour.from_rgb255(255, 175, 243);
-  if (!$1.isOk()) {
+  if (!($1 instanceof Ok)) {
     throw makeError(
       "let_assert",
+      FILEPATH,
       "glint",
       644,
       "default_pretty_help",
       "Pattern match failed, no pattern matched the value.",
-      { value: $1 }
+      {
+        value: $1,
+        start: 18833,
+        end: 18896,
+        pattern_start: 18844,
+        pattern_end: 18860
+      }
     )
   }
   let flags_colour = $1[0];
   let $2 = $colour.from_rgb255(252, 226, 174);
-  if (!$2.isOk()) {
+  if (!($2 instanceof Ok)) {
     throw makeError(
       "let_assert",
+      FILEPATH,
       "glint",
       645,
       "default_pretty_help",
       "Pattern match failed, no pattern matched the value.",
-      { value: $2 }
+      {
+        value: $2,
+        start: 18899,
+        end: 18968,
+        pattern_start: 18910,
+        pattern_end: 18932
+      }
     )
   }
   let subcommands_colour = $2[0];
@@ -530,20 +565,20 @@ export function default_pretty_help() {
 
 function flag_type_info(flag) {
   let $ = flag.value;
-  if ($ instanceof I) {
-    return "INT";
-  } else if ($ instanceof B) {
+  if ($ instanceof B) {
     return "BOOL";
+  } else if ($ instanceof I) {
+    return "INT";
+  } else if ($ instanceof LI) {
+    return "INT_LIST";
   } else if ($ instanceof F) {
     return "FLOAT";
   } else if ($ instanceof LF) {
     return "FLOAT_LIST";
-  } else if ($ instanceof LI) {
-    return "INT_LIST";
-  } else if ($ instanceof LS) {
-    return "STRING_LIST";
-  } else {
+  } else if ($ instanceof S) {
     return "STRING";
+  } else {
+    return "STRING_LIST";
   }
 }
 
@@ -653,24 +688,24 @@ function build_flags_help(flags) {
 }
 
 function build_command_help(name, node) {
-  let $ = (() => {
-    let _pipe = node.contents;
-    let _pipe$1 = $option.map(
-      _pipe,
-      (cmd) => {
-        return [
-          node.description,
-          build_flags_help(merge(node.group_flags, cmd.flags)),
-          cmd.unnamed_args,
-          cmd.named_args,
-        ];
-      },
-    );
-    return $option.unwrap(
-      _pipe$1,
-      [node.description, toList([]), new None(), toList([])],
-    );
-  })();
+  let _block;
+  let _pipe = node.contents;
+  let _pipe$1 = $option.map(
+    _pipe,
+    (cmd) => {
+      return [
+        node.description,
+        build_flags_help(merge(node.group_flags, cmd.flags)),
+        cmd.unnamed_args,
+        cmd.named_args,
+      ];
+    },
+  );
+  _block = $option.unwrap(
+    _pipe$1,
+    [node.description, toList([]), new None(), toList([])],
+  );
+  let $ = _block;
   let description = $[0];
   let flags = $[1];
   let unnamed_args$1 = $[2];
@@ -731,72 +766,72 @@ function construct_value(input, internal, constructor) {
 
 function compute_flag(input, current) {
   let _pipe = input;
-  let _pipe$1 = (() => {
-    if (current instanceof I) {
-      let internal = current[0];
-      return (_capture) => {
-        return construct_value(
-          _capture,
-          internal,
-          (var0) => { return new I(var0); },
-        );
-      };
-    } else if (current instanceof LI) {
-      let internal = current[0];
-      return (_capture) => {
-        return construct_value(
-          _capture,
-          internal,
-          (var0) => { return new LI(var0); },
-        );
-      };
-    } else if (current instanceof F) {
-      let internal = current[0];
-      return (_capture) => {
-        return construct_value(
-          _capture,
-          internal,
-          (var0) => { return new F(var0); },
-        );
-      };
-    } else if (current instanceof LF) {
-      let internal = current[0];
-      return (_capture) => {
-        return construct_value(
-          _capture,
-          internal,
-          (var0) => { return new LF(var0); },
-        );
-      };
-    } else if (current instanceof S) {
-      let internal = current[0];
-      return (_capture) => {
-        return construct_value(
-          _capture,
-          internal,
-          (var0) => { return new S(var0); },
-        );
-      };
-    } else if (current instanceof LS) {
-      let internal = current[0];
-      return (_capture) => {
-        return construct_value(
-          _capture,
-          internal,
-          (var0) => { return new LS(var0); },
-        );
-      };
-    } else {
-      let internal = current[0];
-      return (_capture) => {
-        return construct_value(
-          _capture,
-          internal,
-          (var0) => { return new B(var0); },
-        );
-      };
-    }
-  })()(_pipe);
+  let _block;
+  if (current instanceof B) {
+    let internal = current[0];
+    _block = (_capture) => {
+      return construct_value(
+        _capture,
+        internal,
+        (var0) => { return new B(var0); },
+      );
+    };
+  } else if (current instanceof I) {
+    let internal = current[0];
+    _block = (_capture) => {
+      return construct_value(
+        _capture,
+        internal,
+        (var0) => { return new I(var0); },
+      );
+    };
+  } else if (current instanceof LI) {
+    let internal = current[0];
+    _block = (_capture) => {
+      return construct_value(
+        _capture,
+        internal,
+        (var0) => { return new LI(var0); },
+      );
+    };
+  } else if (current instanceof F) {
+    let internal = current[0];
+    _block = (_capture) => {
+      return construct_value(
+        _capture,
+        internal,
+        (var0) => { return new F(var0); },
+      );
+    };
+  } else if (current instanceof LF) {
+    let internal = current[0];
+    _block = (_capture) => {
+      return construct_value(
+        _capture,
+        internal,
+        (var0) => { return new LF(var0); },
+      );
+    };
+  } else if (current instanceof S) {
+    let internal = current[0];
+    _block = (_capture) => {
+      return construct_value(
+        _capture,
+        internal,
+        (var0) => { return new S(var0); },
+      );
+    };
+  } else {
+    let internal = current[0];
+    _block = (_capture) => {
+      return construct_value(
+        _capture,
+        internal,
+        (var0) => { return new LS(var0); },
+      );
+    };
+  }
+  let _pipe$1 = _block(_pipe);
   return $snag.context(_pipe$1, "failed to compute value for flag");
 }
 
@@ -860,39 +895,38 @@ function attempt_toggle_flag(flags, key) {
     get(flags, key),
     (contents) => {
       let $ = contents.value;
-      if ($ instanceof B &&
-      $[0] instanceof FlagInternals &&
-      $[0].value instanceof None) {
-        let internal = $[0];
-        let _pipe = (() => {
+      if ($ instanceof B) {
+        let $1 = $[0].value;
+        if ($1 instanceof Some) {
+          let internal = $[0];
+          let val = $1[0];
+          let _block;
           let _record = internal;
-          return new FlagInternals(new Some(true), _record.parser);
-        })();
-        let _pipe$1 = new B(_pipe);
-        let _pipe$2 = ((val) => {
-          let _record = contents;
-          return new FlagEntry(val, _record.description);
-        })(_pipe$1);
-        let _pipe$3 = $dict.insert(flags.internal, key, _pipe$2);
-        let _pipe$4 = new Flags(_pipe$3);
-        return new Ok(_pipe$4);
-      } else if ($ instanceof B &&
-      $[0] instanceof FlagInternals &&
-      $[0].value instanceof Some) {
-        let internal = $[0];
-        let val = $[0].value[0];
-        let _pipe = (() => {
+          _block = new FlagInternals(new Some(!val), _record.parser);
+          let _pipe = _block;
+          let _pipe$1 = new B(_pipe);
+          let _pipe$2 = ((val) => {
+            let _record$1 = contents;
+            return new FlagEntry(val, _record$1.description);
+          })(_pipe$1);
+          let _pipe$3 = $dict.insert(flags.internal, key, _pipe$2);
+          let _pipe$4 = new Flags(_pipe$3);
+          return new Ok(_pipe$4);
+        } else {
+          let internal = $[0];
+          let _block;
           let _record = internal;
-          return new FlagInternals(new Some(!val), _record.parser);
-        })();
-        let _pipe$1 = new B(_pipe);
-        let _pipe$2 = ((val) => {
-          let _record = contents;
-          return new FlagEntry(val, _record.description);
-        })(_pipe$1);
-        let _pipe$3 = $dict.insert(flags.internal, key, _pipe$2);
-        let _pipe$4 = new Flags(_pipe$3);
-        return new Ok(_pipe$4);
+          _block = new FlagInternals(new Some(true), _record.parser);
+          let _pipe = _block;
+          let _pipe$1 = new B(_pipe);
+          let _pipe$2 = ((val) => {
+            let _record$1 = contents;
+            return new FlagEntry(val, _record$1.description);
+          })(_pipe$1);
+          let _pipe$3 = $dict.insert(flags.internal, key, _pipe$2);
+          let _pipe$4 = new Flags(_pipe$3);
+          return new Ok(_pipe$4);
+        }
       } else {
         return new Error(no_value_flag_err(key));
       }
@@ -919,15 +953,14 @@ function get_int_flag(flags, name) {
     name,
     (flag) => {
       let $ = flag.value;
-      if ($ instanceof I &&
-      $[0] instanceof FlagInternals &&
-      $[0].value instanceof Some) {
-        let val = $[0].value[0];
-        return new Ok(val);
-      } else if ($ instanceof I &&
-      $[0] instanceof FlagInternals &&
-      $[0].value instanceof None) {
-        return flag_not_provided_error();
+      if ($ instanceof I) {
+        let $1 = $[0].value;
+        if ($1 instanceof Some) {
+          let val = $1[0];
+          return new Ok(val);
+        } else {
+          return flag_not_provided_error();
+        }
       } else {
         return access_type_error("int");
       }
@@ -954,15 +987,14 @@ function get_ints_flag(flags, name) {
     name,
     (flag) => {
       let $ = flag.value;
-      if ($ instanceof LI &&
-      $[0] instanceof FlagInternals &&
-      $[0].value instanceof Some) {
-        let val = $[0].value[0];
-        return new Ok(val);
-      } else if ($ instanceof LI &&
-      $[0] instanceof FlagInternals &&
-      $[0].value instanceof None) {
-        return flag_not_provided_error();
+      if ($ instanceof LI) {
+        let $1 = $[0].value;
+        if ($1 instanceof Some) {
+          let val = $1[0];
+          return new Ok(val);
+        } else {
+          return flag_not_provided_error();
+        }
       } else {
         return access_type_error("int list");
       }
@@ -990,15 +1022,14 @@ function get_bool_flag(flags, name) {
     name,
     (flag) => {
       let $ = flag.value;
-      if ($ instanceof B &&
-      $[0] instanceof FlagInternals &&
-      $[0].value instanceof Some) {
-        let val = $[0].value[0];
-        return new Ok(val);
-      } else if ($ instanceof B &&
-      $[0] instanceof FlagInternals &&
-      $[0].value instanceof None) {
-        return flag_not_provided_error();
+      if ($ instanceof B) {
+        let $1 = $[0].value;
+        if ($1 instanceof Some) {
+          let val = $1[0];
+          return new Ok(val);
+        } else {
+          return flag_not_provided_error();
+        }
       } else {
         return access_type_error("bool");
       }
@@ -1034,15 +1065,14 @@ function get_string_flag(flags, name) {
     name,
     (flag) => {
       let $ = flag.value;
-      if ($ instanceof S &&
-      $[0] instanceof FlagInternals &&
-      $[0].value instanceof Some) {
-        let val = $[0].value[0];
-        return new Ok(val);
-      } else if ($ instanceof S &&
-      $[0] instanceof FlagInternals &&
-      $[0].value instanceof None) {
-        return flag_not_provided_error();
+      if ($ instanceof S) {
+        let $1 = $[0].value;
+        if ($1 instanceof Some) {
+          let val = $1[0];
+          return new Ok(val);
+        } else {
+          return flag_not_provided_error();
+        }
       } else {
         return access_type_error("string");
       }
@@ -1065,15 +1095,14 @@ function get_strings_flag(flags, name) {
     name,
     (flag) => {
       let $ = flag.value;
-      if ($ instanceof LS &&
-      $[0] instanceof FlagInternals &&
-      $[0].value instanceof Some) {
-        let val = $[0].value[0];
-        return new Ok(val);
-      } else if ($ instanceof LS &&
-      $[0] instanceof FlagInternals &&
-      $[0].value instanceof None) {
-        return flag_not_provided_error();
+      if ($ instanceof LS) {
+        let $1 = $[0].value;
+        if ($1 instanceof Some) {
+          let val = $1[0];
+          return new Ok(val);
+        } else {
+          return flag_not_provided_error();
+        }
       } else {
         return access_type_error("string list");
       }
@@ -1100,15 +1129,14 @@ function get_floats(flags, name) {
     name,
     (flag) => {
       let $ = flag.value;
-      if ($ instanceof F &&
-      $[0] instanceof FlagInternals &&
-      $[0].value instanceof Some) {
-        let val = $[0].value[0];
-        return new Ok(val);
-      } else if ($ instanceof F &&
-      $[0] instanceof FlagInternals &&
-      $[0].value instanceof None) {
-        return flag_not_provided_error();
+      if ($ instanceof F) {
+        let $1 = $[0].value;
+        if ($1 instanceof Some) {
+          let val = $1[0];
+          return new Ok(val);
+        } else {
+          return flag_not_provided_error();
+        }
       } else {
         return access_type_error("float");
       }
@@ -1135,15 +1163,14 @@ function get_floats_flag(flags, name) {
     name,
     (flag) => {
       let $ = flag.value;
-      if ($ instanceof LF &&
-      $[0] instanceof FlagInternals &&
-      $[0].value instanceof Some) {
-        let val = $[0].value[0];
-        return new Ok(val);
-      } else if ($ instanceof LF &&
-      $[0] instanceof FlagInternals &&
-      $[0].value instanceof None) {
-        return flag_not_provided_error();
+      if ($ instanceof LF) {
+        let $1 = $[0].value;
+        if ($1 instanceof Some) {
+          let val = $1[0];
+          return new Ok(val);
+        } else {
+          return flag_not_provided_error();
+        }
       } else {
         return access_type_error("float list");
       }
@@ -1166,7 +1193,7 @@ export function floats_flag(name) {
 }
 
 function do_update_at(node, path, f) {
-  if (path.hasLength(0)) {
+  if (path instanceof $Empty) {
     return f(node);
   } else {
     let next = path.head;
@@ -1300,7 +1327,7 @@ function cmd_help(path, cmd, config) {
 function update_flags(flags, flag_input) {
   let flag_input$1 = $string.drop_start(flag_input, $string.length(flag_prefix));
   let $ = $string.split_once(flag_input$1, flag_delimiter);
-  if ($.isOk()) {
+  if ($ instanceof Ok) {
     let data = $[0];
     return update_flag_value(flags, data);
   } else {
@@ -1401,26 +1428,28 @@ function do_execute(
     let flags = loop$flags;
     let help = loop$help;
     let command_path = loop$command_path;
-    if (args.hasLength(0) && (help)) {
-      return new Ok(new Help(cmd_help(command_path, cmd, config)));
-    } else if (args.hasLength(0)) {
-      let _pipe = execute_root(command_path, config, cmd, toList([]), flags);
-      return $result.map(_pipe, (var0) => { return new Out(var0); });
+    if (args instanceof $Empty) {
+      if (help) {
+        return new Ok(new Help(cmd_help(command_path, cmd, config)));
+      } else {
+        let _pipe = execute_root(command_path, config, cmd, toList([]), flags);
+        return $result.map(_pipe, (var0) => { return new Out(var0); });
+      }
     } else {
       let arg = args.head;
       let rest = args.tail;
       let $ = $dict.get(cmd.subcommands, arg);
-      if ($.isOk()) {
+      if ($ instanceof Ok) {
         let sub_command = $[0];
-        let _pipe = (() => {
-          let _record = sub_command;
-          return new CommandNode(
-            _record.contents,
-            _record.subcommands,
-            merge(cmd.group_flags, sub_command.group_flags),
-            _record.description,
-          );
-        })();
+        let _block;
+        let _record = sub_command;
+        _block = new CommandNode(
+          _record.contents,
+          _record.subcommands,
+          merge(cmd.group_flags, sub_command.group_flags),
+          _record.description,
+        );
+        let _pipe = _block;
         loop$cmd = _pipe;
         loop$config = config;
         loop$args = rest;
@@ -1439,30 +1468,41 @@ function do_execute(
 
 export function execute(glint, args) {
   let help_flag = flag_prefix + $help.help_flag.meta.name;
-  let $ = (() => {
-    let $1 = $list.partition(args, (s) => { return s === help_flag; });
-    if ($1[0].hasLength(0)) {
-      let args$1 = $1[1];
-      return [false, args$1];
-    } else {
-      let args$1 = $1[1];
-      return [true, args$1];
-    }
-  })();
+  let _block;
+  let $1 = $list.partition(args, (s) => { return s === help_flag; });
+  let $2 = $1[0];
+  if ($2 instanceof $Empty) {
+    let args$1 = $1[1];
+    _block = [false, args$1];
+  } else {
+    let args$1 = $1[1];
+    _block = [true, args$1];
+  }
+  let $ = _block;
   let help = $[0];
   let args$1 = $[1];
-  let $1 = $list.partition(
+  let $3 = $list.partition(
     args$1,
     (_capture) => { return $string.starts_with(_capture, flag_prefix); },
   );
-  let flags = $1[0];
-  let args$2 = $1[1];
+  let flags = $3[0];
+  let args$2 = $3[1];
   return do_execute(glint.cmd, glint.config, args$2, flags, help, toList([]));
 }
 
 export function run_and_handle(glint, args, handle) {
   let $ = execute(glint, args);
-  if (!$.isOk()) {
+  if ($ instanceof Ok) {
+    let $1 = $[0];
+    if ($1 instanceof Out) {
+      let out = $1[0];
+      handle(out);
+      return undefined;
+    } else {
+      let s = $1[0];
+      return $io.println(s);
+    }
+  } else {
     let s = $[0];
     $io.println(s);
     let $1 = glint.config.exit;
@@ -1471,13 +1511,6 @@ export function run_and_handle(glint, args, handle) {
     } else {
       return undefined;
     }
-  } else if ($.isOk() && $[0] instanceof Help) {
-    let s = $[0][0];
-    return $io.println(s);
-  } else {
-    let out = $[0][0];
-    handle(out);
-    return undefined;
   }
 }
 

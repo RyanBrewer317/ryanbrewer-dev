@@ -1,6 +1,6 @@
 -module(mist@internal@http2).
 -compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch]).
-
+-define(FILEPATH, "src/mist/internal/http2.gleam").
 -export([default_settings/0, update_settings/2, send_frame/3, hpack_new_context/1, hpack_max_table_size/2, hpack_decode/2, hpack_encode/2, send_bytes_tree/4]).
 -export_type([http2_settings/0, hpack_context/0, hpack_error/0]).
 
@@ -26,13 +26,13 @@
 
 -type hpack_error() :: compression | {bad_header_packet, bitstring()}.
 
--file("src/mist/internal/http2.gleam", 30).
+-file("src/mist/internal/http2.gleam", 29).
 ?DOC(false).
 -spec default_settings() -> http2_settings().
 default_settings() ->
     {http2_settings, 4096, disabled, 100, 65535, 16384, none}.
 
--file("src/mist/internal/http2.gleam", 41).
+-file("src/mist/internal/http2.gleam", 40).
 ?DOC(false).
 -spec update_settings(
     http2_settings(),
@@ -105,14 +105,14 @@ update_settings(Current, Settings) ->
             end end
     ).
 
--file("src/mist/internal/http2.gleam", 93).
+-file("src/mist/internal/http2.gleam", 92).
 ?DOC(false).
 -spec send_data(
     mist@internal@http:connection(),
     bitstring(),
     mist@internal@http2@frame:stream_identifier(mist@internal@http2@frame:frame()),
     boolean()
-) -> {ok, nil} | {error, gleam@erlang@process:exit_reason()}.
+) -> {ok, nil} | {error, binary()}.
 send_data(Conn, Data, Stream_identifier, End_stream) ->
     Data_frame = {data, Data, End_stream, Stream_identifier},
     Encoded = mist@internal@http2@frame:encode(Data_frame),
@@ -127,13 +127,13 @@ send_data(Conn, Data, Stream_identifier, End_stream) ->
             logging:log(
                 debug,
                 <<"failed to send :(  "/utf8,
-                    (gleam@erlang:format(Err))/binary>>
+                    (gleam@string:inspect(Err))/binary>>
             ),
-            {abnormal, <<"Failed to send HTTP/2 data"/utf8>>}
+            <<"Failed to send HTTP/2 data"/utf8>>
         end
     ).
 
--file("src/mist/internal/http2.gleam", 115).
+-file("src/mist/internal/http2.gleam", 114).
 ?DOC(false).
 -spec send_frame(
     mist@internal@http2@frame:frame(),
@@ -148,19 +148,19 @@ send_frame(Frame_to_send, Socket, Transport) ->
         gleam@bytes_tree:from_bit_array(Data)
     ).
 
--file("src/mist/internal/http2.gleam", 154).
+-file("src/mist/internal/http2.gleam", 153).
 ?DOC(false).
 -spec hpack_new_context(integer()) -> hpack_context().
 hpack_new_context(Size) ->
     hpack:new_context(Size).
 
--file("src/mist/internal/http2.gleam", 157).
+-file("src/mist/internal/http2.gleam", 156).
 ?DOC(false).
 -spec hpack_max_table_size(hpack_context(), integer()) -> hpack_context().
 hpack_max_table_size(Context, Size) ->
     mist_ffi:hpack_new_max_table_size(Context, Size).
 
--file("src/mist/internal/http2.gleam", 165).
+-file("src/mist/internal/http2.gleam", 164).
 ?DOC(false).
 -spec hpack_decode(hpack_context(), bitstring()) -> {ok,
         {list({binary(), binary()}), hpack_context()}} |
@@ -168,7 +168,7 @@ hpack_max_table_size(Context, Size) ->
 hpack_decode(Context, Bin) ->
     mist_ffi:hpack_decode(Context, Bin).
 
--file("src/mist/internal/http2.gleam", 171).
+-file("src/mist/internal/http2.gleam", 170).
 ?DOC(false).
 -spec hpack_encode(hpack_context(), list({binary(), binary()})) -> {ok,
         {bitstring(), hpack_context()}} |
@@ -176,7 +176,7 @@ hpack_decode(Context, Bin) ->
 hpack_encode(Context, Headers) ->
     mist_ffi:hpack_encode(Context, Headers).
 
--file("src/mist/internal/http2.gleam", 62).
+-file("src/mist/internal/http2.gleam", 61).
 ?DOC(false).
 -spec send_headers(
     hpack_context(),
@@ -184,10 +184,10 @@ hpack_encode(Context, Headers) ->
     list({binary(), binary()}),
     boolean(),
     mist@internal@http2@frame:stream_identifier(mist@internal@http2@frame:frame())
-) -> {ok, hpack_context()} | {error, gleam@erlang@process:exit_reason()}.
+) -> {ok, hpack_context()} | {error, binary()}.
 send_headers(Context, Conn, Headers, End_stream, Stream_identifier) ->
     _pipe = mist_ffi:hpack_encode(Context, Headers),
-    gleam@result:then(
+    gleam@result:'try'(
         _pipe,
         fun(Pair) ->
             {Headers@1, New_context} = Pair,
@@ -206,20 +206,19 @@ send_headers(Context, Conn, Headers, End_stream, Stream_identifier) ->
                     {ok, New_context};
 
                 {error, _} ->
-                    {error,
-                        {abnormal, <<"Failed to send HTTP/2 headers"/utf8>>}}
+                    {error, <<"Failed to send HTTP/2 headers"/utf8>>}
             end
         end
     ).
 
--file("src/mist/internal/http2.gleam", 125).
+-file("src/mist/internal/http2.gleam", 124).
 ?DOC(false).
 -spec send_bytes_tree(
     gleam@http@response:response(gleam@bytes_tree:bytes_tree()),
     mist@internal@http:connection(),
     hpack_context(),
     mist@internal@http2@frame:stream_identifier(mist@internal@http2@frame:frame())
-) -> {ok, hpack_context()} | {error, gleam@erlang@process:exit_reason()}.
+) -> {ok, hpack_context()} | {error, binary()}.
 send_bytes_tree(Resp, Conn, Context, Id) ->
     Resp@1 = begin
         _pipe = Resp,
@@ -234,7 +233,7 @@ send_bytes_tree(Resp, Conn, Context, Id) ->
 
         _ ->
             _pipe@1 = send_headers(Context, Conn, Headers, false, Id),
-            gleam@result:then(
+            gleam@result:'try'(
                 _pipe@1,
                 fun(Context@1) ->
                     _pipe@2 = send_data(

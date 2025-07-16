@@ -8,34 +8,36 @@ import * as $string from "../../gleam_stdlib/gleam/string.mjs";
 import * as $p from "../../party/party.mjs";
 import { Ok, Error, toList, CustomType as $CustomType, makeError } from "../gleam.mjs";
 
+const FILEPATH = "src/client/tinytypedlang.gleam";
+
 class LInt extends $CustomType {
-  constructor(x0) {
+  constructor($0) {
     super();
-    this[0] = x0;
+    this[0] = $0;
   }
 }
 
 class LVar extends $CustomType {
-  constructor(x0) {
+  constructor($0) {
     super();
-    this[0] = x0;
+    this[0] = $0;
   }
 }
 
 class LLambda extends $CustomType {
-  constructor(x0, x1, x2) {
+  constructor($0, $1, $2) {
     super();
-    this[0] = x0;
-    this[1] = x1;
-    this[2] = x2;
+    this[0] = $0;
+    this[1] = $1;
+    this[2] = $2;
   }
 }
 
 class LCall extends $CustomType {
-  constructor(x0, x1) {
+  constructor($0, $1) {
     super();
-    this[0] = x0;
-    this[1] = x1;
+    this[0] = $0;
+    this[1] = $1;
   }
 }
 
@@ -44,21 +46,21 @@ class LUniverse extends $CustomType {}
 class LIntType extends $CustomType {}
 
 class LPi extends $CustomType {
-  constructor(x0, x1, x2) {
+  constructor($0, $1, $2) {
     super();
-    this[0] = x0;
-    this[1] = x1;
-    this[2] = x2;
+    this[0] = $0;
+    this[1] = $1;
+    this[2] = $2;
   }
 }
 
 class LBinding extends $CustomType {
-  constructor(x0, x1, x2, x3) {
+  constructor($0, $1, $2, $3) {
     super();
-    this[0] = x0;
-    this[1] = x1;
-    this[2] = x2;
-    this[3] = x3;
+    this[0] = $0;
+    this[1] = $1;
+    this[2] = $2;
+    this[3] = $3;
   }
 }
 
@@ -78,35 +80,35 @@ class Wrapped extends $CustomType {
 }
 
 class IRInt extends $CustomType {
-  constructor(x0) {
+  constructor($0) {
     super();
-    this[0] = x0;
+    this[0] = $0;
   }
 }
 
 class IRVar extends $CustomType {
-  constructor(x0, x1) {
+  constructor($0, $1) {
     super();
-    this[0] = x0;
-    this[1] = x1;
+    this[0] = $0;
+    this[1] = $1;
   }
 }
 
 class IRLambda extends $CustomType {
-  constructor(x0, x1, x2, x3) {
+  constructor($0, $1, $2, $3) {
     super();
-    this[0] = x0;
-    this[1] = x1;
-    this[2] = x2;
-    this[3] = x3;
+    this[0] = $0;
+    this[1] = $1;
+    this[2] = $2;
+    this[3] = $3;
   }
 }
 
 class IRCall extends $CustomType {
-  constructor(x0, x1) {
+  constructor($0, $1) {
     super();
-    this[0] = x0;
-    this[1] = x1;
+    this[0] = $0;
+    this[1] = $1;
   }
 }
 
@@ -115,23 +117,23 @@ class IRUniverse extends $CustomType {}
 class IRIntType extends $CustomType {}
 
 class IRPi extends $CustomType {
-  constructor(x0, x1, x2, x3) {
+  constructor($0, $1, $2, $3) {
     super();
-    this[0] = x0;
-    this[1] = x1;
-    this[2] = x2;
-    this[3] = x3;
+    this[0] = $0;
+    this[1] = $1;
+    this[2] = $2;
+    this[3] = $3;
   }
 }
 
 class IRBinding extends $CustomType {
-  constructor(x0, x1, x2, x3, x4) {
+  constructor($0, $1, $2, $3, $4) {
     super();
-    this[0] = x0;
-    this[1] = x1;
-    this[2] = x2;
-    this[3] = x3;
-    this[4] = x4;
+    this[0] = $0;
+    this[1] = $1;
+    this[2] = $2;
+    this[3] = $3;
+    this[4] = $4;
   }
 }
 
@@ -147,9 +149,10 @@ function parse_int() {
         () => {
           throw makeError(
             "panic",
+            FILEPATH,
             "client/tinytypedlang",
             29,
-            "",
+            "parse_int",
             "parsed int isn't an int",
             {}
           )
@@ -219,7 +222,7 @@ function translate_helper(gen, e, renames) {
   } else if (e instanceof LVar) {
     let x = e[0];
     let $ = $dict.get(renames, x);
-    if ($.isOk()) {
+    if ($ instanceof Ok) {
       let i = $[0];
       return new Ok(new Wrapped(new IRVar(i, x), gen));
     } else {
@@ -404,12 +407,18 @@ function eval_helper(loop$e, loop$heap) {
     } else if (e instanceof IRVar) {
       let i = e[0];
       let $ = $dict.get(heap, i);
-      if ($.isOk()) {
+      if ($ instanceof Ok) {
         let val = $[0];
         return val;
       } else {
         return e;
       }
+    } else if (e instanceof IRLambda) {
+      let i = e[0];
+      let x = e[1];
+      let mb_t = e[2];
+      let e$1 = e[3];
+      return new IRLambda(i, x, mb_t, eval_helper(e$1, heap));
     } else if (e instanceof IRCall) {
       let func = e[0];
       let arg = e[1];
@@ -427,24 +436,18 @@ function eval_helper(loop$e, loop$heap) {
       return new IRUniverse();
     } else if (e instanceof IRIntType) {
       return new IRIntType();
-    } else if (e instanceof IRBinding) {
-      let i = e[0];
-      let v = e[3];
-      let e$1 = e[4];
-      loop$e = e$1;
-      loop$heap = $dict.insert(heap, i, eval_helper(v, heap));
-    } else if (e instanceof IRLambda) {
-      let i = e[0];
-      let x = e[1];
-      let mb_t = e[2];
-      let e$1 = e[3];
-      return new IRLambda(i, x, mb_t, eval_helper(e$1, heap));
-    } else {
+    } else if (e instanceof IRPi) {
       let i = e[0];
       let x = e[1];
       let a = e[2];
       let b = e[3];
       return new IRPi(i, x, eval_helper(a, heap), eval_helper(b, heap));
+    } else {
+      let i = e[0];
+      let v = e[3];
+      let e$1 = e[4];
+      loop$e = e$1;
+      loop$heap = $dict.insert(heap, i, eval_helper(v, heap));
     }
   }
 }
@@ -452,27 +455,43 @@ function eval_helper(loop$e, loop$heap) {
 function type_eq(e1, e2, heap) {
   let $ = eval_helper(e1, heap);
   let $1 = eval_helper(e2, heap);
-  if ($ instanceof IRVar && $1 instanceof IRVar) {
-    let i1 = $[0];
-    let i2 = $1[0];
-    return i1 === i2;
-  } else if ($ instanceof IRIntType && $1 instanceof IRIntType) {
-    return true;
-  } else if ($ instanceof IRUniverse && $1 instanceof IRUniverse) {
-    return true;
-  } else if ($ instanceof IRPi && $1 instanceof IRPi) {
-    let i1 = $[0];
-    let x = $[1];
-    let a1 = $[2];
-    let b1 = $[3];
-    let i2 = $1[0];
-    let a2 = $1[2];
-    let b2 = $1[3];
-    return type_eq(a1, a2, heap) && type_eq(
-      subst(b2, i2, new IRVar(i1, x)),
-      b1,
-      heap,
-    );
+  if ($1 instanceof IRVar) {
+    if ($ instanceof IRVar) {
+      let i2 = $1[0];
+      let i1 = $[0];
+      return i1 === i2;
+    } else {
+      return false;
+    }
+  } else if ($1 instanceof IRUniverse) {
+    if ($ instanceof IRUniverse) {
+      return true;
+    } else {
+      return false;
+    }
+  } else if ($1 instanceof IRIntType) {
+    if ($ instanceof IRIntType) {
+      return true;
+    } else {
+      return false;
+    }
+  } else if ($1 instanceof IRPi) {
+    if ($ instanceof IRPi) {
+      let i2 = $1[0];
+      let a2 = $1[2];
+      let b2 = $1[3];
+      let i1 = $[0];
+      let x = $[1];
+      let a1 = $[2];
+      let b1 = $[3];
+      return type_eq(a1, a2, heap) && type_eq(
+        subst(b2, i2, new IRVar(i1, x)),
+        b1,
+        heap,
+      );
+    } else {
+      return false;
+    }
   } else {
     return false;
   }
@@ -489,14 +508,17 @@ function occurs(loop$x, loop$e) {
     if (e instanceof IRVar) {
       let i = e[0];
       return i === x;
-    } else if (e instanceof IRLambda && e[2] instanceof Some) {
-      let t = e[2][0];
-      let e$1 = e[3];
-      return occurs(x, t) || occurs(x, e$1);
-    } else if (e instanceof IRLambda && e[2] instanceof None) {
-      let e$1 = e[3];
-      loop$x = x;
-      loop$e = e$1;
+    } else if (e instanceof IRLambda) {
+      let $ = e[2];
+      if ($ instanceof Some) {
+        let e$1 = e[3];
+        let t = $[0];
+        return occurs(x, t) || occurs(x, e$1);
+      } else {
+        let e$1 = e[3];
+        loop$x = x;
+        loop$e = e$1;
+      }
     } else if (e instanceof IRCall) {
       let func = e[0];
       let arg = e[1];
@@ -505,15 +527,18 @@ function occurs(loop$x, loop$e) {
       let a = e[2];
       let b = e[3];
       return occurs(x, a) || occurs(x, b);
-    } else if (e instanceof IRBinding && e[2] instanceof Some) {
-      let t = e[2][0];
-      let v = e[3];
-      let e$1 = e[4];
-      return (occurs(x, t) || occurs(x, v)) || occurs(x, e$1);
-    } else if (e instanceof IRBinding && e[2] instanceof None) {
-      let v = e[3];
-      let e$1 = e[4];
-      return occurs(x, v) || occurs(x, e$1);
+    } else if (e instanceof IRBinding) {
+      let $ = e[2];
+      if ($ instanceof Some) {
+        let v = e[3];
+        let e$1 = e[4];
+        let t = $[0];
+        return (occurs(x, t) || occurs(x, v)) || occurs(x, e$1);
+      } else {
+        let v = e[3];
+        let e$1 = e[4];
+        return occurs(x, v) || occurs(x, e$1);
+      }
     } else {
       return false;
     }
@@ -527,23 +552,29 @@ function pretty(e) {
   } else if (e instanceof IRVar) {
     let x = e[1];
     return x;
-  } else if (e instanceof IRLambda && e[2] instanceof Some) {
-    let x = e[1];
-    let t = e[2][0];
-    let e$1 = e[3];
-    return (((("\\" + x) + ": ") + pretty(t)) + ". ") + pretty(e$1);
-  } else if (e instanceof IRLambda && e[2] instanceof None) {
-    let x = e[1];
-    let e$1 = e[3];
-    return (("\\" + x) + ". ") + pretty(e$1);
-  } else if (e instanceof IRCall && e[0] instanceof IRLambda) {
-    let func = e[0];
-    let arg = e[1];
-    return ((("(" + pretty(func)) + ")(") + pretty(arg)) + ")";
+  } else if (e instanceof IRLambda) {
+    let $ = e[2];
+    if ($ instanceof Some) {
+      let x = e[1];
+      let e$1 = e[3];
+      let t = $[0];
+      return (((("\\" + x) + ": ") + pretty(t)) + ". ") + pretty(e$1);
+    } else {
+      let x = e[1];
+      let e$1 = e[3];
+      return (("\\" + x) + ". ") + pretty(e$1);
+    }
   } else if (e instanceof IRCall) {
-    let func = e[0];
-    let arg = e[1];
-    return ((pretty(func) + "(") + pretty(arg)) + ")";
+    let $ = e[0];
+    if ($ instanceof IRLambda) {
+      let func = $;
+      let arg = e[1];
+      return ((("(" + pretty(func)) + ")(") + pretty(arg)) + ")";
+    } else {
+      let func = $;
+      let arg = e[1];
+      return ((pretty(func) + "(") + pretty(arg)) + ")";
+    }
   } else if (e instanceof IRUniverse) {
     return "Type";
   } else if (e instanceof IRIntType) {
@@ -561,38 +592,41 @@ function pretty(e) {
         return (pretty(a) + "->") + pretty(b);
       } else if (a instanceof IRVar) {
         return (pretty(a) + "->") + pretty(b);
-      } else if (a instanceof IRUniverse) {
-        return (pretty(a) + "->") + pretty(b);
-      } else if (a instanceof IRIntType) {
-        return (pretty(a) + "->") + pretty(b);
       } else if (a instanceof IRLambda) {
         return (("(" + pretty(a)) + ") -> ") + pretty(b);
       } else if (a instanceof IRCall) {
         return (("(" + pretty(a)) + ") -> ") + pretty(b);
+      } else if (a instanceof IRUniverse) {
+        return (pretty(a) + "->") + pretty(b);
+      } else if (a instanceof IRIntType) {
+        return (pretty(a) + "->") + pretty(b);
       } else if (a instanceof IRPi) {
         return (("(" + pretty(a)) + ") -> ") + pretty(b);
       } else {
         return (("(" + pretty(a)) + ") -> ") + pretty(b);
       }
     }
-  } else if (e instanceof IRBinding && e[2] instanceof Some) {
-    let x = e[1];
-    let t = e[2][0];
-    let v = e[3];
-    let e$1 = e[4];
-    return (((((("let " + x) + ": ") + pretty(t)) + " = ") + pretty(v)) + ";\n") + pretty(
-      e$1,
-    );
   } else {
-    let x = e[1];
-    let v = e[3];
-    let e$1 = e[4];
-    return (((("let " + x) + " = ") + pretty(v)) + ";\n") + pretty(e$1);
+    let $ = e[2];
+    if ($ instanceof Some) {
+      let x = e[1];
+      let v = e[3];
+      let e$1 = e[4];
+      let t = $[0];
+      return (((((("let " + x) + ": ") + pretty(t)) + " = ") + pretty(v)) + ";\n") + pretty(
+        e$1,
+      );
+    } else {
+      let x = e[1];
+      let v = e[3];
+      let e$1 = e[4];
+      return (((("let " + x) + " = ") + pretty(v)) + ";\n") + pretty(e$1);
+    }
   }
 }
 
 function squash_res(res) {
-  if (res.isOk()) {
+  if (res instanceof Ok) {
     let a = res[0];
     return a;
   } else {
@@ -672,6 +706,22 @@ function infer_type(e, gamma, heap) {
         return ("Variable " + x) + " is not defined in the current context.";
       },
     );
+  } else if (e instanceof IRLambda) {
+    let $ = e[2];
+    if ($ instanceof Some) {
+      let i = e[0];
+      let x = e[1];
+      let e$1 = e[3];
+      let arg_t = $[0];
+      return $result.try$(
+        infer_type(e$1, $dict.insert(gamma, i, arg_t), heap),
+        (t) => { return new Ok(new IRPi(i, x, arg_t, t)); },
+      );
+    } else {
+      return new Error(
+        "Type error. Can't infer the type of this lambda. Try annotating it with a `let` expression.",
+      );
+    }
   } else if (e instanceof IRCall) {
     let func = e[0];
     let arg = e[1];
@@ -693,6 +743,10 @@ function infer_type(e, gamma, heap) {
         }
       },
     );
+  } else if (e instanceof IRUniverse) {
+    return new Ok(new IRUniverse());
+  } else if (e instanceof IRIntType) {
+    return new Ok(new IRUniverse());
   } else if (e instanceof IRPi) {
     let i = e[0];
     let a = e[2];
@@ -706,52 +760,38 @@ function infer_type(e, gamma, heap) {
         );
       },
     );
-  } else if (e instanceof IRIntType) {
-    return new Ok(new IRUniverse());
-  } else if (e instanceof IRUniverse) {
-    return new Ok(new IRUniverse());
-  } else if (e instanceof IRBinding && e[2] instanceof Some) {
-    let i = e[0];
-    let t = e[2][0];
-    let v = e[3];
-    let e$1 = e[4];
-    return $result.try$(
-      type_check(v, t, gamma, heap),
-      (_) => {
-        return infer_type(
-          e$1,
-          $dict.insert(gamma, i, t),
-          $dict.insert(heap, i, v),
-        );
-      },
-    );
-  } else if (e instanceof IRBinding && e[2] instanceof None) {
-    let i = e[0];
-    let v = e[3];
-    let e$1 = e[4];
-    return $result.try$(
-      infer_type(v, gamma, heap),
-      (v_t) => {
-        return infer_type(
-          e$1,
-          $dict.insert(gamma, i, v_t),
-          $dict.insert(heap, i, v),
-        );
-      },
-    );
-  } else if (e instanceof IRLambda && e[2] instanceof Some) {
-    let i = e[0];
-    let x = e[1];
-    let arg_t = e[2][0];
-    let e$1 = e[3];
-    return $result.try$(
-      infer_type(e$1, $dict.insert(gamma, i, arg_t), heap),
-      (t) => { return new Ok(new IRPi(i, x, arg_t, t)); },
-    );
   } else {
-    return new Error(
-      "Type error. Can't infer the type of this lambda. Try annotating it with a `let` expression.",
-    );
+    let $ = e[2];
+    if ($ instanceof Some) {
+      let i = e[0];
+      let v = e[3];
+      let e$1 = e[4];
+      let t = $[0];
+      return $result.try$(
+        type_check(v, t, gamma, heap),
+        (_) => {
+          return infer_type(
+            e$1,
+            $dict.insert(gamma, i, t),
+            $dict.insert(heap, i, v),
+          );
+        },
+      );
+    } else {
+      let i = e[0];
+      let v = e[3];
+      let e$1 = e[4];
+      return $result.try$(
+        infer_type(v, gamma, heap),
+        (v_t) => {
+          return infer_type(
+            e$1,
+            $dict.insert(gamma, i, v_t),
+            $dict.insert(heap, i, v),
+          );
+        },
+      );
+    }
   }
 }
 
@@ -809,7 +849,7 @@ function expr() {
                     (res) => {
                       return $p.do$(
                         (() => {
-                          if (res.isOk()) {
+                          if (res instanceof Ok) {
                             return $p.do$(
                               $p.lazy(expr),
                               (rett) => {
@@ -906,7 +946,7 @@ function parse_lambda() {
                     (res) => {
                       return $p.do$(
                         (() => {
-                          if (res.isOk()) {
+                          if (res instanceof Ok) {
                             return $p.map(
                               $p.lazy(expr),
                               (var0) => { return new Some(var0); },
@@ -964,7 +1004,7 @@ function parse_binding() {
                     (res) => {
                       return $p.do$(
                         (() => {
-                          if (res.isOk()) {
+                          if (res instanceof Ok) {
                             return $p.map(
                               $p.lazy(expr),
                               (var0) => { return new Some(var0); },

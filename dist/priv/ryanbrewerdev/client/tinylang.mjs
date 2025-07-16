@@ -6,33 +6,35 @@ import * as $string from "../../gleam_stdlib/gleam/string.mjs";
 import * as $p from "../../party/party.mjs";
 import { Ok, Error, toList, CustomType as $CustomType, makeError } from "../gleam.mjs";
 
+const FILEPATH = "src/client/tinylang.gleam";
+
 class LInt extends $CustomType {
-  constructor(x0) {
+  constructor($0) {
     super();
-    this[0] = x0;
+    this[0] = $0;
   }
 }
 
 class LVar extends $CustomType {
-  constructor(x0) {
+  constructor($0) {
     super();
-    this[0] = x0;
+    this[0] = $0;
   }
 }
 
 class LLambda extends $CustomType {
-  constructor(x0, x1) {
+  constructor($0, $1) {
     super();
-    this[0] = x0;
-    this[1] = x1;
+    this[0] = $0;
+    this[1] = $1;
   }
 }
 
 class LCall extends $CustomType {
-  constructor(x0, x1) {
+  constructor($0, $1) {
     super();
-    this[0] = x0;
-    this[1] = x1;
+    this[0] = $0;
+    this[1] = $1;
   }
 }
 
@@ -52,34 +54,34 @@ class Wrapped extends $CustomType {
 }
 
 class IRInt extends $CustomType {
-  constructor(x0) {
+  constructor($0) {
     super();
-    this[0] = x0;
+    this[0] = $0;
   }
 }
 
 class IRVar extends $CustomType {
-  constructor(x0, x1) {
+  constructor($0, $1) {
     super();
-    this[0] = x0;
-    this[1] = x1;
+    this[0] = $0;
+    this[1] = $1;
   }
 }
 
 class IRLambda extends $CustomType {
-  constructor(x0, x1, x2) {
+  constructor($0, $1, $2) {
     super();
-    this[0] = x0;
-    this[1] = x1;
-    this[2] = x2;
+    this[0] = $0;
+    this[1] = $1;
+    this[2] = $2;
   }
 }
 
 class IRCall extends $CustomType {
-  constructor(x0, x1) {
+  constructor($0, $1) {
     super();
-    this[0] = x0;
-    this[1] = x1;
+    this[0] = $0;
+    this[1] = $1;
   }
 }
 
@@ -95,9 +97,10 @@ function parse_int() {
         () => {
           throw makeError(
             "panic",
+            FILEPATH,
             "client/tinylang",
             24,
-            "",
+            "parse_int",
             "parsed int isn't an int",
             {}
           )
@@ -143,7 +146,7 @@ function translate_helper(gen, e, renames) {
   } else if (e instanceof LVar) {
     let x = e[0];
     let $ = $dict.get(renames, x);
-    if ($.isOk()) {
+    if ($ instanceof Ok) {
       let i = $[0];
       return new Ok(new Wrapped(new IRVar(i, x), gen));
     } else {
@@ -200,13 +203,18 @@ function eval_helper(loop$e, loop$heap) {
     } else if (e instanceof IRVar) {
       let i = e[0];
       let $ = $dict.get(heap, i);
-      if ($.isOk()) {
+      if ($ instanceof Ok) {
         let val = $[0];
         return val;
       } else {
         return e;
       }
-    } else if (e instanceof IRCall) {
+    } else if (e instanceof IRLambda) {
+      let i = e[0];
+      let x = e[1];
+      let e$1 = e[2];
+      return new IRLambda(i, x, eval_helper(e$1, heap));
+    } else {
       let func = e[0];
       let arg = e[1];
       let func$1 = eval_helper(func, heap);
@@ -219,11 +227,6 @@ function eval_helper(loop$e, loop$heap) {
       } else {
         return new IRCall(func$1, arg$1);
       }
-    } else {
-      let i = e[0];
-      let x = e[1];
-      let e$1 = e[2];
-      return new IRLambda(i, x, eval_helper(e$1, heap));
     }
   }
 }
@@ -243,19 +246,22 @@ function pretty(e) {
     let x = e[1];
     let e$1 = e[2];
     return (("\\" + x) + ". ") + pretty(e$1);
-  } else if (e instanceof IRCall && e[0] instanceof IRLambda) {
-    let func = e[0];
-    let arg = e[1];
-    return ((("(" + pretty(func)) + ")(") + pretty(arg)) + ")";
   } else {
-    let func = e[0];
-    let arg = e[1];
-    return ((pretty(func) + "(") + pretty(arg)) + ")";
+    let $ = e[0];
+    if ($ instanceof IRLambda) {
+      let func = $;
+      let arg = e[1];
+      return ((("(" + pretty(func)) + ")(") + pretty(arg)) + ")";
+    } else {
+      let func = $;
+      let arg = e[1];
+      return ((pretty(func) + "(") + pretty(arg)) + ")";
+    }
   }
 }
 
 function squash_res(res) {
-  if (res.isOk()) {
+  if (res instanceof Ok) {
     let a = res[0];
     return a;
   } else {

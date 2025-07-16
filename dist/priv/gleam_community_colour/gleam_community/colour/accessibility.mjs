@@ -1,7 +1,9 @@
 import * as $float from "../../../gleam_stdlib/gleam/float.mjs";
 import * as $list from "../../../gleam_stdlib/gleam/list.mjs";
-import { makeError, divideFloat } from "../../gleam.mjs";
+import { Ok, makeError, divideFloat } from "../../gleam.mjs";
 import * as $colour from "../../gleam_community/colour.mjs";
+
+const FILEPATH = "src/gleam_community/colour/accessibility.gleam";
 
 function intensity(colour_value) {
   let $ = true;
@@ -9,14 +11,21 @@ function intensity(colour_value) {
     return divideFloat(colour_value, 12.92);
   } else {
     let $1 = $float.power(divideFloat((colour_value + 0.055), 1.055), 2.4);
-    if (!$1.isOk()) {
+    if (!($1 instanceof Ok)) {
       throw makeError(
         "let_assert",
+        FILEPATH,
         "gleam_community/colour/accessibility",
         62,
         "intensity",
         "Pattern match failed, no pattern matched the value.",
-        { value: $1 }
+        {
+          value: $1,
+          start: 2399,
+          end: 2470,
+          pattern_start: 2410,
+          pattern_end: 2415
+        }
       )
     }
     let i = $1[0];

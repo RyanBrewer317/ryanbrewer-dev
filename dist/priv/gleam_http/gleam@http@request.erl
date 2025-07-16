@@ -1,6 +1,6 @@
 -module(gleam@http@request).
 -compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch]).
-
+-define(FILEPATH, "src/gleam/http/request.gleam").
 -export([to_uri/1, from_uri/1, get_header/2, set_header/3, prepend_header/3, set_body/2, map/2, path_segments/1, get_query/1, set_query/2, set_method/2, new/0, to/1, set_scheme/2, set_host/2, set_port/2, set_path/2, set_cookie/3, get_cookies/1, remove_cookie/2]).
 -export_type([request/1]).
 
@@ -12,10 +12,10 @@
 -define(DOC(Str), -compile([])).
 -endif.
 
--type request(GMZ) :: {request,
+-type request(EGK) :: {request,
         gleam@http:method(),
         list({binary(), binary()}),
-        GMZ,
+        EGK,
         gleam@http:scheme(),
         binary(),
         gleam@option:option(integer()),
@@ -39,14 +39,14 @@ to_uri(Request) ->
 ?DOC(" Construct a request from a URI.\n").
 -spec from_uri(gleam@uri:uri()) -> {ok, request(binary())} | {error, nil}.
 from_uri(Uri) ->
-    gleam@result:then(
+    gleam@result:'try'(
         begin
             _pipe = erlang:element(2, Uri),
             _pipe@1 = gleam@option:unwrap(_pipe, <<""/utf8>>),
             gleam@http:scheme_from_string(_pipe@1)
         end,
         fun(Scheme) ->
-            gleam@result:then(
+            gleam@result:'try'(
                 begin
                     _pipe@2 = erlang:element(4, Uri),
                     gleam@option:to_result(_pipe@2, nil)
@@ -89,23 +89,22 @@ get_header(Request, Key) ->
     " Header keys are always lowercase in `gleam_http`. To use any uppercase\n"
     " letter is invalid.\n"
 ).
--spec set_header(request(GNJ), binary(), binary()) -> request(GNJ).
+-spec set_header(request(EGU), binary(), binary()) -> request(EGU).
 set_header(Request, Key, Value) ->
     Headers = gleam@list:key_set(
         erlang:element(3, Request),
         string:lowercase(Key),
         Value
     ),
-    _record = Request,
     {request,
-        erlang:element(2, _record),
+        erlang:element(2, Request),
         Headers,
-        erlang:element(4, _record),
-        erlang:element(5, _record),
-        erlang:element(6, _record),
-        erlang:element(7, _record),
-        erlang:element(8, _record),
-        erlang:element(9, _record)}.
+        erlang:element(4, Request),
+        erlang:element(5, Request),
+        erlang:element(6, Request),
+        erlang:element(7, Request),
+        erlang:element(8, Request),
+        erlang:element(9, Request)}.
 
 -file("src/gleam/http/request.gleam", 103).
 ?DOC(
@@ -117,30 +116,29 @@ set_header(Request, Key, Value) ->
     " Header keys are always lowercase in `gleam_http`. To use any uppercase\n"
     " letter is invalid.\n"
 ).
--spec prepend_header(request(GNM), binary(), binary()) -> request(GNM).
+-spec prepend_header(request(EGX), binary(), binary()) -> request(EGX).
 prepend_header(Request, Key, Value) ->
     Headers = [{string:lowercase(Key), Value} | erlang:element(3, Request)],
-    _record = Request,
     {request,
-        erlang:element(2, _record),
+        erlang:element(2, Request),
         Headers,
-        erlang:element(4, _record),
-        erlang:element(5, _record),
-        erlang:element(6, _record),
-        erlang:element(7, _record),
-        erlang:element(8, _record),
-        erlang:element(9, _record)}.
+        erlang:element(4, Request),
+        erlang:element(5, Request),
+        erlang:element(6, Request),
+        erlang:element(7, Request),
+        erlang:element(8, Request),
+        erlang:element(9, Request)}.
 
 -file("src/gleam/http/request.gleam", 115).
 ?DOC(" Set the body of the request, overwriting any existing body.\n").
--spec set_body(request(any()), GNR) -> request(GNR).
+-spec set_body(request(any()), EHC) -> request(EHC).
 set_body(Req, Body) ->
     {request, Method, Headers, _, Scheme, Host, Port, Path, Query} = Req,
     {request, Method, Headers, Body, Scheme, Host, Port, Path, Query}.
 
 -file("src/gleam/http/request.gleam", 140).
 ?DOC(" Update the body of a request using a given function.\n").
--spec map(request(GNT), fun((GNT) -> GNV)) -> request(GNV).
+-spec map(request(EHE), fun((EHE) -> EHG)) -> request(EHG).
 map(Request, Transform) ->
     _pipe = erlang:element(4, Request),
     _pipe@1 = Transform(_pipe),
@@ -182,7 +180,7 @@ get_query(Request) ->
     " Set the query of the request.\n"
     " Query params will be percent encoded before being added to the Request.\n"
 ).
--spec set_query(request(GOF), list({binary(), binary()})) -> request(GOF).
+-spec set_query(request(EHQ), list({binary(), binary()})) -> request(EHQ).
 set_query(Req, Query) ->
     Pair = fun(T) ->
         <<<<(gleam_stdlib:percent_encode(erlang:element(1, T)))/binary,
@@ -193,34 +191,32 @@ set_query(Req, Query) ->
         _pipe = Query,
         _pipe@1 = gleam@list:map(_pipe, Pair),
         _pipe@2 = gleam@list:intersperse(_pipe@1, <<"&"/utf8>>),
-        _pipe@3 = gleam@string:concat(_pipe@2),
+        _pipe@3 = erlang:list_to_binary(_pipe@2),
         {some, _pipe@3}
     end,
-    _record = Req,
     {request,
-        erlang:element(2, _record),
-        erlang:element(3, _record),
-        erlang:element(4, _record),
-        erlang:element(5, _record),
-        erlang:element(6, _record),
-        erlang:element(7, _record),
-        erlang:element(8, _record),
+        erlang:element(2, Req),
+        erlang:element(3, Req),
+        erlang:element(4, Req),
+        erlang:element(5, Req),
+        erlang:element(6, Req),
+        erlang:element(7, Req),
+        erlang:element(8, Req),
         Query@1}.
 
 -file("src/gleam/http/request.gleam", 194).
 ?DOC(" Set the method of the request.\n").
--spec set_method(request(GOJ), gleam@http:method()) -> request(GOJ).
+-spec set_method(request(EHU), gleam@http:method()) -> request(EHU).
 set_method(Req, Method) ->
-    _record = Req,
     {request,
         Method,
-        erlang:element(3, _record),
-        erlang:element(4, _record),
-        erlang:element(5, _record),
-        erlang:element(6, _record),
-        erlang:element(7, _record),
-        erlang:element(8, _record),
-        erlang:element(9, _record)}.
+        erlang:element(3, Req),
+        erlang:element(4, Req),
+        erlang:element(5, Req),
+        erlang:element(6, Req),
+        erlang:element(7, Req),
+        erlang:element(8, Req),
+        erlang:element(9, Req)}.
 
 -file("src/gleam/http/request.gleam", 201).
 ?DOC(
@@ -245,67 +241,63 @@ new() ->
 to(Url) ->
     _pipe = Url,
     _pipe@1 = gleam_stdlib:uri_parse(_pipe),
-    gleam@result:then(_pipe@1, fun from_uri/1).
+    gleam@result:'try'(_pipe@1, fun from_uri/1).
 
 -file("src/gleam/http/request.gleam", 224).
 ?DOC(" Set the scheme (protocol) of the request.\n").
--spec set_scheme(request(GOQ), gleam@http:scheme()) -> request(GOQ).
+-spec set_scheme(request(EIB), gleam@http:scheme()) -> request(EIB).
 set_scheme(Req, Scheme) ->
-    _record = Req,
     {request,
-        erlang:element(2, _record),
-        erlang:element(3, _record),
-        erlang:element(4, _record),
+        erlang:element(2, Req),
+        erlang:element(3, Req),
+        erlang:element(4, Req),
         Scheme,
-        erlang:element(6, _record),
-        erlang:element(7, _record),
-        erlang:element(8, _record),
-        erlang:element(9, _record)}.
+        erlang:element(6, Req),
+        erlang:element(7, Req),
+        erlang:element(8, Req),
+        erlang:element(9, Req)}.
 
 -file("src/gleam/http/request.gleam", 230).
 ?DOC(" Set the host of the request.\n").
--spec set_host(request(GOT), binary()) -> request(GOT).
+-spec set_host(request(EIE), binary()) -> request(EIE).
 set_host(Req, Host) ->
-    _record = Req,
     {request,
-        erlang:element(2, _record),
-        erlang:element(3, _record),
-        erlang:element(4, _record),
-        erlang:element(5, _record),
+        erlang:element(2, Req),
+        erlang:element(3, Req),
+        erlang:element(4, Req),
+        erlang:element(5, Req),
         Host,
-        erlang:element(7, _record),
-        erlang:element(8, _record),
-        erlang:element(9, _record)}.
+        erlang:element(7, Req),
+        erlang:element(8, Req),
+        erlang:element(9, Req)}.
 
 -file("src/gleam/http/request.gleam", 236).
 ?DOC(" Set the port of the request.\n").
--spec set_port(request(GOW), integer()) -> request(GOW).
+-spec set_port(request(EIH), integer()) -> request(EIH).
 set_port(Req, Port) ->
-    _record = Req,
     {request,
-        erlang:element(2, _record),
-        erlang:element(3, _record),
-        erlang:element(4, _record),
-        erlang:element(5, _record),
-        erlang:element(6, _record),
+        erlang:element(2, Req),
+        erlang:element(3, Req),
+        erlang:element(4, Req),
+        erlang:element(5, Req),
+        erlang:element(6, Req),
         {some, Port},
-        erlang:element(8, _record),
-        erlang:element(9, _record)}.
+        erlang:element(8, Req),
+        erlang:element(9, Req)}.
 
 -file("src/gleam/http/request.gleam", 242).
 ?DOC(" Set the path of the request.\n").
--spec set_path(request(GOZ), binary()) -> request(GOZ).
+-spec set_path(request(EIK), binary()) -> request(EIK).
 set_path(Req, Path) ->
-    _record = Req,
     {request,
-        erlang:element(2, _record),
-        erlang:element(3, _record),
-        erlang:element(4, _record),
-        erlang:element(5, _record),
-        erlang:element(6, _record),
-        erlang:element(7, _record),
+        erlang:element(2, Req),
+        erlang:element(3, Req),
+        erlang:element(4, Req),
+        erlang:element(5, Req),
+        erlang:element(6, Req),
+        erlang:element(7, Req),
         Path,
-        erlang:element(9, _record)}.
+        erlang:element(9, Req)}.
 
 -file("src/gleam/http/request.gleam", 249).
 ?DOC(
@@ -313,7 +305,7 @@ set_path(Req, Path) ->
     "\n"
     " Multiple cookies are added to the same cookie header.\n"
 ).
--spec set_cookie(request(GPC), binary(), binary()) -> request(GPC).
+-spec set_cookie(request(EIN), binary(), binary()) -> request(EIN).
 set_cookie(Req, Name, Value) ->
     New_cookie_string = gleam@string:join([Name, Value], <<"="/utf8>>),
     {Cookies_string@2, Headers@1} = case gleam@list:key_pop(
@@ -330,16 +322,15 @@ set_cookie(Req, Name, Value) ->
         {error, nil} ->
             {New_cookie_string, erlang:element(3, Req)}
     end,
-    _record = Req,
     {request,
-        erlang:element(2, _record),
+        erlang:element(2, Req),
         [{<<"cookie"/utf8>>, Cookies_string@2} | Headers@1],
-        erlang:element(4, _record),
-        erlang:element(5, _record),
-        erlang:element(6, _record),
-        erlang:element(7, _record),
-        erlang:element(8, _record),
-        erlang:element(9, _record)}.
+        erlang:element(4, Req),
+        erlang:element(5, Req),
+        erlang:element(6, Req),
+        erlang:element(7, Req),
+        erlang:element(8, Req),
+        erlang:element(9, Req)}.
 
 -file("src/gleam/http/request.gleam", 268).
 ?DOC(
@@ -374,7 +365,7 @@ get_cookies(Req) ->
     " Remove a cookie from the request. If no cookie is found return the request unchanged.\n"
     " This will not remove the cookie from the client.\n"
 ).
--spec remove_cookie(request(GPH), binary()) -> request(GPH).
+-spec remove_cookie(request(EIS), binary()) -> request(EIS).
 remove_cookie(Req, Name) ->
     case gleam@list:key_pop(erlang:element(3, Req), <<"cookie"/utf8>>) of
         {ok, {Cookies_string, Headers}} ->
@@ -392,16 +383,15 @@ remove_cookie(Req, Name) ->
                 ),
                 gleam@string:join(_pipe@4, <<";"/utf8>>)
             end,
-            _record = Req,
             {request,
-                erlang:element(2, _record),
+                erlang:element(2, Req),
                 [{<<"cookie"/utf8>>, New_cookies_string} | Headers],
-                erlang:element(4, _record),
-                erlang:element(5, _record),
-                erlang:element(6, _record),
-                erlang:element(7, _record),
-                erlang:element(8, _record),
-                erlang:element(9, _record)};
+                erlang:element(4, Req),
+                erlang:element(5, Req),
+                erlang:element(6, Req),
+                erlang:element(7, Req),
+                erlang:element(8, Req),
+                erlang:element(9, Req)};
 
         {error, _} ->
             Req
