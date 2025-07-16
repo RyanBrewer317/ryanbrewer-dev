@@ -230,7 +230,7 @@ function view(model) {
           a(
             toList([
               href(
-                "https://github.com/RyanBrewer317/candle_gleam/blob/f0dcb9f7368dd325c335acfd4deb2d2e86560b5f/candle/main.cd",
+                "https://github.com/RyanBrewer317/candle_gleam/blob/43d592a8be23542b55f91e1a8ff6d343251b0fdb/candle/main.cd",
               ),
             ]),
             toList([text("big file")]),
