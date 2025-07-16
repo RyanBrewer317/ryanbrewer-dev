@@ -179,6 +179,21 @@ Type annotations are introduced by ",
       text("."),
     ]),
     br([]),
+    textarea(
+      [
+        id("candle-code"),
+        class("code"),
+        placeholder(
+          "Play with Candle! Example: let hetero_uip0{A: Set}{B: Set}{x: A}{y: B}
+  : (x = x) & (y = y)
+  := [refl(x), refl(y)] in
+  2",
+        ),
+        event.on_input(NewCandleCode),
+      ],
+      model.candle_code,
+    ),
+    br([]),
     {
       case model {
         Model(_, _, "") -> text("")
@@ -188,7 +203,7 @@ Type annotations are introduced by ",
             div([], [
               strong([], [text("output")]),
               text(": "),
-              div([id("deptyped-code-output"), class("code-output")], [text(s)]),
+              div([id("candle-code-output"), class("code-output")], [text(s)]),
             ])
           }
       }

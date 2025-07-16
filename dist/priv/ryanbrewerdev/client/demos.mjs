@@ -230,6 +230,18 @@ function view(model) {
         ]),
       ),
       br(toList([])),
+      textarea(
+        toList([
+          id("candle-code"),
+          class$("code"),
+          placeholder(
+            "Play with Candle! Example: let hetero_uip0{A: Set}{B: Set}{x: A}{y: B}\n  : (x = x) & (y = y)\n  := [refl(x), refl(y)] in\n  2",
+          ),
+          $event.on_input((var0) => { return new NewCandleCode(var0); }),
+        ]),
+        model.candle_code,
+      ),
+      br(toList([])),
       (() => {
         let $ = model.candle_code;
         if ($ === "") {
@@ -244,7 +256,7 @@ function view(model) {
                 strong(toList([]), toList([text("output")])),
                 text(": "),
                 div(
-                  toList([id("deptyped-code-output"), class$("code-output")]),
+                  toList([id("candle-code-output"), class$("code-output")]),
                   toList([text(s)]),
                 ),
               ]),
