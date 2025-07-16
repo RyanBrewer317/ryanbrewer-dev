@@ -216,7 +216,7 @@ function view(model) {
         toList([]),
         toList([
           text(
-            "Lastly, here's a simple proof assistant, implementing Andrew Marmaduke's ",
+            "Lastly, here's a simple proof assistant called Candle, implementing Andrew Marmaduke's ",
           ),
           a(
             toList([
@@ -225,6 +225,15 @@ function view(model) {
               ),
             ]),
             toList([text("PhD thesis")]),
+          ),
+          text(". To see more example Candle code, check out this "),
+          a(
+            toList([
+              href(
+                "https://github.com/RyanBrewer317/candle_gleam/blob/f0dcb9f7368dd325c335acfd4deb2d2e86560b5f/candle/main.cd",
+              ),
+            ]),
+            toList([text("big file")]),
           ),
           text("."),
         ]),

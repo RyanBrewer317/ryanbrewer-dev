@@ -166,7 +166,7 @@ Type annotations are introduced by ",
     },
     p([], [
       text(
-        "Lastly, here's a simple proof assistant, implementing Andrew Marmaduke's ",
+        "Lastly, here's a simple proof assistant called Candle, implementing Andrew Marmaduke's ",
       ),
       a(
         [
@@ -175,6 +175,15 @@ Type annotations are introduced by ",
           ),
         ],
         [text("PhD thesis")],
+      ),
+      text(". To see more example Candle code, check out this "),
+      a(
+        [
+          href(
+            "https://github.com/RyanBrewer317/candle_gleam/blob/f0dcb9f7368dd325c335acfd4deb2d2e86560b5f/candle/main.cd",
+          ),
+        ],
+        [text("big file")],
       ),
       text("."),
     ]),
