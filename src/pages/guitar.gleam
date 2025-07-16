@@ -61,7 +61,7 @@ fn thumbnail(name: String, artist: String, url: String) -> Element(Nil) {
       [
         attribute.width(400),
         attribute.controls(True),
-        attribute.style([#("margin-top", "15pt")]),
+        attribute.style("margin-top", "15pt"),
       ],
       [
         html.source([attribute.src(url), attribute.type_("video/mp4")]),

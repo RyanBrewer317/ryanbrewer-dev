@@ -4,6 +4,7 @@
 
 import client/tinylang
 import client/tinytypedlang
+import client/candle/main as candle
 import lustre
 import lustre/attribute.{class, href, id, placeholder, style}
 import lustre/element.{type Element, text}
@@ -11,24 +12,27 @@ import lustre/element/html.{a, br, code, div, h3, p, strong, textarea}
 import lustre/event
 
 type Model {
-  Model(untyped_code: String, deptyped_code: String)
+  Model(untyped_code: String, deptyped_code: String, candle_code: String)
 }
 
 pub type Msg {
   NewUntypedCode(String)
   NewDepTypedCode(String)
+  NewCandleCode(String)
 }
 
 fn init(_) -> Model {
-  Model("", "")
+  Model("", "", "")
 }
 
 fn update(model: Model, msg: Msg) -> Model {
   case msg {
     NewUntypedCode(code) ->
-      Model(untyped_code: code, deptyped_code: model.deptyped_code)
+      Model(..model, untyped_code: code)
     NewDepTypedCode(code) ->
-      Model(untyped_code: model.untyped_code, deptyped_code: code)
+      Model(..model, deptyped_code: code)
+    NewCandleCode(code) ->
+      Model(..model, candle_code: code)
   }
 }
 
@@ -41,7 +45,7 @@ pub fn main() {
 
 fn view(model: Model) -> Element(Msg) {
   div([], [
-    h3([style([#("padding-top", "50pt")])], [text("Lambda Calculus in Gleam")]),
+    h3([style("padding-top", "50pt")], [text("Lambda Calculus in Gleam")]),
     p([], [
       text(
         "
@@ -87,8 +91,8 @@ Lambda abstractions are written like
     br([]),
     {
       case model {
-        Model("", _) -> text("")
-        Model(code, _) ->
+        Model("", _, _) -> text("")
+        Model(code, _, _) ->
           tinylang.go(code)
           |> fn(s) {
             div([], [
@@ -151,9 +155,25 @@ Type annotations are introduced by ",
     br([]),
     {
       case model {
-        Model(_, "") -> text("")
-        Model(_, code) ->
+        Model(_, "", _) -> text("")
+        Model(_, code, _) ->
           tinytypedlang.go(code)
+          |> fn(s) {
+            div([], [
+              strong([], [text("output")]),
+              text(": "),
+              div([id("deptyped-code-output"), class("code-output")], [text(s)]),
+            ])
+          }
+      }
+    },
+    p([], [text("Lastly, here's a simple proof assistant, implementing Andrew Marmaduke's "), a([href("https://iro.uiowa.edu/esploro/outputs/doctoral/A-proof-theoretic-redesign-of-the/9984697941302771")], [text("PhD thesis")]), text(".")]),
+    br([]),
+    {
+      case model {
+        Model(_, _, "") -> text("")
+        Model(_, _, code) ->
+          candle.go(code)
           |> fn(s) {
             div([], [
               strong([], [text("output")]),

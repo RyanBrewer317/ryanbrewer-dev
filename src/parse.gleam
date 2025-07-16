@@ -8,7 +8,7 @@ import arctic/plugin/diagram
 import gleam/list
 import gleam/result.{map_error}
 import gleam/string
-import lustre/attribute.{attribute}
+import lustre/attribute
 import lustre/element.{text}
 import lustre/element/html
 import snag.{type Result}

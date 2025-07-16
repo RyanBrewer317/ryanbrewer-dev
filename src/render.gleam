@@ -8,7 +8,7 @@ import components/navbar.{navbar}
 import components/tail.{tail}
 import gleam/option.{Some}
 import helpers
-import lustre/attribute.{attribute}
+import lustre/attribute
 import lustre/element.{type Element, text}
 import lustre/element/html
 

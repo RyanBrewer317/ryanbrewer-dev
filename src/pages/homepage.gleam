@@ -46,20 +46,16 @@ I'm straight and cisgender, using he/him pronouns.
         html.div(
           [
             attribute.id("homepage-flags"),
-            attribute.style([
-              #("text-align", "center"),
-              #("font-size", "inherit"),
-            ]),
+            attribute.style("text-align", "center"),
+            attribute.style("font-size", "inherit"),
           ],
           [
             text("I support: "),
             html.span(
               [
-                attribute.style([
-                  #("font-size", "30pt"),
-                  #("position", "relative"),
-                  #("top", "7.5pt"),
-                ]),
+                attribute.style("font-size", "30pt"),
+                attribute.style("position", "relative"),
+                attribute.style("top", "7.5pt"),
               ],
               [text("🏳️‍🌈🏳️‍⚧️🇵🇸🇺🇦")],
             ),

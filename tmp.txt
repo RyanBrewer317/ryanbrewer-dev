@@ -1,0 +1,432 @@
+ryanbrewerdev v0.1.0
+├── arctic v11.0.10
+│   ├── birl v1.8.0
+│   │   ├── gleam_regexp v1.1.1
+│   │   │   └── gleam_stdlib v0.53.0
+│   │   ├── gleam_stdlib v0.53.0
+│   │   └── ranger v1.4.0
+│   │       ├── gleam_stdlib v0.53.0
+│   │       └── gleam_yielder v1.1.0
+│   │           └── gleam_stdlib v0.53.0
+│   ├── gleam_crypto v1.5.1
+│   │   └── gleam_stdlib v0.53.0
+│   ├── gleam_stdlib v0.53.0
+│   ├── gleam_time v1.4.0
+│   │   └── gleam_stdlib v0.53.0
+│   ├── gsv v4.0.0
+│   │   ├── gleam_stdlib v0.53.0
+│   │   └── glearray v2.1.0
+│   │       └── gleam_stdlib v0.53.0
+│   ├── lustre v4.6.4
+│   │   ├── gleam_erlang v0.34.0
+│   │   │   └── gleam_stdlib v0.53.0
+│   │   ├── gleam_json v2.3.0
+│   │   │   └── gleam_stdlib v0.53.0
+│   │   ├── gleam_otp v0.16.1
+│   │   │   ├── gleam_erlang v0.34.0
+│   │   │   │   └── gleam_stdlib v0.53.0
+│   │   │   └── gleam_stdlib v0.53.0
+│   │   └── gleam_stdlib v0.53.0
+│   ├── lustre_ssg v0.9.0
+│   │   ├── filepath v1.1.2
+│   │   │   └── gleam_stdlib v0.53.0
+│   │   ├── gleam_regexp v1.1.1
+│   │   │   └── gleam_stdlib v0.53.0
+│   │   ├── gleam_stdlib v0.53.0
+│   │   ├── jot v1.1.0
+│   │   │   └── gleam_stdlib v0.53.0
+│   │   ├── lustre v4.6.4
+│   │   │   ├── gleam_erlang v0.34.0
+│   │   │   │   └── gleam_stdlib v0.53.0
+│   │   │   ├── gleam_json v2.3.0
+│   │   │   │   └── gleam_stdlib v0.53.0
+│   │   │   ├── gleam_otp v0.16.1
+│   │   │   │   ├── gleam_erlang v0.34.0
+│   │   │   │   │   └── gleam_stdlib v0.53.0
+│   │   │   │   └── gleam_stdlib v0.53.0
+│   │   │   └── gleam_stdlib v0.53.0
+│   │   ├── simplifile v2.3.0
+│   │   │   ├── filepath v1.1.2
+│   │   │   │   └── gleam_stdlib v0.53.0
+│   │   │   └── gleam_stdlib v0.53.0
+│   │   ├── temporary v1.0.0
+│   │   │   ├── envoy v1.0.2
+│   │   │   │   └── gleam_stdlib v0.53.0
+│   │   │   ├── exception v2.1.0
+│   │   │   │   └── gleam_stdlib v0.53.0
+│   │   │   ├── filepath v1.1.2
+│   │   │   │   └── gleam_stdlib v0.53.0
+│   │   │   ├── gleam_crypto v1.5.1
+│   │   │   │   └── gleam_stdlib v0.53.0
+│   │   │   ├── gleam_stdlib v0.53.0
+│   │   │   └── simplifile v2.3.0
+│   │   │       ├── filepath v1.1.2
+│   │   │       │   └── gleam_stdlib v0.53.0
+│   │   │       └── gleam_stdlib v0.53.0
+│   │   └── tom v1.1.1
+│   │       └── gleam_stdlib v0.53.0
+│   ├── party v1.0.6
+│   │   └── gleam_stdlib v0.53.0
+│   ├── simplifile v2.3.0
+│   │   ├── filepath v1.1.2
+│   │   │   └── gleam_stdlib v0.53.0
+│   │   └── gleam_stdlib v0.53.0
+│   └── snag v1.1.0
+│       └── gleam_stdlib v0.53.0
+├── arctic_plugin_diagram v1.0.2
+│   ├── arctic v11.0.10
+│   │   ├── birl v1.8.0
+│   │   │   ├── gleam_regexp v1.1.1
+│   │   │   │   └── gleam_stdlib v0.53.0
+│   │   │   ├── gleam_stdlib v0.53.0
+│   │   │   └── ranger v1.4.0
+│   │   │       ├── gleam_stdlib v0.53.0
+│   │   │       └── gleam_yielder v1.1.0
+│   │   │           └── gleam_stdlib v0.53.0
+│   │   ├── gleam_crypto v1.5.1
+│   │   │   └── gleam_stdlib v0.53.0
+│   │   ├── gleam_stdlib v0.53.0
+│   │   ├── gleam_time v1.4.0
+│   │   │   └── gleam_stdlib v0.53.0
+│   │   ├── gsv v4.0.0
+│   │   │   ├── gleam_stdlib v0.53.0
+│   │   │   └── glearray v2.1.0
+│   │   │       └── gleam_stdlib v0.53.0
+│   │   ├── lustre v4.6.4
+│   │   │   ├── gleam_erlang v0.34.0
+│   │   │   │   └── gleam_stdlib v0.53.0
+│   │   │   ├── gleam_json v2.3.0
+│   │   │   │   └── gleam_stdlib v0.53.0
+│   │   │   ├── gleam_otp v0.16.1
+│   │   │   │   ├── gleam_erlang v0.34.0
+│   │   │   │   │   └── gleam_stdlib v0.53.0
+│   │   │   │   └── gleam_stdlib v0.53.0
+│   │   │   └── gleam_stdlib v0.53.0
+│   │   ├── lustre_ssg v0.9.0
+│   │   │   ├── filepath v1.1.2
+│   │   │   │   └── gleam_stdlib v0.53.0
+│   │   │   ├── gleam_regexp v1.1.1
+│   │   │   │   └── gleam_stdlib v0.53.0
+│   │   │   ├── gleam_stdlib v0.53.0
+│   │   │   ├── jot v1.1.0
+│   │   │   │   └── gleam_stdlib v0.53.0
+│   │   │   ├── lustre v4.6.4
+│   │   │   │   ├── gleam_erlang v0.34.0
+│   │   │   │   │   └── gleam_stdlib v0.53.0
+│   │   │   │   ├── gleam_json v2.3.0
+│   │   │   │   │   └── gleam_stdlib v0.53.0
+│   │   │   │   ├── gleam_otp v0.16.1
+│   │   │   │   │   ├── gleam_erlang v0.34.0
+│   │   │   │   │   │   └── gleam_stdlib v0.53.0
+│   │   │   │   │   └── gleam_stdlib v0.53.0
+│   │   │   │   └── gleam_stdlib v0.53.0
+│   │   │   ├── simplifile v2.3.0
+│   │   │   │   ├── filepath v1.1.2
+│   │   │   │   │   └── gleam_stdlib v0.53.0
+│   │   │   │   └── gleam_stdlib v0.53.0
+│   │   │   ├── temporary v1.0.0
+│   │   │   │   ├── envoy v1.0.2
+│   │   │   │   │   └── gleam_stdlib v0.53.0
+│   │   │   │   ├── exception v2.1.0
+│   │   │   │   │   └── gleam_stdlib v0.53.0
+│   │   │   │   ├── filepath v1.1.2
+│   │   │   │   │   └── gleam_stdlib v0.53.0
+│   │   │   │   ├── gleam_crypto v1.5.1
+│   │   │   │   │   └── gleam_stdlib v0.53.0
+│   │   │   │   ├── gleam_stdlib v0.53.0
+│   │   │   │   └── simplifile v2.3.0
+│   │   │   │       ├── filepath v1.1.2
+│   │   │   │       │   └── gleam_stdlib v0.53.0
+│   │   │   │       └── gleam_stdlib v0.53.0
+│   │   │   └── tom v1.1.1
+│   │   │       └── gleam_stdlib v0.53.0
+│   │   ├── party v1.0.6
+│   │   │   └── gleam_stdlib v0.53.0
+│   │   ├── simplifile v2.3.0
+│   │   │   ├── filepath v1.1.2
+│   │   │   │   └── gleam_stdlib v0.53.0
+│   │   │   └── gleam_stdlib v0.53.0
+│   │   └── snag v1.1.0
+│   │       └── gleam_stdlib v0.53.0
+│   ├── gleam_stdlib v0.53.0
+│   ├── lustre v4.6.4
+│   │   ├── gleam_erlang v0.34.0
+│   │   │   └── gleam_stdlib v0.53.0
+│   │   ├── gleam_json v2.3.0
+│   │   │   └── gleam_stdlib v0.53.0
+│   │   ├── gleam_otp v0.16.1
+│   │   │   ├── gleam_erlang v0.34.0
+│   │   │   │   └── gleam_stdlib v0.53.0
+│   │   │   └── gleam_stdlib v0.53.0
+│   │   └── gleam_stdlib v0.53.0
+│   ├── shellout v1.7.0
+│   │   └── gleam_stdlib v0.53.0
+│   ├── simplifile v2.3.0
+│   │   ├── filepath v1.1.2
+│   │   │   └── gleam_stdlib v0.53.0
+│   │   └── gleam_stdlib v0.53.0
+│   └── snag v1.1.0
+│       └── gleam_stdlib v0.53.0
+├── birl v1.8.0
+│   ├── gleam_regexp v1.1.1
+│   │   └── gleam_stdlib v0.53.0
+│   ├── gleam_stdlib v0.53.0
+│   └── ranger v1.4.0
+│       ├── gleam_stdlib v0.53.0
+│       └── gleam_yielder v1.1.0
+│           └── gleam_stdlib v0.53.0
+├── gleam_crypto v1.5.1
+│   └── gleam_stdlib v0.53.0
+├── gleam_stdlib v0.53.0
+├── gleam_time v1.4.0
+│   └── gleam_stdlib v0.53.0
+├── gleeunit v1.3.1
+│   └── gleam_stdlib v0.53.0
+├── glint v1.2.1
+│   ├── gleam_community_ansi v1.4.3
+│   │   ├── gleam_community_colour v2.0.2
+│   │   │   ├── gleam_json v2.3.0
+│   │   │   │   └── gleam_stdlib v0.53.0
+│   │   │   └── gleam_stdlib v0.53.0
+│   │   ├── gleam_regexp v1.1.1
+│   │   │   └── gleam_stdlib v0.53.0
+│   │   └── gleam_stdlib v0.53.0
+│   ├── gleam_community_colour v2.0.2
+│   │   ├── gleam_json v2.3.0
+│   │   │   └── gleam_stdlib v0.53.0
+│   │   └── gleam_stdlib v0.53.0
+│   ├── gleam_stdlib v0.53.0
+│   └── snag v1.1.0
+│       └── gleam_stdlib v0.53.0
+├── gsv v4.0.0
+│   ├── gleam_stdlib v0.53.0
+│   └── glearray v2.1.0
+│       └── gleam_stdlib v0.53.0
+├── lustre v4.6.4
+│   ├── gleam_erlang v0.34.0
+│   │   └── gleam_stdlib v0.53.0
+│   ├── gleam_json v2.3.0
+│   │   └── gleam_stdlib v0.53.0
+│   ├── gleam_otp v0.16.1
+│   │   ├── gleam_erlang v0.34.0
+│   │   │   └── gleam_stdlib v0.53.0
+│   │   └── gleam_stdlib v0.53.0
+│   └── gleam_stdlib v0.53.0
+├── lustre_dev_tools v1.8.2
+│   ├── argv v1.0.2
+│   ├── filepath v1.1.2
+│   │   └── gleam_stdlib v0.53.0
+│   ├── fs v11.4.1
+│   ├── gleam_community_ansi v1.4.3
+│   │   ├── gleam_community_colour v2.0.2
+│   │   │   ├── gleam_json v2.3.0
+│   │   │   │   └── gleam_stdlib v0.53.0
+│   │   │   └── gleam_stdlib v0.53.0
+│   │   ├── gleam_regexp v1.1.1
+│   │   │   └── gleam_stdlib v0.53.0
+│   │   └── gleam_stdlib v0.53.0
+│   ├── gleam_crypto v1.5.1
+│   │   └── gleam_stdlib v0.53.0
+│   ├── gleam_deque v1.0.0
+│   │   └── gleam_stdlib v0.53.0
+│   ├── gleam_erlang v0.34.0
+│   │   └── gleam_stdlib v0.53.0
+│   ├── gleam_http v4.1.0
+│   │   └── gleam_stdlib v0.53.0
+│   ├── gleam_httpc v4.1.1
+│   │   ├── gleam_erlang v0.34.0
+│   │   │   └── gleam_stdlib v0.53.0
+│   │   ├── gleam_http v4.1.0
+│   │   │   └── gleam_stdlib v0.53.0
+│   │   └── gleam_stdlib v0.53.0
+│   ├── gleam_json v2.3.0
+│   │   └── gleam_stdlib v0.53.0
+│   ├── gleam_otp v0.16.1
+│   │   ├── gleam_erlang v0.34.0
+│   │   │   └── gleam_stdlib v0.53.0
+│   │   └── gleam_stdlib v0.53.0
+│   ├── gleam_package_interface v3.0.1
+│   │   └── gleam_stdlib v0.53.0
+│   ├── gleam_regexp v1.1.1
+│   │   └── gleam_stdlib v0.53.0
+│   ├── gleam_stdlib v0.53.0
+│   ├── glint v1.2.1
+│   │   ├── gleam_community_ansi v1.4.3
+│   │   │   ├── gleam_community_colour v2.0.2
+│   │   │   │   ├── gleam_json v2.3.0
+│   │   │   │   │   └── gleam_stdlib v0.53.0
+│   │   │   │   └── gleam_stdlib v0.53.0
+│   │   │   ├── gleam_regexp v1.1.1
+│   │   │   │   └── gleam_stdlib v0.53.0
+│   │   │   └── gleam_stdlib v0.53.0
+│   │   ├── gleam_community_colour v2.0.2
+│   │   │   ├── gleam_json v2.3.0
+│   │   │   │   └── gleam_stdlib v0.53.0
+│   │   │   └── gleam_stdlib v0.53.0
+│   │   ├── gleam_stdlib v0.53.0
+│   │   └── snag v1.1.0
+│   │       └── gleam_stdlib v0.53.0
+│   ├── glisten v7.0.1
+│   │   ├── gleam_erlang v0.34.0
+│   │   │   └── gleam_stdlib v0.53.0
+│   │   ├── gleam_otp v0.16.1
+│   │   │   ├── gleam_erlang v0.34.0
+│   │   │   │   └── gleam_stdlib v0.53.0
+│   │   │   └── gleam_stdlib v0.53.0
+│   │   ├── gleam_stdlib v0.53.0
+│   │   ├── logging v1.3.0
+│   │   │   └── gleam_stdlib v0.53.0
+│   │   └── telemetry v1.3.0
+│   ├── mist v4.0.7
+│   │   ├── gleam_erlang v0.34.0
+│   │   │   └── gleam_stdlib v0.53.0
+│   │   ├── gleam_http v4.1.0
+│   │   │   └── gleam_stdlib v0.53.0
+│   │   ├── gleam_otp v0.16.1
+│   │   │   ├── gleam_erlang v0.34.0
+│   │   │   │   └── gleam_stdlib v0.53.0
+│   │   │   └── gleam_stdlib v0.53.0
+│   │   ├── gleam_stdlib v0.53.0
+│   │   ├── gleam_yielder v1.1.0
+│   │   │   └── gleam_stdlib v0.53.0
+│   │   ├── glisten v7.0.1
+│   │   │   ├── gleam_erlang v0.34.0
+│   │   │   │   └── gleam_stdlib v0.53.0
+│   │   │   ├── gleam_otp v0.16.1
+│   │   │   │   ├── gleam_erlang v0.34.0
+│   │   │   │   │   └── gleam_stdlib v0.53.0
+│   │   │   │   └── gleam_stdlib v0.53.0
+│   │   │   ├── gleam_stdlib v0.53.0
+│   │   │   ├── logging v1.3.0
+│   │   │   │   └── gleam_stdlib v0.53.0
+│   │   │   └── telemetry v1.3.0
+│   │   ├── gramps v3.0.1
+│   │   │   ├── gleam_crypto v1.5.1
+│   │   │   │   └── gleam_stdlib v0.53.0
+│   │   │   ├── gleam_erlang v0.34.0
+│   │   │   │   └── gleam_stdlib v0.53.0
+│   │   │   ├── gleam_http v4.1.0
+│   │   │   │   └── gleam_stdlib v0.53.0
+│   │   │   └── gleam_stdlib v0.53.0
+│   │   ├── hpack_erl v0.3.0
+│   │   └── logging v1.3.0
+│   │       └── gleam_stdlib v0.53.0
+│   ├── repeatedly v2.1.2
+│   ├── simplifile v2.3.0
+│   │   ├── filepath v1.1.2
+│   │   │   └── gleam_stdlib v0.53.0
+│   │   └── gleam_stdlib v0.53.0
+│   ├── term_size v1.0.1
+│   │   └── gleam_stdlib v0.53.0
+│   ├── tom v1.1.1
+│   │   └── gleam_stdlib v0.53.0
+│   └── wisp v1.6.0
+│       ├── directories v1.2.0
+│       │   ├── envoy v1.0.2
+│       │   │   └── gleam_stdlib v0.53.0
+│       │   ├── gleam_stdlib v0.53.0
+│       │   ├── platform v1.0.0
+│       │   └── simplifile v2.3.0
+│       │       ├── filepath v1.1.2
+│       │       │   └── gleam_stdlib v0.53.0
+│       │       └── gleam_stdlib v0.53.0
+│       ├── exception v2.1.0
+│       │   └── gleam_stdlib v0.53.0
+│       ├── gleam_crypto v1.5.1
+│       │   └── gleam_stdlib v0.53.0
+│       ├── gleam_erlang v0.34.0
+│       │   └── gleam_stdlib v0.53.0
+│       ├── gleam_http v4.1.0
+│       │   └── gleam_stdlib v0.53.0
+│       ├── gleam_json v2.3.0
+│       │   └── gleam_stdlib v0.53.0
+│       ├── gleam_stdlib v0.53.0
+│       ├── logging v1.3.0
+│       │   └── gleam_stdlib v0.53.0
+│       ├── marceau v1.3.0
+│       ├── mist v4.0.7
+│       │   ├── gleam_erlang v0.34.0
+│       │   │   └── gleam_stdlib v0.53.0
+│       │   ├── gleam_http v4.1.0
+│       │   │   └── gleam_stdlib v0.53.0
+│       │   ├── gleam_otp v0.16.1
+│       │   │   ├── gleam_erlang v0.34.0
+│       │   │   │   └── gleam_stdlib v0.53.0
+│       │   │   └── gleam_stdlib v0.53.0
+│       │   ├── gleam_stdlib v0.53.0
+│       │   ├── gleam_yielder v1.1.0
+│       │   │   └── gleam_stdlib v0.53.0
+│       │   ├── glisten v7.0.1
+│       │   │   ├── gleam_erlang v0.34.0
+│       │   │   │   └── gleam_stdlib v0.53.0
+│       │   │   ├── gleam_otp v0.16.1
+│       │   │   │   ├── gleam_erlang v0.34.0
+│       │   │   │   │   └── gleam_stdlib v0.53.0
+│       │   │   │   └── gleam_stdlib v0.53.0
+│       │   │   ├── gleam_stdlib v0.53.0
+│       │   │   ├── logging v1.3.0
+│       │   │   │   └── gleam_stdlib v0.53.0
+│       │   │   └── telemetry v1.3.0
+│       │   ├── gramps v3.0.1
+│       │   │   ├── gleam_crypto v1.5.1
+│       │   │   │   └── gleam_stdlib v0.53.0
+│       │   │   ├── gleam_erlang v0.34.0
+│       │   │   │   └── gleam_stdlib v0.53.0
+│       │   │   ├── gleam_http v4.1.0
+│       │   │   │   └── gleam_stdlib v0.53.0
+│       │   │   └── gleam_stdlib v0.53.0
+│       │   ├── hpack_erl v0.3.0
+│       │   └── logging v1.3.0
+│       │       └── gleam_stdlib v0.53.0
+│       └── simplifile v2.3.0
+│           ├── filepath v1.1.2
+│           │   └── gleam_stdlib v0.53.0
+│           └── gleam_stdlib v0.53.0
+├── lustre_ssg v0.9.0
+│   ├── filepath v1.1.2
+│   │   └── gleam_stdlib v0.53.0
+│   ├── gleam_regexp v1.1.1
+│   │   └── gleam_stdlib v0.53.0
+│   ├── gleam_stdlib v0.53.0
+│   ├── jot v1.1.0
+│   │   └── gleam_stdlib v0.53.0
+│   ├── lustre v4.6.4
+│   │   ├── gleam_erlang v0.34.0
+│   │   │   └── gleam_stdlib v0.53.0
+│   │   ├── gleam_json v2.3.0
+│   │   │   └── gleam_stdlib v0.53.0
+│   │   ├── gleam_otp v0.16.1
+│   │   │   ├── gleam_erlang v0.34.0
+│   │   │   │   └── gleam_stdlib v0.53.0
+│   │   │   └── gleam_stdlib v0.53.0
+│   │   └── gleam_stdlib v0.53.0
+│   ├── simplifile v2.3.0
+│   │   ├── filepath v1.1.2
+│   │   │   └── gleam_stdlib v0.53.0
+│   │   └── gleam_stdlib v0.53.0
+│   ├── temporary v1.0.0
+│   │   ├── envoy v1.0.2
+│   │   │   └── gleam_stdlib v0.53.0
+│   │   ├── exception v2.1.0
+│   │   │   └── gleam_stdlib v0.53.0
+│   │   ├── filepath v1.1.2
+│   │   │   └── gleam_stdlib v0.53.0
+│   │   ├── gleam_crypto v1.5.1
+│   │   │   └── gleam_stdlib v0.53.0
+│   │   ├── gleam_stdlib v0.53.0
+│   │   └── simplifile v2.3.0
+│   │       ├── filepath v1.1.2
+│   │       │   └── gleam_stdlib v0.53.0
+│   │       └── gleam_stdlib v0.53.0
+│   └── tom v1.1.1
+│       └── gleam_stdlib v0.53.0
+├── party v1.0.6
+│   └── gleam_stdlib v0.53.0
+├── shellout v1.7.0
+│   └── gleam_stdlib v0.53.0
+├── simplifile v2.3.0
+│   ├── filepath v1.1.2
+│   │   └── gleam_stdlib v0.53.0
+│   └── gleam_stdlib v0.53.0
+└── snag v1.1.0
+    └── gleam_stdlib v0.53.0

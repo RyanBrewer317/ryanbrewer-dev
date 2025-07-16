@@ -7,7 +7,7 @@ import components/navbar.{navbar}
 import components/tail.{tail}
 import lustre/attribute.{attribute, id}
 import lustre/element.{type Element}
-import lustre/element/html.{div, html, script}
+import lustre/element/html.{div, script}
 
 pub fn demos() -> Element(Nil) {
   html.div([], [
