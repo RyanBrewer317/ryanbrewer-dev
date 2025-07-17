@@ -102,8 +102,12 @@ Lambda abstractions are written like
     },
     p([], [
       text(
-        "Want types in your lambda calculus?
-You can check the box below to switch to a version with a fancy dependent type system!
+        "Want types in your lambda calculus? 
+This demo follows ",
+      ),
+      a([href("https://github.com/sweirich/pi-forall")], [text("Pi-Forall")]),
+      text(
+        " to implement a simple dependent type system.
 Type annotations are introduced by ",
       ),
       code([], [text("let")]),
@@ -176,7 +180,9 @@ Type annotations are introduced by ",
         ],
         [text("PhD thesis")],
       ),
-      text(". To see more example Candle code, check out this "),
+      text(
+        ". To see more example Candle code, like all the syntax available, check out this ",
+      ),
       a(
         [
           href(

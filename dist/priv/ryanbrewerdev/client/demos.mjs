@@ -135,8 +135,13 @@ function view(model) {
       p(
         toList([]),
         toList([
+          text("Want types in your lambda calculus? \nThis demo follows "),
+          a(
+            toList([href("https://github.com/sweirich/pi-forall")]),
+            toList([text("Pi-Forall")]),
+          ),
           text(
-            "Want types in your lambda calculus?\nYou can check the box below to switch to a version with a fancy dependent type system!\nType annotations are introduced by ",
+            " to implement a simple dependent type system.\nType annotations are introduced by ",
           ),
           code(toList([]), toList([text("let")])),
           text("-bindings, like "),
@@ -226,7 +231,9 @@ function view(model) {
             ]),
             toList([text("PhD thesis")]),
           ),
-          text(". To see more example Candle code, check out this "),
+          text(
+            ". To see more example Candle code, like all the syntax available, check out this ",
+          ),
           a(
             toList([
               href(
