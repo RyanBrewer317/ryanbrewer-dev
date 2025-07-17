@@ -235,7 +235,18 @@ function view(model) {
             ]),
             toList([text("big file")]),
           ),
-          text("."),
+          text(
+            ". As always, the code for this demo is open-source! You can find it ",
+          ),
+          a(
+            toList([
+              href(
+                "https://github.com/RyanBrewer317/ryanbrewer-dev/blob/main/src/client/candle/",
+              ),
+            ]),
+            toList([text("here")]),
+          ),
+          text(". It's only about 1800 lines of code!"),
         ]),
       ),
       br(toList([])),

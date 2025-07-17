@@ -185,7 +185,18 @@ Type annotations are introduced by ",
         ],
         [text("big file")],
       ),
-      text("."),
+      text(
+        ". As always, the code for this demo is open-source! You can find it ",
+      ),
+      a(
+        [
+          href(
+            "https://github.com/RyanBrewer317/ryanbrewer-dev/blob/main/src/client/candle/",
+          ),
+        ],
+        [text("here")],
+      ),
+      text(". It's only about 1800 lines of code!"),
     ]),
     br([]),
     textarea(
