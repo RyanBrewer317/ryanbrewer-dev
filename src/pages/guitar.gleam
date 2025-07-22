@@ -24,6 +24,16 @@ They aren't the most polished thing but they're mine and I'm proud of them :)
         ),
       ]),
       thumbnail(
+        "Blues Run the Game",
+        "Jackson C Frank",
+        "https://cdn.ryanbrewer.dev/blues-run-the-game.mp4",
+      ),
+      thumbnail(
+        "I Want To Be Alone (Dialogue)",
+        "Jackson C Frank",
+        "https://cdn.ryanbrewer.dev/i-want-to-be-alone.mp4",
+      ),
+      thumbnail(
         "Girl From The North Country",
         "Bob Dylan",
         "https://cdn.ryanbrewer.dev/girl-from-the-north-country.mp4",
