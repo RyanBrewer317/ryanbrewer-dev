@@ -1,5 +1,9 @@
 import * as $int from "../../../gleam_stdlib/gleam/int.mjs";
-import { Ok, Error, CustomType as $CustomType } from "../../gleam.mjs";
+import * as $list from "../../../gleam_stdlib/gleam/list.mjs";
+import { Ok, Error, toList, Empty as $Empty, CustomType as $CustomType } from "../../gleam.mjs";
+import { get, set, make as new$, next_id } from "./ffi.mjs";
+
+export { get, new$, next_id, set };
 
 export class Pos extends $CustomType {
   constructor(src, line, col) {
@@ -193,6 +197,13 @@ export class ExFalsoSyntax extends $CustomType {
   }
 }
 
+export class HoleSyntax extends $CustomType {
+  constructor(pos) {
+    super();
+    this.pos = pos;
+  }
+}
+
 export class Index extends $CustomType {
   constructor(int) {
     super();
@@ -204,6 +215,20 @@ export class Level extends $CustomType {
   constructor(int) {
     super();
     this.int = int;
+  }
+}
+
+export class Solved extends $CustomType {
+  constructor($0) {
+    super();
+    this[0] = $0;
+  }
+}
+
+export class Unsolved extends $CustomType {
+  constructor($0) {
+    super();
+    this[0] = $0;
   }
 }
 
@@ -234,6 +259,29 @@ export class Let extends $CustomType {
     super();
     this.mode = mode;
     this.val = val;
+  }
+}
+
+export class ContextMask extends $CustomType {
+  constructor(has_def, mode) {
+    super();
+    this.has_def = has_def;
+    this.mode = mode;
+  }
+}
+
+export class Meta extends $CustomType {
+  constructor($0) {
+    super();
+    this[0] = $0;
+  }
+}
+
+export class InsertedMeta extends $CustomType {
+  constructor($0, $1) {
+    super();
+    this[0] = $0;
+    this[1] = $1;
   }
 }
 
@@ -334,10 +382,24 @@ export class Ctor3 extends $CustomType {
   }
 }
 
-export class VNeutral extends $CustomType {
-  constructor($0) {
+export class VIdent extends $CustomType {
+  constructor($0, $1, $2, $3, $4) {
     super();
     this[0] = $0;
+    this[1] = $1;
+    this[2] = $2;
+    this[3] = $3;
+    this[4] = $4;
+  }
+}
+
+export class VMeta extends $CustomType {
+  constructor($0, $1, $2, $3) {
+    super();
+    this[0] = $0;
+    this[1] = $1;
+    this[2] = $2;
+    this[3] = $3;
   }
 }
 
@@ -440,27 +502,7 @@ export class VExFalso extends $CustomType {
   }
 }
 
-export class VIdent extends $CustomType {
-  constructor($0, $1, $2, $3) {
-    super();
-    this[0] = $0;
-    this[1] = $1;
-    this[2] = $2;
-    this[3] = $3;
-  }
-}
-
 export class VApp extends $CustomType {
-  constructor($0, $1, $2, $3) {
-    super();
-    this[0] = $0;
-    this[1] = $1;
-    this[2] = $2;
-    this[3] = $3;
-  }
-}
-
-export class VPsi extends $CustomType {
   constructor($0, $1, $2) {
     super();
     this[0] = $0;
@@ -469,7 +511,7 @@ export class VPsi extends $CustomType {
   }
 }
 
-export class VFst extends $CustomType {
+export class VPsi extends $CustomType {
   constructor($0, $1) {
     super();
     this[0] = $0;
@@ -477,11 +519,17 @@ export class VFst extends $CustomType {
   }
 }
 
-export class VSnd extends $CustomType {
-  constructor($0, $1) {
+export class VFst extends $CustomType {
+  constructor($0) {
     super();
     this[0] = $0;
-    this[1] = $1;
+  }
+}
+
+export class VSnd extends $CustomType {
+  constructor($0) {
+    super();
+    this[0] = $0;
   }
 }
 
@@ -551,6 +599,9 @@ export function get_pos(s) {
   } else if (s instanceof CastSyntax) {
     let pos = s.pos;
     return pos;
+  } else if (s instanceof ExFalsoSyntax) {
+    let pos = s.pos;
+    return pos;
   } else {
     let pos = s.pos;
     return pos;
@@ -561,33 +612,62 @@ export function lvl_to_idx(size, lvl) {
   return new Index((size.int - lvl.int) - 1);
 }
 
+export function term_pos(t) {
+  if (t instanceof Ident) {
+    let pos = t.pos;
+    return pos;
+  } else if (t instanceof Binder) {
+    let pos = t.pos;
+    return pos;
+  } else if (t instanceof Ctor0) {
+    let pos = t.pos;
+    return pos;
+  } else if (t instanceof Ctor1) {
+    let pos = t.pos;
+    return pos;
+  } else if (t instanceof Ctor2) {
+    let pos = t.pos;
+    return pos;
+  } else {
+    let pos = t.pos;
+    return pos;
+  }
+}
+
 export function inc(lvl) {
   return new Level(lvl.int + 1);
 }
 
-export function neutral_pos(n) {
-  if (n instanceof VIdent) {
-    let pos = n[3];
+export function spine_pos(s) {
+  if (s instanceof VApp) {
+    let pos = s[2];
     return pos;
-  } else if (n instanceof VApp) {
-    let pos = n[3];
+  } else if (s instanceof VPsi) {
+    let pos = s[1];
     return pos;
-  } else if (n instanceof VPsi) {
-    let pos = n[2];
-    return pos;
-  } else if (n instanceof VFst) {
-    let pos = n[1];
+  } else if (s instanceof VFst) {
+    let pos = s[0];
     return pos;
   } else {
-    let pos = n[1];
+    let pos = s[0];
     return pos;
   }
 }
 
 export function value_pos(v) {
-  if (v instanceof VNeutral) {
-    let n = v[0];
-    return neutral_pos(n);
+  if (v instanceof VIdent) {
+    let spine = v[3];
+    let pos = v[4];
+    let $ = $list.reverse(spine);
+    if ($ instanceof $Empty) {
+      return pos;
+    } else {
+      let s = $.head;
+      return spine_pos(s);
+    }
+  } else if (v instanceof VMeta) {
+    let pos = v[3];
+    return pos;
   } else if (v instanceof VSort) {
     let pos = v[1];
     return pos;
@@ -624,39 +704,44 @@ export function value_pos(v) {
   }
 }
 
-function quote_neutral(size, n) {
-  if (n instanceof VIdent) {
-    let x = n[0];
-    let mode = n[1];
-    let lvl = n[2];
-    let pos = n[3];
-    return new Ident(mode, lvl_to_idx(size, lvl), x, pos);
-  } else if (n instanceof VApp) {
-    let mode = n[0];
-    let n$1 = n[1];
-    let v = n[2];
-    let p = n[3];
-    return new Ctor2(new App(mode), quote_neutral(size, n$1), quote(size, v), p);
-  } else if (n instanceof VPsi) {
-    let e = n[0];
-    let pred = n[1];
-    let pos = n[2];
-    return new Ctor2(new Psi(), quote_neutral(size, e), quote(size, pred), pos);
-  } else if (n instanceof VFst) {
-    let n$1 = n[0];
-    let pos = n[1];
-    return new Ctor1(new Fst(), quote_neutral(size, n$1), pos);
-  } else {
-    let a = n[0];
-    let pos = n[1];
-    return new Ctor1(new Snd(), quote_neutral(size, a), pos);
-  }
+function quote_spine(size) {
+  return (base, entry) => {
+    if (entry instanceof VApp) {
+      let mode = entry[0];
+      let v = entry[1];
+      let p = entry[2];
+      return new Ctor2(new App(mode), base, quote(size, v), p);
+    } else if (entry instanceof VPsi) {
+      let pred = entry[0];
+      let pos = entry[1];
+      return new Ctor2(new Psi(), base, quote(size, pred), pos);
+    } else if (entry instanceof VFst) {
+      let pos = entry[0];
+      return new Ctor1(new Fst(), base, pos);
+    } else {
+      let pos = entry[0];
+      return new Ctor1(new Snd(), base, pos);
+    }
+  };
 }
 
 export function quote(size, v) {
-  if (v instanceof VNeutral) {
-    let n = v[0];
-    return quote_neutral(size, n);
+  if (v instanceof VIdent) {
+    let x = v[0];
+    let mode = v[1];
+    let lvl = v[2];
+    let spine = v[3];
+    let pos = v[4];
+    return $list.fold(
+      spine,
+      new Ident(mode, lvl_to_idx(size, lvl), x, pos),
+      quote_spine(size),
+    );
+  } else if (v instanceof VMeta) {
+    let ref = v[0];
+    let spine = v[2];
+    let pos = v[3];
+    return $list.fold(spine, new Ctor0(new Meta(ref), pos), quote_spine(size));
   } else if (v instanceof VSort) {
     let s = v[0];
     let p = v[1];
@@ -674,7 +759,7 @@ export function quote(size, v) {
     let a = v[2];
     let b = v[3];
     let p = v[4];
-    let n = new VNeutral(new VIdent(x, mode, size, p));
+    let n = new VIdent(x, mode, size, toList([]), p);
     return new Binder(
       new Pi(mode, quote(size, a)),
       x,
@@ -686,7 +771,7 @@ export function quote(size, v) {
     let mode = v[1];
     let e = v[2];
     let p = v[3];
-    let n = new VNeutral(new VIdent(x, mode, size, p));
+    let n = new VIdent(x, mode, size, toList([]), p);
     return new Binder(new Lambda(mode), x, quote(inc(size), e(n)), p);
   } else if (v instanceof VEq) {
     let a = v[0];
@@ -714,7 +799,7 @@ export function quote(size, v) {
     let a = v[1];
     let b = v[2];
     let pos = v[3];
-    let n = new VNeutral(new VIdent(x, new TypeMode(), size, pos));
+    let n = new VIdent(x, new TypeMode(), size, toList([]), pos);
     return new Binder(
       new InterT(quote(size, a)),
       x,
@@ -740,260 +825,141 @@ export function quote(size, v) {
   }
 }
 
-export function pretty_value(v) {
-  if (v instanceof VNeutral) {
-    let n = v[0];
-    return pretty_neutral(n);
-  } else if (v instanceof VSort) {
-    let $ = v[0];
-    if ($ instanceof SetSort) {
-      return "Set";
-    } else {
-      return "Kind";
-    }
-  } else if (v instanceof VNat) {
-    let n = v[0];
-    return $int.to_string(n);
-  } else if (v instanceof VNatType) {
-    return "Nat";
-  } else if (v instanceof VPi) {
-    let $ = v[0];
-    if ($ === "_") {
-      let mode = v[1];
-      let a = v[2];
-      let b = v[3];
-      let pos = v[4];
-      let li = pretty_value(a);
-      return ((() => {
-        if (mode instanceof ZeroMode) {
-          return ("{" + li) + "}";
-        } else if (mode instanceof ManyMode) {
-          return ("(" + li) + ")";
+export function pretty_term(loop$term) {
+  while (true) {
+    let term = loop$term;
+    if (term instanceof Ident) {
+      let s = term[2];
+      return s;
+    } else if (term instanceof Binder) {
+      let $ = term[0];
+      if ($ instanceof Lambda) {
+        let x = term[1];
+        let e = term[2];
+        let mode = $.mode;
+        return (pretty_param(mode, x, new Error(undefined)) + "-> ") + pretty_term(
+          e,
+        );
+      } else if ($ instanceof Pi) {
+        let $1 = $.mode;
+        if ($1 instanceof ManyMode) {
+          let $2 = term[1];
+          if ($2 === "_") {
+            let u = term[2];
+            let t = $.ty;
+            return (("(" + pretty_term(t)) + ")=>") + pretty_term(u);
+          } else {
+            let x = $2;
+            let u = term[2];
+            let mode = $1;
+            let t = $.ty;
+            return (pretty_param(mode, x, new Ok(t)) + "=> ") + pretty_term(u);
+          }
         } else {
-          return ("<" + li) + ">";
-        }
-      })() + "=> ") + pretty_value(
-        b(new VNeutral(new VIdent("_", mode, new Level(0), pos))),
-      );
-    } else {
-      let x = $;
-      let mode = v[1];
-      let a = v[2];
-      let b = v[3];
-      let pos = v[4];
-      return ((() => {
-        if (mode instanceof ZeroMode) {
-          return ((("{" + x) + ": ") + pretty_value(a)) + "}";
-        } else if (mode instanceof ManyMode) {
-          return ((("(" + x) + ": ") + pretty_value(a)) + ")";
-        } else {
-          return ((("<" + x) + ": ") + pretty_value(a)) + ">";
-        }
-      })() + "=> ") + pretty_value(
-        b(new VNeutral(new VIdent(x, mode, new Level(0), pos))),
-      );
-    }
-  } else if (v instanceof VLambda) {
-    let x = v[0];
-    let mode = v[1];
-    let f = v[2];
-    let pos = v[3];
-    return ((() => {
-      if (mode instanceof ZeroMode) {
-        return ("{" + x) + "}";
-      } else if (mode instanceof ManyMode) {
-        return ("(" + x) + ")";
-      } else {
-        return ("<" + x) + ">";
-      }
-    })() + "-> ") + pretty_value(
-      f(new VNeutral(new VIdent(x, mode, new Level(0), pos))),
-    );
-  } else if (v instanceof VEq) {
-    let a = v[0];
-    let b = v[1];
-    let t = v[2];
-    return ((((("(" + pretty_value(a)) + ") =[") + pretty_value(t)) + "] (") + pretty_value(
-      b,
-    )) + ")";
-  } else if (v instanceof VRefl) {
-    let a = v[0];
-    return ("refl(" + pretty_value(a)) + ")";
-  } else if (v instanceof VInter) {
-    let a = v[0];
-    let b = v[1];
-    return ((("[" + pretty_value(a)) + ", ") + pretty_value(b)) + "]";
-  } else if (v instanceof VInterT) {
-    let x = v[0];
-    let a = v[1];
-    let b = v[2];
-    let pos = v[3];
-    return (((("(" + x) + ": ") + pretty_value(a)) + ")& ") + pretty_value(
-      b(new VNeutral(new VIdent(x, new TypeMode(), new Level(0), pos))),
-    );
-  } else if (v instanceof VCast) {
-    let a = v[0];
-    let inter = v[1];
-    let eq = v[2];
-    return ((((("cast(" + pretty_value(a)) + ", ") + pretty_value(inter)) + ", ") + pretty_value(
-      eq,
-    )) + ")";
-  } else {
-    let a = v[0];
-    return ("exfalso(" + pretty_value(a)) + ")";
-  }
-}
-
-function pretty_neutral(n) {
-  if (n instanceof VIdent) {
-    let x = n[0];
-    return x;
-  } else if (n instanceof VApp) {
-    let $ = n[0];
-    if ($ instanceof ZeroMode) {
-      let a = n[1];
-      let b = n[2];
-      return ((("(" + pretty_neutral(a)) + "){") + pretty_value(b)) + "}";
-    } else if ($ instanceof ManyMode) {
-      let a = n[1];
-      let b = n[2];
-      return ((("(" + pretty_neutral(a)) + ")(") + pretty_value(b)) + ")";
-    } else {
-      let a = n[1];
-      let b = n[2];
-      return ((("(" + pretty_neutral(a)) + ")<") + pretty_value(b)) + ">";
-    }
-  } else if (n instanceof VPsi) {
-    let e = n[0];
-    let p = n[1];
-    return ((("Psi(" + pretty_neutral(e)) + ", ") + pretty_value(p)) + ")";
-  } else if (n instanceof VFst) {
-    let a = n[0];
-    return ("(" + pretty_neutral(a)) + ").1";
-  } else {
-    let a = n[0];
-    return ("(" + pretty_neutral(a)) + ").2";
-  }
-}
-
-export function pretty_term(term) {
-  if (term instanceof Ident) {
-    let s = term[2];
-    return s;
-  } else if (term instanceof Binder) {
-    let $ = term[0];
-    if ($ instanceof Lambda) {
-      let x = term[1];
-      let e = term[2];
-      let mode = $.mode;
-      return (pretty_param(mode, x, new Error(undefined)) + "-> ") + pretty_term(
-        e,
-      );
-    } else if ($ instanceof Pi) {
-      let $1 = $.mode;
-      if ($1 instanceof ManyMode) {
-        let $2 = term[1];
-        if ($2 === "_") {
-          let u = term[2];
-          let t = $.ty;
-          return (("(" + pretty_term(t)) + ")=>") + pretty_term(u);
-        } else {
-          let x = $2;
+          let x = term[1];
           let u = term[2];
           let mode = $1;
           let t = $.ty;
           return (pretty_param(mode, x, new Ok(t)) + "=> ") + pretty_term(u);
         }
-      } else {
+      } else if ($ instanceof InterT) {
         let x = term[1];
         let u = term[2];
-        let mode = $1;
         let t = $.ty;
-        return (pretty_param(mode, x, new Ok(t)) + "=> ") + pretty_term(u);
-      }
-    } else if ($ instanceof InterT) {
-      let x = term[1];
-      let u = term[2];
-      let t = $.ty;
-      return (pretty_param(new ManyMode(), x, new Ok(t)) + "& ") + pretty_term(
-        u,
-      );
-    } else {
-      let x = term[1];
-      let e = term[2];
-      let mode = $.mode;
-      let v = $.val;
-      return (((("let " + pretty_param(mode, x, new Error(undefined))) + " = ") + pretty_term(
-        v,
-      )) + " in ") + pretty_term(e);
-    }
-  } else if (term instanceof Ctor0) {
-    let $ = term[0];
-    if ($ instanceof Sort) {
-      let $1 = $[0];
-      if ($1 instanceof SetSort) {
-        return "Set";
+        return (pretty_param(new ManyMode(), x, new Ok(t)) + "& ") + pretty_term(
+          u,
+        );
       } else {
-        return "Kind";
+        let x = term[1];
+        let e = term[2];
+        let mode = $.mode;
+        let v = $.val;
+        return (((("let " + pretty_param(mode, x, new Error(undefined))) + " = ") + pretty_term(
+          v,
+        )) + " in ") + pretty_term(e);
       }
-    } else if ($ instanceof NatT) {
-      return "Nat";
-    } else {
-      let n = $[0];
-      return $int.to_string(n);
-    }
-  } else if (term instanceof Ctor1) {
-    let $ = term[0];
-    if ($ instanceof Fst) {
-      let a = term[1];
-      return (".1(" + pretty_term(a)) + ")";
-    } else if ($ instanceof Snd) {
-      let a = term[1];
-      return (".2(" + pretty_term(a)) + ")";
-    } else if ($ instanceof ExFalso) {
-      let a = term[1];
-      return ("exfalso(" + pretty_term(a)) + ")";
-    } else {
-      let a = term[1];
-      return ("refl(" + pretty_term(a)) + ")";
-    }
-  } else if (term instanceof Ctor2) {
-    let $ = term[0];
-    if ($ instanceof App) {
-      let foo = term[1];
-      let bar = term[2];
-      let mode = $[0];
-      return (("(" + pretty_term(foo)) + ")") + (() => {
-        if (mode instanceof ZeroMode) {
-          return ("{" + pretty_term(bar)) + "}";
-        } else if (mode instanceof ManyMode) {
-          return ("(" + pretty_term(bar)) + ")";
+    } else if (term instanceof Ctor0) {
+      let $ = term[0];
+      if ($ instanceof Meta) {
+        let ref = $[0];
+        let $1 = get(ref);
+        if ($1 instanceof Solved) {
+          let v = $1[0];
+          return pretty_value(v);
         } else {
-          return ("<" + pretty_term(bar)) + ">";
+          let i = $1[0];
+          return "?m" + $int.to_string(i);
         }
-      })();
-    } else if ($ instanceof Psi) {
-      let eq = term[1];
-      let p = term[2];
-      return ((("Psi(" + pretty_term(eq)) + ", ") + pretty_term(p)) + ")";
+      } else if ($ instanceof InsertedMeta) {
+        let pos = term.pos;
+        let ref = $[0];
+        loop$term = new Ctor0(new Meta(ref), pos);
+      } else if ($ instanceof Sort) {
+        let $1 = $[0];
+        if ($1 instanceof SetSort) {
+          return "Set";
+        } else {
+          return "Kind";
+        }
+      } else if ($ instanceof NatT) {
+        return "Nat";
+      } else {
+        let n = $[0];
+        return $int.to_string(n);
+      }
+    } else if (term instanceof Ctor1) {
+      let $ = term[0];
+      if ($ instanceof Fst) {
+        let a = term[1];
+        return (".1(" + pretty_term(a)) + ")";
+      } else if ($ instanceof Snd) {
+        let a = term[1];
+        return (".2(" + pretty_term(a)) + ")";
+      } else if ($ instanceof ExFalso) {
+        let a = term[1];
+        return ("exfalso(" + pretty_term(a)) + ")";
+      } else {
+        let a = term[1];
+        return ("refl(" + pretty_term(a)) + ")";
+      }
+    } else if (term instanceof Ctor2) {
+      let $ = term[0];
+      if ($ instanceof App) {
+        let foo = term[1];
+        let bar = term[2];
+        let mode = $[0];
+        return (("(" + pretty_term(foo)) + ")") + (() => {
+          if (mode instanceof ZeroMode) {
+            return ("{" + pretty_term(bar)) + "}";
+          } else if (mode instanceof ManyMode) {
+            return ("(" + pretty_term(bar)) + ")";
+          } else {
+            return ("<" + pretty_term(bar)) + ">";
+          }
+        })();
+      } else if ($ instanceof Psi) {
+        let eq = term[1];
+        let p = term[2];
+        return ((("Psi(" + pretty_term(eq)) + ", ") + pretty_term(p)) + ")";
+      } else {
+        let a = term[1];
+        let b = term[2];
+        return ((("[" + pretty_term(a)) + ", ") + pretty_term(b)) + "]";
+      }
     } else {
-      let a = term[1];
-      let b = term[2];
-      return ((("[" + pretty_term(a)) + ", ") + pretty_term(b)) + "]";
-    }
-  } else {
-    let $ = term[0];
-    if ($ instanceof Cast) {
-      let a = term[1];
-      let b = term[2];
-      let eq = term[3];
-      return ((((("cast(" + pretty_term(a)) + ", ") + pretty_term(b)) + ", ") + pretty_term(
-        eq,
-      )) + ")";
-    } else {
-      let a = term[1];
-      let b = term[2];
-      return ((("(" + pretty_term(a)) + ") = (") + pretty_term(b)) + ")";
+      let $ = term[0];
+      if ($ instanceof Cast) {
+        let a = term[1];
+        let b = term[2];
+        let eq = term[3];
+        return ((((("cast(" + pretty_term(a)) + ", ") + pretty_term(b)) + ", ") + pretty_term(
+          eq,
+        )) + ")";
+      } else {
+        let a = term[1];
+        let b = term[2];
+        return ((("(" + pretty_term(a)) + ") = (") + pretty_term(b)) + ")";
+      }
     }
   }
 }
@@ -1013,6 +979,160 @@ export function pretty_param(mode, x, mb_t) {
     return ("(" + inner) + ")";
   } else {
     return ("<" + inner) + ">";
+  }
+}
+
+export function pretty_value(loop$v) {
+  while (true) {
+    let v = loop$v;
+    if (v instanceof VIdent) {
+      let x = v[0];
+      let spine = v[3];
+      return $list.fold(spine, x, pretty_spine_entry);
+    } else if (v instanceof VMeta) {
+      let $ = v[2];
+      if ($ instanceof $Empty) {
+        let ref = v[0];
+        let $1 = get(ref);
+        if ($1 instanceof Solved) {
+          let v$1 = $1[0];
+          loop$v = v$1;
+        } else {
+          let i = $1[0];
+          return "?m" + $int.to_string(i);
+        }
+      } else {
+        let ref = v[0];
+        let erased = v[1];
+        let spine = $;
+        let pos = v[3];
+        return $list.fold(
+          spine,
+          pretty_value(new VMeta(ref, erased, toList([]), pos)),
+          pretty_spine_entry,
+        );
+      }
+    } else if (v instanceof VSort) {
+      let $ = v[0];
+      if ($ instanceof SetSort) {
+        return "Set";
+      } else {
+        return "Kind";
+      }
+    } else if (v instanceof VNat) {
+      let n = v[0];
+      return $int.to_string(n);
+    } else if (v instanceof VNatType) {
+      return "Nat";
+    } else if (v instanceof VPi) {
+      let $ = v[0];
+      if ($ === "_") {
+        let mode = v[1];
+        let a = v[2];
+        let b = v[3];
+        let pos = v[4];
+        let li = pretty_value(a);
+        return ((() => {
+          if (mode instanceof ZeroMode) {
+            return ("{" + li) + "}";
+          } else if (mode instanceof ManyMode) {
+            return ("(" + li) + ")";
+          } else {
+            return ("<" + li) + ">";
+          }
+        })() + "=> ") + pretty_value(
+          b(new VIdent("_", mode, new Level(0), toList([]), pos)),
+        );
+      } else {
+        let x = $;
+        let mode = v[1];
+        let a = v[2];
+        let b = v[3];
+        let pos = v[4];
+        return ((() => {
+          if (mode instanceof ZeroMode) {
+            return ((("{" + x) + ": ") + pretty_value(a)) + "}";
+          } else if (mode instanceof ManyMode) {
+            return ((("(" + x) + ": ") + pretty_value(a)) + ")";
+          } else {
+            return ((("<" + x) + ": ") + pretty_value(a)) + ">";
+          }
+        })() + "=> ") + pretty_value(
+          b(new VIdent(x, mode, new Level(0), toList([]), pos)),
+        );
+      }
+    } else if (v instanceof VLambda) {
+      let x = v[0];
+      let mode = v[1];
+      let f = v[2];
+      let pos = v[3];
+      return ((() => {
+        if (mode instanceof ZeroMode) {
+          return ("{" + x) + "}";
+        } else if (mode instanceof ManyMode) {
+          return ("(" + x) + ")";
+        } else {
+          return ("<" + x) + ">";
+        }
+      })() + "-> ") + pretty_value(
+        f(new VIdent(x, mode, new Level(0), toList([]), pos)),
+      );
+    } else if (v instanceof VEq) {
+      let a = v[0];
+      let b = v[1];
+      let t = v[2];
+      return ((((("(" + pretty_value(a)) + ") =[") + pretty_value(t)) + "] (") + pretty_value(
+        b,
+      )) + ")";
+    } else if (v instanceof VRefl) {
+      let a = v[0];
+      return ("refl(" + pretty_value(a)) + ")";
+    } else if (v instanceof VInter) {
+      let a = v[0];
+      let b = v[1];
+      return ((("[" + pretty_value(a)) + ", ") + pretty_value(b)) + "]";
+    } else if (v instanceof VInterT) {
+      let x = v[0];
+      let a = v[1];
+      let b = v[2];
+      let pos = v[3];
+      return (((("(" + x) + ": ") + pretty_value(a)) + ")& ") + pretty_value(
+        b(new VIdent(x, new TypeMode(), new Level(0), toList([]), pos)),
+      );
+    } else if (v instanceof VCast) {
+      let a = v[0];
+      let inter = v[1];
+      let eq = v[2];
+      return ((((("cast(" + pretty_value(a)) + ", ") + pretty_value(inter)) + ", ") + pretty_value(
+        eq,
+      )) + ")";
+    } else {
+      let a = v[0];
+      return ("exfalso(" + pretty_value(a)) + ")";
+    }
+  }
+}
+
+function pretty_spine_entry(base, s) {
+  if (s instanceof VApp) {
+    let $ = s[0];
+    if ($ instanceof ZeroMode) {
+      let b = s[1];
+      return ((("(" + base) + "){") + pretty_value(b)) + "}";
+    } else if ($ instanceof ManyMode) {
+      let b = s[1];
+      return ((("(" + base) + ")(") + pretty_value(b)) + ")";
+    } else {
+      let b = s[1];
+      return ((("(" + base) + ")<") + pretty_value(b)) + ">";
+    }
+  } else if (s instanceof VPsi) {
+    let p = s[0];
+    return ((("Psi(" + base) + ", ") + pretty_value(p)) + ")";
+  } else if (s instanceof VFst) {
+    return ("(" + base) + ").1";
+  } else {
+    return ("(" + base) + ").2";
   }
 }
 
@@ -1129,9 +1249,11 @@ export function pretty_syntax(s) {
     return ((((("cast(" + pretty_syntax(a)) + ", ") + pretty_syntax(b)) + ", ") + pretty_syntax(
       eq,
     )) + ")";
-  } else {
+  } else if (s instanceof ExFalsoSyntax) {
     let a = s[0];
     return ("exfalso(" + pretty_syntax(a)) + ")";
+  } else {
+    return "_";
   }
 }
 

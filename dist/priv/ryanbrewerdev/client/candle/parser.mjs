@@ -9,6 +9,7 @@ import {
   EqSyntax,
   ExFalsoSyntax,
   FstSyntax,
+  HoleSyntax,
   IdentSyntax,
   IntersectionSyntax,
   IntersectionTypeSyntax,
@@ -419,6 +420,7 @@ export function expr() {
               exfalso(),
               ident(),
               relevant_but_ignored(),
+              hole(),
             ]),
           ),
           "expression",
@@ -578,7 +580,7 @@ export function expr() {
                                               "panic",
                                               FILEPATH,
                                               "client/candle/parser",
-                                              579,
+                                              590,
                                               "expr",
                                               "impossible projection",
                                               {}
@@ -673,7 +675,7 @@ function annotated_binder() {
                       "panic",
                       FILEPATH,
                       "client/candle/parser",
-                      300,
+                      310,
                       "annotated_binder",
                       "impossible binder mode",
                       {}
@@ -723,7 +725,7 @@ function annotated_binder() {
                               "panic",
                               FILEPATH,
                               "client/candle/parser",
-                              308,
+                              318,
                               "annotated_binder",
                               "impossible annotated binder",
                               {}
@@ -812,7 +814,7 @@ function string(s) {
 }
 
 export function parse(src, parser) {
-  let $ = parser.run(new Pos(src, 1, 1), $string.to_graphemes(src));
+  let $ = parser.run(new Pos("", 1, 1), $string.to_graphemes(src));
   if ($ instanceof Ok) {
     let a = $[0][2];
     return new Ok(a);
@@ -896,8 +898,18 @@ function ws(k) {
 }
 
 function ident_string() {
-  let _pipe = many(either(char("_"), alphanum()));
-  return map(_pipe, $string.concat);
+  return do$(
+    either(uppercase(), lowercase()),
+    (fst) => {
+      return do$(
+        (() => {
+          let _pipe = many0(either(char("_"), alphanum()));
+          return map(_pipe, $string.concat);
+        })(),
+        (rest) => { return return$(fst + rest); },
+      );
+    },
+  );
 }
 
 function pattern_string() {
@@ -907,15 +919,11 @@ function pattern_string() {
       char("_"),
       (_) => {
         return do$(
-          maybe(ident_string()),
-          (res) => {
-            if (res instanceof Ok) {
-              let s = res[0];
-              return return$("_" + s);
-            } else {
-              return return$("_");
-            }
-          },
+          (() => {
+            let _pipe = many0(either(char("_"), alphanum()));
+            return map(_pipe, $string.concat);
+          })(),
+          (s) => { return return$("_" + s); },
         );
       },
     ),
@@ -967,6 +975,15 @@ function ident() {
   );
 }
 
+function hole() {
+  return do$(
+    get_pos(),
+    (pos) => {
+      return do$(keyword("?"), (_) => { return return$(new HoleSyntax(pos)); });
+    },
+  );
+}
+
 function nat() {
   return do$(
     get_pos(),
@@ -980,15 +997,15 @@ function nat() {
               "let_assert",
               FILEPATH,
               "client/candle/parser",
-              266,
+              276,
               "nat",
               "Pattern match failed, no pattern matched the value.",
               {
                 value: $,
-                start: 6592,
-                end: 6642,
-                pattern_start: 6603,
-                pattern_end: 6608
+                start: 6809,
+                end: 6859,
+                pattern_start: 6820,
+                pattern_end: 6825
               }
             )
           }
@@ -1129,7 +1146,7 @@ function erased_binder() {
                                         "panic",
                                         FILEPATH,
                                         "client/candle/parser",
-                                        332,
+                                        342,
                                         "erased_binder",
                                         "impossible erased binder",
                                         {}
@@ -1293,7 +1310,7 @@ function parse_param(idk) {
                                       "panic",
                                       FILEPATH,
                                       "client/candle/parser",
-                                      389,
+                                      399,
                                       "parse_param",
                                       "impossible param mode",
                                       {}
@@ -1394,7 +1411,7 @@ function let_binding() {
                                                               "panic",
                                                               FILEPATH,
                                                               "client/candle/parser",
-                                                              436,
+                                                              446,
                                                               "let_binding",
                                                               "impossible binder",
                                                               {}

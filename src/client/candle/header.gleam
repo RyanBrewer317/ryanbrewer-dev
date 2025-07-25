@@ -1,4 +1,19 @@
 import gleam/int
+import gleam/list
+
+pub type Ref(a)
+
+@external(javascript, "./ffi.mjs", "get")
+pub fn get(ref: Ref(a)) -> a
+
+@external(javascript, "./ffi.mjs", "set")
+pub fn set(ref: Ref(a), a: a) -> Nil
+
+@external(javascript, "./ffi.mjs", "make")
+pub fn new(a: a) -> Ref(a)
+
+@external(javascript, "./ffi.mjs", "next_id")
+pub fn next_id() -> Int
 
 pub type Pos {
   Pos(src: String, line: Int, col: Int)
@@ -58,6 +73,7 @@ pub type Syntax {
   ReflSyntax(Syntax, pos: Pos)
   CastSyntax(Syntax, Syntax, Syntax, pos: Pos)
   ExFalsoSyntax(Syntax, pos: Pos)
+  HoleSyntax(pos: Pos)
 }
 
 pub fn get_pos(s: Syntax) -> Pos {
@@ -80,6 +96,7 @@ pub fn get_pos(s: Syntax) -> Pos {
     ReflSyntax(_, pos) -> pos
     CastSyntax(_, _, _, pos) -> pos
     ExFalsoSyntax(_, pos) -> pos
+    HoleSyntax(pos) -> pos
   }
 }
 
@@ -148,6 +165,7 @@ pub fn pretty_syntax(s: Syntax) -> String {
       <> pretty_syntax(eq)
       <> ")"
     ExFalsoSyntax(a, _) -> "exfalso(" <> pretty_syntax(a) <> ")"
+    HoleSyntax(_) -> "_"
   }
 }
 
@@ -163,6 +181,11 @@ pub fn lvl_to_idx(size: Level, lvl: Level) -> Index {
   Index(size.int - lvl.int - 1)
 }
 
+pub type Meta {
+  Solved(Value)
+  Unsolved(Int)
+}
+
 pub type Binder {
   Lambda(mode: BinderMode)
   Pi(mode: BinderMode, ty: Term)
@@ -170,7 +193,13 @@ pub type Binder {
   Let(mode: BinderMode, val: Term)
 }
 
+pub type ContextMask {
+  ContextMask(has_def: Bool, mode: BinderMode)
+}
+
 pub type Ctor0 {
+  Meta(Ref(Meta))
+  InsertedMeta(Ref(Meta), List(ContextMask))
   Sort(Sort)
   NatT
   Nat(Int)
@@ -201,6 +230,17 @@ pub type Term {
   Ctor1(Ctor1, Term, pos: Pos)
   Ctor2(Ctor2, Term, Term, pos: Pos)
   Ctor3(Ctor3, Term, Term, Term, pos: Pos)
+}
+
+pub fn term_pos(t: Term) -> Pos {
+  case t {
+    Ident(_, _, _, pos) -> pos
+    Binder(_, _, _, pos) -> pos
+    Ctor0(_, pos) -> pos
+    Ctor1(_, _, pos) -> pos
+    Ctor2(_, _, _, pos) -> pos
+    Ctor3(_, _, _, _, pos) -> pos
+  }
 }
 
 pub fn pretty_param(
@@ -241,6 +281,12 @@ pub fn pretty_term(term: Term) -> String {
     Ctor0(Sort(KindSort), _) -> "Kind"
     Ctor0(NatT, _) -> "Nat"
     Ctor0(Nat(n), _) -> int.to_string(n)
+    Ctor0(Meta(ref), _) ->
+      case get(ref) {
+        Solved(v) -> pretty_value(v)
+        Unsolved(i) -> "?m" <> int.to_string(i)
+      }
+    Ctor0(InsertedMeta(ref, _), pos) -> pretty_term(Ctor0(Meta(ref), pos))
     Ctor1(Fst, a, _) -> ".1(" <> pretty_term(a) <> ")"
     Ctor1(Snd, a, _) -> ".2(" <> pretty_term(a) <> ")"
     Ctor1(ExFalso, a, _) -> "exfalso(" <> pretty_term(a) <> ")"
@@ -276,7 +322,8 @@ pub fn inc(lvl: Level) -> Level {
 }
 
 pub type Value {
-  VNeutral(Neutral)
+  VIdent(String, BinderMode, Level, List(SpineEntry), Pos)
+  VMeta(Ref(Meta), Bool, List(SpineEntry), Pos)
   VSort(Sort, Pos)
   VNat(Int, Pos)
   VNatType(Pos)
@@ -290,17 +337,21 @@ pub type Value {
   VExFalso(Value, Pos)
 }
 
-pub type Neutral {
-  VIdent(String, BinderMode, Level, Pos)
-  VApp(BinderMode, Neutral, Value, Pos)
-  VPsi(Neutral, Value, Pos)
-  VFst(Neutral, Pos)
-  VSnd(Neutral, Pos)
+pub type SpineEntry {
+  VApp(BinderMode, Value, Pos)
+  VPsi(Value, Pos)
+  VFst(Pos)
+  VSnd(Pos)
 }
 
 pub fn value_pos(v: Value) -> Pos {
   case v {
-    VNeutral(n) -> neutral_pos(n)
+    VIdent(_, _, _, spine, pos) ->
+      case list.reverse(spine) {
+        [] -> pos
+        [s, ..] -> spine_pos(s)
+      }
+    VMeta(_, _, _, pos) -> pos
     VSort(_, pos) -> pos
     VNat(_, pos) -> pos
     VNatType(pos) -> pos
@@ -315,35 +366,40 @@ pub fn value_pos(v: Value) -> Pos {
   }
 }
 
-pub fn neutral_pos(n: Neutral) -> Pos {
-  case n {
-    VIdent(_, _, _, pos) -> pos
-    VApp(_, _, _, pos) -> pos
-    VPsi(_, _, pos) -> pos
-    VFst(_, pos) -> pos
-    VSnd(_, pos) -> pos
+pub fn spine_pos(s: SpineEntry) -> Pos {
+  case s {
+    VApp(_, _, pos) -> pos
+    VPsi(_, pos) -> pos
+    VFst(pos) -> pos
+    VSnd(pos) -> pos
   }
 }
 
-fn pretty_neutral(n: Neutral) -> String {
-  case n {
-    VIdent(x, _, _, _) -> x
-    VApp(ManyMode, a, b, _) ->
-      "(" <> pretty_neutral(a) <> ")(" <> pretty_value(b) <> ")"
-    VApp(ZeroMode, a, b, _) ->
-      "(" <> pretty_neutral(a) <> "){" <> pretty_value(b) <> "}"
-    VApp(TypeMode, a, b, _) ->
-      "(" <> pretty_neutral(a) <> ")<" <> pretty_value(b) <> ">"
-    VPsi(e, p, _) ->
-      "Psi(" <> pretty_neutral(e) <> ", " <> pretty_value(p) <> ")"
-    VFst(a, _) -> "(" <> pretty_neutral(a) <> ").1"
-    VSnd(a, _) -> "(" <> pretty_neutral(a) <> ").2"
+fn pretty_spine_entry(base: String, s: SpineEntry) -> String {
+  case s {
+    VApp(ManyMode, b, _) -> "(" <> base <> ")(" <> pretty_value(b) <> ")"
+    VApp(ZeroMode, b, _) -> "(" <> base <> "){" <> pretty_value(b) <> "}"
+    VApp(TypeMode, b, _) -> "(" <> base <> ")<" <> pretty_value(b) <> ">"
+    VPsi(p, _) -> "Psi(" <> base <> ", " <> pretty_value(p) <> ")"
+    VFst(_) -> "(" <> base <> ").1"
+    VSnd(_) -> "(" <> base <> ").2"
   }
 }
 
 pub fn pretty_value(v: Value) -> String {
   case v {
-    VNeutral(n) -> pretty_neutral(n)
+    VIdent(x, _, _, spine, _) -> list.fold(spine, x, pretty_spine_entry)
+    VMeta(ref, _, [], _) ->
+      case get(ref) {
+        Solved(v) -> pretty_value(v)
+        Unsolved(i) -> "?m" <> int.to_string(i)
+      }
+    VMeta(ref, erased, spine, pos) ->
+      list.fold(
+        spine,
+        pretty_value(VMeta(ref, erased, [], pos)),
+        pretty_spine_entry,
+      )
     VSort(SetSort, _) -> "Set"
     VSort(KindSort, _) -> "Kind"
     VNat(n, _) -> int.to_string(n)
@@ -356,7 +412,7 @@ pub fn pretty_value(v: Value) -> String {
         TypeMode -> "<" <> li <> ">"
       }
       <> "=> "
-      <> pretty_value(b(VNeutral(VIdent("_", mode, Level(0), pos))))
+      <> pretty_value(b(VIdent("_", mode, Level(0), [], pos)))
     }
     VPi(x, mode, a, b, pos) ->
       {
@@ -367,7 +423,7 @@ pub fn pretty_value(v: Value) -> String {
         }
       }
       <> "=> "
-      <> pretty_value(b(VNeutral(VIdent(x, mode, Level(0), pos))))
+      <> pretty_value(b(VIdent(x, mode, Level(0), [], pos)))
     VLambda(x, mode, f, pos) ->
       {
         case mode {
@@ -377,7 +433,7 @@ pub fn pretty_value(v: Value) -> String {
         }
       }
       <> "-> "
-      <> pretty_value(f(VNeutral(VIdent(x, mode, Level(0), pos))))
+      <> pretty_value(f(VIdent(x, mode, Level(0), [], pos)))
     VEq(a, b, t, _) ->
       "("
       <> pretty_value(a)
@@ -394,7 +450,7 @@ pub fn pretty_value(v: Value) -> String {
       <> ": "
       <> pretty_value(a)
       <> ")& "
-      <> pretty_value(b(VNeutral(VIdent(x, TypeMode, Level(0), pos))))
+      <> pretty_value(b(VIdent(x, TypeMode, Level(0), [], pos)))
     VCast(a, inter, eq, _) ->
       "cast("
       <> pretty_value(a)
@@ -409,16 +465,23 @@ pub fn pretty_value(v: Value) -> String {
 
 pub fn quote(size: Level, v: Value) -> Term {
   case v {
-    VNeutral(n) -> quote_neutral(size, n)
+    VIdent(x, mode, lvl, spine, pos) ->
+      list.fold(
+        spine,
+        Ident(mode, lvl_to_idx(size, lvl), x, pos),
+        quote_spine(size),
+      )
+    VMeta(ref, _, spine, pos) ->
+      list.fold(spine, Ctor0(Meta(ref), pos), quote_spine(size))
     VSort(s, p) -> Ctor0(Sort(s), p)
     VNat(n, p) -> Ctor0(Nat(n), p)
     VNatType(p) -> Ctor0(NatT, p)
     VPi(x, mode, a, b, p) -> {
-      let n = VNeutral(VIdent(x, mode, size, p))
+      let n = VIdent(x, mode, size, [], p)
       Binder(Pi(mode, quote(size, a)), x, quote(inc(size), b(n)), p)
     }
     VLambda(x, mode, e, p) -> {
-      let n = VNeutral(VIdent(x, mode, size, p))
+      let n = VIdent(x, mode, size, [], p)
       Binder(Lambda(mode), x, quote(inc(size), e(n)), p)
     }
     VEq(a, b, t, p) ->
@@ -426,7 +489,7 @@ pub fn quote(size: Level, v: Value) -> Term {
     VRefl(a, p) -> Ctor1(Refl, quote(size, a), p)
     VInter(a, b, pos) -> Ctor2(Inter, quote(size, a), quote(size, b), pos)
     VInterT(x, a, b, pos) -> {
-      let n = VNeutral(VIdent(x, TypeMode, size, pos))
+      let n = VIdent(x, TypeMode, size, [], pos)
       Binder(InterT(quote(size, a)), x, quote(inc(size), b(n)), pos)
     }
     VCast(a, inter, eq, pos) ->
@@ -435,14 +498,13 @@ pub fn quote(size: Level, v: Value) -> Term {
   }
 }
 
-fn quote_neutral(size: Level, n: Neutral) -> Term {
-  case n {
-    VIdent(x, mode, lvl, pos) -> Ident(mode, lvl_to_idx(size, lvl), x, pos)
-    VApp(mode, n, v, p) ->
-      Ctor2(App(mode), quote_neutral(size, n), quote(size, v), p)
-    VPsi(e, pred, pos) ->
-      Ctor2(Psi, quote_neutral(size, e), quote(size, pred), pos)
-    VFst(n, pos) -> Ctor1(Fst, quote_neutral(size, n), pos)
-    VSnd(a, pos) -> Ctor1(Snd, quote_neutral(size, a), pos)
+fn quote_spine(size: Level) -> fn(Term, SpineEntry) -> Term {
+  fn(base, entry) {
+    case entry {
+      VApp(mode, v, p) -> Ctor2(App(mode), base, quote(size, v), p)
+      VPsi(pred, pos) -> Ctor2(Psi, base, quote(size, pred), pos)
+      VFst(pos) -> Ctor1(Fst, base, pos)
+      VSnd(pos) -> Ctor1(Snd, base, pos)
+    }
   }
 }

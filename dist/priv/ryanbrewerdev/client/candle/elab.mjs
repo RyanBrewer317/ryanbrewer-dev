@@ -1,3 +1,7 @@
+import * as $stdlib$dict from "../../../gleam_stdlib/dict.mjs";
+import * as $dict from "../../../gleam_stdlib/gleam/dict.mjs";
+import * as $int from "../../../gleam_stdlib/gleam/int.mjs";
+import * as $list from "../../../gleam_stdlib/gleam/list.mjs";
 import * as $result from "../../../gleam_stdlib/gleam/result.mjs";
 import * as $header from "../../client/candle/header.mjs";
 import {
@@ -6,6 +10,7 @@ import {
   Binder,
   Cast,
   CastSyntax,
+  ContextMask,
   Ctor0,
   Ctor1,
   Ctor2,
@@ -17,9 +22,11 @@ import {
   ExFalsoSyntax,
   Fst,
   FstSyntax,
+  HoleSyntax,
   Ident,
   IdentSyntax,
   Index,
+  InsertedMeta,
   Inter,
   InterT,
   IntersectionSyntax,
@@ -31,6 +38,7 @@ import {
   LetSyntax,
   Level,
   ManyMode,
+  Meta,
   Nat,
   NatSyntax,
   NatT,
@@ -44,9 +52,11 @@ import {
   SetSort,
   Snd,
   SndSyntax,
+  Solved,
   Sort,
   SortSyntax,
   TypeMode,
+  Unsolved,
   VApp,
   VCast,
   VEq,
@@ -56,20 +66,25 @@ import {
   VInter,
   VInterT,
   VLambda,
+  VMeta,
   VNat,
   VNatType,
-  VNeutral,
   VPi,
   VPsi,
   VRefl,
   VSnd,
   VSort,
   ZeroMode,
+  get,
   inc,
+  lvl_to_idx,
+  new$,
+  next_id,
   pretty_mode,
   pretty_pos,
   pretty_term,
   pretty_value,
+  set,
 } from "../../client/candle/header.mjs";
 import {
   Ok,
@@ -80,102 +95,32 @@ import {
   CustomType as $CustomType,
   makeError,
   isEqual,
+  bitArraySlice,
+  bitArraySliceToInt,
+  BitArray as $BitArray,
+  List as $List,
+  UtfCodepoint as $UtfCodepoint,
 } from "../../gleam.mjs";
 
 const FILEPATH = "src/client/candle/elab.gleam";
 
 export class Context extends $CustomType {
-  constructor(level, types, env, scope) {
+  constructor(level, types, env, scope, mask) {
     super();
     this.level = level;
     this.types = types;
     this.env = env;
     this.scope = scope;
+    this.mask = mask;
   }
 }
 
-function app(mode, foo, bar) {
-  if (foo instanceof VNeutral) {
-    let neutral = foo[0];
-    return new VNeutral(new VApp(mode, neutral, bar, $header.value_pos(bar)));
-  } else if (foo instanceof VLambda) {
-    let f = foo[2];
-    return f(bar);
-  } else {
-    throw makeError(
-      "panic",
-      FILEPATH,
-      "client/candle/elab",
-      49,
-      "app",
-      "impossible value application",
-      {}
-    )
-  }
-}
-
-function psi(pos, eq, pred) {
-  if (eq instanceof VNeutral) {
-    let neutral = eq[0];
-    return new VNeutral(new VPsi(neutral, pred, pos));
-  } else if (eq instanceof VRefl) {
-    return new VLambda("x", new ManyMode(), (x) => { return x; }, pos);
-  } else {
-    throw makeError(
-      "panic",
-      FILEPATH,
-      "client/candle/elab",
-      57,
-      "psi",
-      ("impossible equality elimination " + pretty_value(eq)),
-      {}
-    )
-  }
-}
-
-function fst(pos, inter) {
-  if (inter instanceof VNeutral) {
-    let neutral = inter[0];
-    return new VNeutral(new VFst(neutral, pos));
-  } else if (inter instanceof VInter) {
-    let a = inter[0];
-    return a;
-  } else if (inter instanceof VCast) {
-    let a = inter[0];
-    return a;
-  } else {
-    throw makeError(
-      "panic",
-      FILEPATH,
-      "client/candle/elab",
-      69,
-      "fst",
-      ("impossible value projection " + pretty_value(inter)),
-      {}
-    )
-  }
-}
-
-function snd(pos, inter) {
-  if (inter instanceof VNeutral) {
-    let neutral = inter[0];
-    return new VNeutral(new VSnd(neutral, pos));
-  } else if (inter instanceof VInter) {
-    let b = inter[1];
-    return b;
-  } else if (inter instanceof VCast) {
-    let a = inter[0];
-    return a;
-  } else {
-    throw makeError(
-      "panic",
-      FILEPATH,
-      "client/candle/elab",
-      81,
-      "snd",
-      "impossible value projection",
-      {}
-    )
+class PartialRenaming extends $CustomType {
+  constructor(domain_size, codomain_size, renaming) {
+    super();
+    this.domain_size = domain_size;
+    this.codomain_size = codomain_size;
+    this.renaming = renaming;
   }
 }
 
@@ -197,463 +142,58 @@ function lookup(loop$l, loop$i) {
   }
 }
 
-export function eval$(loop$t, loop$env) {
-  while (true) {
-    let t = loop$t;
-    let env = loop$env;
-    if (t instanceof Ident) {
-      let idx = t[1];
-      let $ = lookup(env, idx.int);
-      if ($ instanceof Ok) {
-        let v = $[0];
-        return v;
-      } else {
-        throw makeError(
-          "panic",
-          FILEPATH,
-          "client/candle/elab",
-          98,
-          "eval",
-          "out-of-scope var during eval",
-          {}
-        )
-      }
-    } else if (t instanceof Binder) {
-      let $ = t[0];
-      if ($ instanceof Lambda) {
-        let x = t[1];
-        let e = t[2];
-        let pos = t.pos;
-        let mode = $.mode;
-        return new VLambda(
-          x,
-          mode,
-          (arg) => { return eval$(e, listPrepend(arg, env)); },
-          pos,
-        );
-      } else if ($ instanceof Pi) {
-        let x = t[1];
-        let u = t[2];
-        let pos = t.pos;
-        let mode = $.mode;
-        let t$1 = $.ty;
-        return new VPi(
-          x,
-          mode,
-          eval$(t$1, env),
-          (arg) => { return eval$(u, listPrepend(arg, env)); },
-          pos,
-        );
-      } else if ($ instanceof InterT) {
-        let x = t[1];
-        let b = t[2];
-        let pos = t.pos;
-        let a = $.ty;
-        return new VInterT(
-          x,
-          eval$(a, env),
-          (arg) => { return eval$(b, listPrepend(arg, env)); },
-          pos,
-        );
-      } else {
-        let e = t[2];
-        let v = $.val;
-        loop$t = e;
-        loop$env = listPrepend(eval$(v, env), env);
-      }
-    } else if (t instanceof Ctor0) {
-      let $ = t[0];
-      if ($ instanceof Sort) {
-        let $1 = $[0];
-        if ($1 instanceof SetSort) {
-          let pos = t.pos;
-          return new VSort(new SetSort(), pos);
-        } else {
-          let pos = t.pos;
-          return new VSort(new KindSort(), pos);
-        }
-      } else if ($ instanceof NatT) {
-        let pos = t.pos;
-        return new VNatType(pos);
-      } else {
-        let pos = t.pos;
-        let n = $[0];
-        return new VNat(n, pos);
-      }
-    } else if (t instanceof Ctor1) {
-      let $ = t[0];
-      if ($ instanceof Fst) {
-        let a = t[1];
-        let pos = t.pos;
-        return fst(pos, eval$(a, env));
-      } else if ($ instanceof Snd) {
-        let a = t[1];
-        let pos = t.pos;
-        return snd(pos, eval$(a, env));
-      } else if ($ instanceof ExFalso) {
-        let a = t[1];
-        let pos = t.pos;
-        return new VExFalso(eval$(a, env), pos);
-      } else {
-        let a = t[1];
-        let pos = t.pos;
-        return new VRefl(eval$(a, env), pos);
-      }
-    } else if (t instanceof Ctor2) {
-      let $ = t[0];
-      if ($ instanceof App) {
-        let foo = t[1];
-        let bar = t[2];
-        let mode = $[0];
-        return app(mode, eval$(foo, env), eval$(bar, env));
-      } else if ($ instanceof Psi) {
-        let e = t[1];
-        let p = t[2];
-        let pos = t.pos;
-        return psi(pos, eval$(e, env), eval$(p, env));
-      } else {
-        let a = t[1];
-        let b = t[2];
-        let pos = t.pos;
-        return new VInter(eval$(a, env), eval$(b, env), pos);
-      }
-    } else {
-      let $ = t[0];
-      if ($ instanceof Cast) {
-        let a = t[1];
-        let inter = t[2];
-        let eq$1 = t[3];
-        let pos = t.pos;
-        return new VCast(
-          eval$(a, env),
-          eval$(inter, env),
-          eval$(eq$1, env),
-          pos,
-        );
-      } else {
-        let a = t[1];
-        let b = t[2];
-        let t$1 = t[3];
-        let pos = t.pos;
-        return new VEq(eval$(a, env), eval$(b, env), eval$(t$1, env), pos);
-      }
-    }
-  }
+function fresh_meta(ctx, pos) {
+  let ref = new$(new Unsolved(next_id()));
+  return new Ctor0(new InsertedMeta(ref, ctx.mask), pos);
 }
 
-function pretty_hypotheses(scope) {
-  if (scope instanceof $Empty) {
-    return "\n";
+function lift(pr) {
+  return new PartialRenaming(
+    inc(pr.domain_size),
+    inc(pr.codomain_size),
+    $dict.insert(pr.renaming, pr.codomain_size, pr.domain_size),
+  );
+}
+
+function lambdas_helper(lvl, body, x) {
+  let $ = isEqual(x, lvl);
+  if ($) {
+    return body;
   } else {
-    let rest = scope.tail;
-    let x = scope.head[0];
-    let t = scope.head[1][1];
-    return (((x + ": ") + pretty_value(t)) + "\n") + pretty_hypotheses(rest);
+    return new Binder(
+      new Lambda(new ManyMode()),
+      "x" + $int.to_string(x.int + 1),
+      lambdas_helper(lvl, body, inc(x)),
+      $header.term_pos(body),
+    );
   }
 }
 
-function eq_helper(loop$lvl, loop$a, loop$b) {
-  while (true) {
-    let lvl = loop$lvl;
-    let a = loop$a;
-    let b = loop$b;
-    let eqh = (a, b) => { return eq_helper(lvl, a, b); };
-    if (b instanceof VNeutral) {
-      if (a instanceof VNeutral) {
-        let $ = a[0];
-        if ($ instanceof VIdent) {
-          let $1 = b[0];
-          if ($1 instanceof VIdent) {
-            let i = $[2];
-            let j = $1[2];
-            return isEqual(i, j);
-          } else {
-            return false;
-          }
-        } else if ($ instanceof VApp) {
-          let $1 = b[0];
-          if ($1 instanceof VApp) {
-            let m1 = $[0];
-            let n1 = $[1];
-            let arg1 = $[2];
-            let m2 = $1[0];
-            let n2 = $1[1];
-            let arg2 = $1[2];
-            return ((isEqual(m1, m2)) && eqh(new VNeutral(n1), new VNeutral(n2))) && eqh(
-              arg1,
-              arg2,
-            );
-          } else {
-            return false;
-          }
-        } else if ($ instanceof VPsi) {
-          let $1 = b[0];
-          if ($1 instanceof VPsi) {
-            let e1 = $[0];
-            let p1 = $[1];
-            let e2 = $1[0];
-            let p2 = $1[1];
-            return eqh(new VNeutral(e1), new VNeutral(e2)) && eqh(p1, p2);
-          } else {
-            return false;
-          }
-        } else if ($ instanceof VFst) {
-          let $1 = b[0];
-          if ($1 instanceof VFst) {
-            let a1 = $[0];
-            let a2 = $1[0];
-            return eqh(new VNeutral(a1), new VNeutral(a2));
-          } else {
-            return false;
-          }
+function lambdas(lvl, body) {
+  return lambdas_helper(lvl, body, new Level(0));
+}
+
+function and(a, b) {
+  if (a instanceof Ok) {
+    if (b instanceof Ok) {
+      let $ = a[0];
+      if ($) {
+        let $1 = b[0];
+        if ($1) {
+          return new Ok(true);
         } else {
-          let $1 = b[0];
-          if ($1 instanceof VSnd) {
-            let a1 = $[0];
-            let a2 = $1[0];
-            return eqh(new VNeutral(a1), new VNeutral(a2));
-          } else {
-            return false;
-          }
+          return new Ok(false);
         }
-      } else if (a instanceof VLambda) {
-        let b$1 = b;
-        let x = a[0];
-        let m = a[1];
-        let f = a[2];
-        let pos = a[3];
-        let dummy = new VNeutral(new VIdent(x, m, lvl, pos));
-        loop$lvl = inc(lvl);
-        loop$a = f(dummy);
-        loop$b = app(m, b$1, dummy);
       } else {
-        return false;
+        return new Ok(false);
       }
-    } else if (b instanceof VSort) {
-      if (a instanceof VSort) {
-        let s2 = b[0];
-        let s1 = a[0];
-        return isEqual(s1, s2);
-      } else if (a instanceof VLambda) {
-        let b$1 = b;
-        let x = a[0];
-        let m = a[1];
-        let f = a[2];
-        let pos = a[3];
-        let dummy = new VNeutral(new VIdent(x, m, lvl, pos));
-        loop$lvl = inc(lvl);
-        loop$a = f(dummy);
-        loop$b = app(m, b$1, dummy);
-      } else {
-        return false;
-      }
-    } else if (b instanceof VNat) {
-      if (a instanceof VNat) {
-        let m = b[0];
-        let n = a[0];
-        return n === m;
-      } else if (a instanceof VLambda) {
-        let b$1 = b;
-        let x = a[0];
-        let m = a[1];
-        let f = a[2];
-        let pos = a[3];
-        let dummy = new VNeutral(new VIdent(x, m, lvl, pos));
-        loop$lvl = inc(lvl);
-        loop$a = f(dummy);
-        loop$b = app(m, b$1, dummy);
-      } else {
-        return false;
-      }
-    } else if (b instanceof VNatType) {
-      if (a instanceof VNatType) {
-        return true;
-      } else if (a instanceof VLambda) {
-        let b$1 = b;
-        let x = a[0];
-        let m = a[1];
-        let f = a[2];
-        let pos = a[3];
-        let dummy = new VNeutral(new VIdent(x, m, lvl, pos));
-        loop$lvl = inc(lvl);
-        loop$a = f(dummy);
-        loop$b = app(m, b$1, dummy);
-      } else {
-        return false;
-      }
-    } else if (b instanceof VPi) {
-      if (a instanceof VPi) {
-        let m2 = b[1];
-        let t2 = b[2];
-        let u2 = b[3];
-        let x = a[0];
-        let m1 = a[1];
-        let t1 = a[2];
-        let u1 = a[3];
-        let pos = a[4];
-        let dummy = new VNeutral(new VIdent(x, m1, lvl, pos));
-        return ((isEqual(m1, m2)) && eqh(t1, t2)) && eq_helper(
-          inc(lvl),
-          u1(dummy),
-          u2(dummy),
-        );
-      } else if (a instanceof VLambda) {
-        let b$1 = b;
-        let x = a[0];
-        let m = a[1];
-        let f = a[2];
-        let pos = a[3];
-        let dummy = new VNeutral(new VIdent(x, m, lvl, pos));
-        loop$lvl = inc(lvl);
-        loop$a = f(dummy);
-        loop$b = app(m, b$1, dummy);
-      } else {
-        return false;
-      }
-    } else if (b instanceof VLambda) {
-      if (a instanceof VLambda) {
-        let b$1 = b;
-        let x = a[0];
-        let m = a[1];
-        let f = a[2];
-        let pos = a[3];
-        let dummy = new VNeutral(new VIdent(x, m, lvl, pos));
-        loop$lvl = inc(lvl);
-        loop$a = f(dummy);
-        loop$b = app(m, b$1, dummy);
-      } else {
-        let a$1 = a;
-        let x = b[0];
-        let m = b[1];
-        let f = b[2];
-        let pos = b[3];
-        let dummy = new VNeutral(new VIdent(x, m, lvl, pos));
-        loop$lvl = inc(lvl);
-        loop$a = app(m, a$1, dummy);
-        loop$b = f(dummy);
-      }
-    } else if (b instanceof VEq) {
-      if (a instanceof VLambda) {
-        let b$1 = b;
-        let x = a[0];
-        let m = a[1];
-        let f = a[2];
-        let pos = a[3];
-        let dummy = new VNeutral(new VIdent(x, m, lvl, pos));
-        loop$lvl = inc(lvl);
-        loop$a = f(dummy);
-        loop$b = app(m, b$1, dummy);
-      } else if (a instanceof VEq) {
-        let a2 = b[0];
-        let b2 = b[1];
-        let t2 = b[2];
-        let a1 = a[0];
-        let b1 = a[1];
-        let t1 = a[2];
-        return (eqh(a1, a2) && eqh(b1, b2)) && eqh(t1, t2);
-      } else {
-        return false;
-      }
-    } else if (b instanceof VRefl) {
-      if (a instanceof VLambda) {
-        let b$1 = b;
-        let x = a[0];
-        let m = a[1];
-        let f = a[2];
-        let pos = a[3];
-        let dummy = new VNeutral(new VIdent(x, m, lvl, pos));
-        loop$lvl = inc(lvl);
-        loop$a = f(dummy);
-        loop$b = app(m, b$1, dummy);
-      } else if (a instanceof VRefl) {
-        let a2 = b[0];
-        let a1 = a[0];
-        return eqh(a1, a2);
-      } else {
-        return false;
-      }
-    } else if (b instanceof VInter) {
-      if (a instanceof VLambda) {
-        let b$1 = b;
-        let x = a[0];
-        let m = a[1];
-        let f = a[2];
-        let pos = a[3];
-        let dummy = new VNeutral(new VIdent(x, m, lvl, pos));
-        loop$lvl = inc(lvl);
-        loop$a = f(dummy);
-        loop$b = app(m, b$1, dummy);
-      } else if (a instanceof VInter) {
-        let a2 = b[0];
-        let b2 = b[1];
-        let a1 = a[0];
-        let b1 = a[1];
-        return eqh(a1, a2) && eqh(b1, b2);
-      } else {
-        return false;
-      }
-    } else if (b instanceof VInterT) {
-      if (a instanceof VLambda) {
-        let b$1 = b;
-        let x = a[0];
-        let m = a[1];
-        let f = a[2];
-        let pos = a[3];
-        let dummy = new VNeutral(new VIdent(x, m, lvl, pos));
-        loop$lvl = inc(lvl);
-        loop$a = f(dummy);
-        loop$b = app(m, b$1, dummy);
-      } else if (a instanceof VInterT) {
-        let a2 = b[1];
-        let b2 = b[2];
-        let x = a[0];
-        let a1 = a[1];
-        let b1 = a[2];
-        let pos = a[3];
-        let dummy = new VNeutral(new VIdent(x, new TypeMode(), lvl, pos));
-        return eqh(a1, a2) && eq_helper(inc(lvl), b1(dummy), b2(dummy));
-      } else {
-        return false;
-      }
-    } else if (b instanceof VCast) {
-      if (a instanceof VLambda) {
-        let b$1 = b;
-        let x = a[0];
-        let m = a[1];
-        let f = a[2];
-        let pos = a[3];
-        let dummy = new VNeutral(new VIdent(x, m, lvl, pos));
-        loop$lvl = inc(lvl);
-        loop$a = f(dummy);
-        loop$b = app(m, b$1, dummy);
-      } else if (a instanceof VCast) {
-        let a2 = b[0];
-        let inter2 = b[1];
-        let eq2 = b[2];
-        let a1 = a[0];
-        let inter1 = a[1];
-        let eq1 = a[2];
-        return (eqh(a1, a2) && eqh(inter1, inter2)) && eqh(eq1, eq2);
-      } else {
-        return false;
-      }
-    } else if (a instanceof VLambda) {
-      let b$1 = b;
-      let x = a[0];
-      let m = a[1];
-      let f = a[2];
-      let pos = a[3];
-      let dummy = new VNeutral(new VIdent(x, m, lvl, pos));
-      loop$lvl = inc(lvl);
-      loop$a = f(dummy);
-      loop$b = app(m, b$1, dummy);
-    } else if (a instanceof VExFalso) {
-      let a2 = b[0];
-      let a1 = a[0];
-      return eqh(a1, a2);
     } else {
-      return false;
+      let err = b[0];
+      return new Error(err);
     }
+  } else {
+    let err = a[0];
+    return new Error(err);
   }
 }
 
@@ -818,6 +358,7 @@ export const empty_ctx = /* @__PURE__ */ new Context(
   /* @__PURE__ */ toList([]),
   /* @__PURE__ */ toList([]),
   /* @__PURE__ */ toList([]),
+  /* @__PURE__ */ toList([]),
 );
 
 export function infer(ctx, s) {
@@ -836,9 +377,10 @@ export function infer(ctx, s) {
           let xtt = _use0[1];
           return $result.try$(
             (() => {
-              if (xtt instanceof VSort) {
-                let $1 = xtt[0];
-                if ($1 instanceof SetSort) {
+              let $1 = force(xtt);
+              if ($1 instanceof VSort) {
+                let $2 = $1[0];
+                if ($2 instanceof SetSort) {
                   return new Ok(undefined);
                 } else if (mode instanceof ManyMode) {
                   return new Error("relevant lambda binding can't bind types");
@@ -851,12 +393,13 @@ export function infer(ctx, s) {
             })(),
             (_) => {
               let xt2v = eval$(xt2, ctx.env);
-              let v = new VNeutral(new VIdent(str, mode, ctx.level, pos));
+              let v = new VIdent(str, mode, ctx.level, toList([]), pos);
               let ctx2 = new Context(
                 inc(ctx.level),
                 listPrepend(xt2v, ctx.types),
                 listPrepend(v, ctx.env),
                 listPrepend([str, [mode, xt2v]], ctx.scope),
+                listPrepend(new ContextMask(false, mode), ctx.mask),
               );
               return $result.try$(
                 infer(ctx2, body),
@@ -872,9 +415,10 @@ export function infer(ctx, s) {
                         (x) => {
                           let ctx2$1 = new Context(
                             inc(ctx.level),
-                            listPrepend(xt2v, ctx.env),
+                            listPrepend(xt2v, ctx.types),
                             listPrepend(x, ctx.env),
                             listPrepend([str, [mode, xt2v]], ctx.scope),
+                            listPrepend(new ContextMask(false, mode), ctx.mask),
                           );
                           let $1 = infer(ctx2$1, body);
                           if (!($1 instanceof Ok)) {
@@ -882,15 +426,15 @@ export function infer(ctx, s) {
                               "let_assert",
                               FILEPATH,
                               "client/candle/elab",
-                              488,
+                              794,
                               "infer",
                               "Pattern match failed, no pattern matched the value.",
                               {
                                 value: $1,
-                                start: 16599,
-                                end: 16641,
-                                pattern_start: 16610,
-                                pattern_end: 16621
+                                start: 25912,
+                                end: 25954,
+                                pattern_start: 25923,
+                                pattern_end: 25934
                               }
                             )
                           }
@@ -935,11 +479,12 @@ export function infer(ctx, s) {
       (_use0) => {
         let foo2 = _use0[0];
         let foot = _use0[1];
-        if (foot instanceof VPi) {
-          let mode2 = foot[1];
+        let $ = force(foot);
+        if ($ instanceof VPi) {
+          let mode2 = $[1];
           if (isEqual(mode1, mode2)) {
-            let a = foot[2];
-            let b = foot[3];
+            let a = $[2];
+            let b = $[3];
             return $result.try$(
               check(ctx, bar, a),
               (bar2) => {
@@ -948,11 +493,11 @@ export function infer(ctx, s) {
               },
             );
           } else {
-            let $ = foot[1];
-            if ($ instanceof TypeMode) {
+            let $1 = $[1];
+            if ($1 instanceof TypeMode) {
               if (isEqual(mode1, new ManyMode())) {
-                let a = foot[2];
-                let b = foot[3];
+                let a = $[2];
+                let b = $[3];
                 return $result.try$(
                   check(ctx, bar, a),
                   (bar2) => {
@@ -963,7 +508,7 @@ export function infer(ctx, s) {
                   },
                 );
               } else {
-                let mode2$1 = $;
+                let mode2$1 = $1;
                 return new Error(
                   (((("mode-mismatch between " + pretty_mode(mode1)) + " and ") + pretty_mode(
                     mode2$1,
@@ -971,7 +516,7 @@ export function infer(ctx, s) {
                 );
               }
             } else {
-              let mode2$1 = $;
+              let mode2$1 = $1;
               return new Error(
                 (((("mode-mismatch between " + pretty_mode(mode1)) + " and ") + pretty_mode(
                   mode2$1,
@@ -1001,7 +546,8 @@ export function infer(ctx, s) {
         let xtt = _use0[1];
         return $result.try$(
           (() => {
-            if (xtt instanceof VSort) {
+            let $ = force(xtt);
+            if ($ instanceof VSort) {
               return new Ok(undefined);
             } else {
               return new Error("type annotation must be a type");
@@ -1013,15 +559,13 @@ export function infer(ctx, s) {
               check(ctx, v, xt2v),
               (v2) => {
                 let v3 = eval$(v2, ctx.env);
-                let _block;
-                let _record = ctx;
-                _block = new Context(
-                  _record.level,
-                  _record.types,
+                let ctx2 = new Context(
+                  inc(ctx.level),
+                  listPrepend(xt2v, ctx.types),
                   listPrepend(v3, ctx.env),
                   listPrepend([x, [new ManyMode(), xt2v]], ctx.scope),
+                  listPrepend(new ContextMask(true, new ManyMode()), ctx.mask),
                 );
-                let ctx2 = _block;
                 return $result.try$(
                   infer(ctx2, e),
                   (_use0) => {
@@ -1051,7 +595,8 @@ export function infer(ctx, s) {
         let xtt = _use0[1];
         return $result.try$(
           (() => {
-            if (xtt instanceof VSort) {
+            let $ = force(xtt);
+            if ($ instanceof VSort) {
               return new Ok(undefined);
             } else {
               return new Error("type annotation must be a type");
@@ -1063,15 +608,13 @@ export function infer(ctx, s) {
               check(ctx, v, xt2v),
               (v2) => {
                 let v3 = eval$(v2, ctx.env);
-                let _block;
-                let _record = ctx;
-                _block = new Context(
-                  _record.level,
-                  _record.types,
+                let ctx2 = new Context(
+                  inc(ctx.level),
+                  listPrepend(xt2v, ctx.types),
                   listPrepend(v3, ctx.env),
                   listPrepend([x, [new ZeroMode(), xt2v]], ctx.scope),
+                  listPrepend(new ContextMask(true, new ZeroMode()), ctx.mask),
                 );
-                let ctx2 = _block;
                 return $result.try$(
                   infer(ctx2, e),
                   (_use0) => {
@@ -1110,7 +653,7 @@ export function infer(ctx, s) {
         "panic",
         FILEPATH,
         "client/candle/elab",
-        412,
+        715,
         "infer",
         "parsed impossible kind literal",
         {}
@@ -1127,8 +670,9 @@ export function infer(ctx, s) {
       (_use0) => {
         let a2 = _use0[0];
         let at = _use0[1];
-        if (at instanceof VSort) {
-          let s1 = at[0];
+        let $ = force(at);
+        if ($ instanceof VSort) {
+          let s1 = $[0];
           let _block;
           if (mode instanceof ManyMode) {
             if (s1 instanceof KindSort) {
@@ -1140,28 +684,30 @@ export function infer(ctx, s) {
             _block = mode;
           }
           let mode$1 = _block;
-          let dummy = new VNeutral(new VIdent(str, mode$1, ctx.level, pos));
+          let dummy = new VIdent(str, mode$1, ctx.level, toList([]), pos);
           let a3 = eval$(a2, ctx.env);
           let ctx2 = new Context(
             inc(ctx.level),
             listPrepend(a3, ctx.types),
             listPrepend(dummy, ctx.env),
             listPrepend([str, [mode$1, a3]], ctx.scope),
+            listPrepend(new ContextMask(false, mode$1), ctx.mask),
           );
           return $result.try$(
             infer(ctx2, b),
             (_use0) => {
               let b2 = _use0[0];
               let bt = _use0[1];
-              if (bt instanceof VSort) {
-                let $ = bt[0];
-                if ($ instanceof SetSort) {
+              let $1 = force(bt);
+              if ($1 instanceof VSort) {
+                let $2 = $1[0];
+                if ($2 instanceof SetSort) {
                   if (mode$1 instanceof TypeMode) {
                     return new Error(
                       ("type abstractions must return types (" + pretty_pos(pos)) + ")",
                     );
                   } else {
-                    let s$1 = bt;
+                    let s$1 = $1;
                     return new Ok(
                       [new Binder(new Pi(mode$1, a2), str, b2, pos), s$1],
                     );
@@ -1171,12 +717,12 @@ export function infer(ctx, s) {
                     ("erased functions can't return types (" + pretty_pos(pos)) + ")",
                   );
                 } else if (mode$1 instanceof ManyMode) {
-                  let s$1 = bt;
+                  let s$1 = $1;
                   return new Ok(
                     [new Binder(new Pi(new TypeMode(), a2), str, b2, pos), s$1],
                   );
                 } else {
-                  let s$1 = bt;
+                  let s$1 = $1;
                   return new Ok(
                     [new Binder(new Pi(mode$1, a2), str, b2, pos), s$1],
                   );
@@ -1204,10 +750,11 @@ export function infer(ctx, s) {
       (_use0) => {
         let e2 = _use0[0];
         let et = _use0[1];
-        if (et instanceof VEq) {
-          let a = et[0];
-          let b = et[1];
-          let t = et[2];
+        let $ = force(et);
+        if ($ instanceof VEq) {
+          let a = $[0];
+          let b = $[1];
+          let t = $[2];
           return $result.try$(
             check(
               ctx,
@@ -1238,12 +785,18 @@ export function infer(ctx, s) {
                     "_",
                     new ManyMode(),
                     app(
+                      pos,
                       new TypeMode(),
-                      app(new TypeMode(), p3, a),
+                      app(pos, new TypeMode(), p3, a),
                       new VRefl(a, pos),
                     ),
                     (_) => {
-                      return app(new TypeMode(), app(new TypeMode(), p3, b), e3);
+                      return app(
+                        pos,
+                        new TypeMode(),
+                        app(pos, new TypeMode(), p3, b),
+                        e3,
+                      );
                     },
                     pos,
                   ),
@@ -1268,13 +821,14 @@ export function infer(ctx, s) {
     return $result.try$(
       check(ctx, a, new VSort(new SetSort(), pos)),
       (a2) => {
-        let dummy = new VNeutral(new VIdent(x, new TypeMode(), ctx.level, pos));
+        let dummy = new VIdent(x, new TypeMode(), ctx.level, toList([]), pos);
         let a3 = eval$(a2, ctx.env);
         let ctx2 = new Context(
           inc(ctx.level),
           listPrepend(a3, ctx.types),
           listPrepend(dummy, ctx.env),
           listPrepend([x, [new TypeMode(), a3]], ctx.scope),
+          listPrepend(new ContextMask(false, new TypeMode()), ctx.mask),
         );
         return $result.try$(
           check(ctx2, b, new VSort(new SetSort(), pos)),
@@ -1305,18 +859,24 @@ export function infer(ctx, s) {
             let b2 = _use0[0];
             let bt = _use0[1];
             let b3 = eval$(b2, ctx.env);
-            let $ = eq(ctx.level, a3, b3);
-            if ($) {
-              return new Ok(
-                [
-                  new Ctor2(new Inter(), a2, b2, pos),
-                  new VInterT("_", at, (_) => { return bt; }, pos),
-                ],
-              );
+            let $ = unify(ctx.level, a3, b3);
+            if ($ instanceof Ok) {
+              let $1 = $[0];
+              if ($1) {
+                return new Ok(
+                  [
+                    new Ctor2(new Inter(), a2, b2, pos),
+                    new VInterT("_", at, (_) => { return bt; }, pos),
+                  ],
+                );
+              } else {
+                return new Error(
+                  ("Intersection components must be equal (" + pretty_pos(pos)) + ")",
+                );
+              }
             } else {
-              return new Error(
-                ("Intersection components must be equal (" + pretty_pos(pos)) + ")",
-              );
+              let err = $[0];
+              return new Error(err);
             }
           },
         );
@@ -1330,8 +890,9 @@ export function infer(ctx, s) {
       (_use0) => {
         let a2 = _use0[0];
         let at = _use0[1];
-        if (at instanceof VInterT) {
-          let a$1 = at[1];
+        let $ = force(at);
+        if ($ instanceof VInterT) {
+          let a$1 = $[1];
           return new Ok([new Ctor1(new Fst(), a2, pos), a$1]);
         } else {
           return new Error(
@@ -1349,8 +910,9 @@ export function infer(ctx, s) {
         let a2 = _use0[0];
         let at = _use0[1];
         let a3 = eval$(a2, ctx.env);
-        if (at instanceof VInterT) {
-          let b = at[2];
+        let $ = force(at);
+        if ($ instanceof VInterT) {
+          let b = $[2];
           return new Ok([new Ctor1(new Snd(), a2, pos), b(fst(pos, a3))]);
         } else {
           return new Error(
@@ -1397,22 +959,23 @@ export function infer(ctx, s) {
   } else if (s instanceof CastSyntax) {
     let a = s[0];
     let inter = s[1];
-    let eq$1 = s[2];
+    let eq = s[2];
     let pos = s.pos;
     return $result.try$(
       infer(ctx, inter),
       (_use0) => {
         let inter2 = _use0[0];
         let intert = _use0[1];
-        if (intert instanceof VInterT) {
-          let at = intert[1];
+        let $ = force(intert);
+        if ($ instanceof VInterT) {
+          let at = $[1];
           let inter3 = eval$(inter2, ctx.env);
           return $result.try$(
             check(ctx, a, at),
             (a2) => {
               let a3 = eval$(a2, ctx.env);
               return $result.try$(
-                check(ctx, eq$1, new VEq(a3, fst(pos, inter3), at, pos)),
+                check(ctx, eq, new VEq(a3, fst(pos, inter3), at, pos)),
                 (eq2) => {
                   return new Ok(
                     [new Ctor3(new Cast(), a2, inter2, eq2, pos), intert],
@@ -1430,7 +993,7 @@ export function infer(ctx, s) {
         }
       },
     );
-  } else {
+  } else if (s instanceof ExFalsoSyntax) {
     let a = s[0];
     let pos = s.pos;
     return $result.try$(
@@ -1450,22 +1013,28 @@ export function infer(ctx, s) {
         );
       },
     );
+  } else {
+    let pos = s.pos;
+    let x = fresh_meta(ctx, pos);
+    let xt = eval$(fresh_meta(ctx, pos), ctx.env);
+    return new Ok([x, xt]);
   }
 }
 
 function check(ctx, s, ty) {
+  let $ = force(ty);
   if (s instanceof LambdaSyntax) {
-    let $ = s[2];
-    if ($ instanceof Ok) {
-      if (ty instanceof VPi) {
+    let $1 = s[2];
+    if ($1 instanceof Ok) {
+      if ($ instanceof VPi) {
         let mode1 = s[0];
         let x = s[1];
         let body = s[3];
         let pos = s.pos;
-        let xt = $[0];
-        let mode2 = ty[1];
-        let a = ty[2];
-        let b = ty[3];
+        let xt = $1[0];
+        let mode2 = $[1];
+        let a = $[2];
+        let b = $[3];
         return $result.try$(
           (() => {
             let m1 = mode1;
@@ -1500,24 +1069,31 @@ function check(ctx, s, ty) {
                 let xt3 = eval$(xt2, ctx.env);
                 return $result.try$(
                   (() => {
-                    let $1 = eq(ctx.level, xt3, a);
-                    if ($1) {
-                      return new Ok(undefined);
+                    let $2 = unify(ctx.level, xt3, a);
+                    if ($2 instanceof Ok) {
+                      let $3 = $2[0];
+                      if ($3) {
+                        return new Ok(undefined);
+                      } else {
+                        return new Error(
+                          (("type mismatch: " + pretty_term(xt2)) + " and ") + pretty_value(
+                            a,
+                          ),
+                        );
+                      }
                     } else {
-                      return new Error(
-                        (("type mismatch: " + pretty_term(xt2)) + " and ") + pretty_value(
-                          a,
-                        ),
-                      );
+                      let err = $2[0];
+                      return new Error(err);
                     }
                   })(),
                   (_) => {
-                    let v = new VNeutral(new VIdent(x, mode, ctx.level, pos));
+                    let v = new VIdent(x, mode, ctx.level, toList([]), pos);
                     let ctx2 = new Context(
                       inc(ctx.level),
                       listPrepend(a, ctx.types),
                       listPrepend(v, ctx.env),
                       listPrepend([x, [mode, a]], ctx.scope),
+                      listPrepend(new ContextMask(false, mode), ctx.mask),
                     );
                     return $result.try$(
                       check(ctx2, body, b(v)),
@@ -1525,9 +1101,9 @@ function check(ctx, s, ty) {
                         return $result.try$(
                           (() => {
                             if (mode instanceof ZeroMode) {
-                              let $1 = rel_occurs(body2, new Index(0));
-                              if ($1 instanceof Ok) {
-                                let pos2 = $1[0];
+                              let $2 = rel_occurs(body2, new Index(0));
+                              if ($2 instanceof Ok) {
+                                let pos2 = $2[0];
                                 return new Error(
                                   "relevant usage of erased variable at " + pretty_pos(
                                     pos2,
@@ -1556,35 +1132,39 @@ function check(ctx, s, ty) {
         );
       } else {
         let s$1 = s;
-        let ty$1 = ty;
+        let ty$1 = $;
         return $result.try$(
           infer(ctx, s$1),
           (_use0) => {
             let v = _use0[0];
             let ty2 = _use0[1];
-            let $1 = eq(ctx.level, ty$1, ty2);
-            if ($1) {
-              return new Ok(v);
+            let $2 = unify(ctx.level, ty$1, ty2);
+            if ($2 instanceof Ok) {
+              let $3 = $2[0];
+              if ($3) {
+                return new Ok(v);
+              } else {
+                return new Error(
+                  (((("type mismatch between `" + pretty_value(ty$1)) + "` and `") + pretty_value(
+                    ty2,
+                  )) + "` at ") + pretty_pos($header.get_pos(s$1)),
+                );
+              }
             } else {
-              return new Error(
-                (((((pretty_hypotheses(ctx.scope) + "type mismatch between `") + pretty_value(
-                  ty$1,
-                )) + "` and `") + pretty_value(ty2)) + "` at ") + pretty_pos(
-                  $header.get_pos(s$1),
-                ),
-              );
+              let err = $2[0];
+              return new Error(err);
             }
           },
         );
       }
-    } else if (ty instanceof VPi) {
+    } else if ($ instanceof VPi) {
       let mode1 = s[0];
       let x = s[1];
       let body = s[3];
       let pos = s.pos;
-      let mode2 = ty[1];
-      let a = ty[2];
-      let b = ty[3];
+      let mode2 = $[1];
+      let a = $[2];
+      let b = $[3];
       return $result.try$(
         (() => {
           let m1 = mode1;
@@ -1612,12 +1192,13 @@ function check(ctx, s, ty) {
           }
         })(),
         (mode) => {
-          let dummy = new VNeutral(new VIdent(x, mode, ctx.level, pos));
+          let dummy = new VIdent(x, mode, ctx.level, toList([]), pos);
           let ctx2 = new Context(
             inc(ctx.level),
             listPrepend(a, ctx.types),
             listPrepend(dummy, ctx.env),
             listPrepend([x, [mode, a]], ctx.scope),
+            listPrepend(new ContextMask(false, mode), ctx.mask),
           );
           return $result.try$(
             check(ctx2, body, b(dummy)),
@@ -1629,29 +1210,33 @@ function check(ctx, s, ty) {
       );
     } else {
       let s$1 = s;
-      let ty$1 = ty;
+      let ty$1 = $;
       return $result.try$(
         infer(ctx, s$1),
         (_use0) => {
           let v = _use0[0];
           let ty2 = _use0[1];
-          let $1 = eq(ctx.level, ty$1, ty2);
-          if ($1) {
-            return new Ok(v);
+          let $2 = unify(ctx.level, ty$1, ty2);
+          if ($2 instanceof Ok) {
+            let $3 = $2[0];
+            if ($3) {
+              return new Ok(v);
+            } else {
+              return new Error(
+                (((("type mismatch between `" + pretty_value(ty$1)) + "` and `") + pretty_value(
+                  ty2,
+                )) + "` at ") + pretty_pos($header.get_pos(s$1)),
+              );
+            }
           } else {
-            return new Error(
-              (((((pretty_hypotheses(ctx.scope) + "type mismatch between `") + pretty_value(
-                ty$1,
-              )) + "` and `") + pretty_value(ty2)) + "` at ") + pretty_pos(
-                $header.get_pos(s$1),
-              ),
-            );
+            let err = $2[0];
+            return new Error(err);
           }
         },
       );
     }
   } else if (s instanceof LetSyntax) {
-    let ty$1 = ty;
+    let ty$1 = $;
     let x = s[0];
     let xt = s[1];
     let v = s[2];
@@ -1664,7 +1249,8 @@ function check(ctx, s, ty) {
         let xtt = _use0[1];
         return $result.try$(
           (() => {
-            if (xtt instanceof VSort) {
+            let $1 = force(xtt);
+            if ($1 instanceof VSort) {
               return new Ok(undefined);
             } else {
               return new Error("type annotation must be a type");
@@ -1681,6 +1267,7 @@ function check(ctx, s, ty) {
                   listPrepend(xt2v, ctx.types),
                   listPrepend(v3, ctx.env),
                   listPrepend([x, [new ManyMode(), xt2v]], ctx.scope),
+                  listPrepend(new ContextMask(true, new ManyMode()), ctx.mask),
                 );
                 return $result.try$(
                   check(ctx2, e, ty$1),
@@ -1697,7 +1284,7 @@ function check(ctx, s, ty) {
       },
     );
   } else if (s instanceof DefSyntax) {
-    let ty$1 = ty;
+    let ty$1 = $;
     let x = s[0];
     let xt = s[1];
     let v = s[2];
@@ -1710,7 +1297,8 @@ function check(ctx, s, ty) {
         let xtt = _use0[1];
         return $result.try$(
           (() => {
-            if (xtt instanceof VSort) {
+            let $1 = force(xtt);
+            if ($1 instanceof VSort) {
               return new Ok(undefined);
             } else {
               return new Error("type annotation must be a type");
@@ -1727,6 +1315,7 @@ function check(ctx, s, ty) {
                   listPrepend(xt2v, ctx.types),
                   listPrepend(v3, ctx.env),
                   listPrepend([x, [new ZeroMode(), xt2v]], ctx.scope),
+                  listPrepend(new ContextMask(true, new ZeroMode()), ctx.mask),
                 );
                 return $result.try$(
                   check(ctx2, e, ty$1),
@@ -1743,12 +1332,12 @@ function check(ctx, s, ty) {
       },
     );
   } else if (s instanceof IntersectionSyntax) {
-    if (ty instanceof VInterT) {
+    if ($ instanceof VInterT) {
       let a = s[0];
       let b = s[1];
       let pos = s.pos;
-      let at = ty[1];
-      let bt = ty[2];
+      let at = $[1];
+      let bt = $[2];
       return $result.try$(
         check(ctx, a, at),
         (a2) => {
@@ -1759,15 +1348,21 @@ function check(ctx, s, ty) {
               let b3 = eval$(b2, ctx.env);
               return $result.try$(
                 (() => {
-                  let $ = eq(ctx.level, a3, b3);
-                  if ($) {
-                    return new Ok(undefined);
+                  let $1 = unify(ctx.level, a3, b3);
+                  if ($1 instanceof Ok) {
+                    let $2 = $1[0];
+                    if ($2) {
+                      return new Ok(undefined);
+                    } else {
+                      return new Error(
+                        ((((("intersection components must be equal (" + pretty_value(
+                          a3,
+                        )) + ", ") + pretty_value(b3)) + ", ") + pretty_pos(pos)) + ")",
+                      );
+                    }
                   } else {
-                    return new Error(
-                      ("intersection components must be equal (" + pretty_pos(
-                        pos,
-                      )) + ")",
-                    );
+                    let err = $1[0];
+                    return new Error(err);
                   }
                 })(),
                 (_) => { return new Ok(new Ctor2(new Inter(), a2, b2, pos)); },
@@ -1778,33 +1373,37 @@ function check(ctx, s, ty) {
       );
     } else {
       let s$1 = s;
-      let ty$1 = ty;
+      let ty$1 = $;
       return $result.try$(
         infer(ctx, s$1),
         (_use0) => {
           let v = _use0[0];
           let ty2 = _use0[1];
-          let $ = eq(ctx.level, ty$1, ty2);
-          if ($) {
-            return new Ok(v);
+          let $1 = unify(ctx.level, ty$1, ty2);
+          if ($1 instanceof Ok) {
+            let $2 = $1[0];
+            if ($2) {
+              return new Ok(v);
+            } else {
+              return new Error(
+                (((("type mismatch between `" + pretty_value(ty$1)) + "` and `") + pretty_value(
+                  ty2,
+                )) + "` at ") + pretty_pos($header.get_pos(s$1)),
+              );
+            }
           } else {
-            return new Error(
-              (((((pretty_hypotheses(ctx.scope) + "type mismatch between `") + pretty_value(
-                ty$1,
-              )) + "` and `") + pretty_value(ty2)) + "` at ") + pretty_pos(
-                $header.get_pos(s$1),
-              ),
-            );
+            let err = $1[0];
+            return new Error(err);
           }
         },
       );
     }
   } else if (s instanceof ReflSyntax) {
-    if (ty instanceof VEq) {
+    if ($ instanceof VEq) {
       let x = s[0];
       let pos = s.pos;
-      let a = ty[0];
-      let b = ty[1];
+      let a = $[0];
+      let b = $[1];
       return $result.try$(
         infer(ctx, x),
         (_use0) => {
@@ -1812,24 +1411,36 @@ function check(ctx, s, ty) {
           let x3 = eval$(x2, ctx.env);
           return $result.try$(
             (() => {
-              let $ = eq(ctx.level, x3, a);
-              if ($) {
-                let $1 = eq(ctx.level, x3, b);
-                if ($1) {
-                  return new Ok(undefined);
+              let $1 = unify(ctx.level, x3, a);
+              if ($1 instanceof Ok) {
+                let $2 = $1[0];
+                if ($2) {
+                  let $3 = unify(ctx.level, x3, b);
+                  if ($3 instanceof Ok) {
+                    let $4 = $3[0];
+                    if ($4) {
+                      return new Ok(undefined);
+                    } else {
+                      return new Error(
+                        (((("type mismatch between " + pretty_value(x3)) + " and ") + pretty_value(
+                          b,
+                        )) + " at ") + pretty_pos(pos),
+                      );
+                    }
+                  } else {
+                    let err = $3[0];
+                    return new Error(err);
+                  }
                 } else {
                   return new Error(
                     (((("type mismatch between " + pretty_value(x3)) + " and ") + pretty_value(
-                      b,
+                      a,
                     )) + " at ") + pretty_pos(pos),
                   );
                 }
               } else {
-                return new Error(
-                  (((("type mismatch between " + pretty_value(x3)) + " and ") + pretty_value(
-                    a,
-                  )) + " at ") + pretty_pos(pos),
-                );
+                let err = $1[0];
+                return new Error(err);
               }
             })(),
             (_) => { return new Ok(new Ctor1(new Refl(), x2, pos)); },
@@ -1838,35 +1449,39 @@ function check(ctx, s, ty) {
       );
     } else {
       let s$1 = s;
-      let ty$1 = ty;
+      let ty$1 = $;
       return $result.try$(
         infer(ctx, s$1),
         (_use0) => {
           let v = _use0[0];
           let ty2 = _use0[1];
-          let $ = eq(ctx.level, ty$1, ty2);
-          if ($) {
-            return new Ok(v);
+          let $1 = unify(ctx.level, ty$1, ty2);
+          if ($1 instanceof Ok) {
+            let $2 = $1[0];
+            if ($2) {
+              return new Ok(v);
+            } else {
+              return new Error(
+                (((("type mismatch between `" + pretty_value(ty$1)) + "` and `") + pretty_value(
+                  ty2,
+                )) + "` at ") + pretty_pos($header.get_pos(s$1)),
+              );
+            }
           } else {
-            return new Error(
-              (((((pretty_hypotheses(ctx.scope) + "type mismatch between `") + pretty_value(
-                ty$1,
-              )) + "` and `") + pretty_value(ty2)) + "` at ") + pretty_pos(
-                $header.get_pos(s$1),
-              ),
-            );
+            let err = $1[0];
+            return new Error(err);
           }
         },
       );
     }
   } else if (s instanceof CastSyntax) {
-    if (ty instanceof VInterT) {
-      let intert = ty;
+    if ($ instanceof VInterT) {
+      let intert = $;
       let a = s[0];
       let inter = s[1];
-      let eq$1 = s[2];
+      let eq = s[2];
       let pos = s.pos;
-      let at = ty[1];
+      let at = $[1];
       return $result.try$(
         check(ctx, a, at),
         (a2) => {
@@ -1876,7 +1491,7 @@ function check(ctx, s, ty) {
             (inter2) => {
               let inter3 = eval$(inter2, ctx.env);
               return $result.try$(
-                check(ctx, eq$1, new VEq(a3, fst(pos, inter3), at, pos)),
+                check(ctx, eq, new VEq(a3, fst(pos, inter3), at, pos)),
                 (eq2) => {
                   return new Ok(new Ctor3(new Cast(), a2, inter2, eq2, pos));
                 },
@@ -1887,144 +1502,1574 @@ function check(ctx, s, ty) {
       );
     } else {
       let s$1 = s;
-      let ty$1 = ty;
+      let ty$1 = $;
       return $result.try$(
         infer(ctx, s$1),
         (_use0) => {
           let v = _use0[0];
           let ty2 = _use0[1];
-          let $ = eq(ctx.level, ty$1, ty2);
-          if ($) {
-            return new Ok(v);
+          let $1 = unify(ctx.level, ty$1, ty2);
+          if ($1 instanceof Ok) {
+            let $2 = $1[0];
+            if ($2) {
+              return new Ok(v);
+            } else {
+              return new Error(
+                (((("type mismatch between `" + pretty_value(ty$1)) + "` and `") + pretty_value(
+                  ty2,
+                )) + "` at ") + pretty_pos($header.get_pos(s$1)),
+              );
+            }
           } else {
-            return new Error(
-              (((((pretty_hypotheses(ctx.scope) + "type mismatch between `") + pretty_value(
-                ty$1,
-              )) + "` and `") + pretty_value(ty2)) + "` at ") + pretty_pos(
-                $header.get_pos(s$1),
-              ),
-            );
+            let err = $1[0];
+            return new Error(err);
           }
         },
       );
     }
   } else {
     let s$1 = s;
-    let ty$1 = ty;
+    let ty$1 = $;
     return $result.try$(
       infer(ctx, s$1),
       (_use0) => {
         let v = _use0[0];
         let ty2 = _use0[1];
-        let $ = eq(ctx.level, ty$1, ty2);
-        if ($) {
-          return new Ok(v);
+        let $1 = unify(ctx.level, ty$1, ty2);
+        if ($1 instanceof Ok) {
+          let $2 = $1[0];
+          if ($2) {
+            return new Ok(v);
+          } else {
+            return new Error(
+              (((("type mismatch between `" + pretty_value(ty$1)) + "` and `") + pretty_value(
+                ty2,
+              )) + "` at ") + pretty_pos($header.get_pos(s$1)),
+            );
+          }
         } else {
-          return new Error(
-            (((((pretty_hypotheses(ctx.scope) + "type mismatch between `") + pretty_value(
-              ty$1,
-            )) + "` and `") + pretty_value(ty2)) + "` at ") + pretty_pos(
-              $header.get_pos(s$1),
-            ),
-          );
+          let err = $1[0];
+          return new Error(err);
         }
       },
     );
   }
 }
 
-function erase_neutral(loop$n) {
+function unify_spines(loop$lvl, loop$spine1, loop$spine2) {
   while (true) {
-    let n = loop$n;
-    if (n instanceof VIdent) {
-      return n;
-    } else if (n instanceof VApp) {
-      let $ = n[0];
-      if ($ instanceof ZeroMode) {
-        let a = n[1];
-        loop$n = a;
+    let lvl = loop$lvl;
+    let spine1 = loop$spine1;
+    let spine2 = loop$spine2;
+    if (spine2 instanceof $Empty) {
+      if (spine1 instanceof $Empty) {
+        return new Ok(true);
       } else {
-        let m = $;
-        let a = n[1];
-        let b = n[2];
-        let p = n[3];
-        return new VApp(m, erase_neutral(a), erase(b), p);
+        return new Ok(false);
       }
-    } else if (n instanceof VPsi) {
-      let e = n[0];
-      loop$n = e;
-    } else if (n instanceof VFst) {
-      let a = n[0];
-      loop$n = a;
     } else {
-      let a = n[0];
-      loop$n = a;
+      let $ = spine2.head;
+      if ($ instanceof VApp) {
+        if (spine1 instanceof $Empty) {
+          return new Ok(false);
+        } else {
+          let $1 = spine1.head;
+          if ($1 instanceof VApp) {
+            let rest2 = spine2.tail;
+            let mode2 = $[0];
+            let arg2 = $[1];
+            let rest1 = spine1.tail;
+            let mode1 = $1[0];
+            let arg1 = $1[1];
+            let _pipe = new Ok(isEqual(mode1, mode2));
+            let _pipe$1 = and(_pipe, unify_helper(lvl, arg1, arg2));
+            return and(_pipe$1, unify_spines(lvl, rest1, rest2));
+          } else {
+            return new Ok(false);
+          }
+        }
+      } else if ($ instanceof VPsi) {
+        if (spine1 instanceof $Empty) {
+          return new Ok(false);
+        } else {
+          let $1 = spine1.head;
+          if ($1 instanceof VPsi) {
+            let rest2 = spine2.tail;
+            let pred2 = $[0];
+            let rest1 = spine1.tail;
+            let pred1 = $1[0];
+            let _pipe = unify_helper(lvl, pred1, pred2);
+            return and(_pipe, unify_spines(lvl, rest1, rest2));
+          } else {
+            return new Ok(false);
+          }
+        }
+      } else if ($ instanceof VFst) {
+        if (spine1 instanceof $Empty) {
+          return new Ok(false);
+        } else {
+          let $1 = spine1.head;
+          if ($1 instanceof VFst) {
+            let rest2 = spine2.tail;
+            let rest1 = spine1.tail;
+            loop$lvl = lvl;
+            loop$spine1 = rest1;
+            loop$spine2 = rest2;
+          } else {
+            return new Ok(false);
+          }
+        }
+      } else if (spine1 instanceof $Empty) {
+        return new Ok(false);
+      } else {
+        let $1 = spine1.head;
+        if ($1 instanceof VSnd) {
+          let rest2 = spine2.tail;
+          let rest1 = spine1.tail;
+          loop$lvl = lvl;
+          loop$spine1 = rest1;
+          loop$spine2 = rest2;
+        } else {
+          return new Ok(false);
+        }
+      }
     }
+  }
+}
+
+function unify_helper(loop$lvl, loop$a, loop$b) {
+  while (true) {
+    let lvl = loop$lvl;
+    let a = loop$a;
+    let b = loop$b;
+    let uh = (a, b) => { return unify_helper(lvl, a, b); };
+    let $ = force(a);
+    let $1 = force(b);
+    if ($1 instanceof VIdent) {
+      if ($ instanceof VIdent) {
+        let j = $1[2];
+        let spine2 = $1[3];
+        let i = $[2];
+        let spine1 = $[3];
+        let _pipe = new Ok(isEqual(i, j));
+        return and(_pipe, unify_spines(lvl, spine1, spine2));
+      } else if ($ instanceof VMeta) {
+        let t = $1;
+        let m = $[0];
+        let sp = $[2];
+        return solve(lvl, m, sp, t);
+      } else if ($ instanceof VLambda) {
+        let b$1 = $1;
+        let x = $[0];
+        let m = $[1];
+        let f = $[2];
+        let pos = $[3];
+        let dummy = new VIdent(x, m, lvl, toList([]), pos);
+        loop$lvl = inc(lvl);
+        loop$a = f(dummy);
+        loop$b = app(pos, m, b$1, dummy);
+      } else {
+        return new Ok(false);
+      }
+    } else if ($1 instanceof VMeta) {
+      if ($ instanceof VMeta) {
+        let meta2 = $1;
+        let m2 = $1[0];
+        let spine2 = $1[2];
+        let m1 = $[0];
+        let spine1 = $[2];
+        let $2 = get(m1);
+        let $3 = get(m2);
+        if ($3 instanceof Unsolved) {
+          if ($2 instanceof Unsolved) {
+            let j = $3[0];
+            let i = $2[0];
+            if (i === j) {
+              return unify_spines(lvl, spine1, spine2);
+            } else {
+              return solve(lvl, m1, spine1, meta2);
+            }
+          } else {
+            throw makeError(
+              "panic",
+              FILEPATH,
+              "client/candle/elab",
+              414,
+              "unify_helper",
+              "`panic` expression evaluated.",
+              {}
+            )
+          }
+        } else {
+          throw makeError(
+            "panic",
+            FILEPATH,
+            "client/candle/elab",
+            414,
+            "unify_helper",
+            "`panic` expression evaluated.",
+            {}
+          )
+        }
+      } else if ($ instanceof VLambda) {
+        let t = $;
+        let m = $1[0];
+        let sp = $1[2];
+        return solve(lvl, m, sp, t);
+      } else {
+        let t = $;
+        let m = $1[0];
+        let sp = $1[2];
+        return solve(lvl, m, sp, t);
+      }
+    } else if ($1 instanceof VSort) {
+      if ($ instanceof VMeta) {
+        let t = $1;
+        let m = $[0];
+        let sp = $[2];
+        return solve(lvl, m, sp, t);
+      } else if ($ instanceof VSort) {
+        let s2 = $1[0];
+        let s1 = $[0];
+        return new Ok(isEqual(s1, s2));
+      } else if ($ instanceof VLambda) {
+        let b$1 = $1;
+        let x = $[0];
+        let m = $[1];
+        let f = $[2];
+        let pos = $[3];
+        let dummy = new VIdent(x, m, lvl, toList([]), pos);
+        loop$lvl = inc(lvl);
+        loop$a = f(dummy);
+        loop$b = app(pos, m, b$1, dummy);
+      } else {
+        return new Ok(false);
+      }
+    } else if ($1 instanceof VNat) {
+      if ($ instanceof VMeta) {
+        let t = $1;
+        let m = $[0];
+        let sp = $[2];
+        return solve(lvl, m, sp, t);
+      } else if ($ instanceof VNat) {
+        let m = $1[0];
+        let n = $[0];
+        return new Ok(n === m);
+      } else if ($ instanceof VLambda) {
+        let b$1 = $1;
+        let x = $[0];
+        let m = $[1];
+        let f = $[2];
+        let pos = $[3];
+        let dummy = new VIdent(x, m, lvl, toList([]), pos);
+        loop$lvl = inc(lvl);
+        loop$a = f(dummy);
+        loop$b = app(pos, m, b$1, dummy);
+      } else {
+        return new Ok(false);
+      }
+    } else if ($1 instanceof VNatType) {
+      if ($ instanceof VMeta) {
+        let t = $1;
+        let m = $[0];
+        let sp = $[2];
+        return solve(lvl, m, sp, t);
+      } else if ($ instanceof VNatType) {
+        return new Ok(true);
+      } else if ($ instanceof VLambda) {
+        let b$1 = $1;
+        let x = $[0];
+        let m = $[1];
+        let f = $[2];
+        let pos = $[3];
+        let dummy = new VIdent(x, m, lvl, toList([]), pos);
+        loop$lvl = inc(lvl);
+        loop$a = f(dummy);
+        loop$b = app(pos, m, b$1, dummy);
+      } else {
+        return new Ok(false);
+      }
+    } else if ($1 instanceof VPi) {
+      if ($ instanceof VMeta) {
+        let t = $1;
+        let m = $[0];
+        let sp = $[2];
+        return solve(lvl, m, sp, t);
+      } else if ($ instanceof VPi) {
+        let m2 = $1[1];
+        let t2 = $1[2];
+        let u2 = $1[3];
+        let x = $[0];
+        let m1 = $[1];
+        let t1 = $[2];
+        let u1 = $[3];
+        let pos = $[4];
+        let dummy = new VIdent(x, m1, lvl, toList([]), pos);
+        let _pipe = new Ok(isEqual(m1, m2));
+        let _pipe$1 = and(_pipe, uh(t1, t2));
+        return and(_pipe$1, unify_helper(inc(lvl), u1(dummy), u2(dummy)));
+      } else if ($ instanceof VLambda) {
+        let b$1 = $1;
+        let x = $[0];
+        let m = $[1];
+        let f = $[2];
+        let pos = $[3];
+        let dummy = new VIdent(x, m, lvl, toList([]), pos);
+        loop$lvl = inc(lvl);
+        loop$a = f(dummy);
+        loop$b = app(pos, m, b$1, dummy);
+      } else {
+        return new Ok(false);
+      }
+    } else if ($1 instanceof VLambda) {
+      if ($ instanceof VMeta) {
+        let t = $1;
+        let m = $[0];
+        let sp = $[2];
+        return solve(lvl, m, sp, t);
+      } else if ($ instanceof VLambda) {
+        let b$1 = $1;
+        let x = $[0];
+        let m = $[1];
+        let f = $[2];
+        let pos = $[3];
+        let dummy = new VIdent(x, m, lvl, toList([]), pos);
+        loop$lvl = inc(lvl);
+        loop$a = f(dummy);
+        loop$b = app(pos, m, b$1, dummy);
+      } else {
+        let a$1 = $;
+        let x = $1[0];
+        let m = $1[1];
+        let f = $1[2];
+        let pos = $1[3];
+        let dummy = new VIdent(x, m, lvl, toList([]), pos);
+        loop$lvl = inc(lvl);
+        loop$a = app(pos, m, a$1, dummy);
+        loop$b = f(dummy);
+      }
+    } else if ($1 instanceof VEq) {
+      if ($ instanceof VMeta) {
+        let t = $1;
+        let m = $[0];
+        let sp = $[2];
+        return solve(lvl, m, sp, t);
+      } else if ($ instanceof VLambda) {
+        let b$1 = $1;
+        let x = $[0];
+        let m = $[1];
+        let f = $[2];
+        let pos = $[3];
+        let dummy = new VIdent(x, m, lvl, toList([]), pos);
+        loop$lvl = inc(lvl);
+        loop$a = f(dummy);
+        loop$b = app(pos, m, b$1, dummy);
+      } else if ($ instanceof VEq) {
+        let a2 = $1[0];
+        let b2 = $1[1];
+        let t2 = $1[2];
+        let a1 = $[0];
+        let b1 = $[1];
+        let t1 = $[2];
+        let _pipe = uh(a1, a2);
+        let _pipe$1 = and(_pipe, uh(b1, b2));
+        return and(_pipe$1, uh(t1, t2));
+      } else {
+        return new Ok(false);
+      }
+    } else if ($1 instanceof VRefl) {
+      if ($ instanceof VMeta) {
+        let t = $1;
+        let m = $[0];
+        let sp = $[2];
+        return solve(lvl, m, sp, t);
+      } else if ($ instanceof VLambda) {
+        let b$1 = $1;
+        let x = $[0];
+        let m = $[1];
+        let f = $[2];
+        let pos = $[3];
+        let dummy = new VIdent(x, m, lvl, toList([]), pos);
+        loop$lvl = inc(lvl);
+        loop$a = f(dummy);
+        loop$b = app(pos, m, b$1, dummy);
+      } else if ($ instanceof VRefl) {
+        let a2 = $1[0];
+        let a1 = $[0];
+        return uh(a1, a2);
+      } else {
+        return new Ok(false);
+      }
+    } else if ($1 instanceof VInter) {
+      if ($ instanceof VMeta) {
+        let t = $1;
+        let m = $[0];
+        let sp = $[2];
+        return solve(lvl, m, sp, t);
+      } else if ($ instanceof VLambda) {
+        let b$1 = $1;
+        let x = $[0];
+        let m = $[1];
+        let f = $[2];
+        let pos = $[3];
+        let dummy = new VIdent(x, m, lvl, toList([]), pos);
+        loop$lvl = inc(lvl);
+        loop$a = f(dummy);
+        loop$b = app(pos, m, b$1, dummy);
+      } else if ($ instanceof VInter) {
+        let a2 = $1[0];
+        let b2 = $1[1];
+        let a1 = $[0];
+        let b1 = $[1];
+        let _pipe = uh(a1, a2);
+        return and(_pipe, uh(b1, b2));
+      } else {
+        return new Ok(false);
+      }
+    } else if ($1 instanceof VInterT) {
+      if ($ instanceof VMeta) {
+        let t = $1;
+        let m = $[0];
+        let sp = $[2];
+        return solve(lvl, m, sp, t);
+      } else if ($ instanceof VLambda) {
+        let b$1 = $1;
+        let x = $[0];
+        let m = $[1];
+        let f = $[2];
+        let pos = $[3];
+        let dummy = new VIdent(x, m, lvl, toList([]), pos);
+        loop$lvl = inc(lvl);
+        loop$a = f(dummy);
+        loop$b = app(pos, m, b$1, dummy);
+      } else if ($ instanceof VInterT) {
+        let a2 = $1[1];
+        let b2 = $1[2];
+        let x = $[0];
+        let a1 = $[1];
+        let b1 = $[2];
+        let pos = $[3];
+        let dummy = new VIdent(x, new TypeMode(), lvl, toList([]), pos);
+        let _pipe = uh(a1, a2);
+        return and(_pipe, unify_helper(inc(lvl), b1(dummy), b2(dummy)));
+      } else {
+        return new Ok(false);
+      }
+    } else if ($1 instanceof VCast) {
+      if ($ instanceof VMeta) {
+        let t = $1;
+        let m = $[0];
+        let sp = $[2];
+        return solve(lvl, m, sp, t);
+      } else if ($ instanceof VLambda) {
+        let b$1 = $1;
+        let x = $[0];
+        let m = $[1];
+        let f = $[2];
+        let pos = $[3];
+        let dummy = new VIdent(x, m, lvl, toList([]), pos);
+        loop$lvl = inc(lvl);
+        loop$a = f(dummy);
+        loop$b = app(pos, m, b$1, dummy);
+      } else if ($ instanceof VCast) {
+        let a2 = $1[0];
+        let inter2 = $1[1];
+        let eq2 = $1[2];
+        let a1 = $[0];
+        let inter1 = $[1];
+        let eq1 = $[2];
+        let _pipe = uh(a1, a2);
+        let _pipe$1 = and(_pipe, uh(inter1, inter2));
+        return and(_pipe$1, uh(eq1, eq2));
+      } else {
+        return new Ok(false);
+      }
+    } else if ($ instanceof VMeta) {
+      let t = $1;
+      let m = $[0];
+      let sp = $[2];
+      return solve(lvl, m, sp, t);
+    } else if ($ instanceof VLambda) {
+      let b$1 = $1;
+      let x = $[0];
+      let m = $[1];
+      let f = $[2];
+      let pos = $[3];
+      let dummy = new VIdent(x, m, lvl, toList([]), pos);
+      loop$lvl = inc(lvl);
+      loop$a = f(dummy);
+      loop$b = app(pos, m, b$1, dummy);
+    } else if ($ instanceof VExFalso) {
+      let a2 = $1[0];
+      let a1 = $[0];
+      return uh(a1, a2);
+    } else {
+      return new Ok(false);
+    }
+  }
+}
+
+function rename_spine(meta, pr, base, rev_spine) {
+  if (rev_spine instanceof $Empty) {
+    return new Ok(base);
+  } else {
+    let $ = rev_spine.head;
+    if ($ instanceof VApp) {
+      let rest = rev_spine.tail;
+      let mode = $[0];
+      let arg = $[1];
+      let pos = $[2];
+      return $result.try$(
+        rename_spine(meta, pr, base, rest),
+        (base2) => {
+          return $result.try$(
+            rename(meta, pr, arg),
+            (arg2) => {
+              return new Ok(new Ctor2(new App(mode), base2, arg2, pos));
+            },
+          );
+        },
+      );
+    } else if ($ instanceof VPsi) {
+      let rest = rev_spine.tail;
+      let pred = $[0];
+      let pos = $[1];
+      return $result.try$(
+        rename_spine(meta, pr, base, rest),
+        (base2) => {
+          return $result.try$(
+            rename(meta, pr, pred),
+            (pred2) => {
+              return new Ok(new Ctor2(new Psi(), base2, pred2, pos));
+            },
+          );
+        },
+      );
+    } else if ($ instanceof VFst) {
+      let rest = rev_spine.tail;
+      let pos = $[0];
+      return $result.try$(
+        rename_spine(meta, pr, base, rest),
+        (base2) => { return new Ok(new Ctor1(new Fst(), base2, pos)); },
+      );
+    } else {
+      let rest = rev_spine.tail;
+      let pos = $[0];
+      return $result.try$(
+        rename_spine(meta, pr, base, rest),
+        (base2) => { return new Ok(new Ctor1(new Snd(), base2, pos)); },
+      );
+    }
+  }
+}
+
+function rename(meta, pr, v) {
+  let $ = force(v);
+  if ($ instanceof VIdent) {
+    let x = $[0];
+    let mode = $[1];
+    let lvl = $[2];
+    let spine = $[3];
+    let pos = $[4];
+    let $1 = $dict.get(pr.renaming, lvl);
+    if ($1 instanceof Ok) {
+      let lvl2 = $1[0];
+      return rename_spine(
+        meta,
+        pr,
+        new Ident(mode, lvl_to_idx(pr.domain_size, lvl2), x, pos),
+        $list.reverse(spine),
+      );
+    } else {
+      return new Error(
+        "unify error: variable escaping scope at " + pretty_pos(pos),
+      );
+    }
+  } else if ($ instanceof VMeta) {
+    let ref = $[0];
+    let spine = $[2];
+    let pos = $[3];
+    let $1 = get(ref);
+    let $2 = get(meta);
+    if ($2 instanceof Unsolved) {
+      if ($1 instanceof Unsolved) {
+        let j = $2[0];
+        let i = $1[0];
+        if (i === j) {
+          return new Error(
+            "unify error: occurs check failure at " + pretty_pos(pos),
+          );
+        } else {
+          return rename_spine(
+            meta,
+            pr,
+            new Ctor0(new Meta(ref), pos),
+            $list.reverse(spine),
+          );
+        }
+      } else {
+        throw makeError(
+          "panic",
+          FILEPATH,
+          "client/candle/elab",
+          264,
+          "rename",
+          "`panic` expression evaluated.",
+          {}
+        )
+      }
+    } else {
+      throw makeError(
+        "panic",
+        FILEPATH,
+        "client/candle/elab",
+        264,
+        "rename",
+        "`panic` expression evaluated.",
+        {}
+      )
+    }
+  } else if ($ instanceof VSort) {
+    let s = $[0];
+    let pos = $[1];
+    return new Ok(new Ctor0(new Sort(s), pos));
+  } else if ($ instanceof VNat) {
+    let n = $[0];
+    let pos = $[1];
+    return new Ok(new Ctor0(new Nat(n), pos));
+  } else if ($ instanceof VNatType) {
+    let pos = $[0];
+    return new Ok(new Ctor0(new NatT(), pos));
+  } else if ($ instanceof VPi) {
+    let x = $[0];
+    let mode = $[1];
+    let a = $[2];
+    let b = $[3];
+    let pos = $[4];
+    return $result.try$(
+      rename(meta, pr, a),
+      (a2) => {
+        return $result.try$(
+          rename(
+            meta,
+            lift(pr),
+            b(new VIdent(x, mode, pr.codomain_size, toList([]), pos)),
+          ),
+          (b2) => { return new Ok(new Binder(new Pi(mode, a2), x, b2, pos)); },
+        );
+      },
+    );
+  } else if ($ instanceof VLambda) {
+    let x = $[0];
+    let mode = $[1];
+    let e = $[2];
+    let pos = $[3];
+    return $result.try$(
+      rename(
+        meta,
+        lift(pr),
+        e(new VIdent(x, mode, pr.codomain_size, toList([]), pos)),
+      ),
+      (e2) => { return new Ok(new Binder(new Lambda(mode), x, e2, pos)); },
+    );
+  } else if ($ instanceof VEq) {
+    let a = $[0];
+    let b = $[1];
+    let t = $[2];
+    let pos = $[3];
+    return $result.try$(
+      rename(meta, pr, a),
+      (a2) => {
+        return $result.try$(
+          rename(meta, pr, b),
+          (b2) => {
+            return $result.try$(
+              rename(meta, pr, t),
+              (t2) => { return new Ok(new Ctor3(new Eq(), a2, b2, t2, pos)); },
+            );
+          },
+        );
+      },
+    );
+  } else if ($ instanceof VRefl) {
+    let a = $[0];
+    let pos = $[1];
+    return $result.try$(
+      rename(meta, pr, a),
+      (a2) => { return new Ok(new Ctor1(new Refl(), a2, pos)); },
+    );
+  } else if ($ instanceof VInter) {
+    let a = $[0];
+    let b = $[1];
+    let pos = $[2];
+    return $result.try$(
+      rename(meta, pr, a),
+      (a2) => {
+        return $result.try$(
+          rename(meta, pr, b),
+          (b2) => { return new Ok(new Ctor2(new Inter(), a2, b2, pos)); },
+        );
+      },
+    );
+  } else if ($ instanceof VInterT) {
+    let x = $[0];
+    let a = $[1];
+    let b = $[2];
+    let pos = $[3];
+    return $result.try$(
+      rename(meta, pr, a),
+      (a2) => {
+        return $result.try$(
+          rename(
+            meta,
+            lift(pr),
+            b(new VIdent(x, new TypeMode(), pr.codomain_size, toList([]), pos)),
+          ),
+          (b2) => { return new Ok(new Binder(new InterT(a2), x, b2, pos)); },
+        );
+      },
+    );
+  } else if ($ instanceof VCast) {
+    let a = $[0];
+    let b = $[1];
+    let c = $[2];
+    let pos = $[3];
+    return $result.try$(
+      rename(meta, pr, a),
+      (a2) => {
+        return $result.try$(
+          rename(meta, pr, b),
+          (b2) => {
+            return $result.try$(
+              rename(meta, pr, c),
+              (c2) => { return new Ok(new Ctor3(new Cast(), a2, b2, c2, pos)); },
+            );
+          },
+        );
+      },
+    );
+  } else {
+    let a = $[0];
+    let pos = $[1];
+    return $result.try$(
+      rename(meta, pr, a),
+      (a2) => { return new Ok(new Ctor1(new ExFalso(), a2, pos)); },
+    );
   }
 }
 
 function erase(loop$t) {
   while (true) {
     let t = loop$t;
-    if (t instanceof VNeutral) {
-      let n = t[0];
-      return new VNeutral(erase_neutral(n));
-    } else if (t instanceof VSort) {
+    let $ = force(t);
+    if ($ instanceof VIdent) {
+      let x = $[0];
+      let mode = $[1];
+      let lvl = $[2];
+      let spine = $[3];
+      let pos = $[4];
+      return new VIdent(x, mode, lvl, erase_spine(spine), pos);
+    } else if ($ instanceof VMeta) {
+      let ref = $[0];
+      let spine = $[2];
+      let pos = $[3];
+      return new VMeta(ref, true, spine, pos);
+    } else if ($ instanceof VSort) {
       return t;
-    } else if (t instanceof VNat) {
+    } else if ($ instanceof VNat) {
       return t;
-    } else if (t instanceof VNatType) {
+    } else if ($ instanceof VNatType) {
       return t;
-    } else if (t instanceof VPi) {
-      let x = t[0];
-      let mode = t[1];
-      let a = t[2];
-      let b = t[3];
-      let p = t[4];
+    } else if ($ instanceof VPi) {
+      let x = $[0];
+      let mode = $[1];
+      let a = $[2];
+      let b = $[3];
+      let p = $[4];
       return new VPi(x, mode, erase(a), (arg) => { return erase(b(arg)); }, p);
-    } else if (t instanceof VLambda) {
-      let $ = t[1];
-      if ($ instanceof ZeroMode) {
-        let e = t[2];
-        let p = t[3];
-        loop$t = e(
-          new VNeutral(new VIdent("", new ZeroMode(), new Level(0), p)),
-        );
+    } else if ($ instanceof VLambda) {
+      let $1 = $[1];
+      if ($1 instanceof ZeroMode) {
+        let e = $[2];
+        let p = $[3];
+        loop$t = e(new VIdent("", new ZeroMode(), new Level(0), toList([]), p));
       } else {
-        let x = t[0];
-        let mode = $;
-        let e = t[2];
-        let p = t[3];
+        let x = $[0];
+        let mode = $1;
+        let e = $[2];
+        let p = $[3];
         return new VLambda(x, mode, (arg) => { return erase(e(arg)); }, p);
       }
-    } else if (t instanceof VEq) {
-      let a = t[0];
-      let b = t[1];
-      let t$1 = t[2];
-      let p = t[3];
+    } else if ($ instanceof VEq) {
+      let a = $[0];
+      let b = $[1];
+      let t$1 = $[2];
+      let p = $[3];
       return new VEq(erase(a), erase(b), erase(t$1), p);
-    } else if (t instanceof VRefl) {
-      let p = t[1];
+    } else if ($ instanceof VRefl) {
+      let p = $[1];
       return new VLambda("x", new ManyMode(), (x) => { return x; }, p);
-    } else if (t instanceof VInter) {
-      let a = t[0];
+    } else if ($ instanceof VInter) {
+      let a = $[0];
       loop$t = a;
-    } else if (t instanceof VInterT) {
-      let x = t[0];
-      let a = t[1];
-      let b = t[2];
-      let p = t[3];
+    } else if ($ instanceof VInterT) {
+      let x = $[0];
+      let a = $[1];
+      let b = $[2];
+      let p = $[3];
       return new VInterT(x, erase(a), (arg) => { return erase(b(arg)); }, p);
-    } else if (t instanceof VCast) {
-      let a = t[0];
+    } else if ($ instanceof VCast) {
+      let a = $[0];
       loop$t = a;
     } else {
-      let a = t[0];
+      let a = $[0];
       loop$t = a;
     }
   }
 }
 
-function eq(lvl, a, b) {
-  return eq_helper(lvl, erase(a), erase(b));
+export function force(loop$v) {
+  while (true) {
+    let v = loop$v;
+    if (v instanceof VMeta) {
+      let meta = v;
+      let ref = v[0];
+      let erased = v[1];
+      let spine = v[2];
+      let $ = get(ref);
+      if ($ instanceof Solved) {
+        if (erased) {
+          let v$1 = $[0];
+          loop$v = erase(apply_spine(v$1, spine));
+        } else {
+          let v$1 = $[0];
+          loop$v = apply_spine(v$1, spine);
+        }
+      } else {
+        return meta;
+      }
+    } else {
+      return v;
+    }
+  }
 }
+
+function erase_spine(loop$spine) {
+  while (true) {
+    let spine = loop$spine;
+    if (spine instanceof $Empty) {
+      return toList([]);
+    } else {
+      let $ = spine.head;
+      if ($ instanceof VApp) {
+        let $1 = $[0];
+        if ($1 instanceof ZeroMode) {
+          let rest = spine.tail;
+          loop$spine = rest;
+        } else {
+          let rest = spine.tail;
+          let mode = $1;
+          let arg = $[1];
+          let pos = $[2];
+          return listPrepend(new VApp(mode, erase(arg), pos), erase_spine(rest));
+        }
+      } else {
+        let rest = spine.tail;
+        loop$spine = rest;
+      }
+    }
+  }
+}
+
+function app(pos, mode, foo, bar) {
+  let $ = force(foo);
+  if ($ instanceof VIdent) {
+    let x = $[0];
+    let mode2 = $[1];
+    let lvl = $[2];
+    let spine = $[3];
+    let pos2 = $[4];
+    return new VIdent(
+      x,
+      mode2,
+      lvl,
+      $list.append(spine, toList([new VApp(mode, bar, pos)])),
+      pos2,
+    );
+  } else if ($ instanceof VMeta) {
+    let ref = $[0];
+    let erased = $[1];
+    let spine = $[2];
+    let pos2 = $[3];
+    return new VMeta(
+      ref,
+      erased,
+      $list.append(spine, toList([new VApp(mode, bar, pos)])),
+      pos2,
+    );
+  } else if ($ instanceof VLambda) {
+    let f = $[2];
+    return f(bar);
+  } else {
+    throw makeError(
+      "panic",
+      FILEPATH,
+      "client/candle/elab",
+      71,
+      "app",
+      "impossible value application",
+      {}
+    )
+  }
+}
+
+function apps(loop$pos, loop$foo, loop$env, loop$mask) {
+  while (true) {
+    let pos = loop$pos;
+    let foo = loop$foo;
+    let env = loop$env;
+    let mask = loop$mask;
+    if (mask instanceof $Empty) {
+      if (env instanceof $Empty) {
+        return foo;
+      } else {
+        throw makeError(
+          "panic",
+          FILEPATH,
+          "client/candle/elab",
+          87,
+          "apps",
+          "`panic` expression evaluated.",
+          {}
+        )
+      }
+    } else {
+      let $ = mask.head.has_def;
+      if ($) {
+        if (env instanceof $Empty) {
+          throw makeError(
+            "panic",
+            FILEPATH,
+            "client/candle/elab",
+            87,
+            "apps",
+            "`panic` expression evaluated.",
+            {}
+          )
+        } else {
+          let mask2 = mask.tail;
+          let env2 = env.tail;
+          loop$pos = pos;
+          loop$foo = foo;
+          loop$env = env2;
+          loop$mask = mask2;
+        }
+      } else if (env instanceof $Empty) {
+        throw makeError(
+          "panic",
+          FILEPATH,
+          "client/candle/elab",
+          87,
+          "apps",
+          "`panic` expression evaluated.",
+          {}
+        )
+      } else {
+        let mask2 = mask.tail;
+        let mode = mask.head.mode;
+        let v = env.head;
+        let env2 = env.tail;
+        return app(pos, mode, apps(pos, foo, env2, mask2), v);
+      }
+    }
+  }
+}
+
+function psi(pos, eq, pred) {
+  let $ = force(eq);
+  if ($ instanceof VIdent) {
+    let x = $[0];
+    let mode = $[1];
+    let lvl = $[2];
+    let spine = $[3];
+    let pos2 = $[4];
+    return new VIdent(
+      x,
+      mode,
+      lvl,
+      $list.append(spine, toList([new VPsi(pred, pos)])),
+      pos2,
+    );
+  } else if ($ instanceof VMeta) {
+    let ref = $[0];
+    let erased = $[1];
+    let spine = $[2];
+    let pos2 = $[3];
+    return new VMeta(
+      ref,
+      erased,
+      $list.append(spine, toList([new VPsi(pred, pos)])),
+      pos2,
+    );
+  } else if ($ instanceof VRefl) {
+    return new VLambda("x", new ManyMode(), (x) => { return x; }, pos);
+  } else {
+    throw makeError(
+      "panic",
+      FILEPATH,
+      "client/candle/elab",
+      98,
+      "psi",
+      ("impossible equality elimination " + pretty_value(eq)),
+      {}
+    )
+  }
+}
+
+function fst(pos, inter) {
+  let $ = force(inter);
+  if ($ instanceof VIdent) {
+    let x = $[0];
+    let mode = $[1];
+    let lvl = $[2];
+    let spine = $[3];
+    let pos2 = $[4];
+    return new VIdent(
+      x,
+      mode,
+      lvl,
+      $list.append(spine, toList([new VFst(pos)])),
+      pos2,
+    );
+  } else if ($ instanceof VMeta) {
+    let ref = $[0];
+    let erased = $[1];
+    let spine = $[2];
+    let pos2 = $[3];
+    return new VMeta(
+      ref,
+      erased,
+      $list.append(spine, toList([new VFst(pos)])),
+      pos2,
+    );
+  } else if ($ instanceof VInter) {
+    let a = $[0];
+    return a;
+  } else if ($ instanceof VCast) {
+    let a = $[0];
+    return a;
+  } else {
+    throw makeError(
+      "panic",
+      FILEPATH,
+      "client/candle/elab",
+      113,
+      "fst",
+      ("impossible value projection " + pretty_value(inter)),
+      {}
+    )
+  }
+}
+
+function snd(pos, inter) {
+  let $ = force(inter);
+  if ($ instanceof VIdent) {
+    let x = $[0];
+    let mode = $[1];
+    let lvl = $[2];
+    let spine = $[3];
+    let pos2 = $[4];
+    return new VIdent(
+      x,
+      mode,
+      lvl,
+      $list.append(spine, toList([new VSnd(pos)])),
+      pos2,
+    );
+  } else if ($ instanceof VMeta) {
+    let ref = $[0];
+    let erased = $[1];
+    let spine = $[2];
+    let pos2 = $[3];
+    return new VMeta(
+      ref,
+      erased,
+      $list.append(spine, toList([new VSnd(pos)])),
+      pos2,
+    );
+  } else if ($ instanceof VInter) {
+    let b = $[1];
+    return b;
+  } else if ($ instanceof VCast) {
+    let a = $[0];
+    return a;
+  } else {
+    throw makeError(
+      "panic",
+      FILEPATH,
+      "client/candle/elab",
+      128,
+      "snd",
+      "impossible value projection",
+      {}
+    )
+  }
+}
+
+function apply_spine(loop$v, loop$spine) {
+  while (true) {
+    let v = loop$v;
+    let spine = loop$spine;
+    if (spine instanceof $Empty) {
+      return v;
+    } else {
+      let $ = spine.head;
+      if ($ instanceof VApp) {
+        let rest = spine.tail;
+        let mode = $[0];
+        let arg = $[1];
+        let pos = $[2];
+        loop$v = app(pos, mode, v, arg);
+        loop$spine = rest;
+      } else if ($ instanceof VPsi) {
+        let rest = spine.tail;
+        let arg = $[0];
+        let pos = $[1];
+        loop$v = psi(pos, v, arg);
+        loop$spine = rest;
+      } else if ($ instanceof VFst) {
+        let rest = spine.tail;
+        let pos = $[0];
+        loop$v = fst(pos, v);
+        loop$spine = rest;
+      } else {
+        let rest = spine.tail;
+        let pos = $[0];
+        loop$v = snd(pos, v);
+        loop$spine = rest;
+      }
+    }
+  }
+}
+
+export function eval$(loop$t, loop$env) {
+  while (true) {
+    let t = loop$t;
+    let env = loop$env;
+    if (t instanceof Ident) {
+      let idx = t[1];
+      let $ = lookup(env, idx.int);
+      if ($ instanceof Ok) {
+        let v = $[0];
+        return v;
+      } else {
+        throw makeError(
+          "panic",
+          FILEPATH,
+          "client/candle/elab",
+          155,
+          "eval",
+          "out-of-scope var during eval",
+          {}
+        )
+      }
+    } else if (t instanceof Binder) {
+      let $ = t[0];
+      if ($ instanceof Lambda) {
+        let x = t[1];
+        let e = t[2];
+        let pos = t.pos;
+        let mode = $.mode;
+        return new VLambda(
+          x,
+          mode,
+          (arg) => { return eval$(e, listPrepend(arg, env)); },
+          pos,
+        );
+      } else if ($ instanceof Pi) {
+        let x = t[1];
+        let u = t[2];
+        let pos = t.pos;
+        let mode = $.mode;
+        let t$1 = $.ty;
+        return new VPi(
+          x,
+          mode,
+          eval$(t$1, env),
+          (arg) => { return eval$(u, listPrepend(arg, env)); },
+          pos,
+        );
+      } else if ($ instanceof InterT) {
+        let x = t[1];
+        let b = t[2];
+        let pos = t.pos;
+        let a = $.ty;
+        return new VInterT(
+          x,
+          eval$(a, env),
+          (arg) => { return eval$(b, listPrepend(arg, env)); },
+          pos,
+        );
+      } else {
+        let e = t[2];
+        let v = $.val;
+        loop$t = e;
+        loop$env = listPrepend(eval$(v, env), env);
+      }
+    } else if (t instanceof Ctor0) {
+      let $ = t[0];
+      if ($ instanceof Meta) {
+        let pos = t.pos;
+        let ref = $[0];
+        return new VMeta(ref, false, toList([]), pos);
+      } else if ($ instanceof InsertedMeta) {
+        let pos = t.pos;
+        let ref = $[0];
+        let mask = $[1];
+        return apps(pos, new VMeta(ref, false, toList([]), pos), env, mask);
+      } else if ($ instanceof Sort) {
+        let $1 = $[0];
+        if ($1 instanceof SetSort) {
+          let pos = t.pos;
+          return new VSort(new SetSort(), pos);
+        } else {
+          let pos = t.pos;
+          return new VSort(new KindSort(), pos);
+        }
+      } else if ($ instanceof NatT) {
+        let pos = t.pos;
+        return new VNatType(pos);
+      } else {
+        let pos = t.pos;
+        let n = $[0];
+        return new VNat(n, pos);
+      }
+    } else if (t instanceof Ctor1) {
+      let $ = t[0];
+      if ($ instanceof Fst) {
+        let a = t[1];
+        let pos = t.pos;
+        return fst(pos, eval$(a, env));
+      } else if ($ instanceof Snd) {
+        let a = t[1];
+        let pos = t.pos;
+        return snd(pos, eval$(a, env));
+      } else if ($ instanceof ExFalso) {
+        let a = t[1];
+        let pos = t.pos;
+        return new VExFalso(eval$(a, env), pos);
+      } else {
+        let a = t[1];
+        let pos = t.pos;
+        return new VRefl(eval$(a, env), pos);
+      }
+    } else if (t instanceof Ctor2) {
+      let $ = t[0];
+      if ($ instanceof App) {
+        let foo = t[1];
+        let bar = t[2];
+        let pos = t.pos;
+        let mode = $[0];
+        return app(pos, mode, eval$(foo, env), eval$(bar, env));
+      } else if ($ instanceof Psi) {
+        let e = t[1];
+        let p = t[2];
+        let pos = t.pos;
+        return psi(pos, eval$(e, env), eval$(p, env));
+      } else {
+        let a = t[1];
+        let b = t[2];
+        let pos = t.pos;
+        return new VInter(eval$(a, env), eval$(b, env), pos);
+      }
+    } else {
+      let $ = t[0];
+      if ($ instanceof Cast) {
+        let a = t[1];
+        let inter = t[2];
+        let eq = t[3];
+        let pos = t.pos;
+        return new VCast(eval$(a, env), eval$(inter, env), eval$(eq, env), pos);
+      } else {
+        let a = t[1];
+        let b = t[2];
+        let t$1 = t[3];
+        let pos = t.pos;
+        return new VEq(eval$(a, env), eval$(b, env), eval$(t$1, env), pos);
+      }
+    }
+  }
+}
+
+function invert_helper(spine) {
+  if (spine instanceof $Empty) {
+    return new Ok([new Level(0), $dict.new$()]);
+  } else {
+    let $ = spine.head;
+    if ($ instanceof VApp) {
+      let rest = spine.tail;
+      let bar = $[1];
+      let pos = $[2];
+      return $result.try$(
+        invert_helper(rest),
+        (_use0) => {
+          let domain = _use0[0];
+          let renaming = _use0[1];
+          let $1 = force(bar);
+          if ($1 instanceof VIdent) {
+            let $2 = $1[3];
+            if ($2 instanceof $Empty) {
+              let lvl = $1[2];
+              let $3 = $dict.get(renaming, lvl);
+              if ($3 instanceof Ok) {
+                return new Error("unify error " + pretty_pos(pos));
+              } else {
+                return new Ok(
+                  [inc(domain), $dict.insert(renaming, lvl, domain)],
+                );
+              }
+            } else {
+              let _block;
+              {
+                echo(force(bar), "src/client/candle/elab.gleam", 243);
+                _block = "";
+              }
+              throw makeError(
+                "panic",
+                FILEPATH,
+                "client/candle/elab",
+                242,
+                "invert_helper",
+                _block,
+                {}
+              )
+            }
+          } else {
+            let _block;
+            {
+              echo(force(bar), "src/client/candle/elab.gleam", 243);
+              _block = "";
+            }
+            throw makeError(
+              "panic",
+              FILEPATH,
+              "client/candle/elab",
+              242,
+              "invert_helper",
+              _block,
+              {}
+            )
+          }
+        },
+      );
+    } else {
+      throw makeError(
+        "panic",
+        FILEPATH,
+        "client/candle/elab",
+        248,
+        "invert_helper",
+        "`panic` expression evaluated.",
+        {}
+      )
+    }
+  }
+}
+
+function invert(codomain_size, spine) {
+  return $result.try$(
+    invert_helper($list.reverse(spine)),
+    (_use0) => {
+      let domain_size = _use0[0];
+      let renaming = _use0[1];
+      return new Ok(new PartialRenaming(domain_size, codomain_size, renaming));
+    },
+  );
+}
+
+function solve(gamma, ref, lhs, rhs) {
+  return $result.try$(
+    invert(gamma, lhs),
+    (pr) => {
+      return $result.try$(
+        rename(ref, pr, rhs),
+        (rhs2) => {
+          let solution = eval$(lambdas(pr.domain_size, rhs2), toList([]));
+          set(ref, new Solved(solution));
+          return new Ok(true);
+        },
+      );
+    },
+  );
+}
+
+function unify(lvl, a, b) {
+  return unify_helper(lvl, erase(a), erase(b));
+}
+
+function echo(value, file, line) {
+  const grey = "\u001b[90m";
+  const reset_color = "\u001b[39m";
+  const file_line = `${file}:${line}`;
+  const string_value = echo$inspect(value);
+
+  if (globalThis.process?.stderr?.write) {
+    // If we're in Node.js, use `stderr`
+    const string = `${grey}${file_line}${reset_color}\n${string_value}\n`;
+    process.stderr.write(string);
+  } else if (globalThis.Deno) {
+    // If we're in Deno, use `stderr`
+    const string = `${grey}${file_line}${reset_color}\n${string_value}\n`;
+    globalThis.Deno.stderr.writeSync(new TextEncoder().encode(string));
+  } else {
+    // Otherwise, use `console.log`
+    // The browser's console.log doesn't support ansi escape codes
+    const string = `${file_line}\n${string_value}`;
+    globalThis.console.log(string);
+  }
+
+  return value;
+}
+
+function echo$inspectString(str) {
+  let new_str = '"';
+  for (let i = 0; i < str.length; i++) {
+    let char = str[i];
+    if (char == "\n") new_str += "\\n";
+    else if (char == "\r") new_str += "\\r";
+    else if (char == "\t") new_str += "\\t";
+    else if (char == "\f") new_str += "\\f";
+    else if (char == "\\") new_str += "\\\\";
+    else if (char == '"') new_str += '\\"';
+    else if (char < " " || (char > "~" && char < "\u{00A0}")) {
+      new_str +=
+        "\\u{" +
+        char.charCodeAt(0).toString(16).toUpperCase().padStart(4, "0") +
+        "}";
+    } else {
+      new_str += char;
+    }
+  }
+  new_str += '"';
+  return new_str;
+}
+
+function echo$inspectDict(map) {
+  let body = "dict.from_list([";
+  let first = true;
+
+  let key_value_pairs = [];
+  map.forEach((value, key) => {
+    key_value_pairs.push([key, value]);
+  });
+  key_value_pairs.sort();
+  key_value_pairs.forEach(([key, value]) => {
+    if (!first) body = body + ", ";
+    body = body + "#(" + echo$inspect(key) + ", " + echo$inspect(value) + ")";
+    first = false;
+  });
+  return body + "])";
+}
+
+function echo$inspectCustomType(record) {
+  const props = globalThis.Object.keys(record)
+    .map((label) => {
+      const value = echo$inspect(record[label]);
+      return isNaN(parseInt(label)) ? `${label}: ${value}` : value;
+    })
+    .join(", ");
+  return props
+    ? `${record.constructor.name}(${props})`
+    : record.constructor.name;
+}
+
+function echo$inspectObject(v) {
+  const name = Object.getPrototypeOf(v)?.constructor?.name || "Object";
+  const props = [];
+  for (const k of Object.keys(v)) {
+    props.push(`${echo$inspect(k)}: ${echo$inspect(v[k])}`);
+  }
+  const body = props.length ? " " + props.join(", ") + " " : "";
+  const head = name === "Object" ? "" : name + " ";
+  return `//js(${head}{${body}})`;
+}
+
+function echo$inspect(v) {
+  const t = typeof v;
+  if (v === true) return "True";
+  if (v === false) return "False";
+  if (v === null) return "//js(null)";
+  if (v === undefined) return "Nil";
+  if (t === "string") return echo$inspectString(v);
+  if (t === "bigint" || t === "number") return v.toString();
+  if (globalThis.Array.isArray(v))
+    return `#(${v.map(echo$inspect).join(", ")})`;
+  if (v instanceof $List)
+    return `[${v.toArray().map(echo$inspect).join(", ")}]`;
+  if (v instanceof $UtfCodepoint)
+    return `//utfcodepoint(${String.fromCodePoint(v.value)})`;
+  if (v instanceof $BitArray) return echo$inspectBitArray(v);
+  if (v instanceof $CustomType) return echo$inspectCustomType(v);
+  if (echo$isDict(v)) return echo$inspectDict(v);
+  if (v instanceof Set)
+    return `//js(Set(${[...v].map(echo$inspect).join(", ")}))`;
+  if (v instanceof RegExp) return `//js(${v})`;
+  if (v instanceof Date) return `//js(Date("${v.toISOString()}"))`;
+  if (v instanceof Function) {
+    const args = [];
+    for (const i of Array(v.length).keys())
+      args.push(String.fromCharCode(i + 97));
+    return `//fn(${args.join(", ")}) { ... }`;
+  }
+  return echo$inspectObject(v);
+}
+
+function echo$inspectBitArray(bitArray) {
+  // We take all the aligned bytes of the bit array starting from `bitOffset`
+  // up to the end of the section containing all the aligned bytes.
+  let endOfAlignedBytes =
+    bitArray.bitOffset + 8 * Math.trunc(bitArray.bitSize / 8);
+  let alignedBytes = bitArraySlice(
+    bitArray,
+    bitArray.bitOffset,
+    endOfAlignedBytes,
+  );
+
+  // Now we need to get the remaining unaligned bits at the end of the bit array.
+  // They will start after `endOfAlignedBytes` and end at `bitArray.bitSize`
+  let remainingUnalignedBits = bitArray.bitSize % 8;
+  if (remainingUnalignedBits > 0) {
+    let remainingBits = bitArraySliceToInt(
+      bitArray,
+      endOfAlignedBytes,
+      bitArray.bitSize,
+      false,
+      false,
+    );
+    let alignedBytesArray = Array.from(alignedBytes.rawBuffer);
+    let suffix = `${remainingBits}:size(${remainingUnalignedBits})`;
+    if (alignedBytesArray.length === 0) {
+      return `<<${suffix}>>`;
+    } else {
+      return `<<${Array.from(alignedBytes.rawBuffer).join(", ")}, ${suffix}>>`;
+    }
+  } else {
+    return `<<${Array.from(alignedBytes.rawBuffer).join(", ")}>>`;
+  }
+}
+
+function echo$isDict(value) {
+  try {
+    // We can only check if an object is a stdlib Dict if it is one of the
+    // project's dependencies.
+    // The `Dict` class is the default export of `stdlib/dict.mjs`
+    // that we import as `$stdlib$dict`.
+    return value instanceof $stdlib$dict.default;
+  } catch {
+    // If stdlib is not one of the project's dependencies then `$stdlib$dict`
+    // will not have been imported and the check will throw an exception meaning
+    // we can't check if something is actually a `Dict`.
+    return false;
+  }
+}
+
