@@ -8,9 +8,11 @@ import {
   DefSyntax,
   EqSyntax,
   ExFalsoSyntax,
+  Explicit,
   FstSyntax,
   HoleSyntax,
   IdentSyntax,
+  Implicit,
   IntersectionSyntax,
   IntersectionTypeSyntax,
   LambdaSyntax,
@@ -375,6 +377,7 @@ function build_pi(pos, params, rett) {
     let rest = params.tail;
     return new PiSyntax(
       param.mode,
+      param.implicit,
       param.name,
       param.ty,
       build_pi(pos, rest, rett),
@@ -391,6 +394,7 @@ function build_lambda(pos, params, body) {
     let rest = params.tail;
     return new LambdaSyntax(
       param.mode,
+      param.implicit,
       param.name,
       new Ok(param.ty),
       build_lambda(pos, rest, body),
@@ -469,7 +473,7 @@ export function expr() {
                             get_pos(),
                             (pos) => {
                               return do$(
-                                char("{"),
+                                char("<"),
                                 (_) => {
                                   return commit(
                                     () => {
@@ -477,7 +481,7 @@ export function expr() {
                                         lazy(expr),
                                         (arg) => {
                                           return do$(
-                                            char("}"),
+                                            char(">"),
                                             (_) => {
                                               return return$(
                                                 new AppSuffix(
@@ -580,7 +584,7 @@ export function expr() {
                                               "panic",
                                               FILEPATH,
                                               "client/candle/parser",
-                                              590,
+                                              614,
                                               "expr",
                                               "impossible projection",
                                               {}
@@ -618,6 +622,7 @@ export function expr() {
                           let pos = suffix.pos;
                           return new PiSyntax(
                             new ManyMode(),
+                            new Explicit(),
                             "_",
                             ex,
                             rett,
@@ -695,6 +700,7 @@ function annotated_binder() {
                             return return$(
                               new LambdaSyntax(
                                 param.mode,
+                                param.implicit,
                                 param.name,
                                 new Ok(param.ty),
                                 e,
@@ -705,6 +711,7 @@ function annotated_binder() {
                             return return$(
                               new PiSyntax(
                                 param.mode,
+                                param.implicit,
                                 param.name,
                                 param.ty,
                                 e,
@@ -725,7 +732,7 @@ function annotated_binder() {
                               "panic",
                               FILEPATH,
                               "client/candle/parser",
-                              318,
+                              327,
                               "annotated_binder",
                               "impossible annotated binder",
                               {}
@@ -952,6 +959,7 @@ function ident() {
                             return return$(
                               new LambdaSyntax(
                                 new ManyMode(),
+                                new Explicit(),
                                 s,
                                 new Error(undefined),
                                 body,
@@ -1002,10 +1010,10 @@ function nat() {
               "Pattern match failed, no pattern matched the value.",
               {
                 value: $,
-                start: 6809,
-                end: 6859,
-                pattern_start: 6820,
-                pattern_end: 6825
+                start: 6839,
+                end: 6889,
+                pattern_start: 6850,
+                pattern_end: 6855
               }
             )
           }
@@ -1061,6 +1069,7 @@ function relevant_but_ignored() {
                           return return$(
                             new LambdaSyntax(
                               new ManyMode(),
+                              new Explicit(),
                               x,
                               new Error(undefined),
                               e,
@@ -1086,7 +1095,7 @@ function erased_binder() {
     get_pos(),
     (pos) => {
       return do$(
-        char("{"),
+        char("<"),
         (_) => {
           return commit(
             () => {
@@ -1098,14 +1107,14 @@ function erased_binder() {
                 (e) => {
                   return do$(
                     (() => {
-                      let _pipe = char("}");
+                      let _pipe = char(">");
                       return label(
                         _pipe,
                         (() => {
                           if (e instanceof IdentSyntax) {
-                            return ": or }";
+                            return ": or >";
                           } else {
-                            return "}";
+                            return ">";
                           }
                         })(),
                       );
@@ -1125,6 +1134,7 @@ function erased_binder() {
                                       return return$(
                                         new LambdaSyntax(
                                           new ZeroMode(),
+                                          new Explicit(),
                                           x,
                                           new Error(undefined),
                                           body,
@@ -1135,6 +1145,7 @@ function erased_binder() {
                                       return return$(
                                         new PiSyntax(
                                           new ZeroMode(),
+                                          new Explicit(),
                                           "_",
                                           e,
                                           body,
@@ -1146,7 +1157,7 @@ function erased_binder() {
                                         "panic",
                                         FILEPATH,
                                         "client/candle/parser",
-                                        342,
+                                        352,
                                         "erased_binder",
                                         "impossible erased binder",
                                         {}
@@ -1166,6 +1177,7 @@ function erased_binder() {
                                     return return$(
                                       new PiSyntax(
                                         new ZeroMode(),
+                                        new Explicit(),
                                         "_",
                                         e,
                                         body,
@@ -1235,6 +1247,7 @@ function parens() {
                                       return return$(
                                         new LambdaSyntax(
                                           new ManyMode(),
+                                          new Explicit(),
                                           x,
                                           new Error(undefined),
                                           body,
@@ -1269,53 +1282,79 @@ function parse_param(idk) {
   return ws(
     () => {
       return do$(
-        any_of(toList([char("("), char("{")])),
+        any_of(toList([char("("), char("<")])),
         (res) => {
           return ws(
             () => {
-              return maybe_commit(
-                idk,
-                () => {
-                  return do$(
-                    pattern_string(),
-                    (x) => {
-                      return ws(
+              return do$(
+                maybe(char("?")),
+                (res2) => {
+                  let _block;
+                  if (res2 instanceof Ok) {
+                    _block = new Implicit();
+                  } else {
+                    _block = new Explicit();
+                  }
+                  let imp = _block;
+                  return ws(
+                    () => {
+                      return maybe_commit(
+                        idk,
                         () => {
                           return do$(
-                            char(":"),
-                            (_) => {
-                              return do$(
-                                lazy(expr),
-                                (t) => {
-                                  if (res === "(") {
-                                    return do$(
-                                      char(")"),
-                                      (_) => {
-                                        return return$(
-                                          new SyntaxParam(new ManyMode(), x, t),
-                                        );
-                                      },
-                                    );
-                                  } else if (res === "{") {
-                                    return do$(
-                                      char("}"),
-                                      (_) => {
-                                        return return$(
-                                          new SyntaxParam(new ZeroMode(), x, t),
-                                        );
-                                      },
-                                    );
-                                  } else {
-                                    throw makeError(
-                                      "panic",
-                                      FILEPATH,
-                                      "client/candle/parser",
-                                      399,
-                                      "parse_param",
-                                      "impossible param mode",
-                                      {}
-                                    )
-                                  }
+                            pattern_string(),
+                            (x) => {
+                              return ws(
+                                () => {
+                                  return do$(
+                                    char(":"),
+                                    (_) => {
+                                      return do$(
+                                        lazy(expr),
+                                        (t) => {
+                                          if (res === "(") {
+                                            return do$(
+                                              char(")"),
+                                              (_) => {
+                                                return return$(
+                                                  new SyntaxParam(
+                                                    new ManyMode(),
+                                                    imp,
+                                                    x,
+                                                    t,
+                                                  ),
+                                                );
+                                              },
+                                            );
+                                          } else if (res === "<") {
+                                            return do$(
+                                              char(">"),
+                                              (_) => {
+                                                return return$(
+                                                  new SyntaxParam(
+                                                    new ZeroMode(),
+                                                    imp,
+                                                    x,
+                                                    t,
+                                                  ),
+                                                );
+                                              },
+                                            );
+                                          } else {
+                                            throw makeError(
+                                              "panic",
+                                              FILEPATH,
+                                              "client/candle/parser",
+                                              415,
+                                              "parse_param",
+                                              "impossible param mode",
+                                              {}
+                                            )
+                                          }
+                                        },
+                                      );
+                                    },
+                                  );
                                 },
                               );
                             },
@@ -1411,7 +1450,7 @@ function let_binding() {
                                                               "panic",
                                                               FILEPATH,
                                                               "client/candle/parser",
-                                                              446,
+                                                              470,
                                                               "let_binding",
                                                               "impossible binder",
                                                               {}

@@ -24,22 +24,28 @@ export class SetSort extends $CustomType {}
 
 export class KindSort extends $CustomType {}
 
+export class Implicit extends $CustomType {}
+
+export class Explicit extends $CustomType {}
+
 export class SyntaxParam extends $CustomType {
-  constructor(mode, name, ty) {
+  constructor(mode, implicit, name, ty) {
     super();
     this.mode = mode;
+    this.implicit = implicit;
     this.name = name;
     this.ty = ty;
   }
 }
 
 export class LambdaSyntax extends $CustomType {
-  constructor($0, $1, $2, $3, pos) {
+  constructor($0, $1, $2, $3, $4, pos) {
     super();
     this[0] = $0;
     this[1] = $1;
     this[2] = $2;
     this[3] = $3;
+    this[4] = $4;
     this.pos = pos;
   }
 }
@@ -108,12 +114,13 @@ export class SortSyntax extends $CustomType {
 }
 
 export class PiSyntax extends $CustomType {
-  constructor($0, $1, $2, $3, pos) {
+  constructor($0, $1, $2, $3, $4, pos) {
     super();
     this[0] = $0;
     this[1] = $1;
     this[2] = $2;
     this[3] = $3;
+    this[4] = $4;
     this.pos = pos;
   }
 }
@@ -233,16 +240,18 @@ export class Unsolved extends $CustomType {
 }
 
 export class Lambda extends $CustomType {
-  constructor(mode) {
+  constructor(mode, implicit) {
     super();
     this.mode = mode;
+    this.implicit = implicit;
   }
 }
 
 export class Pi extends $CustomType {
-  constructor(mode, ty) {
+  constructor(mode, implicit, ty) {
     super();
     this.mode = mode;
+    this.implicit = implicit;
     this.ty = ty;
   }
 }
@@ -427,6 +436,18 @@ export class VNatType extends $CustomType {
 }
 
 export class VPi extends $CustomType {
+  constructor($0, $1, $2, $3, $4, $5) {
+    super();
+    this[0] = $0;
+    this[1] = $1;
+    this[2] = $2;
+    this[3] = $3;
+    this[4] = $4;
+    this[5] = $5;
+  }
+}
+
+export class VLambda extends $CustomType {
   constructor($0, $1, $2, $3, $4) {
     super();
     this[0] = $0;
@@ -434,16 +455,6 @@ export class VPi extends $CustomType {
     this[2] = $2;
     this[3] = $3;
     this[4] = $4;
-  }
-}
-
-export class VLambda extends $CustomType {
-  constructor($0, $1, $2, $3) {
-    super();
-    this[0] = $0;
-    this[1] = $1;
-    this[2] = $2;
-    this[3] = $3;
   }
 }
 
@@ -547,6 +558,16 @@ export function pretty_mode(m) {
   }
 }
 
+function in_mode(inner, mode) {
+  if (mode instanceof ZeroMode) {
+    return ("<" + inner) + ">";
+  } else if (mode instanceof ManyMode) {
+    return ("(" + inner) + ")";
+  } else {
+    return ("<" + inner) + ">";
+  }
+}
+
 export function get_pos(s) {
   if (s instanceof LambdaSyntax) {
     let pos = s.pos;
@@ -634,6 +655,14 @@ export function term_pos(t) {
   }
 }
 
+function pretty_imp(implicit) {
+  if (implicit instanceof Implicit) {
+    return "? ";
+  } else {
+    return "";
+  }
+}
+
 export function inc(lvl) {
   return new Level(lvl.int + 1);
 }
@@ -678,10 +707,10 @@ export function value_pos(v) {
     let pos = v[0];
     return pos;
   } else if (v instanceof VPi) {
-    let pos = v[4];
+    let pos = v[5];
     return pos;
   } else if (v instanceof VLambda) {
-    let pos = v[3];
+    let pos = v[4];
     return pos;
   } else if (v instanceof VEq) {
     let pos = v[3];
@@ -756,12 +785,13 @@ export function quote(size, v) {
   } else if (v instanceof VPi) {
     let x = v[0];
     let mode = v[1];
-    let a = v[2];
-    let b = v[3];
-    let p = v[4];
+    let imp = v[2];
+    let a = v[3];
+    let b = v[4];
+    let p = v[5];
     let n = new VIdent(x, mode, size, toList([]), p);
     return new Binder(
-      new Pi(mode, quote(size, a)),
+      new Pi(mode, imp, quote(size, a)),
       x,
       quote(inc(size), b(n)),
       p,
@@ -769,10 +799,11 @@ export function quote(size, v) {
   } else if (v instanceof VLambda) {
     let x = v[0];
     let mode = v[1];
-    let e = v[2];
-    let p = v[3];
+    let imp = v[2];
+    let e = v[3];
+    let p = v[4];
     let n = new VIdent(x, mode, size, toList([]), p);
-    return new Binder(new Lambda(mode), x, quote(inc(size), e(n)), p);
+    return new Binder(new Lambda(mode, imp), x, quote(inc(size), e(n)), p);
   } else if (v instanceof VEq) {
     let a = v[0];
     let b = v[1];
@@ -837,7 +868,8 @@ export function pretty_term(loop$term) {
         let x = term[1];
         let e = term[2];
         let mode = $.mode;
-        return (pretty_param(mode, x, new Error(undefined)) + "-> ") + pretty_term(
+        let imp = $.implicit;
+        return (pretty_param(mode, imp, x, new Error(undefined)) + "-> ") + pretty_term(
           e,
         );
       } else if ($ instanceof Pi) {
@@ -846,27 +878,36 @@ export function pretty_term(loop$term) {
           let $2 = term[1];
           if ($2 === "_") {
             let u = term[2];
+            let imp = $.implicit;
             let t = $.ty;
-            return (("(" + pretty_term(t)) + ")=>") + pretty_term(u);
+            return ((("(" + pretty_imp(imp)) + pretty_term(t)) + ")=>") + pretty_term(
+              u,
+            );
           } else {
             let x = $2;
             let u = term[2];
             let mode = $1;
+            let imp = $.implicit;
             let t = $.ty;
-            return (pretty_param(mode, x, new Ok(t)) + "=> ") + pretty_term(u);
+            return (pretty_param(mode, imp, x, new Ok(t)) + "=> ") + pretty_term(
+              u,
+            );
           }
         } else {
           let x = term[1];
           let u = term[2];
           let mode = $1;
+          let imp = $.implicit;
           let t = $.ty;
-          return (pretty_param(mode, x, new Ok(t)) + "=> ") + pretty_term(u);
+          return (pretty_param(mode, imp, x, new Ok(t)) + "=> ") + pretty_term(
+            u,
+          );
         }
       } else if ($ instanceof InterT) {
         let x = term[1];
         let u = term[2];
         let t = $.ty;
-        return (pretty_param(new ManyMode(), x, new Ok(t)) + "& ") + pretty_term(
+        return (pretty_param(new ManyMode(), new Explicit(), x, new Ok(t)) + "& ") + pretty_term(
           u,
         );
       } else {
@@ -874,9 +915,12 @@ export function pretty_term(loop$term) {
         let e = term[2];
         let mode = $.mode;
         let v = $.val;
-        return (((("let " + pretty_param(mode, x, new Error(undefined))) + " = ") + pretty_term(
-          v,
-        )) + " in ") + pretty_term(e);
+        return (((("let " + pretty_param(
+          mode,
+          new Explicit(),
+          x,
+          new Error(undefined),
+        )) + " = ") + pretty_term(v)) + " in ") + pretty_term(e);
       }
     } else if (term instanceof Ctor0) {
       let $ = term[0];
@@ -928,15 +972,10 @@ export function pretty_term(loop$term) {
         let foo = term[1];
         let bar = term[2];
         let mode = $[0];
-        return (("(" + pretty_term(foo)) + ")") + (() => {
-          if (mode instanceof ZeroMode) {
-            return ("{" + pretty_term(bar)) + "}";
-          } else if (mode instanceof ManyMode) {
-            return ("(" + pretty_term(bar)) + ")";
-          } else {
-            return ("<" + pretty_term(bar)) + ">";
-          }
-        })();
+        return (("(" + pretty_term(foo)) + ")") + in_mode(
+          pretty_term(bar),
+          mode,
+        );
       } else if ($ instanceof Psi) {
         let eq = term[1];
         let p = term[2];
@@ -964,7 +1003,7 @@ export function pretty_term(loop$term) {
   }
 }
 
-export function pretty_param(mode, x, mb_t) {
+export function pretty_param(mode, implicit, x, mb_t) {
   let _block;
   if (mb_t instanceof Ok) {
     let t = mb_t[0];
@@ -973,13 +1012,14 @@ export function pretty_param(mode, x, mb_t) {
     _block = x;
   }
   let inner = _block;
-  if (mode instanceof ZeroMode) {
-    return ("{" + inner) + "}";
-  } else if (mode instanceof ManyMode) {
-    return ("(" + inner) + ")";
+  let _block$1;
+  if (implicit instanceof Implicit) {
+    _block$1 = "? " + inner;
   } else {
-    return ("<" + inner) + ">";
+    _block$1 = inner;
   }
+  let _pipe = _block$1;
+  return in_mode(_pipe, mode);
 }
 
 export function pretty_value(loop$v) {
@@ -1028,35 +1068,24 @@ export function pretty_value(loop$v) {
       let $ = v[0];
       if ($ === "_") {
         let mode = v[1];
-        let a = v[2];
-        let b = v[3];
-        let pos = v[4];
-        let li = pretty_value(a);
-        return ((() => {
-          if (mode instanceof ZeroMode) {
-            return ("{" + li) + "}";
-          } else if (mode instanceof ManyMode) {
-            return ("(" + li) + ")";
-          } else {
-            return ("<" + li) + ">";
-          }
-        })() + "=> ") + pretty_value(
+        let imp = v[2];
+        let a = v[3];
+        let b = v[4];
+        let pos = v[5];
+        let li = pretty_imp(imp) + pretty_value(a);
+        return (in_mode(li, mode) + "=> ") + pretty_value(
           b(new VIdent("_", mode, new Level(0), toList([]), pos)),
         );
       } else {
         let x = $;
         let mode = v[1];
-        let a = v[2];
-        let b = v[3];
-        let pos = v[4];
+        let imp = v[2];
+        let a = v[3];
+        let b = v[4];
+        let pos = v[5];
         return ((() => {
-          if (mode instanceof ZeroMode) {
-            return ((("{" + x) + ": ") + pretty_value(a)) + "}";
-          } else if (mode instanceof ManyMode) {
-            return ((("(" + x) + ": ") + pretty_value(a)) + ")";
-          } else {
-            return ((("<" + x) + ": ") + pretty_value(a)) + ">";
-          }
+          let inner = ((pretty_imp(imp) + x) + ": ") + pretty_value(a);
+          return in_mode(inner, mode);
         })() + "=> ") + pretty_value(
           b(new VIdent(x, mode, new Level(0), toList([]), pos)),
         );
@@ -1064,17 +1093,10 @@ export function pretty_value(loop$v) {
     } else if (v instanceof VLambda) {
       let x = v[0];
       let mode = v[1];
-      let f = v[2];
-      let pos = v[3];
-      return ((() => {
-        if (mode instanceof ZeroMode) {
-          return ("{" + x) + "}";
-        } else if (mode instanceof ManyMode) {
-          return ("(" + x) + ")";
-        } else {
-          return ("<" + x) + ">";
-        }
-      })() + "-> ") + pretty_value(
+      let imp = v[2];
+      let f = v[3];
+      let pos = v[4];
+      return (in_mode(pretty_imp(imp) + x, mode) + "-> ") + pretty_value(
         f(new VIdent(x, mode, new Level(0), toList([]), pos)),
       );
     } else if (v instanceof VEq) {
@@ -1115,17 +1137,9 @@ export function pretty_value(loop$v) {
 
 function pretty_spine_entry(base, s) {
   if (s instanceof VApp) {
-    let $ = s[0];
-    if ($ instanceof ZeroMode) {
-      let b = s[1];
-      return ((("(" + base) + "){") + pretty_value(b)) + "}";
-    } else if ($ instanceof ManyMode) {
-      let b = s[1];
-      return ((("(" + base) + ")(") + pretty_value(b)) + ")";
-    } else {
-      let b = s[1];
-      return ((("(" + base) + ")<") + pretty_value(b)) + ">";
-    }
+    let mode = s[0];
+    let b = s[1];
+    return (("(" + base) + ")") + in_mode(pretty_value(b), mode);
   } else if (s instanceof VPsi) {
     let p = s[0];
     return ((("Psi(" + base) + ", ") + pretty_value(p)) + ")";
@@ -1138,46 +1152,35 @@ function pretty_spine_entry(base, s) {
 
 export function pretty_syntax(s) {
   if (s instanceof LambdaSyntax) {
-    let $ = s[2];
+    let $ = s[3];
     if ($ instanceof Ok) {
       let mode = s[0];
-      let x = s[1];
-      let e = s[3];
+      let imp = s[1];
+      let x = s[2];
+      let e = s[4];
       let t = $[0];
-      return (pretty_syntax_param(new SyntaxParam(mode, x, t)) + "-> ") + pretty_syntax(
+      return (pretty_syntax_param(new SyntaxParam(mode, imp, x, t)) + "-> ") + pretty_syntax(
         e,
       );
     } else {
       let mode = s[0];
-      let x = s[1];
-      let e = s[3];
+      let imp = s[1];
+      let x = s[2];
+      let e = s[4];
       let outer = "-> " + pretty_syntax(e);
-      if (mode instanceof ZeroMode) {
-        return (("{" + x) + "}") + outer;
-      } else if (mode instanceof ManyMode) {
-        return (("(" + x) + ")") + outer;
-      } else {
-        return (("<" + x) + ">") + outer;
-      }
+      return in_mode(pretty_imp(imp) + x, mode) + outer;
     }
   } else if (s instanceof IdentSyntax) {
     let name = s[0];
     return name;
   } else if (s instanceof AppSyntax) {
-    let $ = s[0];
-    if ($ instanceof ZeroMode) {
-      let foo = s[1];
-      let bar = s[2];
-      return ((("(" + pretty_syntax(foo)) + "){") + pretty_syntax(bar)) + "}";
-    } else if ($ instanceof ManyMode) {
-      let foo = s[1];
-      let bar = s[2];
-      return ((("(" + pretty_syntax(foo)) + ")(") + pretty_syntax(bar)) + ")";
-    } else {
-      let foo = s[1];
-      let bar = s[2];
-      return ((("(" + pretty_syntax(foo)) + ")<") + pretty_syntax(bar)) + ">";
-    }
+    let mode = s[0];
+    let foo = s[1];
+    let bar = s[2];
+    return (("(" + pretty_syntax(foo)) + ")") + in_mode(
+      pretty_syntax(bar),
+      mode,
+    );
   } else if (s instanceof LetSyntax) {
     let x = s[0];
     let t = s[1];
@@ -1208,10 +1211,11 @@ export function pretty_syntax(s) {
     }
   } else if (s instanceof PiSyntax) {
     let mode = s[0];
-    let x = s[1];
-    let t = s[2];
-    let u = s[3];
-    return (pretty_syntax_param(new SyntaxParam(mode, x, t)) + "=> ") + pretty_syntax(
+    let imp = s[1];
+    let x = s[2];
+    let t = s[3];
+    let u = s[4];
+    return (pretty_syntax_param(new SyntaxParam(mode, imp, x, t)) + "=> ") + pretty_syntax(
       u,
     );
   } else if (s instanceof PsiSyntax) {
@@ -1222,9 +1226,9 @@ export function pretty_syntax(s) {
     let x = s[0];
     let t = s[1];
     let u = s[2];
-    return (pretty_syntax_param(new SyntaxParam(new ManyMode(), x, t)) + "& ") + pretty_syntax(
-      u,
-    );
+    return (pretty_syntax_param(
+      new SyntaxParam(new ManyMode(), new Explicit(), x, t),
+    ) + "& ") + pretty_syntax(u);
   } else if (s instanceof IntersectionSyntax) {
     let l = s[0];
     let r = s[1];
@@ -1258,12 +1262,14 @@ export function pretty_syntax(s) {
 }
 
 export function pretty_syntax_param(param) {
-  let $ = param.mode;
-  if ($ instanceof ZeroMode) {
-    return ((("{" + param.name) + ": ") + pretty_syntax(param.ty)) + "}";
-  } else if ($ instanceof ManyMode) {
-    return ((("(" + param.name) + ": ") + pretty_syntax(param.ty)) + ")";
+  let _block;
+  let $ = param.implicit;
+  if ($ instanceof Implicit) {
+    _block = "? ";
   } else {
-    return ((("<" + param.name) + ": ") + pretty_syntax(param.ty)) + ">";
+    _block = "";
   }
+  let imp_s = _block;
+  let _pipe = (((imp_s + param.name) + ": ") + pretty_syntax(param.ty));
+  return in_mode(_pipe, param.mode);
 }

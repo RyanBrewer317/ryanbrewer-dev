@@ -1,8 +1,4 @@
-import gleam/dict
-import gleam/int
-import gleam/list
-import gleam/result
-import header.{
+import client/candle/header.{
   type BinderMode, type ContextMask, type Index, type Level, type Meta, type Pos,
   type Ref, type SpineEntry, type Syntax, type Term, type Value, App, AppSyntax,
   Binder, Cast, CastSyntax, ContextMask, Ctor0, Ctor1, Ctor2, Ctor3, DefSyntax,
@@ -16,6 +12,10 @@ import header.{
   ZeroMode, get, inc, lvl_to_idx, new, next_id, pretty_mode, pretty_pos,
   pretty_term, pretty_value, set,
 }
+import gleam/dict
+import gleam/int
+import gleam/list
+import gleam/result
 
 pub fn force(v: Value) -> Value {
   case v {

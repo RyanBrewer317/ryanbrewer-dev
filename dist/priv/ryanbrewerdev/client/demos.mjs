@@ -262,7 +262,7 @@ function view(model) {
           id("candle-code"),
           class$("code"),
           placeholder(
-            "Play with Candle! Example: \nlet proof{A: Set}{B: Set}{x: A}{y: B}\n  : (x = x) & (y = y)\n  := [refl(x), refl(y)] in\n2",
+            "Play with Candle! Example: \nlet proof<?A: Set><?B: Set><?x: A><?y: B>\n  : (x = x) & (y = y)\n  := [refl(x), refl(y)] in\n2",
           ),
           $event.on_input((var0) => { return new NewCandleCode(var0); }),
         ]),
