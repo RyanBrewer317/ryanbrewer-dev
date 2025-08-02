@@ -1,13 +1,13 @@
-import client/candle/header.{
-  type BinderMode, type Pos, type Syntax, type SyntaxParam, AppSyntax,
-  CastSyntax, DefSyntax, EqSyntax, ExFalsoSyntax, FstSyntax, HoleSyntax,
-  IdentSyntax, IntersectionSyntax, IntersectionTypeSyntax, LambdaSyntax,
-  LetSyntax, ManyMode, NatSyntax, NatTypeSyntax, PiSyntax, Pos, PsiSyntax,
-  ReflSyntax, SetSort, SndSyntax, SortSyntax, SyntaxParam, ZeroMode,
-}
 import gleam/int
 import gleam/list
 import gleam/string
+import header.{
+  type BinderMode, type Pos, type Syntax, type SyntaxParam, AppSyntax,
+  CastSyntax, DefSyntax, EqSyntax, ExFalsoSyntax, Explicit, FstSyntax,
+  HoleSyntax, IdentSyntax, Implicit, IntersectionSyntax, IntersectionTypeSyntax,
+  LambdaSyntax, LetSyntax, ManyMode, NatSyntax, NatTypeSyntax, PiSyntax, Pos,
+  PsiSyntax, ReflSyntax, SetSort, SndSyntax, SortSyntax, SyntaxParam, ZeroMode,
+}
 
 pub type Parser(a) {
   Parser(run: fn(Pos, List(String)) -> Result(#(Pos, List(String), a), Failure))
@@ -258,7 +258,7 @@ fn ident() -> Parser(Syntax) {
     Ok(_) -> {
       use <- commit()
       use body <- do(lazy(expr))
-      return(LambdaSyntax(ManyMode, s, Error(Nil), body, pos))
+      return(LambdaSyntax(ManyMode, Explicit, s, Error(Nil), body, pos))
     }
     Error(Nil) -> return(IdentSyntax(s, pos))
   }
@@ -296,7 +296,7 @@ fn relevant_but_ignored() -> Parser(Syntax) {
   use <- ws()
   use _ <- do(string("->"))
   use e <- do(lazy(expr))
-  return(LambdaSyntax(ManyMode, x, Error(Nil), e, pos))
+  return(LambdaSyntax(ManyMode, Explicit, x, Error(Nil), e, pos))
 }
 
 fn annotated_binder() -> Parser(Syntax) {
@@ -312,8 +312,17 @@ fn annotated_binder() -> Parser(Syntax) {
   use res <- do(any_of(arrows) |> label("binding arrow"))
   use e <- do(lazy(expr))
   case res {
-    "->" -> return(LambdaSyntax(param.mode, param.name, Ok(param.ty), e, pos))
-    "=>" -> return(PiSyntax(param.mode, param.name, param.ty, e, pos))
+    "->" ->
+      return(LambdaSyntax(
+        param.mode,
+        param.implicit,
+        param.name,
+        Ok(param.ty),
+        e,
+        pos,
+      ))
+    "=>" ->
+      return(PiSyntax(param.mode, param.implicit, param.name, param.ty, e, pos))
     "&" -> return(IntersectionTypeSyntax(param.name, param.ty, e, pos))
     _ -> panic as "impossible annotated binder"
   }
@@ -321,14 +330,14 @@ fn annotated_binder() -> Parser(Syntax) {
 
 fn erased_binder() -> Parser(Syntax) {
   use pos <- do(get_pos())
-  use _ <- do(char("{"))
+  use _ <- do(char("<"))
   use <- commit()
   use e <- do(lazy(expr) |> label("expression or binding"))
   use _ <- do(
-    char("}")
+    char(">")
     |> label(case e {
-      IdentSyntax(_, _) -> ": or }"
-      _ -> "}"
+      IdentSyntax(_, _) -> ": or >"
+      _ -> ">"
     }),
   )
   use <- ws()
@@ -337,15 +346,16 @@ fn erased_binder() -> Parser(Syntax) {
       use res <- do(either(string("->"), string("=>")))
       use body <- do(lazy(expr))
       case res {
-        "->" -> return(LambdaSyntax(ZeroMode, x, Error(Nil), body, pos))
-        "=>" -> return(PiSyntax(ZeroMode, "_", e, body, pos))
+        "->" ->
+          return(LambdaSyntax(ZeroMode, Explicit, x, Error(Nil), body, pos))
+        "=>" -> return(PiSyntax(ZeroMode, Explicit, "_", e, body, pos))
         _ -> panic as "impossible erased binder"
       }
     }
     _ -> {
       use _ <- do(string("=>"))
       use body <- do(lazy(expr))
-      return(PiSyntax(ZeroMode, "_", e, body, pos))
+      return(PiSyntax(ZeroMode, Explicit, "_", e, body, pos))
     }
   }
 }
@@ -370,7 +380,7 @@ fn parens() -> Parser(Syntax) {
         Error(Nil) -> return(e)
         Ok(_) -> {
           use body <- do(lazy(expr))
-          return(LambdaSyntax(ManyMode, x, Error(Nil), body, pos))
+          return(LambdaSyntax(ManyMode, Explicit, x, Error(Nil), body, pos))
         }
       }
     }
@@ -380,7 +390,13 @@ fn parens() -> Parser(Syntax) {
 
 fn parse_param(should_commit idk: Bool) -> Parser(SyntaxParam) {
   use <- ws()
-  use res <- do(any_of([char("("), char("{")]))
+  use res <- do(any_of([char("("), char("<")]))
+  use <- ws()
+  use res2 <- do(maybe(char("?")))
+  let imp = case res2 {
+    Ok(_) -> Implicit
+    Error(Nil) -> Explicit
+  }
   use <- ws()
   use <- maybe_commit(idk)
   use x <- do(pattern_string())
@@ -390,11 +406,11 @@ fn parse_param(should_commit idk: Bool) -> Parser(SyntaxParam) {
   case res {
     "(" -> {
       use _ <- do(char(")"))
-      return(SyntaxParam(ManyMode, x, t))
+      return(SyntaxParam(ManyMode, imp, x, t))
     }
-    "{" -> {
-      use _ <- do(char("}"))
-      return(SyntaxParam(ZeroMode, x, t))
+    "<" -> {
+      use _ <- do(char(">"))
+      return(SyntaxParam(ZeroMode, imp, x, t))
     }
     _ -> panic as "impossible param mode"
   }
@@ -404,7 +420,14 @@ fn build_pi(pos: Pos, params: List(SyntaxParam), rett: Syntax) -> Syntax {
   case params {
     [] -> rett
     [param, ..rest] -> {
-      PiSyntax(param.mode, param.name, param.ty, build_pi(pos, rest, rett), pos)
+      PiSyntax(
+        param.mode,
+        param.implicit,
+        param.name,
+        param.ty,
+        build_pi(pos, rest, rett),
+        pos,
+      )
     }
   }
 }
@@ -415,6 +438,7 @@ fn build_lambda(pos: Pos, params: List(SyntaxParam), body: Syntax) -> Syntax {
     [param, ..rest] ->
       LambdaSyntax(
         param.mode,
+        param.implicit,
         param.name,
         Ok(param.ty),
         build_lambda(pos, rest, body),
@@ -552,10 +576,10 @@ pub fn expr() -> Parser(Syntax) {
         },
         {
           use pos <- do(get_pos())
-          use _ <- do(char("{"))
+          use _ <- do(char("<"))
           use <- commit()
           use arg <- do(lazy(expr))
-          use _ <- do(char("}"))
+          use _ <- do(char(">"))
           return(AppSuffix(ZeroMode, arg, pos))
         },
         {
@@ -599,7 +623,8 @@ pub fn expr() -> Parser(Syntax) {
       list.fold(suffices, e, fn(ex, suffix) {
         case suffix {
           AppSuffix(mode, arg, pos) -> AppSyntax(mode, ex, arg, pos)
-          PiSuffix(rett, pos) -> PiSyntax(ManyMode, "_", ex, rett, pos)
+          PiSuffix(rett, pos) ->
+            PiSyntax(ManyMode, Explicit, "_", ex, rett, pos)
           EqSuffix(b, pos) -> EqSyntax(ex, b, pos)
           InterSuffix(b, pos) -> IntersectionTypeSyntax("_", ex, b, pos)
           FstSuffix(pos) -> FstSyntax(ex, pos)

@@ -1,21 +1,21 @@
-import client/candle/header.{
-  type BinderMode, type ContextMask, type Index, type Level, type Meta, type Pos,
-  type Ref, type SpineEntry, type Syntax, type Term, type Value, App, AppSyntax,
-  Binder, Cast, CastSyntax, ContextMask, Ctor0, Ctor1, Ctor2, Ctor3, DefSyntax,
-  Eq, EqSyntax, ExFalso, ExFalsoSyntax, Fst, FstSyntax, HoleSyntax, Ident,
-  IdentSyntax, Index, InsertedMeta, Inter, InterT, IntersectionSyntax,
-  IntersectionTypeSyntax, KindSort, Lambda, LambdaSyntax, Let, LetSyntax, Level,
-  ManyMode, Meta, Nat, NatSyntax, NatT, NatTypeSyntax, Pi, PiSyntax, Psi,
-  PsiSyntax, Refl, ReflSyntax, SetSort, Snd, SndSyntax, Solved, Sort, SortSyntax,
-  TypeMode, Unsolved, VApp, VCast, VEq, VExFalso, VFst, VIdent, VInter, VInterT,
-  VLambda, VMeta, VNat, VNatType, VPi, VPsi, VRefl, VSnd, VSort, ZeroMode, get,
-  inc, lvl_to_idx, new, next_id, pretty_mode, pretty_pos, pretty_term,
-  pretty_value, set,
-}
 import gleam/dict
 import gleam/int
 import gleam/list
 import gleam/result
+import header.{
+  type BinderMode, type ContextMask, type Index, type Level, type Meta, type Pos,
+  type Ref, type SpineEntry, type Syntax, type Term, type Value, App, AppSyntax,
+  Binder, Cast, CastSyntax, ContextMask, Ctor0, Ctor1, Ctor2, Ctor3, DefSyntax,
+  Eq, EqSyntax, ExFalso, ExFalsoSyntax, Explicit, Fst, FstSyntax, HoleSyntax,
+  Ident, IdentSyntax, Implicit, Index, InsertedMeta, Inter, InterT,
+  IntersectionSyntax, IntersectionTypeSyntax, KindSort, Lambda, LambdaSyntax,
+  Let, LetSyntax, Level, ManyMode, Meta, Nat, NatSyntax, NatT, NatTypeSyntax, Pi,
+  PiSyntax, Psi, PsiSyntax, Refl, ReflSyntax, SetSort, Snd, SndSyntax, Solved,
+  Sort, SortSyntax, TypeMode, Unsolved, VApp, VCast, VEq, VExFalso, VFst, VIdent,
+  VInter, VInterT, VLambda, VMeta, VNat, VNatType, VPi, VPsi, VRefl, VSnd, VSort,
+  ZeroMode, get, inc, lvl_to_idx, new, next_id, pretty_mode, pretty_pos,
+  pretty_term, pretty_value, set,
+}
 
 pub fn force(v: Value) -> Value {
   case v {
@@ -34,13 +34,14 @@ fn erase(t: Value) -> Value {
     VIdent(x, mode, lvl, spine, pos) ->
       VIdent(x, mode, lvl, erase_spine(spine), pos)
     VMeta(ref, _, spine, pos) -> VMeta(ref, True, spine, pos)
-    VLambda(_, ZeroMode, e, p) ->
+    VLambda(_, ZeroMode, _imp, e, p) ->
       erase(e(VIdent("", ZeroMode, Level(0), [], p)))
-    VLambda(x, mode, e, p) -> VLambda(x, mode, fn(arg) { erase(e(arg)) }, p)
-    VPi(x, mode, a, b, p) ->
-      VPi(x, mode, erase(a), fn(arg) { erase(b(arg)) }, p)
+    VLambda(x, mode, imp, e, p) ->
+      VLambda(x, mode, imp, fn(arg) { erase(e(arg)) }, p)
+    VPi(x, mode, imp, a, b, p) ->
+      VPi(x, mode, imp, erase(a), fn(arg) { erase(b(arg)) }, p)
     VEq(a, b, t, p) -> VEq(erase(a), erase(b), erase(t), p)
-    VRefl(_, p) -> VLambda("x", ManyMode, fn(x) { x }, p)
+    VRefl(_, p) -> VLambda("x", ManyMode, Explicit, fn(x) { x }, p)
     VInter(a, _, _) -> erase(a)
     VInterT(x, a, b, p) -> VInterT(x, erase(a), fn(arg) { erase(b(arg)) }, p)
     VCast(a, _, _, _) -> erase(a)
@@ -67,7 +68,7 @@ fn app(pos: Pos, mode: BinderMode, foo: Value, bar: Value) -> Value {
       VIdent(x, mode2, lvl, list.append(spine, [VApp(mode, bar, pos)]), pos2)
     VMeta(ref, erased, spine, pos2) ->
       VMeta(ref, erased, list.append(spine, [VApp(mode, bar, pos)]), pos2)
-    VLambda(_, _, f, _) -> f(bar)
+    VLambda(_, _, _, f, _) -> f(bar)
     _ -> panic as "impossible value application"
   }
 }
@@ -84,7 +85,12 @@ fn apps(
       apps(pos, foo, env2, mask2)
     [v, ..env2], [ContextMask(has_def: False, mode:), ..mask2] ->
       app(pos, mode, apps(pos, foo, env2, mask2), v)
-    _, _ -> panic
+    _, _ ->
+      panic as {
+        echo list.length(env)
+        echo list.length(mask)
+        ""
+      }
   }
 }
 
@@ -94,7 +100,7 @@ fn psi(pos: Pos, eq: Value, pred: Value) -> Value {
       VIdent(x, mode, lvl, list.append(spine, [VPsi(pred, pos)]), pos2)
     VMeta(ref, erased, spine, pos2) ->
       VMeta(ref, erased, list.append(spine, [VPsi(pred, pos)]), pos2)
-    VRefl(_, _) -> VLambda("x", ManyMode, fn(x) { x }, pos)
+    VRefl(_, _) -> VLambda("x", ManyMode, Explicit, fn(x) { x }, pos)
     _ -> panic as { "impossible equality elimination " <> pretty_value(eq) }
   }
 }
@@ -159,10 +165,10 @@ pub fn eval(t: Term, env: List(Value)) -> Value {
       apps(pos, VMeta(ref, False, [], pos), env, mask)
     Ctor0(Sort(SetSort), pos) -> VSort(SetSort, pos)
     Ctor0(Sort(KindSort), pos) -> VSort(KindSort, pos)
-    Binder(Pi(mode, t), x, u, pos) ->
-      VPi(x, mode, eval(t, env), fn(arg) { eval(u, [arg, ..env]) }, pos)
-    Binder(Lambda(mode), x, e, pos) ->
-      VLambda(x, mode, fn(arg) { eval(e, [arg, ..env]) }, pos)
+    Binder(Pi(mode, imp, t), x, u, pos) ->
+      VPi(x, mode, imp, eval(t, env), fn(arg) { eval(u, [arg, ..env]) }, pos)
+    Binder(Lambda(mode, imp), x, e, pos) ->
+      VLambda(x, mode, imp, fn(arg) { eval(e, [arg, ..env]) }, pos)
     Ctor2(App(mode), foo, bar, pos) ->
       app(pos, mode, eval(foo, env), eval(bar, env))
     Binder(Let(_mode, v), _x, e, _) -> eval(e, [eval(v, env), ..env])
@@ -238,11 +244,7 @@ fn invert_helper(
             Ok(_) -> Error("unify error " <> pretty_pos(pos))
             Error(Nil) -> Ok(#(inc(domain), dict.insert(renaming, lvl, domain)))
           }
-        _ ->
-          panic as {
-            echo force(bar)
-            ""
-          }
+        _ -> panic as { pretty_value(force(bar)) }
       }
     }
     _ -> panic
@@ -279,22 +281,22 @@ fn rename(
     VSort(s, pos) -> Ok(Ctor0(Sort(s), pos))
     VNat(n, pos) -> Ok(Ctor0(Nat(n), pos))
     VNatType(pos) -> Ok(Ctor0(NatT, pos))
-    VPi(x, mode, a, b, pos) -> {
+    VPi(x, mode, imp, a, b, pos) -> {
       use a2 <- result.try(rename(meta, pr, a))
       use b2 <- result.try(rename(
         meta,
         lift(pr),
         b(VIdent(x, mode, pr.codomain_size, [], pos)),
       ))
-      Ok(Binder(Pi(mode, a2), x, b2, pos))
+      Ok(Binder(Pi(mode, imp, a2), x, b2, pos))
     }
-    VLambda(x, mode, e, pos) -> {
+    VLambda(x, mode, imp, e, pos) -> {
       use e2 <- result.try(rename(
         meta,
         lift(pr),
         e(VIdent(x, mode, pr.codomain_size, [], pos)),
       ))
-      Ok(Binder(Lambda(mode), x, e2, pos))
+      Ok(Binder(Lambda(mode, imp), x, e2, pos))
     }
     VEq(a, b, t, pos) -> {
       use a2 <- result.try(rename(meta, pr, a))
@@ -371,7 +373,7 @@ fn lambdas_helper(lvl: Level, body: Term, x: Level) -> Term {
     True -> body
     False ->
       Binder(
-        Lambda(ManyMode),
+        Lambda(ManyMode, Explicit),
         "x" <> int.to_string(x.int + 1),
         lambdas_helper(lvl, body, inc(x)),
         header.term_pos(body),
@@ -418,17 +420,18 @@ fn unify_helper(lvl: Level, a: Value, b: Value) -> Result(Bool, String) {
       solve(lvl, m, sp, t)
     }
     VSort(s1, _), VSort(s2, _) -> Ok(s1 == s2)
-    VPi(x, m1, t1, u1, pos), VPi(_, m2, t2, u2, _) -> {
+    VPi(x, m1, imp1, t1, u1, pos), VPi(_, m2, imp2, t2, u2, _) -> {
       let dummy = VIdent(x, m1, lvl, [], pos)
       Ok(m1 == m2)
+      |> and(Ok(imp1 == imp2))
       |> and(uh(t1, t2))
       |> and(unify_helper(inc(lvl), u1(dummy), u2(dummy)))
     }
-    VLambda(x, m, f, pos), b -> {
+    VLambda(x, m, _imp, f, pos), b -> {
       let dummy = VIdent(x, m, lvl, [], pos)
       unify_helper(inc(lvl), f(dummy), app(pos, m, b, dummy))
     }
-    a, VLambda(x, m, f, pos) -> {
+    a, VLambda(x, m, _imp, f, pos) -> {
       let dummy = VIdent(x, m, lvl, [], pos)
       unify_helper(inc(lvl), app(pos, m, a, dummy), f(dummy))
     }
@@ -476,6 +479,18 @@ fn unify_spines(
   }
 }
 
+fn insert(ctx: Context, t: Term, v: Value) -> #(Term, Value) {
+  case t, force(v) {
+    Binder(Lambda(_, implicit: Implicit), _, _, _), _ -> #(t, v)
+    _, VPi(_x, mode, Implicit, _a, b, pos) -> {
+      let m = fresh_meta(ctx, pos)
+      let m2 = eval(m, ctx.env)
+      insert(ctx, Ctor2(App(mode), t, m, pos), b(m2))
+    }
+    _, _ -> #(t, v)
+  }
+}
+
 fn inc_idx(i: Index) -> Index {
   Index(i.int + 1)
 }
@@ -484,6 +499,7 @@ fn rel_occurs(t: Term, x: Index) -> Result(Pos, Nil) {
   case t {
     Ident(_, y, _, pos) if x == y -> Ok(pos)
     Ident(_, _, _, _) -> Error(Nil)
+    Binder(Let(ZeroMode, _), _, e, _) -> rel_occurs(e, inc_idx(x))
     Binder(Let(_, v), _, e, _) ->
       result.or(rel_occurs(v, x), rel_occurs(e, inc_idx(x)))
     Binder(_, _, e, _) -> rel_occurs(e, inc_idx(x))
@@ -503,10 +519,12 @@ fn rel_occurs(t: Term, x: Index) -> Result(Pos, Nil) {
 
 fn check(ctx: Context, s: Syntax, ty: Value) -> Result(Term, String) {
   case s, force(ty) {
-    LambdaSyntax(mode1, x, Ok(xt), body, pos), VPi(_, mode2, a, b, _) -> {
+    LambdaSyntax(mode1, imp1, x, annot, body, pos), VPi(_, mode2, imp2, a, b, _)
+      if imp1 == imp2
+    -> {
       use mode <- result.try(case mode1, mode2 {
         m1, m2 if m1 == m2 -> Ok(m1)
-        ManyMode, TypeMode -> Ok(TypeMode)
+        ZeroMode, TypeMode -> Ok(TypeMode)
         _, _ ->
           Error(
             "mode mismatch: "
@@ -517,50 +535,24 @@ fn check(ctx: Context, s: Syntax, ty: Value) -> Result(Term, String) {
             <> pretty_pos(pos),
           )
       })
-      use #(xt2, _xtt) <- result.try(infer(ctx, xt))
-      let xt3 = eval(xt2, ctx.env)
-      use _ <- result.try(case unify(ctx.level, xt3, a) {
-        Ok(True) -> Ok(Nil)
-        Ok(False) ->
-          Error(
-            "type mismatch: " <> pretty_term(xt2) <> " and " <> pretty_value(a),
-          )
-        Error(err) -> Error(err)
-      })
-      let v = VIdent(x, mode, ctx.level, [], pos)
-      let ctx2 =
-        Context(
-          level: inc(ctx.level),
-          types: [a, ..ctx.types],
-          env: [v, ..ctx.env],
-          scope: [#(x, #(mode, a)), ..ctx.scope],
-          mask: [ContextMask(has_def: False, mode:), ..ctx.mask],
-        )
-      use body2 <- result.try(check(ctx2, body, b(v)))
-      use _ <- result.try(case mode {
-        ZeroMode ->
-          case rel_occurs(body2, Index(0)) {
-            Ok(pos2) ->
-              Error("relevant usage of erased variable at " <> pretty_pos(pos2))
-            Error(Nil) -> Ok(Nil)
-          }
-        _ -> Ok(Nil)
-      })
-      Ok(Binder(Lambda(mode), x, body2, pos))
-    }
-    LambdaSyntax(mode1, x, Error(Nil), body, pos), VPi(_, mode2, a, b, _) -> {
-      use mode <- result.try(case mode1, mode2 {
-        m1, m2 if m1 == m2 -> Ok(m1)
-        ManyMode, TypeMode -> Ok(TypeMode)
-        _, _ ->
-          Error(
-            "mode mismatch: "
-            <> pretty_mode(mode1)
-            <> " and "
-            <> pretty_mode(mode2)
-            <> " at "
-            <> pretty_pos(pos),
-          )
+      use _ <- result.try(case annot {
+        Ok(xt) -> {
+          use #(xt2, _xtt) <- result.try(infer(ctx, xt))
+          let xt3 = eval(xt2, ctx.env)
+          use _ <- result.try(case unify(ctx.level, xt3, a) {
+            Ok(True) -> Ok(Nil)
+            Ok(False) ->
+              Error(
+                "type mismatch: "
+                <> pretty_term(xt2)
+                <> " and "
+                <> pretty_value(a),
+              )
+            Error(err) -> Error(err)
+          })
+          Ok(Nil)
+        }
+        Error(Nil) -> Ok(Nil)
       })
       let dummy = VIdent(x, mode, ctx.level, [], pos)
       let ctx2 =
@@ -572,7 +564,29 @@ fn check(ctx: Context, s: Syntax, ty: Value) -> Result(Term, String) {
           mask: [ContextMask(has_def: False, mode:), ..ctx.mask],
         )
       use body2 <- result.try(check(ctx2, body, b(dummy)))
-      Ok(Binder(Lambda(mode), x, body2, pos))
+      use _ <- result.try(case mode {
+        ZeroMode ->
+          case rel_occurs(body2, Index(0)) {
+            Ok(pos2) ->
+              Error("relevant usage of erased variable at " <> pretty_pos(pos2))
+            Error(Nil) -> Ok(Nil)
+          }
+        _ -> Ok(Nil)
+      })
+      Ok(Binder(Lambda(mode, imp1), x, body2, pos))
+    }
+    t, VPi(x, mode, Implicit, a, b, pos) -> {
+      let dummy = VIdent(x, mode, ctx.level, [], pos)
+      let ctx2 =
+        Context(
+          level: inc(ctx.level),
+          types: [a, ..ctx.types],
+          env: [dummy, ..ctx.env],
+          scope: [#(x, #(mode, a)), ..ctx.scope],
+          mask: [ContextMask(has_def: False, mode:), ..ctx.mask],
+        )
+      use body2 <- result.try(check(ctx2, t, b(dummy)))
+      Ok(Binder(Lambda(mode, Implicit), x, body2, pos))
     }
     LetSyntax(x, xt, v, e, pos), ty -> {
       use #(xt2, xtt) <- result.try(infer(ctx, xt))
@@ -675,9 +689,10 @@ fn check(ctx: Context, s: Syntax, ty: Value) -> Result(Term, String) {
       Ok(Ctor3(Cast, a2, inter2, eq2, pos))
     }
     s, ty -> {
-      use #(v, ty2) <- result.try(infer(ctx, s))
+      use #(t, ty2) <- result.try(infer(ctx, s))
+      let #(t, ty2) = insert(ctx, t, ty2)
       case unify(ctx.level, ty, ty2) {
-        Ok(True) -> Ok(v)
+        Ok(True) -> Ok(t)
         Ok(False) -> {
           Error(
             "type mismatch between `"
@@ -713,14 +728,10 @@ pub fn infer(ctx: Context, s: Syntax) -> Result(#(Term, Value), String) {
     SortSyntax(SetSort, pos) ->
       Ok(#(Ctor0(Sort(SetSort), pos), VSort(KindSort, pos)))
     SortSyntax(KindSort, _) -> panic as "parsed impossible kind literal"
-    PiSyntax(mode, str, a, b, pos) -> {
+    PiSyntax(mode, imp, str, a, b, pos) -> {
       use #(a2, at) <- result.try(infer(ctx, a))
       case force(at) {
-        VSort(s1, _) -> {
-          let mode = case s1, mode {
-            KindSort, ManyMode -> TypeMode
-            _, _ -> mode
-          }
+        VSort(_, _) -> {
           let dummy = VIdent(str, mode, ctx.level, [], pos)
           let a3 = eval(a2, ctx.env)
           let ctx2 =
@@ -734,12 +745,12 @@ pub fn infer(ctx: Context, s: Syntax) -> Result(#(Term, Value), String) {
           use #(b2, bt) <- result.try(infer(ctx2, b))
           case force(bt), mode {
             VSort(KindSort, _) as s, TypeMode ->
-              Ok(#(Binder(Pi(mode, a2), str, b2, pos), s))
-            VSort(KindSort, _) as s, ManyMode ->
-              Ok(#(Binder(Pi(TypeMode, a2), str, b2, pos), s))
-            VSort(KindSort, _), ZeroMode ->
+              Ok(#(Binder(Pi(mode, imp, a2), str, b2, pos), s))
+            VSort(KindSort, _) as s, ZeroMode ->
+              Ok(#(Binder(Pi(TypeMode, imp, a2), str, b2, pos), s))
+            VSort(KindSort, _), ManyMode ->
               Error(
-                "erased functions can't return types ("
+                "relevant functions can't return types ("
                 <> pretty_pos(pos)
                 <> ")",
               )
@@ -750,14 +761,14 @@ pub fn infer(ctx: Context, s: Syntax) -> Result(#(Term, Value), String) {
                 <> ")",
               )
             VSort(SetSort, _) as s, _ ->
-              Ok(#(Binder(Pi(mode, a2), str, b2, pos), s))
+              Ok(#(Binder(Pi(mode, imp, a2), str, b2, pos), s))
             _, _ -> Error("pi right-side be a type (" <> pretty_pos(pos) <> ")")
           }
         }
         _ -> Error("pi left-side should be a type (" <> pretty_pos(pos) <> ")")
       }
     }
-    LambdaSyntax(mode, str, Ok(xt), body, pos) -> {
+    LambdaSyntax(mode, imp, str, Ok(xt), body, pos) -> {
       use #(xt2, xtt) <- result.try(infer(ctx, xt))
       use _ <- result.try(case mode, force(xtt) {
         ManyMode, VSort(KindSort, _) ->
@@ -777,10 +788,11 @@ pub fn infer(ctx: Context, s: Syntax) -> Result(#(Term, Value), String) {
         )
       use #(body2, _body2t) <- result.try(infer(ctx2, body))
       Ok(#(
-        Binder(Lambda(mode), str, body2, pos),
+        Binder(Lambda(mode, imp), str, body2, pos),
         VPi(
           str,
           mode,
+          imp,
           xt2v,
           fn(x) {
             let ctx2 =
@@ -798,22 +810,23 @@ pub fn infer(ctx: Context, s: Syntax) -> Result(#(Term, Value), String) {
         ),
       ))
     }
-    LambdaSyntax(_, _, Error(Nil), _, pos) ->
+    LambdaSyntax(_, _, _, Error(Nil), _, pos) ->
       Error("can't infer the type of the lambda at " <> pretty_pos(pos))
     AppSyntax(mode1, foo, bar, pos) -> {
       use #(foo2, foot) <- result.try(infer(ctx, foo))
+      let #(foo2, foot) = insert(ctx, foo2, foot)
       case force(foot) {
-        VPi(_, mode2, a, b, _) if mode1 == mode2 -> {
+        VPi(_, mode2, Explicit, a, b, _) if mode1 == mode2 -> {
           use bar2 <- result.try(check(ctx, bar, a))
           let t = b(eval(bar2, ctx.env))
           Ok(#(Ctor2(App(mode1), foo2, bar2, pos), t))
         }
-        VPi(_, TypeMode, a, b, _) if mode1 == ManyMode -> {
+        VPi(_, TypeMode, Explicit, a, b, _) if mode1 == ZeroMode -> {
           use bar2 <- result.try(check(ctx, bar, a))
           let t = b(eval(bar2, ctx.env))
           Ok(#(Ctor2(App(TypeMode), foo2, bar2, pos), t))
         }
-        VPi(_, mode2, _, _, _) ->
+        VPi(_, mode2, Explicit, _, _, _) ->
           Error(
             "mode-mismatch between "
             <> pretty_mode(mode1)
@@ -822,13 +835,31 @@ pub fn infer(ctx: Context, s: Syntax) -> Result(#(Term, Value), String) {
             <> " at "
             <> pretty_pos(pos),
           )
-        _ ->
-          Error(
-            "application to non-function `"
-            <> pretty_value(foot)
-            <> "` at "
-            <> pretty_pos(pos),
-          )
+        VPi(_, _, Implicit, _, _, _) -> panic
+        foot -> {
+          let a = eval(fresh_meta(ctx, pos), ctx.env)
+          let b = fn(x) {
+            let ctx2 =
+              Context(
+                level: inc(ctx.level),
+                types: [a, ..ctx.types],
+                env: [x, ..ctx.env],
+                scope: [#("x", #(mode1, VSort(SetSort, pos))), ..ctx.scope],
+                mask: [ContextMask(has_def: False, mode: mode1), ..ctx.mask],
+              )
+            eval(fresh_meta(ctx2, pos), ctx2.env)
+          }
+          let res = unify(ctx.level, foot, VPi("x", mode1, Explicit, a, b, pos))
+          case res {
+            Ok(True) -> {
+              use bar2 <- result.try(check(ctx, bar, a))
+              let t = b(eval(bar2, ctx.env))
+              Ok(#(Ctor2(App(mode1), foo2, bar2, pos), t))
+            }
+            Ok(False) -> Error("calling non-function at " <> pretty_pos(pos))
+            Error(err) -> Error(err)
+          }
+        }
       }
     }
     LetSyntax(x, xt, v, e, pos) -> {
@@ -894,11 +925,13 @@ pub fn infer(ctx: Context, s: Syntax) -> Result(#(Term, Value), String) {
             VPi(
               "y",
               TypeMode,
+              Explicit,
               t,
               fn(y) {
                 VPi(
                   "p",
                   TypeMode,
+                  Explicit,
                   VEq(a, y, t, pos),
                   fn(_) { VSort(SetSort, pos) },
                   pos,
@@ -914,6 +947,7 @@ pub fn infer(ctx: Context, s: Syntax) -> Result(#(Term, Value), String) {
             VPi(
               "_",
               ManyMode,
+              Explicit,
               app(pos, TypeMode, app(pos, TypeMode, p3, a), VRefl(a, pos)),
               fn(_) { app(pos, TypeMode, app(pos, TypeMode, p3, b), e3) },
               pos,
@@ -1007,7 +1041,7 @@ pub fn infer(ctx: Context, s: Syntax) -> Result(#(Term, Value), String) {
       ))
       Ok(#(
         Ctor1(ExFalso, a2, pos),
-        VPi("t", ZeroMode, VSort(SetSort, pos), fn(t) { t }, pos),
+        VPi("t", ZeroMode, Explicit, VSort(SetSort, pos), fn(t) { t }, pos),
       ))
     }
     HoleSyntax(pos) -> {
@@ -1022,13 +1056,15 @@ fn cbool(pos: Pos) -> Value {
   VPi(
     "t",
     ZeroMode,
+    Explicit,
     VSort(SetSort, pos),
     fn(t) {
       VPi(
         "x",
         ManyMode,
+        Explicit,
         t,
-        fn(_x) { VPi("y", ManyMode, t, fn(_y) { t }, pos) },
+        fn(_x) { VPi("y", ManyMode, Explicit, t, fn(_y) { t }, pos) },
         pos,
       )
     },
@@ -1040,11 +1076,13 @@ fn ctrue(pos: Pos) -> Value {
   VLambda(
     "t",
     ZeroMode,
+    Explicit,
     fn(_t) {
       VLambda(
         "x",
         ManyMode,
-        fn(x) { VLambda("y", ManyMode, fn(_y) { x }, pos) },
+        Explicit,
+        fn(x) { VLambda("y", ManyMode, Explicit, fn(_y) { x }, pos) },
         pos,
       )
     },
@@ -1056,11 +1094,13 @@ fn cfalse(pos: Pos) -> Value {
   VLambda(
     "t",
     ZeroMode,
+    Explicit,
     fn(_t) {
       VLambda(
         "x",
         ManyMode,
-        fn(_x) { VLambda("y", ManyMode, fn(y) { y }, pos) },
+        Explicit,
+        fn(_x) { VLambda("y", ManyMode, Explicit, fn(y) { y }, pos) },
         pos,
       )
     },

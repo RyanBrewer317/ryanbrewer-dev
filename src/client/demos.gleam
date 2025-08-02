@@ -211,7 +211,7 @@ Type annotations are introduced by ",
         class("code"),
         placeholder(
           "Play with Candle! Example: 
-let proof{A: Set}{B: Set}{x: A}{y: B}
+let proof<?A: Set><?B: Set><?x: A><?y: B>
   : (x = x) & (y = y)
   := [refl(x), refl(y)] in
 2",
