@@ -71,7 +71,7 @@ fn in_mode(inner: String, mode: BinderMode) -> String {
 pub type Syntax {
   LambdaSyntax(BinderMode, Icity, String, Result(Syntax, Nil), Syntax, pos: Pos)
   IdentSyntax(String, pos: Pos)
-  AppSyntax(BinderMode, Syntax, Syntax, pos: Pos)
+  AppSyntax(BinderMode, Icity, Syntax, Syntax, pos: Pos)
   LetSyntax(String, Syntax, Syntax, Syntax, pos: Pos)
   DefSyntax(String, Syntax, Syntax, Syntax, pos: Pos)
   NatSyntax(Int, pos: Pos)
@@ -94,7 +94,7 @@ pub fn get_pos(s: Syntax) -> Pos {
   case s {
     LambdaSyntax(_, _, _, _, _, pos) -> pos
     IdentSyntax(_, pos) -> pos
-    AppSyntax(_, _, _, pos) -> pos
+    AppSyntax(_, _, _, _, pos) -> pos
     LetSyntax(_, _, _, _, pos) -> pos
     DefSyntax(_, _, _, _, pos) -> pos
     NatSyntax(_, pos) -> pos
@@ -125,8 +125,13 @@ pub fn pretty_syntax(s: Syntax) -> String {
       in_mode(pretty_imp(imp) <> x, mode) <> outer
     }
     IdentSyntax(name, _) -> name
-    AppSyntax(mode, foo, bar, _) ->
+    AppSyntax(mode, Explicit, foo, bar, _) ->
       "(" <> pretty_syntax(foo) <> ")" <> in_mode(pretty_syntax(bar), mode)
+    AppSyntax(mode, Implicit, foo, bar, _) ->
+      "("
+      <> pretty_syntax(foo)
+      <> ")"
+      <> in_mode("?: " <> pretty_syntax(bar), mode)
     LetSyntax(x, t, v, scope, _) ->
       "let "
       <> x
@@ -223,7 +228,7 @@ pub type Ctor1 {
 }
 
 pub type Ctor2 {
-  App(BinderMode)
+  App(BinderMode, Icity)
   Psi
   Inter
 }
@@ -308,8 +313,10 @@ pub fn pretty_term(term: Term) -> String {
     Ctor1(Fst, a, _) -> ".1(" <> pretty_term(a) <> ")"
     Ctor1(Snd, a, _) -> ".2(" <> pretty_term(a) <> ")"
     Ctor1(ExFalso, a, _) -> "exfalso(" <> pretty_term(a) <> ")"
-    Ctor2(App(mode), foo, bar, _) ->
+    Ctor2(App(mode, Explicit), foo, bar, _) ->
       "(" <> pretty_term(foo) <> ")" <> in_mode(pretty_term(bar), mode)
+    Ctor2(App(mode, Implicit), foo, bar, _) ->
+      "(" <> pretty_term(foo) <> ")" <> in_mode("?: " <> pretty_term(bar), mode)
     Ctor1(Refl, a, _) -> "refl(" <> pretty_term(a) <> ")"
     Ctor2(Inter, a, b, _) ->
       "[" <> pretty_term(a) <> ", " <> pretty_term(b) <> "]"
@@ -349,7 +356,7 @@ pub type Value {
 }
 
 pub type SpineEntry {
-  VApp(BinderMode, Value, Pos)
+  VApp(BinderMode, Icity, Value, Pos)
   VPsi(Value, Pos)
   VFst(Pos)
   VSnd(Pos)
@@ -379,7 +386,7 @@ pub fn value_pos(v: Value) -> Pos {
 
 pub fn spine_pos(s: SpineEntry) -> Pos {
   case s {
-    VApp(_, _, pos) -> pos
+    VApp(_, _, _, pos) -> pos
     VPsi(_, pos) -> pos
     VFst(pos) -> pos
     VSnd(pos) -> pos
@@ -388,7 +395,7 @@ pub fn spine_pos(s: SpineEntry) -> Pos {
 
 fn pretty_spine_entry(base: String, s: SpineEntry) -> String {
   case s {
-    VApp(mode, b, _) -> "(" <> base <> ")" <> in_mode(pretty_value(b), mode)
+    VApp(mode, _, b, _) -> "(" <> base <> ")" <> in_mode(pretty_value(b), mode)
     VPsi(p, _) -> "Psi(" <> base <> ", " <> pretty_value(p) <> ")"
     VFst(_) -> "(" <> base <> ").1"
     VSnd(_) -> "(" <> base <> ").2"
@@ -497,7 +504,7 @@ pub fn quote(size: Level, v: Value) -> Term {
 fn quote_spine(size: Level) -> fn(Term, SpineEntry) -> Term {
   fn(base, entry) {
     case entry {
-      VApp(mode, v, p) -> Ctor2(App(mode), base, quote(size, v), p)
+      VApp(mode, icit, v, p) -> Ctor2(App(mode, icit), base, quote(size, v), p)
       VPsi(pred, pos) -> Ctor2(Psi, base, quote(size, pred), pos)
       VFst(pos) -> Ctor1(Fst, base, pos)
       VSnd(pos) -> Ctor1(Snd, base, pos)

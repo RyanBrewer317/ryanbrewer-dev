@@ -417,13 +417,23 @@ export function infer(ctx, s) {
                 let $2 = $1[0];
                 if ($2 instanceof SetSort) {
                   return new Ok(undefined);
+                } else if (mode instanceof ZeroMode) {
+                  return new Ok(undefined);
                 } else if (mode instanceof ManyMode) {
-                  return new Error("relevant lambda binding can't bind types");
+                  return new Error(
+                    "relevant lambda binding can't bind types" + pretty_pos(pos),
+                  );
                 } else {
-                  return new Error("type annotation in lambda must be a type");
+                  return new Error(
+                    "type annotation in lambda must be a type " + pretty_pos(
+                      pos,
+                    ),
+                  );
                 }
               } else {
-                return new Error("type annotation in lambda must be a type");
+                return new Error(
+                  "type annotation in lambda must be a type " + pretty_pos(pos),
+                );
               }
             })(),
             (_) => {
@@ -462,15 +472,15 @@ export function infer(ctx, s) {
                               "let_assert",
                               FILEPATH,
                               "client/candle/elab",
-                              806,
+                              849,
                               "infer",
                               "Pattern match failed, no pattern matched the value.",
                               {
                                 value: $1,
-                                start: 26419,
-                                end: 26461,
-                                pattern_start: 26430,
-                                pattern_end: 26441
+                                start: 27525,
+                                end: 27567,
+                                pattern_start: 27536,
+                                pattern_end: 27547
                               }
                             )
                           }
@@ -507,30 +517,87 @@ export function infer(ctx, s) {
     }
   } else if (s instanceof AppSyntax) {
     let mode1 = s[0];
-    let foo = s[1];
-    let bar = s[2];
+    let icit = s[1];
+    let foo = s[2];
+    let bar = s[3];
     let pos = s.pos;
     return $result.try$(
       infer(ctx, foo),
       (_use0) => {
         let foo2 = _use0[0];
         let foot = _use0[1];
-        let $ = insert(ctx, foo2, foot);
+        let _block;
+        if (icit instanceof Implicit) {
+          _block = [foo2, foot];
+        } else {
+          _block = insert(ctx, foo2, foot);
+        }
+        let $ = _block;
         let foo2$1 = $[0];
         let foot$1 = $[1];
         let $1 = force(foot$1);
         if ($1 instanceof VPi) {
           let $2 = $1[2];
-          if ($2 instanceof Implicit) {
-            throw makeError(
-              "panic",
-              FILEPATH,
-              "client/candle/elab",
-              838,
-              "infer",
-              "`panic` expression evaluated.",
-              {}
-            )
+          if ($2 instanceof Explicit) {
+            if (isEqual(icit, new Implicit())) {
+              return new Error(
+                "unexpected implicit application at " + pretty_pos(pos),
+              );
+            } else {
+              let mode2 = $1[1];
+              if (isEqual(mode1, mode2)) {
+                let a = $1[3];
+                let b = $1[4];
+                return $result.try$(
+                  check(ctx, bar, a),
+                  (bar2) => {
+                    let t = b(eval$(bar2, ctx.env));
+                    return new Ok(
+                      [new Ctor2(new App(mode1, icit), foo2$1, bar2, pos), t],
+                    );
+                  },
+                );
+              } else {
+                let $3 = $1[1];
+                if ($3 instanceof TypeMode) {
+                  if (isEqual(mode1, new ZeroMode())) {
+                    let a = $1[3];
+                    let b = $1[4];
+                    return $result.try$(
+                      check(ctx, bar, a),
+                      (bar2) => {
+                        let t = b(eval$(bar2, ctx.env));
+                        return new Ok(
+                          [
+                            new Ctor2(
+                              new App(new TypeMode(), new Explicit()),
+                              foo2$1,
+                              bar2,
+                              pos,
+                            ),
+                            t,
+                          ],
+                        );
+                      },
+                    );
+                  } else {
+                    let mode2$1 = $3;
+                    return new Error(
+                      (((("mode-mismatch between " + pretty_mode(mode1)) + " and ") + pretty_mode(
+                        mode2$1,
+                      )) + " at ") + pretty_pos(pos),
+                    );
+                  }
+                } else {
+                  let mode2$1 = $3;
+                  return new Error(
+                    (((("mode-mismatch between " + pretty_mode(mode1)) + " and ") + pretty_mode(
+                      mode2$1,
+                    )) + " at ") + pretty_pos(pos),
+                  );
+                }
+              }
+            }
           } else {
             let mode2 = $1[1];
             if (isEqual(mode1, mode2)) {
@@ -541,7 +608,7 @@ export function infer(ctx, s) {
                 (bar2) => {
                   let t = b(eval$(bar2, ctx.env));
                   return new Ok(
-                    [new Ctor2(new App(mode1), foo2$1, bar2, pos), t],
+                    [new Ctor2(new App(mode1, icit), foo2$1, bar2, pos), t],
                   );
                 },
               );
@@ -557,7 +624,12 @@ export function infer(ctx, s) {
                       let t = b(eval$(bar2, ctx.env));
                       return new Ok(
                         [
-                          new Ctor2(new App(new TypeMode()), foo2$1, bar2, pos),
+                          new Ctor2(
+                            new App(new TypeMode(), new Explicit()),
+                            foo2$1,
+                            bar2,
+                            pos,
+                          ),
                           t,
                         ],
                       );
@@ -610,7 +682,15 @@ export function infer(ctx, s) {
                 (bar2) => {
                   let t = b(eval$(bar2, ctx.env));
                   return new Ok(
-                    [new Ctor2(new App(mode1), foo2$1, bar2, pos), t],
+                    [
+                      new Ctor2(
+                        new App(mode1, new Explicit()),
+                        foo2$1,
+                        bar2,
+                        pos,
+                      ),
+                      t,
+                    ],
                   );
                 },
               );
@@ -744,7 +824,7 @@ export function infer(ctx, s) {
         "panic",
         FILEPATH,
         "client/candle/elab",
-        730,
+        772,
         "infer",
         "parsed impossible kind literal",
         {}
@@ -838,56 +918,37 @@ export function infer(ctx, s) {
           let a = $[0];
           let b = $[1];
           let t = $[2];
+          let pi = (x, t, u) => {
+            return new VPi(x, new TypeMode(), new Explicit(), t, u, pos);
+          };
+          let t1 = pi(
+            "y",
+            t,
+            (y) => {
+              return pi(
+                "p",
+                new VEq(a, y, t, pos),
+                (_) => { return new VSort(new SetSort(), pos); },
+              );
+            },
+          );
           return $result.try$(
-            check(
-              ctx,
-              p,
-              new VPi(
-                "y",
-                new TypeMode(),
-                new Explicit(),
-                t,
-                (y) => {
-                  return new VPi(
-                    "p",
-                    new TypeMode(),
-                    new Explicit(),
-                    new VEq(a, y, t, pos),
-                    (_) => { return new VSort(new SetSort(), pos); },
-                    pos,
-                  );
-                },
-                pos,
-              ),
-            ),
+            check(ctx, p, t1),
             (p2) => {
               let p3 = eval$(p2, ctx.env);
               let e3 = eval$(e2, ctx.env);
-              return new Ok(
-                [
-                  new Ctor2(new Psi(), e2, p2, pos),
-                  new VPi(
-                    "_",
-                    new ManyMode(),
-                    new Explicit(),
-                    app(
-                      pos,
-                      new TypeMode(),
-                      app(pos, new TypeMode(), p3, a),
-                      new VRefl(a, pos),
-                    ),
-                    (_) => {
-                      return app(
-                        pos,
-                        new TypeMode(),
-                        app(pos, new TypeMode(), p3, b),
-                        e3,
-                      );
-                    },
-                    pos,
-                  ),
-                ],
+              let pi2 = (x, t, u) => {
+                return new VPi(x, new ManyMode(), new Explicit(), t, u, pos);
+              };
+              let app2 = (f, x) => {
+                return app(pos, new TypeMode(), new Explicit(), f, x);
+              };
+              let t2 = pi2(
+                "_",
+                app2(app2(p3, a), new VRefl(a, pos)),
+                (_) => { return app2(app2(p3, b), e3); },
               );
+              return new Ok([new Ctor2(new Psi(), e2, p2, pos), t2]);
             },
           );
         } else {
@@ -981,9 +1042,35 @@ export function infer(ctx, s) {
           let a$1 = $[1];
           return new Ok([new Ctor1(new Fst(), a2, pos), a$1]);
         } else {
-          return new Error(
-            ("Projection requires intersection (" + pretty_pos(pos)) + ")",
-          );
+          let at$1 = $;
+          let a$1 = eval$(fresh_meta(ctx, pos), ctx.env);
+          let b = (x) => {
+            let ctx2 = new Context(
+              inc(ctx.level),
+              listPrepend(a$1, ctx.types),
+              listPrepend(x, ctx.env),
+              listPrepend(
+                ["x", [new TypeMode(), new VSort(new SetSort(), pos)]],
+                ctx.scope,
+              ),
+              listPrepend(new ContextMask(false, new TypeMode()), ctx.mask),
+            );
+            return eval$(fresh_meta(ctx2, pos), ctx2.env);
+          };
+          let res = unify(ctx.level, at$1, new VInterT("x", a$1, b, pos));
+          if (res instanceof Ok) {
+            let $1 = res[0];
+            if ($1) {
+              return new Ok([new Ctor1(new Fst(), a2, pos), a$1]);
+            } else {
+              return new Error(
+                "projection requires intersection at " + pretty_pos(pos),
+              );
+            }
+          } else {
+            let err = res[0];
+            return new Error(err);
+          }
         }
       },
     );
@@ -1001,9 +1088,36 @@ export function infer(ctx, s) {
           let b = $[2];
           return new Ok([new Ctor1(new Snd(), a2, pos), b(fst(pos, a3))]);
         } else {
-          return new Error(
-            ("Projection requires intersection (" + pretty_pos(pos)) + ")",
-          );
+          let at$1 = $;
+          let a$1 = eval$(fresh_meta(ctx, pos), ctx.env);
+          let b = (x) => {
+            let ctx2 = new Context(
+              inc(ctx.level),
+              listPrepend(a$1, ctx.types),
+              listPrepend(x, ctx.env),
+              listPrepend(
+                ["x", [new TypeMode(), new VSort(new SetSort(), pos)]],
+                ctx.scope,
+              ),
+              listPrepend(new ContextMask(false, new TypeMode()), ctx.mask),
+            );
+            return eval$(fresh_meta(ctx2, pos), ctx2.env);
+          };
+          let res = unify(ctx.level, at$1, new VInterT("x", a$1, b, pos));
+          if (res instanceof Ok) {
+            let $1 = res[0];
+            if ($1) {
+              let t = b(eval$(a2, ctx.env));
+              return new Ok([new Ctor1(new Snd(), a2, pos), t]);
+            } else {
+              return new Error(
+                "projection requires intersection at " + pretty_pos(pos),
+              );
+            }
+          } else {
+            let err = res[0];
+            return new Error(err);
+          }
         }
       },
     );
@@ -1358,7 +1472,9 @@ function check(ctx, s, ty) {
                 if ($2 instanceof VSort) {
                   return new Ok(undefined);
                 } else {
-                  return new Error("type annotation must be a type");
+                  return new Error(
+                    "type annotation must be a type " + pretty_pos(pos),
+                  );
                 }
               })(),
               (_) => {
@@ -1410,7 +1526,9 @@ function check(ctx, s, ty) {
               if ($1 instanceof VSort) {
                 return new Ok(undefined);
               } else {
-                return new Error("type annotation must be a type");
+                return new Error(
+                  "type annotation must be a type " + pretty_pos(pos),
+                );
               }
             })(),
             (_) => {
@@ -1485,7 +1603,9 @@ function check(ctx, s, ty) {
                 if ($2 instanceof VSort) {
                   return new Ok(undefined);
                 } else {
-                  return new Error("type annotation must be a type");
+                  return new Error(
+                    "type annotation must be a type " + pretty_pos(pos),
+                  );
                 }
               })(),
               (_) => {
@@ -1537,7 +1657,9 @@ function check(ctx, s, ty) {
               if ($1 instanceof VSort) {
                 return new Ok(undefined);
               } else {
-                return new Error("type annotation must be a type");
+                return new Error(
+                  "type annotation must be a type " + pretty_pos(pos),
+                );
               }
             })(),
             (_) => {
@@ -2046,13 +2168,16 @@ function unify_spines(loop$lvl, loop$spine1, loop$spine2) {
           if ($1 instanceof VApp) {
             let rest2 = spine2.tail;
             let mode2 = $[0];
-            let arg2 = $[1];
+            let icit2 = $[1];
+            let arg2 = $[2];
             let rest1 = spine1.tail;
             let mode1 = $1[0];
-            let arg1 = $1[1];
+            let icit1 = $1[1];
+            let arg1 = $1[2];
             let _pipe = new Ok(isEqual(mode1, mode2));
-            let _pipe$1 = and(_pipe, unify_helper(lvl, arg1, arg2));
-            return and(_pipe$1, unify_spines(lvl, rest1, rest2));
+            let _pipe$1 = and(_pipe, new Ok(isEqual(icit1, icit2)));
+            let _pipe$2 = and(_pipe$1, unify_helper(lvl, arg1, arg2));
+            return and(_pipe$2, unify_spines(lvl, rest1, rest2));
           } else {
             return new Ok(false);
           }
@@ -2131,12 +2256,13 @@ function unify_helper(loop$lvl, loop$a, loop$b) {
         let b$1 = $1;
         let x = $[0];
         let m = $[1];
+        let icit = $[2];
         let f = $[3];
         let pos = $[4];
         let dummy = new VIdent(x, m, lvl, toList([]), pos);
         loop$lvl = inc(lvl);
         loop$a = f(dummy);
-        loop$b = app(pos, m, b$1, dummy);
+        loop$b = app(pos, m, icit, b$1, dummy);
       } else {
         return new Ok(false);
       }
@@ -2163,7 +2289,7 @@ function unify_helper(loop$lvl, loop$a, loop$b) {
               "panic",
               FILEPATH,
               "client/candle/elab",
-              416,
+              455,
               "unify_helper",
               "`panic` expression evaluated.",
               {}
@@ -2174,7 +2300,7 @@ function unify_helper(loop$lvl, loop$a, loop$b) {
             "panic",
             FILEPATH,
             "client/candle/elab",
-            416,
+            455,
             "unify_helper",
             "`panic` expression evaluated.",
             {}
@@ -2205,12 +2331,13 @@ function unify_helper(loop$lvl, loop$a, loop$b) {
         let b$1 = $1;
         let x = $[0];
         let m = $[1];
+        let icit = $[2];
         let f = $[3];
         let pos = $[4];
         let dummy = new VIdent(x, m, lvl, toList([]), pos);
         loop$lvl = inc(lvl);
         loop$a = f(dummy);
-        loop$b = app(pos, m, b$1, dummy);
+        loop$b = app(pos, m, icit, b$1, dummy);
       } else {
         return new Ok(false);
       }
@@ -2228,12 +2355,13 @@ function unify_helper(loop$lvl, loop$a, loop$b) {
         let b$1 = $1;
         let x = $[0];
         let m = $[1];
+        let icit = $[2];
         let f = $[3];
         let pos = $[4];
         let dummy = new VIdent(x, m, lvl, toList([]), pos);
         loop$lvl = inc(lvl);
         loop$a = f(dummy);
-        loop$b = app(pos, m, b$1, dummy);
+        loop$b = app(pos, m, icit, b$1, dummy);
       } else {
         return new Ok(false);
       }
@@ -2249,12 +2377,13 @@ function unify_helper(loop$lvl, loop$a, loop$b) {
         let b$1 = $1;
         let x = $[0];
         let m = $[1];
+        let icit = $[2];
         let f = $[3];
         let pos = $[4];
         let dummy = new VIdent(x, m, lvl, toList([]), pos);
         loop$lvl = inc(lvl);
         loop$a = f(dummy);
-        loop$b = app(pos, m, b$1, dummy);
+        loop$b = app(pos, m, icit, b$1, dummy);
       } else {
         return new Ok(false);
       }
@@ -2284,12 +2413,13 @@ function unify_helper(loop$lvl, loop$a, loop$b) {
         let b$1 = $1;
         let x = $[0];
         let m = $[1];
+        let icit = $[2];
         let f = $[3];
         let pos = $[4];
         let dummy = new VIdent(x, m, lvl, toList([]), pos);
         loop$lvl = inc(lvl);
         loop$a = f(dummy);
-        loop$b = app(pos, m, b$1, dummy);
+        loop$b = app(pos, m, icit, b$1, dummy);
       } else {
         return new Ok(false);
       }
@@ -2303,21 +2433,23 @@ function unify_helper(loop$lvl, loop$a, loop$b) {
         let b$1 = $1;
         let x = $[0];
         let m = $[1];
+        let icit = $[2];
         let f = $[3];
         let pos = $[4];
         let dummy = new VIdent(x, m, lvl, toList([]), pos);
         loop$lvl = inc(lvl);
         loop$a = f(dummy);
-        loop$b = app(pos, m, b$1, dummy);
+        loop$b = app(pos, m, icit, b$1, dummy);
       } else {
         let a$1 = $;
         let x = $1[0];
         let m = $1[1];
+        let icit = $1[2];
         let f = $1[3];
         let pos = $1[4];
         let dummy = new VIdent(x, m, lvl, toList([]), pos);
         loop$lvl = inc(lvl);
-        loop$a = app(pos, m, a$1, dummy);
+        loop$a = app(pos, m, icit, a$1, dummy);
         loop$b = f(dummy);
       }
     } else if ($1 instanceof VEq) {
@@ -2330,12 +2462,13 @@ function unify_helper(loop$lvl, loop$a, loop$b) {
         let b$1 = $1;
         let x = $[0];
         let m = $[1];
+        let icit = $[2];
         let f = $[3];
         let pos = $[4];
         let dummy = new VIdent(x, m, lvl, toList([]), pos);
         loop$lvl = inc(lvl);
         loop$a = f(dummy);
-        loop$b = app(pos, m, b$1, dummy);
+        loop$b = app(pos, m, icit, b$1, dummy);
       } else if ($ instanceof VEq) {
         let a2 = $1[0];
         let b2 = $1[1];
@@ -2359,12 +2492,13 @@ function unify_helper(loop$lvl, loop$a, loop$b) {
         let b$1 = $1;
         let x = $[0];
         let m = $[1];
+        let icit = $[2];
         let f = $[3];
         let pos = $[4];
         let dummy = new VIdent(x, m, lvl, toList([]), pos);
         loop$lvl = inc(lvl);
         loop$a = f(dummy);
-        loop$b = app(pos, m, b$1, dummy);
+        loop$b = app(pos, m, icit, b$1, dummy);
       } else if ($ instanceof VRefl) {
         let a2 = $1[0];
         let a1 = $[0];
@@ -2382,12 +2516,13 @@ function unify_helper(loop$lvl, loop$a, loop$b) {
         let b$1 = $1;
         let x = $[0];
         let m = $[1];
+        let icit = $[2];
         let f = $[3];
         let pos = $[4];
         let dummy = new VIdent(x, m, lvl, toList([]), pos);
         loop$lvl = inc(lvl);
         loop$a = f(dummy);
-        loop$b = app(pos, m, b$1, dummy);
+        loop$b = app(pos, m, icit, b$1, dummy);
       } else if ($ instanceof VInter) {
         let a2 = $1[0];
         let b2 = $1[1];
@@ -2408,12 +2543,13 @@ function unify_helper(loop$lvl, loop$a, loop$b) {
         let b$1 = $1;
         let x = $[0];
         let m = $[1];
+        let icit = $[2];
         let f = $[3];
         let pos = $[4];
         let dummy = new VIdent(x, m, lvl, toList([]), pos);
         loop$lvl = inc(lvl);
         loop$a = f(dummy);
-        loop$b = app(pos, m, b$1, dummy);
+        loop$b = app(pos, m, icit, b$1, dummy);
       } else if ($ instanceof VInterT) {
         let a2 = $1[1];
         let b2 = $1[2];
@@ -2437,12 +2573,13 @@ function unify_helper(loop$lvl, loop$a, loop$b) {
         let b$1 = $1;
         let x = $[0];
         let m = $[1];
+        let icit = $[2];
         let f = $[3];
         let pos = $[4];
         let dummy = new VIdent(x, m, lvl, toList([]), pos);
         loop$lvl = inc(lvl);
         loop$a = f(dummy);
-        loop$b = app(pos, m, b$1, dummy);
+        loop$b = app(pos, m, icit, b$1, dummy);
       } else if ($ instanceof VCast) {
         let a2 = $1[0];
         let inter2 = $1[1];
@@ -2465,12 +2602,13 @@ function unify_helper(loop$lvl, loop$a, loop$b) {
       let b$1 = $1;
       let x = $[0];
       let m = $[1];
+      let icit = $[2];
       let f = $[3];
       let pos = $[4];
       let dummy = new VIdent(x, m, lvl, toList([]), pos);
       loop$lvl = inc(lvl);
       loop$a = f(dummy);
-      loop$b = app(pos, m, b$1, dummy);
+      loop$b = app(pos, m, icit, b$1, dummy);
     } else if ($ instanceof VExFalso) {
       let a2 = $1[0];
       let a1 = $[0];
@@ -2489,15 +2627,16 @@ function rename_spine(meta, pr, base, rev_spine) {
     if ($ instanceof VApp) {
       let rest = rev_spine.tail;
       let mode = $[0];
-      let arg = $[1];
-      let pos = $[2];
+      let icit = $[1];
+      let arg = $[2];
+      let pos = $[3];
       return $result.try$(
         rename_spine(meta, pr, base, rest),
         (base2) => {
           return $result.try$(
             rename(meta, pr, arg),
             (arg2) => {
-              return new Ok(new Ctor2(new App(mode), base2, arg2, pos));
+              return new Ok(new Ctor2(new App(mode, icit), base2, arg2, pos));
             },
           );
         },
@@ -2554,7 +2693,9 @@ function rename(meta, pr, v) {
       );
     } else {
       return new Error(
-        "unify error: variable escaping scope at " + pretty_pos(pos),
+        (("unify error: variable " + x) + " escaping scope at ") + pretty_pos(
+          pos,
+        ),
       );
     }
   } else if ($ instanceof VMeta) {
@@ -2584,7 +2725,7 @@ function rename(meta, pr, v) {
           "panic",
           FILEPATH,
           "client/candle/elab",
-          266,
+          300,
           "rename",
           "`panic` expression evaluated.",
           {}
@@ -2595,7 +2736,7 @@ function rename(meta, pr, v) {
         "panic",
         FILEPATH,
         "client/candle/elab",
-        266,
+        300,
         "rename",
         "`panic` expression evaluated.",
         {}
@@ -2860,9 +3001,13 @@ function erase_spine(loop$spine) {
         } else {
           let rest = spine.tail;
           let mode = $1;
-          let arg = $[1];
-          let pos = $[2];
-          return listPrepend(new VApp(mode, erase(arg), pos), erase_spine(rest));
+          let icit = $[1];
+          let arg = $[2];
+          let pos = $[3];
+          return listPrepend(
+            new VApp(mode, icit, erase(arg), pos),
+            erase_spine(rest),
+          );
         }
       } else {
         let rest = spine.tail;
@@ -2872,7 +3017,7 @@ function erase_spine(loop$spine) {
   }
 }
 
-function app(pos, mode, foo, bar) {
+function app(pos, mode, icit, foo, bar) {
   let $ = force(foo);
   if ($ instanceof VIdent) {
     let x = $[0];
@@ -2884,7 +3029,7 @@ function app(pos, mode, foo, bar) {
       x,
       mode2,
       lvl,
-      $list.append(spine, toList([new VApp(mode, bar, pos)])),
+      $list.append(spine, toList([new VApp(mode, icit, bar, pos)])),
       pos2,
     );
   } else if ($ instanceof VMeta) {
@@ -2895,20 +3040,23 @@ function app(pos, mode, foo, bar) {
     return new VMeta(
       ref,
       erased,
-      $list.append(spine, toList([new VApp(mode, bar, pos)])),
+      $list.append(spine, toList([new VApp(mode, icit, bar, pos)])),
       pos2,
     );
   } else if ($ instanceof VLambda) {
     let f = $[3];
     return f(bar);
   } else {
+    let v = $;
     throw makeError(
       "panic",
       FILEPATH,
       "client/candle/elab",
-      72,
+      79,
       "app",
-      "impossible value application",
+      ((("impossible value application " + pretty_value(v)) + " ") + pretty_pos(
+        $header.value_pos(v),
+      )),
       {}
     )
   }
@@ -2926,15 +3074,15 @@ function apps(loop$pos, loop$foo, loop$env, loop$mask) {
       } else {
         let _block;
         {
-          echo($list.length(env), "src/client/candle/elab.gleam", 90);
-          echo($list.length(mask), "src/client/candle/elab.gleam", 91);
+          echo($list.length(env), "src/client/candle/elab.gleam", 102);
+          echo($list.length(mask), "src/client/candle/elab.gleam", 103);
           _block = "";
         }
         throw makeError(
           "panic",
           FILEPATH,
           "client/candle/elab",
-          89,
+          101,
           "apps",
           _block,
           {}
@@ -2946,15 +3094,15 @@ function apps(loop$pos, loop$foo, loop$env, loop$mask) {
         if (env instanceof $Empty) {
           let _block;
           {
-            echo($list.length(env), "src/client/candle/elab.gleam", 90);
-            echo($list.length(mask), "src/client/candle/elab.gleam", 91);
+            echo($list.length(env), "src/client/candle/elab.gleam", 102);
+            echo($list.length(mask), "src/client/candle/elab.gleam", 103);
             _block = "";
           }
           throw makeError(
             "panic",
             FILEPATH,
             "client/candle/elab",
-            89,
+            101,
             "apps",
             _block,
             {}
@@ -2970,15 +3118,15 @@ function apps(loop$pos, loop$foo, loop$env, loop$mask) {
       } else if (env instanceof $Empty) {
         let _block;
         {
-          echo($list.length(env), "src/client/candle/elab.gleam", 90);
-          echo($list.length(mask), "src/client/candle/elab.gleam", 91);
+          echo($list.length(env), "src/client/candle/elab.gleam", 102);
+          echo($list.length(mask), "src/client/candle/elab.gleam", 103);
           _block = "";
         }
         throw makeError(
           "panic",
           FILEPATH,
           "client/candle/elab",
-          89,
+          101,
           "apps",
           _block,
           {}
@@ -2988,7 +3136,7 @@ function apps(loop$pos, loop$foo, loop$env, loop$mask) {
         let mode = mask.head.mode;
         let v = env.head;
         let env2 = env.tail;
-        return app(pos, mode, apps(pos, foo, env2, mask2), v);
+        return app(pos, mode, new Explicit(), apps(pos, foo, env2, mask2), v);
       }
     }
   }
@@ -3033,7 +3181,7 @@ function psi(pos, eq, pred) {
       "panic",
       FILEPATH,
       "client/candle/elab",
-      104,
+      116,
       "psi",
       ("impossible equality elimination " + pretty_value(eq)),
       {}
@@ -3078,7 +3226,7 @@ function fst(pos, inter) {
       "panic",
       FILEPATH,
       "client/candle/elab",
-      119,
+      131,
       "fst",
       ("impossible value projection " + pretty_value(inter)),
       {}
@@ -3123,7 +3271,7 @@ function snd(pos, inter) {
       "panic",
       FILEPATH,
       "client/candle/elab",
-      134,
+      146,
       "snd",
       "impossible value projection",
       {}
@@ -3142,9 +3290,10 @@ function apply_spine(loop$v, loop$spine) {
       if ($ instanceof VApp) {
         let rest = spine.tail;
         let mode = $[0];
-        let arg = $[1];
-        let pos = $[2];
-        loop$v = app(pos, mode, v, arg);
+        let icit = $[1];
+        let arg = $[2];
+        let pos = $[3];
+        loop$v = app(pos, mode, icit, v, arg);
         loop$spine = rest;
       } else if ($ instanceof VPsi) {
         let rest = spine.tail;
@@ -3182,7 +3331,7 @@ export function eval$(loop$t, loop$env) {
           "panic",
           FILEPATH,
           "client/candle/elab",
-          161,
+          174,
           "eval",
           "out-of-scope var during eval",
           {}
@@ -3289,7 +3438,8 @@ export function eval$(loop$t, loop$env) {
         let bar = t[2];
         let pos = t.pos;
         let mode = $[0];
-        return app(pos, mode, eval$(foo, env), eval$(bar, env));
+        let icit = $[1];
+        return app(pos, mode, icit, eval$(foo, env), eval$(bar, env));
       } else if ($ instanceof Psi) {
         let e = t[1];
         let p = t[2];
@@ -3327,8 +3477,8 @@ function invert_helper(spine) {
     let $ = spine.head;
     if ($ instanceof VApp) {
       let rest = spine.tail;
-      let bar = $[1];
-      let pos = $[2];
+      let bar = $[2];
+      let pos = $[3];
       return $result.try$(
         invert_helper(rest),
         (_use0) => {
@@ -3338,49 +3488,57 @@ function invert_helper(spine) {
           if ($1 instanceof VIdent) {
             let $2 = $1[3];
             if ($2 instanceof $Empty) {
+              let x = $1[0];
               let lvl = $1[2];
               let $3 = $dict.get(renaming, lvl);
               if ($3 instanceof Ok) {
-                return new Error("unify error " + pretty_pos(pos));
+                return new Error(
+                  ((("unification error: " + x) + " not in renaming scope (") + pretty_pos(
+                    pos,
+                  )) + ")",
+                );
               } else {
                 return new Ok(
                   [inc(domain), $dict.insert(renaming, lvl, domain)],
                 );
               }
             } else {
-              throw makeError(
-                "panic",
-                FILEPATH,
-                "client/candle/elab",
-                247,
-                "invert_helper",
-                pretty_value(force(bar)),
-                {}
-              )
+              let v = $1;
+              return new Error(
+                (("unification error: non-variable " + pretty_value(v)) + " in spine at ") + pretty_pos(
+                  pos,
+                ),
+              );
             }
           } else {
-            throw makeError(
-              "panic",
-              FILEPATH,
-              "client/candle/elab",
-              247,
-              "invert_helper",
-              pretty_value(force(bar)),
-              {}
-            )
+            let v = $1;
+            return new Error(
+              (("unification error: non-variable " + pretty_value(v)) + " in spine at ") + pretty_pos(
+                pos,
+              ),
+            );
           }
         },
       );
+    } else if ($ instanceof VPsi) {
+      let pos = $[1];
+      return new Error(
+        "unification error: can't invert meta with psi at " + pretty_pos(pos),
+      );
+    } else if ($ instanceof VFst) {
+      let pos = $[0];
+      return new Error(
+        "unification error: can't invert meta with projection at " + pretty_pos(
+          pos,
+        ),
+      );
     } else {
-      throw makeError(
-        "panic",
-        FILEPATH,
-        "client/candle/elab",
-        250,
-        "invert_helper",
-        "`panic` expression evaluated.",
-        {}
-      )
+      let pos = $[0];
+      return new Error(
+        "unification error: can't invert meta with projection at " + pretty_pos(
+          pos,
+        ),
+      );
     }
   }
 }
@@ -3437,7 +3595,7 @@ function insert(loop$ctx, loop$t, loop$v) {
             let m = fresh_meta(ctx, pos);
             let m2 = eval$(m, ctx.env);
             loop$ctx = ctx;
-            loop$t = new Ctor2(new App(mode), t, m, pos);
+            loop$t = new Ctor2(new App(mode, new Implicit()), t, m, pos);
             loop$v = b(m2);
           } else {
             return [t, v];
@@ -3454,7 +3612,7 @@ function insert(loop$ctx, loop$t, loop$v) {
           let m = fresh_meta(ctx, pos);
           let m2 = eval$(m, ctx.env);
           loop$ctx = ctx;
-          loop$t = new Ctor2(new App(mode), t, m, pos);
+          loop$t = new Ctor2(new App(mode, new Implicit()), t, m, pos);
           loop$v = b(m2);
         } else {
           return [t, v];
@@ -3471,7 +3629,7 @@ function insert(loop$ctx, loop$t, loop$v) {
         let m = fresh_meta(ctx, pos);
         let m2 = eval$(m, ctx.env);
         loop$ctx = ctx;
-        loop$t = new Ctor2(new App(mode), t, m, pos);
+        loop$t = new Ctor2(new App(mode, new Implicit()), t, m, pos);
         loop$v = b(m2);
       } else {
         return [t, v];

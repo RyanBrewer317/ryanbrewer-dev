@@ -68,10 +68,11 @@ export class Normal extends $CustomType {
 }
 
 export class AppSuffix extends $CustomType {
-  constructor($0, $1, pos) {
+  constructor($0, $1, $2, pos) {
     super();
     this[0] = $0;
     this[1] = $1;
+    this[2] = $2;
     this.pos = pos;
   }
 }
@@ -403,6 +404,156 @@ function build_lambda(pos, params, body) {
   }
 }
 
+function erased_binder() {
+  return do$(
+    get_pos(),
+    (pos) => {
+      return do$(
+        char("<"),
+        (_) => {
+          return commit(
+            () => {
+              return do$(
+                maybe(
+                  ws(
+                    () => {
+                      return do$(
+                        char("?"),
+                        (_) => {
+                          return ws(
+                            () => {
+                              return do$(
+                                ident(),
+                                (x) => {
+                                  return ws(() => { return return$(x); });
+                                },
+                              );
+                            },
+                          );
+                        },
+                      );
+                    },
+                  ),
+                ),
+                (mb_implicit) => {
+                  return do$(
+                    (() => {
+                      if (mb_implicit instanceof Ok) {
+                        let e = mb_implicit[0];
+                        return return$(e);
+                      } else {
+                        let _pipe = lazy(expr);
+                        return label(_pipe, "expression or binding");
+                      }
+                    })(),
+                    (e) => {
+                      return do$(
+                        (() => {
+                          let _pipe = char(">");
+                          return label(
+                            _pipe,
+                            (() => {
+                              if (e instanceof IdentSyntax) {
+                                return ": or >";
+                              } else {
+                                return ">";
+                              }
+                            })(),
+                          );
+                        })(),
+                        (_) => {
+                          let _block;
+                          if (mb_implicit instanceof Ok) {
+                            _block = new Implicit();
+                          } else {
+                            _block = new Explicit();
+                          }
+                          let icit = _block;
+                          return ws(
+                            () => {
+                              if (e instanceof IdentSyntax) {
+                                let x = e[0];
+                                return do$(
+                                  either(string("->"), string("=>")),
+                                  (res) => {
+                                    return do$(
+                                      lazy(expr),
+                                      (body) => {
+                                        if (res === "->") {
+                                          return return$(
+                                            new LambdaSyntax(
+                                              new ZeroMode(),
+                                              icit,
+                                              x,
+                                              new Error(undefined),
+                                              body,
+                                              pos,
+                                            ),
+                                          );
+                                        } else if (res === "=>") {
+                                          return return$(
+                                            new PiSyntax(
+                                              new ZeroMode(),
+                                              icit,
+                                              "_",
+                                              e,
+                                              body,
+                                              pos,
+                                            ),
+                                          );
+                                        } else {
+                                          throw makeError(
+                                            "panic",
+                                            FILEPATH,
+                                            "client/candle/parser",
+                                            368,
+                                            "erased_binder",
+                                            "impossible erased binder",
+                                            {}
+                                          )
+                                        }
+                                      },
+                                    );
+                                  },
+                                );
+                              } else {
+                                return do$(
+                                  string("=>"),
+                                  (_) => {
+                                    return do$(
+                                      lazy(expr),
+                                      (body) => {
+                                        return return$(
+                                          new PiSyntax(
+                                            new ZeroMode(),
+                                            icit,
+                                            "_",
+                                            e,
+                                            body,
+                                            pos,
+                                          ),
+                                        );
+                                      },
+                                    );
+                                  },
+                                );
+                              }
+                            },
+                          );
+                        },
+                      );
+                    },
+                  );
+                },
+              );
+            },
+          );
+        },
+      );
+    },
+  );
+}
+
 export function expr() {
   return ws(
     () => {
@@ -446,18 +597,46 @@ export function expr() {
                                 (_) => {
                                   return commit(
                                     () => {
-                                      return do$(
-                                        lazy(expr),
-                                        (arg) => {
+                                      return ws(
+                                        () => {
                                           return do$(
-                                            char(")"),
-                                            (_) => {
-                                              return return$(
-                                                new AppSuffix(
-                                                  new ManyMode(),
-                                                  arg,
-                                                  pos,
-                                                ),
+                                            maybe(
+                                              do$(
+                                                char("?"),
+                                                (_) => {
+                                                  return ws(
+                                                    () => {
+                                                      return string(":=");
+                                                    },
+                                                  );
+                                                },
+                                              ),
+                                            ),
+                                            (mb_implicit) => {
+                                              let _block;
+                                              if (mb_implicit instanceof Ok) {
+                                                _block = new Implicit();
+                                              } else {
+                                                _block = new Explicit();
+                                              }
+                                              let icit = _block;
+                                              return do$(
+                                                lazy(expr),
+                                                (arg) => {
+                                                  return do$(
+                                                    char(")"),
+                                                    (_) => {
+                                                      return return$(
+                                                        new AppSuffix(
+                                                          new ManyMode(),
+                                                          icit,
+                                                          arg,
+                                                          pos,
+                                                        ),
+                                                      );
+                                                    },
+                                                  );
+                                                },
                                               );
                                             },
                                           );
@@ -477,18 +656,46 @@ export function expr() {
                                 (_) => {
                                   return commit(
                                     () => {
-                                      return do$(
-                                        lazy(expr),
-                                        (arg) => {
+                                      return ws(
+                                        () => {
                                           return do$(
-                                            char(">"),
-                                            (_) => {
-                                              return return$(
-                                                new AppSuffix(
-                                                  new ZeroMode(),
-                                                  arg,
-                                                  pos,
-                                                ),
+                                            maybe(
+                                              do$(
+                                                char("?"),
+                                                (_) => {
+                                                  return ws(
+                                                    () => {
+                                                      return string(":=");
+                                                    },
+                                                  );
+                                                },
+                                              ),
+                                            ),
+                                            (mb_implicit) => {
+                                              let _block;
+                                              if (mb_implicit instanceof Ok) {
+                                                _block = new Implicit();
+                                              } else {
+                                                _block = new Explicit();
+                                              }
+                                              let icit = _block;
+                                              return do$(
+                                                lazy(expr),
+                                                (arg) => {
+                                                  return do$(
+                                                    char(">"),
+                                                    (_) => {
+                                                      return return$(
+                                                        new AppSuffix(
+                                                          new ZeroMode(),
+                                                          icit,
+                                                          arg,
+                                                          pos,
+                                                        ),
+                                                      );
+                                                    },
+                                                  );
+                                                },
                                               );
                                             },
                                           );
@@ -584,7 +791,7 @@ export function expr() {
                                               "panic",
                                               FILEPATH,
                                               "client/candle/parser",
-                                              614,
+                                              654,
                                               "expr",
                                               "impossible projection",
                                               {}
@@ -614,9 +821,10 @@ export function expr() {
                       (ex, suffix) => {
                         if (suffix instanceof AppSuffix) {
                           let mode = suffix[0];
-                          let arg = suffix[1];
+                          let icit = suffix[1];
+                          let arg = suffix[2];
                           let pos = suffix.pos;
-                          return new AppSyntax(mode, ex, arg, pos);
+                          return new AppSyntax(mode, icit, ex, arg, pos);
                         } else if (suffix instanceof PiSuffix) {
                           let rett = suffix[0];
                           let pos = suffix.pos;
@@ -648,100 +856,6 @@ export function expr() {
                   }
                   let e$1 = _block;
                   return ws(() => { return return$(e$1); });
-                },
-              );
-            },
-          );
-        },
-      );
-    },
-  );
-}
-
-function annotated_binder() {
-  return do$(
-    get_pos(),
-    (pos) => {
-      return do$(
-        parse_param(false),
-        (param) => {
-          return commit(
-            () => {
-              return ws(
-                () => {
-                  let _block;
-                  let $ = param.mode;
-                  if ($ instanceof ZeroMode) {
-                    _block = toList([string("->"), string("=>")]);
-                  } else if ($ instanceof ManyMode) {
-                    _block = toList([string("->"), string("=>"), string("&")]);
-                  } else {
-                    throw makeError(
-                      "panic",
-                      FILEPATH,
-                      "client/candle/parser",
-                      310,
-                      "annotated_binder",
-                      "impossible binder mode",
-                      {}
-                    )
-                  }
-                  let arrows = _block;
-                  return do$(
-                    (() => {
-                      let _pipe = any_of(arrows);
-                      return label(_pipe, "binding arrow");
-                    })(),
-                    (res) => {
-                      return do$(
-                        lazy(expr),
-                        (e) => {
-                          if (res === "->") {
-                            return return$(
-                              new LambdaSyntax(
-                                param.mode,
-                                param.implicit,
-                                param.name,
-                                new Ok(param.ty),
-                                e,
-                                pos,
-                              ),
-                            );
-                          } else if (res === "=>") {
-                            return return$(
-                              new PiSyntax(
-                                param.mode,
-                                param.implicit,
-                                param.name,
-                                param.ty,
-                                e,
-                                pos,
-                              ),
-                            );
-                          } else if (res === "&") {
-                            return return$(
-                              new IntersectionTypeSyntax(
-                                param.name,
-                                param.ty,
-                                e,
-                                pos,
-                              ),
-                            );
-                          } else {
-                            throw makeError(
-                              "panic",
-                              FILEPATH,
-                              "client/candle/parser",
-                              327,
-                              "annotated_binder",
-                              "impossible annotated binder",
-                              {}
-                            )
-                          }
-                        },
-                      );
-                    },
-                  );
                 },
               );
             },
@@ -1010,10 +1124,10 @@ function nat() {
               "Pattern match failed, no pattern matched the value.",
               {
                 value: $,
-                start: 6839,
-                end: 6889,
-                pattern_start: 6850,
-                pattern_end: 6855
+                start: 6851,
+                end: 6901,
+                pattern_start: 6862,
+                pattern_end: 6867
               }
             )
           }
@@ -1076,119 +1190,6 @@ function relevant_but_ignored() {
                               pos,
                             ),
                           );
-                        },
-                      );
-                    },
-                  );
-                },
-              );
-            },
-          );
-        },
-      );
-    },
-  );
-}
-
-function erased_binder() {
-  return do$(
-    get_pos(),
-    (pos) => {
-      return do$(
-        char("<"),
-        (_) => {
-          return commit(
-            () => {
-              return do$(
-                (() => {
-                  let _pipe = lazy(expr);
-                  return label(_pipe, "expression or binding");
-                })(),
-                (e) => {
-                  return do$(
-                    (() => {
-                      let _pipe = char(">");
-                      return label(
-                        _pipe,
-                        (() => {
-                          if (e instanceof IdentSyntax) {
-                            return ": or >";
-                          } else {
-                            return ">";
-                          }
-                        })(),
-                      );
-                    })(),
-                    (_) => {
-                      return ws(
-                        () => {
-                          if (e instanceof IdentSyntax) {
-                            let x = e[0];
-                            return do$(
-                              either(string("->"), string("=>")),
-                              (res) => {
-                                return do$(
-                                  lazy(expr),
-                                  (body) => {
-                                    if (res === "->") {
-                                      return return$(
-                                        new LambdaSyntax(
-                                          new ZeroMode(),
-                                          new Explicit(),
-                                          x,
-                                          new Error(undefined),
-                                          body,
-                                          pos,
-                                        ),
-                                      );
-                                    } else if (res === "=>") {
-                                      return return$(
-                                        new PiSyntax(
-                                          new ZeroMode(),
-                                          new Explicit(),
-                                          "_",
-                                          e,
-                                          body,
-                                          pos,
-                                        ),
-                                      );
-                                    } else {
-                                      throw makeError(
-                                        "panic",
-                                        FILEPATH,
-                                        "client/candle/parser",
-                                        352,
-                                        "erased_binder",
-                                        "impossible erased binder",
-                                        {}
-                                      )
-                                    }
-                                  },
-                                );
-                              },
-                            );
-                          } else {
-                            return do$(
-                              string("=>"),
-                              (_) => {
-                                return do$(
-                                  lazy(expr),
-                                  (body) => {
-                                    return return$(
-                                      new PiSyntax(
-                                        new ZeroMode(),
-                                        new Explicit(),
-                                        "_",
-                                        e,
-                                        body,
-                                        pos,
-                                      ),
-                                    );
-                                  },
-                                );
-                              },
-                            );
-                          }
                         },
                       );
                     },
@@ -1345,7 +1346,7 @@ function parse_param(idk) {
                                               "panic",
                                               FILEPATH,
                                               "client/candle/parser",
-                                              415,
+                                              431,
                                               "parse_param",
                                               "impossible param mode",
                                               {}
@@ -1359,6 +1360,100 @@ function parse_param(idk) {
                               );
                             },
                           );
+                        },
+                      );
+                    },
+                  );
+                },
+              );
+            },
+          );
+        },
+      );
+    },
+  );
+}
+
+function annotated_binder() {
+  return do$(
+    get_pos(),
+    (pos) => {
+      return do$(
+        parse_param(false),
+        (param) => {
+          return commit(
+            () => {
+              return ws(
+                () => {
+                  let _block;
+                  let $ = param.mode;
+                  if ($ instanceof ZeroMode) {
+                    _block = toList([string("->"), string("=>")]);
+                  } else if ($ instanceof ManyMode) {
+                    _block = toList([string("->"), string("=>"), string("&")]);
+                  } else {
+                    throw makeError(
+                      "panic",
+                      FILEPATH,
+                      "client/candle/parser",
+                      310,
+                      "annotated_binder",
+                      "impossible binder mode",
+                      {}
+                    )
+                  }
+                  let arrows = _block;
+                  return do$(
+                    (() => {
+                      let _pipe = any_of(arrows);
+                      return label(_pipe, "binding arrow");
+                    })(),
+                    (res) => {
+                      return do$(
+                        lazy(expr),
+                        (e) => {
+                          if (res === "->") {
+                            return return$(
+                              new LambdaSyntax(
+                                param.mode,
+                                param.implicit,
+                                param.name,
+                                new Ok(param.ty),
+                                e,
+                                pos,
+                              ),
+                            );
+                          } else if (res === "=>") {
+                            return return$(
+                              new PiSyntax(
+                                param.mode,
+                                param.implicit,
+                                param.name,
+                                param.ty,
+                                e,
+                                pos,
+                              ),
+                            );
+                          } else if (res === "&") {
+                            return return$(
+                              new IntersectionTypeSyntax(
+                                param.name,
+                                param.ty,
+                                e,
+                                pos,
+                              ),
+                            );
+                          } else {
+                            throw makeError(
+                              "panic",
+                              FILEPATH,
+                              "client/candle/parser",
+                              327,
+                              "annotated_binder",
+                              "impossible annotated binder",
+                              {}
+                            )
+                          }
                         },
                       );
                     },
@@ -1450,7 +1545,7 @@ function let_binding() {
                                                               "panic",
                                                               FILEPATH,
                                                               "client/candle/parser",
-                                                              470,
+                                                              486,
                                                               "let_binding",
                                                               "impossible binder",
                                                               {}

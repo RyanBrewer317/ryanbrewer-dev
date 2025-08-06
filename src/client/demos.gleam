@@ -186,7 +186,7 @@ Type annotations are introduced by ",
       a(
         [
           href(
-            "https://github.com/RyanBrewer317/candle_gleam/blob/ac72b36a75177fa88f8ba465ce7ecead932bc700/candle/main.cd",
+            "https://github.com/RyanBrewer317/candle_gleam/blob/1e1ff0376e759086b93d024b2c99df3f078da82e/candle/main.cd",
           ),
         ],
         [text("big file")],

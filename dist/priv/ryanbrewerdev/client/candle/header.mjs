@@ -59,11 +59,12 @@ export class IdentSyntax extends $CustomType {
 }
 
 export class AppSyntax extends $CustomType {
-  constructor($0, $1, $2, pos) {
+  constructor($0, $1, $2, $3, pos) {
     super();
     this[0] = $0;
     this[1] = $1;
     this[2] = $2;
+    this[3] = $3;
     this.pos = pos;
   }
 }
@@ -319,9 +320,10 @@ export class ExFalso extends $CustomType {}
 export class Refl extends $CustomType {}
 
 export class App extends $CustomType {
-  constructor($0) {
+  constructor($0, $1) {
     super();
     this[0] = $0;
+    this[1] = $1;
   }
 }
 
@@ -514,11 +516,12 @@ export class VExFalso extends $CustomType {
 }
 
 export class VApp extends $CustomType {
-  constructor($0, $1, $2) {
+  constructor($0, $1, $2, $3) {
     super();
     this[0] = $0;
     this[1] = $1;
     this[2] = $2;
+    this[3] = $3;
   }
 }
 
@@ -669,7 +672,7 @@ export function inc(lvl) {
 
 export function spine_pos(s) {
   if (s instanceof VApp) {
-    let pos = s[2];
+    let pos = s[3];
     return pos;
   } else if (s instanceof VPsi) {
     let pos = s[1];
@@ -737,9 +740,10 @@ function quote_spine(size) {
   return (base, entry) => {
     if (entry instanceof VApp) {
       let mode = entry[0];
-      let v = entry[1];
-      let p = entry[2];
-      return new Ctor2(new App(mode), base, quote(size, v), p);
+      let icit = entry[1];
+      let v = entry[2];
+      let p = entry[3];
+      return new Ctor2(new App(mode, icit), base, quote(size, v), p);
     } else if (entry instanceof VPsi) {
       let pred = entry[0];
       let pos = entry[1];
@@ -969,13 +973,24 @@ export function pretty_term(loop$term) {
     } else if (term instanceof Ctor2) {
       let $ = term[0];
       if ($ instanceof App) {
-        let foo = term[1];
-        let bar = term[2];
-        let mode = $[0];
-        return (("(" + pretty_term(foo)) + ")") + in_mode(
-          pretty_term(bar),
-          mode,
-        );
+        let $1 = $[1];
+        if ($1 instanceof Implicit) {
+          let foo = term[1];
+          let bar = term[2];
+          let mode = $[0];
+          return (("(" + pretty_term(foo)) + ")") + in_mode(
+            "?: " + pretty_term(bar),
+            mode,
+          );
+        } else {
+          let foo = term[1];
+          let bar = term[2];
+          let mode = $[0];
+          return (("(" + pretty_term(foo)) + ")") + in_mode(
+            pretty_term(bar),
+            mode,
+          );
+        }
       } else if ($ instanceof Psi) {
         let eq = term[1];
         let p = term[2];
@@ -1138,7 +1153,7 @@ export function pretty_value(loop$v) {
 function pretty_spine_entry(base, s) {
   if (s instanceof VApp) {
     let mode = s[0];
-    let b = s[1];
+    let b = s[2];
     return (("(" + base) + ")") + in_mode(pretty_value(b), mode);
   } else if (s instanceof VPsi) {
     let p = s[0];
@@ -1174,13 +1189,24 @@ export function pretty_syntax(s) {
     let name = s[0];
     return name;
   } else if (s instanceof AppSyntax) {
-    let mode = s[0];
-    let foo = s[1];
-    let bar = s[2];
-    return (("(" + pretty_syntax(foo)) + ")") + in_mode(
-      pretty_syntax(bar),
-      mode,
-    );
+    let $ = s[1];
+    if ($ instanceof Implicit) {
+      let mode = s[0];
+      let foo = s[2];
+      let bar = s[3];
+      return (("(" + pretty_syntax(foo)) + ")") + in_mode(
+        "?: " + pretty_syntax(bar),
+        mode,
+      );
+    } else {
+      let mode = s[0];
+      let foo = s[2];
+      let bar = s[3];
+      return (("(" + pretty_syntax(foo)) + ")") + in_mode(
+        pretty_syntax(bar),
+        mode,
+      );
+    }
   } else if (s instanceof LetSyntax) {
     let x = s[0];
     let t = s[1];

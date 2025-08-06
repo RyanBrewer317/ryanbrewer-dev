@@ -1,6 +1,6 @@
 import client/candle/header.{
-  type BinderMode, type Pos, type Syntax, type SyntaxParam, AppSyntax,
-  CastSyntax, DefSyntax, EqSyntax, ExFalsoSyntax, Explicit, FstSyntax,
+  type BinderMode, type Icity, type Pos, type Syntax, type SyntaxParam,
+  AppSyntax, CastSyntax, DefSyntax, EqSyntax, ExFalsoSyntax, Explicit, FstSyntax,
   HoleSyntax, IdentSyntax, Implicit, IntersectionSyntax, IntersectionTypeSyntax,
   LambdaSyntax, LetSyntax, ManyMode, NatSyntax, NatTypeSyntax, PiSyntax, Pos,
   PsiSyntax, ReflSyntax, SetSort, SndSyntax, SortSyntax, SyntaxParam, ZeroMode,
@@ -332,7 +332,20 @@ fn erased_binder() -> Parser(Syntax) {
   use pos <- do(get_pos())
   use _ <- do(char("<"))
   use <- commit()
-  use e <- do(lazy(expr) |> label("expression or binding"))
+  use mb_implicit <- do(
+    maybe({
+      use <- ws()
+      use _ <- do(char("?"))
+      use <- ws()
+      use x <- do(ident())
+      use <- ws()
+      return(x)
+    }),
+  )
+  use e <- do(case mb_implicit {
+    Error(Nil) -> lazy(expr) |> label("expression or binding")
+    Ok(e) -> return(e)
+  })
   use _ <- do(
     char(">")
     |> label(case e {
@@ -340,22 +353,25 @@ fn erased_binder() -> Parser(Syntax) {
       _ -> ">"
     }),
   )
+  let icit = case mb_implicit {
+    Ok(_) -> Implicit
+    Error(_) -> Explicit
+  }
   use <- ws()
   case e {
     IdentSyntax(x, _) -> {
       use res <- do(either(string("->"), string("=>")))
       use body <- do(lazy(expr))
       case res {
-        "->" ->
-          return(LambdaSyntax(ZeroMode, Explicit, x, Error(Nil), body, pos))
-        "=>" -> return(PiSyntax(ZeroMode, Explicit, "_", e, body, pos))
+        "->" -> return(LambdaSyntax(ZeroMode, icit, x, Error(Nil), body, pos))
+        "=>" -> return(PiSyntax(ZeroMode, icit, "_", e, body, pos))
         _ -> panic as "impossible erased binder"
       }
     }
     _ -> {
       use _ <- do(string("=>"))
       use body <- do(lazy(expr))
-      return(PiSyntax(ZeroMode, Explicit, "_", e, body, pos))
+      return(PiSyntax(ZeroMode, icit, "_", e, body, pos))
     }
   }
 }
@@ -531,7 +547,7 @@ fn exfalso() -> Parser(Syntax) {
 }
 
 pub type Suffix {
-  AppSuffix(BinderMode, Syntax, pos: Pos)
+  AppSuffix(BinderMode, Icity, Syntax, pos: Pos)
   PiSuffix(Syntax, pos: Pos)
   EqSuffix(Syntax, pos: Pos)
   InterSuffix(Syntax, pos: Pos)
@@ -570,17 +586,41 @@ pub fn expr() -> Parser(Syntax) {
           use pos <- do(get_pos())
           use _ <- do(char("("))
           use <- commit()
+          use <- ws()
+          use mb_implicit <- do(
+            maybe({
+              use _ <- do(char("?"))
+              use <- ws()
+              string(":=")
+            }),
+          )
+          let icit = case mb_implicit {
+            Ok(_) -> Implicit
+            Error(Nil) -> Explicit
+          }
           use arg <- do(lazy(expr))
           use _ <- do(char(")"))
-          return(AppSuffix(ManyMode, arg, pos))
+          return(AppSuffix(ManyMode, icit, arg, pos))
         },
         {
           use pos <- do(get_pos())
           use _ <- do(char("<"))
           use <- commit()
+          use <- ws()
+          use mb_implicit <- do(
+            maybe({
+              use _ <- do(char("?"))
+              use <- ws()
+              string(":=")
+            }),
+          )
+          let icit = case mb_implicit {
+            Ok(_) -> Implicit
+            Error(Nil) -> Explicit
+          }
           use arg <- do(lazy(expr))
           use _ <- do(char(">"))
-          return(AppSuffix(ZeroMode, arg, pos))
+          return(AppSuffix(ZeroMode, icit, arg, pos))
         },
         {
           use pos <- do(get_pos())
@@ -622,7 +662,7 @@ pub fn expr() -> Parser(Syntax) {
     _ ->
       list.fold(suffices, e, fn(ex, suffix) {
         case suffix {
-          AppSuffix(mode, arg, pos) -> AppSyntax(mode, ex, arg, pos)
+          AppSuffix(mode, icit, arg, pos) -> AppSyntax(mode, icit, ex, arg, pos)
           PiSuffix(rett, pos) ->
             PiSyntax(ManyMode, Explicit, "_", ex, rett, pos)
           EqSuffix(b, pos) -> EqSyntax(ex, b, pos)
