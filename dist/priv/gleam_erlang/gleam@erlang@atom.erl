@@ -1,5 +1,5 @@
 -module(gleam@erlang@atom).
--compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch]).
+-compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch, inline]).
 -define(FILEPATH, "src/gleam/erlang/atom.gleam").
 -export([get/1, create/1, to_string/1, to_dynamic/1, cast_from_dynamic/1, decoder/0]).
 -export_type([atom_/0]).

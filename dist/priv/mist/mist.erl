@@ -1,5 +1,5 @@
 -module(mist).
--compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch]).
+-compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch, inline]).
 -define(FILEPATH, "src/mist.gleam").
 -export([continue/1, with_selector/2, stop/0, stop_abnormal/1, ip_address_to_string/1, get_client_info/1, send_file/3, read_body/2, stream/1, new/1, port/2, read_request_body/3, after_start/2, bind/2, with_ipv6/1, with_tls/3, start/1, supervised/1, websocket/4, send_binary_frame/2, send_text_frame/2, event/1, event_id/2, event_name/2, event_retry/2, server_sent_events/4, send_event/2]).
 -export_type([next/2, ip_address/0, connection_info/0, response_data/0, file_error/0, read_error/0, chunk/0, chunk_state/0, tls_options/0, builder/2, port_/0, websocket_message/1, s_s_e_connection/0, s_s_e_event/0]).
@@ -12,9 +12,9 @@
 -define(DOC(Str), -compile([])).
 -endif.
 
--opaque next(NDV, NDW) :: {continue,
-        NDV,
-        gleam@option:option(gleam@erlang@process:selector(NDW))} |
+-opaque next(NGK, NGL) :: {continue,
+        NGK,
+        gleam@option:option(gleam@erlang@process:selector(NGL))} |
     normal_stop |
     {abnormal_stop, binary()}.
 
@@ -55,9 +55,9 @@
 
 -type tls_options() :: {cert_key_files, binary(), binary()}.
 
--opaque builder(NDX, NDY) :: {builder,
+-opaque builder(NGM, NGN) :: {builder,
         integer(),
-        fun((gleam@http@request:request(NDX)) -> gleam@http@response:response(NDY)),
+        fun((gleam@http@request:request(NGM)) -> gleam@http@response:response(NGN)),
         fun((integer(), gleam@http:scheme(), ip_address()) -> nil),
         binary(),
         boolean(),
@@ -65,11 +65,11 @@
 
 -type port_() :: assigned | {provided, integer()}.
 
--type websocket_message(NDZ) :: {text, binary()} |
+-type websocket_message(NGO) :: {text, binary()} |
     {binary, bitstring()} |
     closed |
     shutdown |
-    {custom, NDZ}.
+    {custom, NGO}.
 
 -opaque s_s_e_connection() :: {s_s_e_connection,
         mist@internal@http:connection()}.
@@ -80,13 +80,13 @@
         gleam@option:option(integer()),
         gleam@string_tree:string_tree()}.
 
--file("src/mist.gleam", 56).
--spec continue(NED) -> next(NED, any()).
+-file("src/mist.gleam", 54).
+-spec continue(NGP) -> next(NGP, any()).
 continue(State) ->
     {continue, State, none}.
 
--file("src/mist.gleam", 60).
--spec with_selector(next(NEH, NEI), gleam@erlang@process:selector(NEI)) -> next(NEH, NEI).
+-file("src/mist.gleam", 58).
+-spec with_selector(next(NGT, NGU), gleam@erlang@process:selector(NGU)) -> next(NGT, NGU).
 with_selector(Next, Selector) ->
     case Next of
         {continue, State, _} ->
@@ -96,18 +96,18 @@ with_selector(Next, Selector) ->
             Next
     end.
 
--file("src/mist.gleam", 70).
+-file("src/mist.gleam", 68).
 -spec stop() -> next(any(), any()).
 stop() ->
     normal_stop.
 
--file("src/mist.gleam", 74).
+-file("src/mist.gleam", 72).
 -spec stop_abnormal(binary()) -> next(any(), any()).
 stop_abnormal(Reason) ->
     {abnormal_stop, Reason}.
 
--file("src/mist.gleam", 78).
--spec convert_next(next(NEW, NEX)) -> mist@internal@next:next(NEW, NEX).
+-file("src/mist.gleam", 76).
+-spec convert_next(next(NHI, NHJ)) -> mist@internal@next:next(NHI, NHJ).
 convert_next(Next) ->
     case Next of
         {continue, State, Selector} ->
@@ -120,7 +120,7 @@ convert_next(Next) ->
             {abnormal_stop, Reason}
     end.
 
--file("src/mist.gleam", 102).
+-file("src/mist.gleam", 100).
 -spec to_mist_ip_address(glisten:ip_address()) -> ip_address().
 to_mist_ip_address(Ip) ->
     case Ip of
@@ -131,7 +131,7 @@ to_mist_ip_address(Ip) ->
             {ip_v6, A@1, B@1, C@1, D@1, E, F, G, H}
     end.
 
--file("src/mist.gleam", 109).
+-file("src/mist.gleam", 107).
 -spec to_glisten_ip_address(ip_address()) -> glisten:ip_address().
 to_glisten_ip_address(Ip) ->
     case Ip of
@@ -142,7 +142,7 @@ to_glisten_ip_address(Ip) ->
             {ip_v6, A@1, B@1, C@1, D@1, E, F, G, H}
     end.
 
--file("src/mist.gleam", 98).
+-file("src/mist.gleam", 96).
 ?DOC(
     " Convenience function for printing the `IpAddress` type. It will convert the\n"
     " IPv6 loopback to the short-hand `::1`.\n"
@@ -151,7 +151,7 @@ to_glisten_ip_address(Ip) ->
 ip_address_to_string(Address) ->
     glisten:ip_address_to_string(to_glisten_ip_address(Address)).
 
--file("src/mist.gleam", 121).
+-file("src/mist.gleam", 119).
 ?DOC(" Tries to get the IP address and port of a connected client.\n").
 -spec get_client_info(mist@internal@http:connection()) -> {ok,
         connection_info()} |
@@ -174,7 +174,7 @@ get_client_info(Conn) ->
         end
     ).
 
--file("src/mist.gleam", 157).
+-file("src/mist.gleam", 155).
 -spec convert_file_errors(mist@internal@file:file_error()) -> file_error().
 convert_file_errors(Err) ->
     case Err of
@@ -191,7 +191,7 @@ convert_file_errors(Err) ->
             unknown_file_error
     end.
 
--file("src/mist.gleam", 171).
+-file("src/mist.gleam", 169).
 ?DOC(
     " To respond with a file using Erlang's `sendfile`, use this function\n"
     " with the specified offset and limit (optional). It will attempt to open the\n"
@@ -217,7 +217,7 @@ send_file(Path, Offset, Limit) ->
         end
     ).
 
--file("src/mist.gleam", 201).
+-file("src/mist.gleam", 199).
 ?DOC(
     " The request body is not pulled from the socket until requested. The\n"
     " `content-length` header is used to determine whether the socket is read\n"
@@ -241,7 +241,7 @@ read_body(Req, Max_body_limit) ->
                 {error, excess_body}
         end end)(_pipe@3).
 
--file("src/mist.gleam", 230).
+-file("src/mist.gleam", 228).
 -spec do_stream(
     gleam@http@request:request(mist@internal@http:connection()),
     mist@internal@buffer:buffer()
@@ -264,10 +264,7 @@ do_stream(Req, Buffer) ->
 
             {_, Buffer_size} when Buffer_size >= Size ->
                 {Data@1, Rest@1} = mist@internal@buffer:slice(Buffer, Size),
-                New_buffer = begin
-                    _record = Buffer,
-                    {buffer, erlang:element(2, _record), Rest@1}
-                end,
+                New_buffer = {buffer, erlang:element(2, Buffer), Rest@1},
                 {ok, {chunk, Data@1, do_stream(Req, New_buffer)}};
 
             {_, _} ->
@@ -299,19 +296,16 @@ do_stream(Req, Buffer) ->
                             New_data,
                             do_stream(
                                 Req,
-                                begin
-                                    _record@1 = New_buffer@1,
-                                    {buffer,
-                                        erlang:element(2, _record@1),
-                                        Rest@2}
-                                end
+                                {buffer,
+                                    erlang:element(2, New_buffer@1),
+                                    Rest@2}
                             )}
                     end
                 )
         end
     end.
 
--file("src/mist.gleam", 295).
+-file("src/mist.gleam", 293).
 -spec fetch_chunks_until(
     glisten@socket:socket(),
     glisten@transport:transport(),
@@ -328,37 +322,28 @@ fetch_chunks_until(Socket, Transport, State, Byte_size) ->
             ),
             {ok,
                 {Value,
-                    begin
-                        _record = State,
-                        {chunk_state,
-                            mist@internal@buffer:new(Rest),
-                            erlang:element(3, _record),
-                            erlang:element(4, _record)}
-                    end}};
+                    {chunk_state,
+                        mist@internal@buffer:new(Rest),
+                        erlang:element(3, State),
+                        erlang:element(4, State)}}};
 
         {true, _} ->
             {ok,
                 {erlang:element(3, erlang:element(2, State)),
-                    begin
-                        _record@1 = State,
-                        {chunk_state,
-                            erlang:element(2, _record@1),
-                            erlang:element(3, _record@1),
-                            true}
-                    end}};
+                    {chunk_state,
+                        erlang:element(2, State),
+                        erlang:element(3, State),
+                        true}}};
 
         {false, _} ->
             case mist@internal@http:parse_chunk(
                 erlang:element(3, erlang:element(3, State))
             ) of
                 complete ->
-                    Updated_state = begin
-                        _record@2 = State,
-                        {chunk_state,
-                            erlang:element(2, _record@2),
-                            mist@internal@buffer:empty(),
-                            true}
-                    end,
+                    Updated_state = {chunk_state,
+                        erlang:element(2, State),
+                        mist@internal@buffer:empty(),
+                        true},
                     fetch_chunks_until(
                         Socket,
                         Transport,
@@ -377,13 +362,10 @@ fetch_chunks_until(Socket, Transport, State, Byte_size) ->
                     gleam@result:'try'(
                         _pipe@1,
                         fun(New_data) ->
-                            Updated_state@1 = begin
-                                _record@3 = State,
-                                {chunk_state,
-                                    erlang:element(2, _record@3),
-                                    mist@internal@buffer:new(New_data),
-                                    erlang:element(4, _record@3)}
-                            end,
+                            Updated_state@1 = {chunk_state,
+                                erlang:element(2, State),
+                                mist@internal@buffer:new(New_data),
+                                erlang:element(4, State)},
                             fetch_chunks_until(
                                 Socket,
                                 Transport,
@@ -394,16 +376,13 @@ fetch_chunks_until(Socket, Transport, State, Byte_size) ->
                     );
 
                 {chunk, Data, Next_buffer@1} ->
-                    Updated_state@2 = begin
-                        _record@4 = State,
-                        {chunk_state,
-                            mist@internal@buffer:append(
-                                erlang:element(2, State),
-                                Data
-                            ),
-                            Next_buffer@1,
-                            erlang:element(4, _record@4)}
-                    end,
+                    Updated_state@2 = {chunk_state,
+                        mist@internal@buffer:append(
+                            erlang:element(2, State),
+                            Data
+                        ),
+                        Next_buffer@1,
+                        erlang:element(4, State)},
                     fetch_chunks_until(
                         Socket,
                         Transport,
@@ -413,7 +392,7 @@ fetch_chunks_until(Socket, Transport, State, Byte_size) ->
             end
     end.
 
--file("src/mist.gleam", 275).
+-file("src/mist.gleam", 273).
 -spec do_stream_chunked(
     gleam@http@request:request(mist@internal@http:connection()),
     chunk_state()
@@ -432,7 +411,7 @@ do_stream_chunked(Req, State) ->
                 {error, malformed_body}
         end end.
 
--file("src/mist.gleam", 347).
+-file("src/mist.gleam", 345).
 ?DOC(
     " Rather than explicitly reading either the whole body (optionally up to\n"
     " `N` bytes), this function allows you to consume a stream of the request\n"
@@ -470,12 +449,12 @@ stream(Req) ->
                                 file => <<?FILEPATH/utf8>>,
                                 module => <<"mist"/utf8>>,
                                 function => <<"stream"/utf8>>,
-                                line => 362,
+                                line => 360,
                                 value => _assert_fail,
-                                start => 11364,
-                                'end' => 11409,
-                                pattern_start => 11375,
-                                pattern_end => 11393})
+                                start => 11285,
+                                'end' => 11330,
+                                pattern_start => 11296,
+                                pattern_end => 11314})
             end,
             case Is_chunked of
                 true ->
@@ -507,14 +486,14 @@ stream(Req) ->
         end
     ).
 
--file("src/mist.gleam", 403).
+-file("src/mist.gleam", 401).
 ?DOC(
     " Create a new `mist` handler with a given function. The default port is\n"
     " 4000.\n"
 ).
 -spec new(
-    fun((gleam@http@request:request(NFY)) -> gleam@http@response:response(NGA))
-) -> builder(NFY, NGA).
+    fun((gleam@http@request:request(NIK)) -> gleam@http@response:response(NIM))
+) -> builder(NIK, NIM).
 new(Handler) ->
     {builder,
         4000,
@@ -540,30 +519,29 @@ new(Handler) ->
         false,
         none}.
 
--file("src/mist.gleam", 428).
+-file("src/mist.gleam", 426).
 ?DOC(" Assign a different listening port to the service.\n").
--spec port(builder(NGE, NGF), integer()) -> builder(NGE, NGF).
+-spec port(builder(NIQ, NIR), integer()) -> builder(NIQ, NIR).
 port(Builder, Port) ->
-    _record = Builder,
     {builder,
         Port,
-        erlang:element(3, _record),
-        erlang:element(4, _record),
-        erlang:element(5, _record),
-        erlang:element(6, _record),
-        erlang:element(7, _record)}.
+        erlang:element(3, Builder),
+        erlang:element(4, Builder),
+        erlang:element(5, Builder),
+        erlang:element(6, Builder),
+        erlang:element(7, Builder)}.
 
--file("src/mist.gleam", 435).
+-file("src/mist.gleam", 433).
 ?DOC(
     " This function allows for implicitly reading the body of requests up\n"
     " to a given size. If the size is too large, or the read fails, the provided\n"
     " `failure_response` will be sent back as the response.\n"
 ).
 -spec read_request_body(
-    builder(bitstring(), NGK),
+    builder(bitstring(), NIW),
     integer(),
-    gleam@http@response:response(NGK)
-) -> builder(mist@internal@http:connection(), NGK).
+    gleam@http@response:response(NIW)
+) -> builder(mist@internal@http:connection(), NIW).
 read_request_body(Builder, Bytes_limit, Failure_response) ->
     Handler = fun(Request) -> case read_body(Request, Bytes_limit) of
             {ok, Request@1} ->
@@ -572,53 +550,50 @@ read_request_body(Builder, Bytes_limit, Failure_response) ->
             {error, _} ->
                 Failure_response
         end end,
-    _record = Builder,
     {builder,
-        erlang:element(2, _record),
+        erlang:element(2, Builder),
         Handler,
-        erlang:element(4, _record),
-        erlang:element(5, _record),
-        erlang:element(6, _record),
-        erlang:element(7, _record)}.
+        erlang:element(4, Builder),
+        erlang:element(5, Builder),
+        erlang:element(6, Builder),
+        erlang:element(7, Builder)}.
 
--file("src/mist.gleam", 451).
+-file("src/mist.gleam", 449).
 ?DOC(
     " Override the default function to be called after the service starts. The\n"
     " default is to log a message with the listening port.\n"
 ).
 -spec after_start(
-    builder(NGQ, NGR),
+    builder(NJC, NJD),
     fun((integer(), gleam@http:scheme(), ip_address()) -> nil)
-) -> builder(NGQ, NGR).
+) -> builder(NJC, NJD).
 after_start(Builder, After_start) ->
-    _record = Builder,
     {builder,
-        erlang:element(2, _record),
-        erlang:element(3, _record),
+        erlang:element(2, Builder),
+        erlang:element(3, Builder),
         After_start,
-        erlang:element(5, _record),
-        erlang:element(6, _record),
-        erlang:element(7, _record)}.
+        erlang:element(5, Builder),
+        erlang:element(6, Builder),
+        erlang:element(7, Builder)}.
 
--file("src/mist.gleam", 462).
+-file("src/mist.gleam", 460).
 ?DOC(
     " Specify an interface to listen on. This is a string that can have the\n"
     " following values: \"localhost\", a valid IPv4 address (i.e. \"127.0.0.1\"), or\n"
     " a valid IPv6 address (i.e. \"::1\"). An invalid value will cause the\n"
     " application to crash.\n"
 ).
--spec bind(builder(NGW, NGX), binary()) -> builder(NGW, NGX).
+-spec bind(builder(NJI, NJJ), binary()) -> builder(NJI, NJJ).
 bind(Builder, Interface) ->
-    _record = Builder,
     {builder,
-        erlang:element(2, _record),
-        erlang:element(3, _record),
-        erlang:element(4, _record),
+        erlang:element(2, Builder),
+        erlang:element(3, Builder),
+        erlang:element(4, Builder),
         Interface,
-        erlang:element(6, _record),
-        erlang:element(7, _record)}.
+        erlang:element(6, Builder),
+        erlang:element(7, Builder)}.
 
--file("src/mist.gleam", 471).
+-file("src/mist.gleam", 469).
 ?DOC(
     " By default, `mist` will listen on `localhost` over IPv4. If you specify an\n"
     " IPv4 address to bind to, it will still only serve over IPv4. Calling this\n"
@@ -626,20 +601,19 @@ bind(Builder, Interface) ->
     " not supported, your application will crash. If you provide an IPv6 address\n"
     " to `mist.bind`, this function will have no effect.\n"
 ).
--spec with_ipv6(builder(NHC, NHD)) -> builder(NHC, NHD).
+-spec with_ipv6(builder(NJO, NJP)) -> builder(NJO, NJP).
 with_ipv6(Builder) ->
-    _record = Builder,
     {builder,
-        erlang:element(2, _record),
-        erlang:element(3, _record),
-        erlang:element(4, _record),
-        erlang:element(5, _record),
+        erlang:element(2, Builder),
+        erlang:element(3, Builder),
+        erlang:element(4, Builder),
+        erlang:element(5, Builder),
         true,
-        erlang:element(7, _record)}.
+        erlang:element(7, Builder)}.
 
--file("src/mist.gleam", 476).
+-file("src/mist.gleam", 474).
 ?DOC(" Use HTTPS with the provided certificate and key files.\n").
--spec with_tls(builder(NHI, NHJ), binary(), binary()) -> builder(NHI, NHJ).
+-spec with_tls(builder(NJU, NJV), binary(), binary()) -> builder(NJU, NJV).
 with_tls(Builder, Cert, Key) ->
     Certfile = mist_ffi:file_open(gleam_stdlib:identity(Cert)),
     Keyfile = mist_ffi:file_open(gleam_stdlib:identity(Key)),
@@ -650,7 +624,7 @@ with_tls(Builder, Cert, Key) ->
                     file => <<?FILEPATH/utf8>>,
                     module => <<"mist"/utf8>>,
                     function => <<"with_tls"/utf8>>,
-                    line => 485});
+                    line => 483});
 
         {{ok, _}, {error, _}} ->
             erlang:error(#{gleam_error => panic,
@@ -658,7 +632,7 @@ with_tls(Builder, Cert, Key) ->
                     file => <<?FILEPATH/utf8>>,
                     module => <<"mist"/utf8>>,
                     function => <<"with_tls"/utf8>>,
-                    line => 486});
+                    line => 484});
 
         {{error, _}, {ok, _}} ->
             erlang:error(#{gleam_error => panic,
@@ -666,21 +640,20 @@ with_tls(Builder, Cert, Key) ->
                     file => <<?FILEPATH/utf8>>,
                     module => <<"mist"/utf8>>,
                     function => <<"with_tls"/utf8>>,
-                    line => 487});
+                    line => 485});
 
         {{ok, _}, {ok, _}} ->
             nil
     end,
-    _record = Builder,
     {builder,
-        erlang:element(2, _record),
-        erlang:element(3, _record),
-        erlang:element(4, _record),
-        erlang:element(5, _record),
-        erlang:element(6, _record),
+        erlang:element(2, Builder),
+        erlang:element(3, Builder),
+        erlang:element(4, Builder),
+        erlang:element(5, Builder),
+        erlang:element(6, Builder),
         {some, {cert_key_files, Cert, Key}}}.
 
--file("src/mist.gleam", 494).
+-file("src/mist.gleam", 492).
 -spec convert_body_types(gleam@http@response:response(response_data())) -> gleam@http@response:response(mist@internal@http:response_data()).
 convert_body_types(Resp) ->
     New_body = case erlang:element(4, Resp) of
@@ -701,7 +674,7 @@ convert_body_types(Resp) ->
     end,
     gleam@http@response:set_body(Resp, New_body).
 
--file("src/mist.gleam", 513).
+-file("src/mist.gleam", 511).
 ?DOC(" Start a `mist` service with the provided builder.\n").
 -spec start(builder(mist@internal@http:connection(), response_data())) -> {ok,
         gleam@otp@actor:started(gleam@otp@static_supervisor:supervisor())} |
@@ -755,24 +728,24 @@ start(Builder) ->
         end
     ).
 
--file("src/mist.gleam", 549).
+-file("src/mist.gleam", 547).
 ?DOC(" Start the `mist` supervisor as a child of a supervision tree.\n").
 -spec supervised(builder(mist@internal@http:connection(), response_data())) -> gleam@otp@supervision:child_specification(gleam@otp@static_supervisor:supervisor()).
 supervised(Builder) ->
     gleam@otp@supervision:supervisor(fun() -> start(Builder) end).
 
--file("src/mist.gleam", 564).
+-file("src/mist.gleam", 562).
 -spec internal_to_public_ws_message(
-    mist@internal@websocket:handler_message(NHY)
-) -> {ok, websocket_message(NHY)} | {error, nil}.
+    mist@internal@websocket:handler_message(NKK)
+) -> {ok, websocket_message(NKK)} | {error, nil}.
 internal_to_public_ws_message(Msg) ->
     case Msg of
-        {internal, {data, {text_frame, _, Data}}} ->
+        {internal, {data, {text_frame, Data}}} ->
             _pipe = Data,
             _pipe@1 = gleam@bit_array:to_string(_pipe),
             gleam@result:map(_pipe@1, fun(Field@0) -> {text, Field@0} end);
 
-        {internal, {data, {binary_frame, _, Data@1}}} ->
+        {internal, {data, {binary_frame, Data@1}}} ->
             {ok, {binary, Data@1}};
 
         {user, Msg@1} ->
@@ -782,7 +755,7 @@ internal_to_public_ws_message(Msg) ->
             {error, nil}
     end.
 
--file("src/mist.gleam", 589).
+-file("src/mist.gleam", 587).
 ?DOC(
     " Upgrade a request to handle websockets. If the request is\n"
     " malformed, or the websocket process fails to initialize, an empty\n"
@@ -797,10 +770,10 @@ internal_to_public_ws_message(Msg) ->
 ).
 -spec websocket(
     gleam@http@request:request(mist@internal@http:connection()),
-    fun((NIE, websocket_message(NIF), mist@internal@websocket:websocket_connection()) -> next(NIE, NIF)),
-    fun((mist@internal@websocket:websocket_connection()) -> {NIE,
-        gleam@option:option(gleam@erlang@process:selector(NIF))}),
-    fun((NIE) -> nil)
+    fun((NKQ, websocket_message(NKR), mist@internal@websocket:websocket_connection()) -> next(NKQ, NKR)),
+    fun((mist@internal@websocket:websocket_connection()) -> {NKQ,
+        gleam@option:option(gleam@erlang@process:selector(NKR))}),
+    fun((NKQ) -> nil)
 ) -> gleam@http@response:response(response_data()).
 websocket(Request, Handler, On_init, On_close) ->
     Handler@1 = fun(State, Message, Connection) -> _pipe = Message,
@@ -853,12 +826,12 @@ websocket(Request, Handler, On_init, On_close) ->
                                 file => <<?FILEPATH/utf8>>,
                                 module => <<"mist"/utf8>>,
                                 function => <<"websocket"/utf8>>,
-                                line => 625,
+                                line => 623,
                                 value => _assert_fail,
-                                start => 19404,
-                                'end' => 19464,
-                                pattern_start => 19415,
-                                pattern_end => 19429})
+                                start => 19307,
+                                'end' => 19367,
+                                pattern_start => 19318,
+                                pattern_end => 19332})
             end,
             Monitor = gleam@erlang@process:monitor(Ws_process@1),
             Selector = begin
@@ -882,16 +855,16 @@ websocket(Request, Handler, On_init, On_close) ->
             ) end
     ).
 
--file("src/mist.gleam", 643).
+-file("src/mist.gleam", 641).
 ?DOC(" Sends a binary frame across the websocket.\n").
 -spec send_binary_frame(
     mist@internal@websocket:websocket_connection(),
     bitstring()
 ) -> {ok, nil} | {error, glisten@socket:socket_reason()}.
 send_binary_frame(Connection, Frame) ->
-    Binary_frame = mist_ffi:rescue(
+    Binary_frame = exception_ffi:rescue(
         fun() ->
-            gramps@websocket:to_binary_frame(
+            gramps@websocket:encode_binary_frame(
                 Frame,
                 erlang:element(4, Connection),
                 none
@@ -917,18 +890,18 @@ send_binary_frame(Connection, Frame) ->
                     file => <<?FILEPATH/utf8>>,
                     module => <<"mist"/utf8>>,
                     function => <<"send_binary_frame"/utf8>>,
-                    line => 661})
+                    line => 659})
     end.
 
--file("src/mist.gleam", 667).
+-file("src/mist.gleam", 665).
 ?DOC(" Sends a text frame across the websocket.\n").
 -spec send_text_frame(mist@internal@websocket:websocket_connection(), binary()) -> {ok,
         nil} |
     {error, glisten@socket:socket_reason()}.
 send_text_frame(Connection, Frame) ->
-    Text_frame = mist_ffi:rescue(
+    Text_frame = exception_ffi:rescue(
         fun() ->
-            gramps@websocket:to_text_frame(
+            gramps@websocket:encode_text_frame(
                 Frame,
                 erlang:element(4, Connection),
                 none
@@ -954,45 +927,42 @@ send_text_frame(Connection, Frame) ->
                     file => <<?FILEPATH/utf8>>,
                     module => <<"mist"/utf8>>,
                     function => <<"send_text_frame"/utf8>>,
-                    line => 685})
+                    line => 683})
     end.
 
--file("src/mist.gleam", 711).
+-file("src/mist.gleam", 709).
 -spec event(gleam@string_tree:string_tree()) -> s_s_e_event().
 event(Data) ->
     {s_s_e_event, none, none, none, Data}.
 
--file("src/mist.gleam", 716).
+-file("src/mist.gleam", 714).
 -spec event_id(s_s_e_event(), binary()) -> s_s_e_event().
 event_id(Event, Id) ->
-    _record = Event,
     {s_s_e_event,
         {some, Id},
-        erlang:element(3, _record),
-        erlang:element(4, _record),
-        erlang:element(5, _record)}.
+        erlang:element(3, Event),
+        erlang:element(4, Event),
+        erlang:element(5, Event)}.
 
--file("src/mist.gleam", 721).
+-file("src/mist.gleam", 719).
 -spec event_name(s_s_e_event(), binary()) -> s_s_e_event().
 event_name(Event, Name) ->
-    _record = Event,
     {s_s_e_event,
-        erlang:element(2, _record),
+        erlang:element(2, Event),
         {some, Name},
-        erlang:element(4, _record),
-        erlang:element(5, _record)}.
+        erlang:element(4, Event),
+        erlang:element(5, Event)}.
 
--file("src/mist.gleam", 726).
+-file("src/mist.gleam", 724).
 -spec event_retry(s_s_e_event(), integer()) -> s_s_e_event().
 event_retry(Event, Retry) ->
-    _record = Event,
     {s_s_e_event,
-        erlang:element(2, _record),
-        erlang:element(3, _record),
+        erlang:element(2, Event),
+        erlang:element(3, Event),
         {some, Retry},
-        erlang:element(5, _record)}.
+        erlang:element(5, Event)}.
 
--file("src/mist.gleam", 739).
+-file("src/mist.gleam", 737).
 ?DOC(
     " Sets up the connection for server-sent events. The initial response provided\n"
     " here will have its headers included in the SSE setup. The body is discarded.\n"
@@ -1007,10 +977,10 @@ event_retry(Event, Retry) ->
 -spec server_sent_events(
     gleam@http@request:request(mist@internal@http:connection()),
     gleam@http@response:response(any()),
-    fun((gleam@erlang@process:subject(NIT)) -> {ok,
-            gleam@otp@actor:initialised(NIV, NIT, any())} |
+    fun((gleam@erlang@process:subject(NLF)) -> {ok,
+            gleam@otp@actor:initialised(NLH, NLF, any())} |
         {error, binary()}),
-    fun((NIV, NIT, s_s_e_connection()) -> gleam@otp@actor:next(NIV, NIT))
+    fun((NLH, NLF, s_s_e_connection()) -> gleam@otp@actor:next(NLH, NLF))
 ) -> gleam@http@response:response(response_data()).
 server_sent_events(Req, Resp, Init, Loop) ->
     With_default_headers = begin
@@ -1081,12 +1051,12 @@ server_sent_events(Req, Resp, Init, Loop) ->
                                 file => <<?FILEPATH/utf8>>,
                                 module => <<"mist"/utf8>>,
                                 function => <<"server_sent_events"/utf8>>,
-                                line => 770,
+                                line => 768,
                                 value => _assert_fail,
-                                start => 23996,
-                                'end' => 24057,
-                                pattern_start => 24007,
-                                pattern_end => 24022})
+                                start => 23927,
+                                'end' => 23988,
+                                pattern_start => 23938,
+                                pattern_end => 23953})
             end,
             Monitor = gleam@erlang@process:monitor(Sse_process@1),
             Selector = begin
@@ -1113,7 +1083,7 @@ server_sent_events(Req, Resp, Init, Loop) ->
             ) end
     ).
 
--file("src/mist.gleam", 788).
+-file("src/mist.gleam", 786).
 -spec send_event(s_s_e_connection(), s_s_e_event()) -> {ok, nil} | {error, nil}.
 send_event(Conn, Event) ->
     {s_s_e_connection, Conn@1} = Conn,

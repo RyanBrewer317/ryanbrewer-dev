@@ -1,5 +1,5 @@
 -module(gleam@http@request).
--compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch]).
+-compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch, inline]).
 -define(FILEPATH, "src/gleam/http/request.gleam").
 -export([to_uri/1, from_uri/1, get_header/2, set_header/3, prepend_header/3, set_body/2, map/2, path_segments/1, get_query/1, set_query/2, set_method/2, new/0, to/1, set_scheme/2, set_host/2, set_port/2, set_path/2, set_cookie/3, get_cookies/1, remove_cookie/2]).
 -export_type([request/1]).
@@ -12,10 +12,10 @@
 -define(DOC(Str), -compile([])).
 -endif.
 
--type request(EGK) :: {request,
+-type request(EJE) :: {request,
         gleam@http:method(),
         list({binary(), binary()}),
-        EGK,
+        EJE,
         gleam@http:scheme(),
         binary(),
         gleam@option:option(integer()),
@@ -89,7 +89,7 @@ get_header(Request, Key) ->
     " Header keys are always lowercase in `gleam_http`. To use any uppercase\n"
     " letter is invalid.\n"
 ).
--spec set_header(request(EGU), binary(), binary()) -> request(EGU).
+-spec set_header(request(EJO), binary(), binary()) -> request(EJO).
 set_header(Request, Key, Value) ->
     Headers = gleam@list:key_set(
         erlang:element(3, Request),
@@ -116,7 +116,7 @@ set_header(Request, Key, Value) ->
     " Header keys are always lowercase in `gleam_http`. To use any uppercase\n"
     " letter is invalid.\n"
 ).
--spec prepend_header(request(EGX), binary(), binary()) -> request(EGX).
+-spec prepend_header(request(EJR), binary(), binary()) -> request(EJR).
 prepend_header(Request, Key, Value) ->
     Headers = [{string:lowercase(Key), Value} | erlang:element(3, Request)],
     {request,
@@ -131,14 +131,14 @@ prepend_header(Request, Key, Value) ->
 
 -file("src/gleam/http/request.gleam", 115).
 ?DOC(" Set the body of the request, overwriting any existing body.\n").
--spec set_body(request(any()), EHC) -> request(EHC).
+-spec set_body(request(any()), EJW) -> request(EJW).
 set_body(Req, Body) ->
     {request, Method, Headers, _, Scheme, Host, Port, Path, Query} = Req,
     {request, Method, Headers, Body, Scheme, Host, Port, Path, Query}.
 
 -file("src/gleam/http/request.gleam", 140).
 ?DOC(" Update the body of a request using a given function.\n").
--spec map(request(EHE), fun((EHE) -> EHG)) -> request(EHG).
+-spec map(request(EJY), fun((EJY) -> EKA)) -> request(EKA).
 map(Request, Transform) ->
     _pipe = erlang:element(4, Request),
     _pipe@1 = Transform(_pipe),
@@ -180,7 +180,7 @@ get_query(Request) ->
     " Set the query of the request.\n"
     " Query params will be percent encoded before being added to the Request.\n"
 ).
--spec set_query(request(EHQ), list({binary(), binary()})) -> request(EHQ).
+-spec set_query(request(EKK), list({binary(), binary()})) -> request(EKK).
 set_query(Req, Query) ->
     Pair = fun(T) ->
         <<<<(gleam_stdlib:percent_encode(erlang:element(1, T)))/binary,
@@ -206,7 +206,7 @@ set_query(Req, Query) ->
 
 -file("src/gleam/http/request.gleam", 194).
 ?DOC(" Set the method of the request.\n").
--spec set_method(request(EHU), gleam@http:method()) -> request(EHU).
+-spec set_method(request(EKO), gleam@http:method()) -> request(EKO).
 set_method(Req, Method) ->
     {request,
         Method,
@@ -245,7 +245,7 @@ to(Url) ->
 
 -file("src/gleam/http/request.gleam", 224).
 ?DOC(" Set the scheme (protocol) of the request.\n").
--spec set_scheme(request(EIB), gleam@http:scheme()) -> request(EIB).
+-spec set_scheme(request(EKV), gleam@http:scheme()) -> request(EKV).
 set_scheme(Req, Scheme) ->
     {request,
         erlang:element(2, Req),
@@ -259,7 +259,7 @@ set_scheme(Req, Scheme) ->
 
 -file("src/gleam/http/request.gleam", 230).
 ?DOC(" Set the host of the request.\n").
--spec set_host(request(EIE), binary()) -> request(EIE).
+-spec set_host(request(EKY), binary()) -> request(EKY).
 set_host(Req, Host) ->
     {request,
         erlang:element(2, Req),
@@ -273,7 +273,7 @@ set_host(Req, Host) ->
 
 -file("src/gleam/http/request.gleam", 236).
 ?DOC(" Set the port of the request.\n").
--spec set_port(request(EIH), integer()) -> request(EIH).
+-spec set_port(request(ELB), integer()) -> request(ELB).
 set_port(Req, Port) ->
     {request,
         erlang:element(2, Req),
@@ -287,7 +287,7 @@ set_port(Req, Port) ->
 
 -file("src/gleam/http/request.gleam", 242).
 ?DOC(" Set the path of the request.\n").
--spec set_path(request(EIK), binary()) -> request(EIK).
+-spec set_path(request(ELE), binary()) -> request(ELE).
 set_path(Req, Path) ->
     {request,
         erlang:element(2, Req),
@@ -299,32 +299,42 @@ set_path(Req, Path) ->
         Path,
         erlang:element(9, Req)}.
 
--file("src/gleam/http/request.gleam", 249).
+-file("src/gleam/http/request.gleam", 252).
 ?DOC(
-    " Send a cookie with a request\n"
+    " Set a cookie on a request, replacing any previous cookie with that name.\n"
     "\n"
-    " Multiple cookies are added to the same cookie header.\n"
+    " All cookies stored in a single header named `cookie`. There should be\n"
+    " at most one header with the name `cookie`, otherwise this function cannot\n"
+    " guarentee that previous cookies with the same name are replaced.\n"
 ).
--spec set_cookie(request(EIN), binary(), binary()) -> request(EIN).
+-spec set_cookie(request(ELH), binary(), binary()) -> request(ELH).
 set_cookie(Req, Name, Value) ->
-    New_cookie_string = gleam@string:join([Name, Value], <<"="/utf8>>),
-    {Cookies_string@2, Headers@1} = case gleam@list:key_pop(
-        erlang:element(3, Req),
-        <<"cookie"/utf8>>
-    ) of
-        {ok, {Cookies_string, Headers}} ->
-            Cookies_string@1 = gleam@string:join(
-                [Cookies_string, New_cookie_string],
-                <<"; "/utf8>>
-            ),
-            {Cookies_string@1, Headers};
-
-        {error, nil} ->
-            {New_cookie_string, erlang:element(3, Req)}
+    {Cookies, Headers} = begin
+        _pipe = gleam@list:key_pop(erlang:element(3, Req), <<"cookie"/utf8>>),
+        gleam@result:unwrap(_pipe, {<<""/utf8>>, erlang:element(3, Req)})
+    end,
+    Cookies@1 = begin
+        _pipe@1 = gleam@string:split(Cookies, <<";"/utf8>>),
+        gleam@list:filter_map(
+            _pipe@1,
+            fun(C) -> _pipe@2 = gleam@string:trim_start(C),
+                gleam@string:split_once(_pipe@2, <<"="/utf8>>) end
+        )
+    end,
+    Cookies@2 = begin
+        _pipe@3 = gleam@list:key_set(Cookies@1, Name, Value),
+        _pipe@4 = gleam@list:map(
+            _pipe@3,
+            fun(Pair) ->
+                <<<<(erlang:element(1, Pair))/binary, "="/utf8>>/binary,
+                    (erlang:element(2, Pair))/binary>>
+            end
+        ),
+        gleam@string:join(_pipe@4, <<"; "/utf8>>)
     end,
     {request,
         erlang:element(2, Req),
-        [{<<"cookie"/utf8>>, Cookies_string@2} | Headers@1],
+        [{<<"cookie"/utf8>>, Cookies@2} | Headers],
         erlang:element(4, Req),
         erlang:element(5, Req),
         erlang:element(6, Req),
@@ -332,7 +342,7 @@ set_cookie(Req, Name, Value) ->
         erlang:element(8, Req),
         erlang:element(9, Req)}.
 
--file("src/gleam/http/request.gleam", 268).
+-file("src/gleam/http/request.gleam", 275).
 ?DOC(
     " Fetch the cookies sent in a request.\n"
     "\n"
@@ -356,16 +366,16 @@ get_cookies(Req) ->
             end
         end
     ),
-    gleam@list:flatten(_pipe@1).
+    lists:append(_pipe@1).
 
--file("src/gleam/http/request.gleam", 286).
+-file("src/gleam/http/request.gleam", 293).
 ?DOC(
     " Remove a cookie from a request\n"
     "\n"
     " Remove a cookie from the request. If no cookie is found return the request unchanged.\n"
     " This will not remove the cookie from the client.\n"
 ).
--spec remove_cookie(request(EIS), binary()) -> request(EIS).
+-spec remove_cookie(request(ELM), binary()) -> request(ELM).
 remove_cookie(Req, Name) ->
     case gleam@list:key_pop(erlang:element(3, Req), <<"cookie"/utf8>>) of
         {ok, {Cookies_string, Headers}} ->

@@ -24,7 +24,7 @@ import {
 export { start };
 
 export class State extends $CustomType {
-  constructor(self, selector, base_selector, model, update, view, config, vdom, events, subscribers, callbacks) {
+  constructor(self, selector, base_selector, model, update, view, config, vdom, events, providers, subscribers, callbacks) {
     super();
     this.self = self;
     this.selector = selector;
@@ -35,18 +35,20 @@ export class State extends $CustomType {
     this.config = config;
     this.vdom = vdom;
     this.events = events;
+    this.providers = providers;
     this.subscribers = subscribers;
     this.callbacks = callbacks;
   }
 }
 
 export class Config extends $CustomType {
-  constructor(open_shadow_root, adopt_styles, attributes, properties) {
+  constructor(open_shadow_root, adopt_styles, attributes, properties, contexts) {
     super();
     this.open_shadow_root = open_shadow_root;
     this.adopt_styles = adopt_styles;
     this.attributes = attributes;
     this.properties = properties;
+    this.contexts = contexts;
   }
 }
 
@@ -104,6 +106,14 @@ export class EffectEmitEvent extends $CustomType {
     super();
     this.name = name;
     this.data = data;
+  }
+}
+
+export class EffectProvidedValue extends $CustomType {
+  constructor(key, value) {
+    super();
+    this.key = key;
+    this.value = value;
   }
 }
 
@@ -171,6 +181,7 @@ function handle_client_message(state, message) {
         _record.config,
         vdom,
         _record.events,
+        _record.providers,
         _record.subscribers,
         _record.callbacks,
       );
@@ -199,13 +210,14 @@ function handle_client_message(state, message) {
         _record.config,
         vdom,
         _record.events,
+        _record.providers,
         _record.subscribers,
         _record.callbacks,
       );
     } else {
       return state;
     }
-  } else {
+  } else if (message instanceof $transport.EventFired) {
     let path = message.path;
     let name = message.name;
     let event = message.event;
@@ -230,6 +242,7 @@ function handle_client_message(state, message) {
         _record.config,
         vdom,
         events,
+        _record.providers,
         _record.subscribers,
         _record.callbacks,
       );
@@ -246,9 +259,45 @@ function handle_client_message(state, message) {
         _record.config,
         _record.vdom,
         events,
+        _record.providers,
         _record.subscribers,
         _record.callbacks,
       );
+    }
+  } else {
+    let key = message.key;
+    let value = message.value;
+    let $ = $dict.get(state.config.contexts, key);
+    if ($ instanceof Ok) {
+      let decoder = $[0];
+      let $1 = $decode.run(value, decoder);
+      if ($1 instanceof Ok) {
+        let context = $1[0];
+        let $2 = state.update(state.model, context);
+        let model = $2[0];
+        let effect = $2[1];
+        let vdom = state.view(model);
+        handle_effect(state.self, effect);
+        let _record = state;
+        return new State(
+          _record.self,
+          _record.selector,
+          _record.base_selector,
+          model,
+          _record.update,
+          _record.view,
+          _record.config,
+          vdom,
+          _record.events,
+          _record.providers,
+          _record.subscribers,
+          _record.callbacks,
+        );
+      } else {
+        return state;
+      }
+    } else {
+      return state;
     }
   }
 }

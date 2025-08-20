@@ -1,7 +1,6 @@
 import * as $json from "../../../gleam_json/gleam/json.mjs";
 import * as $dynamic from "../../../gleam_stdlib/gleam/dynamic.mjs";
 import * as $function from "../../../gleam_stdlib/gleam/function.mjs";
-import * as $int from "../../../gleam_stdlib/gleam/int.mjs";
 import * as $list from "../../../gleam_stdlib/gleam/list.mjs";
 import * as $string from "../../../gleam_stdlib/gleam/string.mjs";
 import * as $string_tree from "../../../gleam_stdlib/gleam/string_tree.mjs";
@@ -12,20 +11,18 @@ import {
   prepend as listPrepend,
   CustomType as $CustomType,
 } from "../../gleam.mjs";
-import * as $constants from "../../lustre/internals/constants.mjs";
 import * as $json_object_builder from "../../lustre/internals/json_object_builder.mjs";
 import * as $mutable_map from "../../lustre/internals/mutable_map.mjs";
 import * as $vattr from "../../lustre/vdom/vattr.mjs";
 
 export class Fragment extends $CustomType {
-  constructor(kind, key, mapper, children, keyed_children, children_count) {
+  constructor(kind, key, mapper, children, keyed_children) {
     super();
     this.kind = kind;
     this.key = key;
     this.mapper = mapper;
     this.children = children;
     this.keyed_children = keyed_children;
-    this.children_count = children_count;
   }
 }
 
@@ -106,12 +103,44 @@ function is_void_element(tag, namespace) {
   }
 }
 
-export function advance(node) {
+export function to_keyed(key, node) {
   if (node instanceof Fragment) {
-    let children_count = node.children_count;
-    return 1 + children_count;
+    let _record = node;
+    return new Fragment(
+      _record.kind,
+      key,
+      _record.mapper,
+      _record.children,
+      _record.keyed_children,
+    );
+  } else if (node instanceof Element) {
+    let _record = node;
+    return new Element(
+      _record.kind,
+      key,
+      _record.mapper,
+      _record.namespace,
+      _record.tag,
+      _record.attributes,
+      _record.children,
+      _record.keyed_children,
+      _record.self_closing,
+      _record.void,
+    );
+  } else if (node instanceof Text) {
+    let _record = node;
+    return new Text(_record.kind, key, _record.mapper, _record.content);
   } else {
-    return 1;
+    let _record = node;
+    return new UnsafeInnerHtml(
+      _record.kind,
+      key,
+      _record.mapper,
+      _record.namespace,
+      _record.tag,
+      _record.attributes,
+      _record.inner_html,
+    );
   }
 }
 
@@ -146,15 +175,8 @@ function unsafe_inner_html_to_json(
 
 export const fragment_kind = 0;
 
-export function fragment(key, mapper, children, keyed_children, children_count) {
-  return new Fragment(
-    fragment_kind,
-    key,
-    mapper,
-    children,
-    keyed_children,
-    children_count,
-  );
+export function fragment(key, mapper, children, keyed_children) {
+  return new Fragment(fragment_kind, key, mapper, children, keyed_children);
 }
 
 export const element_kind = 1;
@@ -495,7 +517,7 @@ export function to_string(node) {
   return $string_tree.to_string(_pipe$1);
 }
 
-function fragment_to_json(kind, key, children, children_count) {
+function fragment_to_json(kind, key, children) {
   let _pipe = $json_object_builder.tagged(kind);
   let _pipe$1 = $json_object_builder.string(_pipe, "key", key);
   let _pipe$2 = $json_object_builder.list(
@@ -504,12 +526,7 @@ function fragment_to_json(kind, key, children, children_count) {
     children,
     to_json,
   );
-  let _pipe$3 = $json_object_builder.int(
-    _pipe$2,
-    "children_count",
-    children_count,
-  );
-  return $json_object_builder.build(_pipe$3);
+  return $json_object_builder.build(_pipe$2);
 }
 
 export function to_json(node) {
@@ -517,8 +534,7 @@ export function to_json(node) {
     let kind = node.kind;
     let key = node.key;
     let children = node.children;
-    let children_count = node.children_count;
-    return fragment_to_json(kind, key, children, children_count);
+    return fragment_to_json(kind, key, children);
   } else if (node instanceof Element) {
     let kind = node.kind;
     let key = node.key;
@@ -568,169 +584,4 @@ function element_to_json(kind, key, namespace, tag, attributes, children) {
     to_json,
   );
   return $json_object_builder.build(_pipe$5);
-}
-
-function set_fragment_key(
-  loop$key,
-  loop$children,
-  loop$index,
-  loop$new_children,
-  loop$keyed_children
-) {
-  while (true) {
-    let key = loop$key;
-    let children = loop$children;
-    let index = loop$index;
-    let new_children = loop$new_children;
-    let keyed_children = loop$keyed_children;
-    if (children instanceof $Empty) {
-      return [$list.reverse(new_children), keyed_children];
-    } else {
-      let $ = children.head;
-      if ($ instanceof Fragment) {
-        let node = $;
-        if (node.key === "") {
-          let children$1 = children.tail;
-          let child_key = (key + "::") + $int.to_string(index);
-          let $1 = set_fragment_key(
-            child_key,
-            node.children,
-            0,
-            $constants.empty_list,
-            $mutable_map.new$(),
-          );
-          let node_children = $1[0];
-          let node_keyed_children = $1[1];
-          let _block;
-          let _record = node;
-          _block = new Fragment(
-            _record.kind,
-            _record.key,
-            _record.mapper,
-            node_children,
-            node_keyed_children,
-            _record.children_count,
-          );
-          let new_node = _block;
-          let new_children$1 = listPrepend(new_node, new_children);
-          let index$1 = index + 1;
-          loop$key = key;
-          loop$children = children$1;
-          loop$index = index$1;
-          loop$new_children = new_children$1;
-          loop$keyed_children = keyed_children;
-        } else {
-          let node$1 = $;
-          if (node$1.key !== "") {
-            let children$1 = children.tail;
-            let child_key = (key + "::") + node$1.key;
-            let keyed_node = to_keyed(child_key, node$1);
-            let new_children$1 = listPrepend(keyed_node, new_children);
-            let keyed_children$1 = $mutable_map.insert(
-              keyed_children,
-              child_key,
-              keyed_node,
-            );
-            let index$1 = index + 1;
-            loop$key = key;
-            loop$children = children$1;
-            loop$index = index$1;
-            loop$new_children = new_children$1;
-            loop$keyed_children = keyed_children$1;
-          } else {
-            let node$2 = $;
-            let children$1 = children.tail;
-            let new_children$1 = listPrepend(node$2, new_children);
-            let index$1 = index + 1;
-            loop$key = key;
-            loop$children = children$1;
-            loop$index = index$1;
-            loop$new_children = new_children$1;
-            loop$keyed_children = keyed_children;
-          }
-        }
-      } else {
-        let node = $;
-        if (node.key !== "") {
-          let children$1 = children.tail;
-          let child_key = (key + "::") + node.key;
-          let keyed_node = to_keyed(child_key, node);
-          let new_children$1 = listPrepend(keyed_node, new_children);
-          let keyed_children$1 = $mutable_map.insert(
-            keyed_children,
-            child_key,
-            keyed_node,
-          );
-          let index$1 = index + 1;
-          loop$key = key;
-          loop$children = children$1;
-          loop$index = index$1;
-          loop$new_children = new_children$1;
-          loop$keyed_children = keyed_children$1;
-        } else {
-          let node$1 = $;
-          let children$1 = children.tail;
-          let new_children$1 = listPrepend(node$1, new_children);
-          let index$1 = index + 1;
-          loop$key = key;
-          loop$children = children$1;
-          loop$index = index$1;
-          loop$new_children = new_children$1;
-          loop$keyed_children = keyed_children;
-        }
-      }
-    }
-  }
-}
-
-export function to_keyed(key, node) {
-  if (node instanceof Fragment) {
-    let children = node.children;
-    let $ = set_fragment_key(
-      key,
-      children,
-      0,
-      $constants.empty_list,
-      $mutable_map.new$(),
-    );
-    let children$1 = $[0];
-    let keyed_children = $[1];
-    let _record = node;
-    return new Fragment(
-      _record.kind,
-      key,
-      _record.mapper,
-      children$1,
-      keyed_children,
-      _record.children_count,
-    );
-  } else if (node instanceof Element) {
-    let _record = node;
-    return new Element(
-      _record.kind,
-      key,
-      _record.mapper,
-      _record.namespace,
-      _record.tag,
-      _record.attributes,
-      _record.children,
-      _record.keyed_children,
-      _record.self_closing,
-      _record.void,
-    );
-  } else if (node instanceof Text) {
-    let _record = node;
-    return new Text(_record.kind, key, _record.mapper, _record.content);
-  } else {
-    let _record = node;
-    return new UnsafeInnerHtml(
-      _record.kind,
-      key,
-      _record.mapper,
-      _record.namespace,
-      _record.tag,
-      _record.attributes,
-      _record.inner_html,
-    );
-  }
 }

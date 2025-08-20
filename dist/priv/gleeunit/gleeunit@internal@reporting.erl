@@ -1,5 +1,5 @@
 -module(gleeunit@internal@reporting).
--compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch]).
+-compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch, inline]).
 -define(FILEPATH, "src/gleeunit/internal/reporting.gleam").
 -export([new_state/0, test_skipped/3, test_passed/1, finished/1, test_failed/4]).
 -export_type([state/0]).
@@ -22,19 +22,19 @@
 new_state() ->
     {state, 0, 0, 0}.
 
--file("src/gleeunit/internal/reporting.gleam", 194).
+-file("src/gleeunit/internal/reporting.gleam", 195).
 ?DOC(false).
 -spec bold(binary()) -> binary().
 bold(Text) ->
     <<<<"\x{001b}[1m"/utf8, Text/binary>>/binary, "\x{001b}[22m"/utf8>>.
 
--file("src/gleeunit/internal/reporting.gleam", 198).
+-file("src/gleeunit/internal/reporting.gleam", 199).
 ?DOC(false).
 -spec cyan(binary()) -> binary().
 cyan(Text) ->
     <<<<"\x{001b}[36m"/utf8, Text/binary>>/binary, "\x{001b}[39m"/utf8>>.
 
--file("src/gleeunit/internal/reporting.gleam", 178).
+-file("src/gleeunit/internal/reporting.gleam", 179).
 ?DOC(false).
 -spec code_snippet(gleam@option:option(bitstring()), integer(), integer()) -> binary().
 code_snippet(Src, Start, End) ->
@@ -62,13 +62,13 @@ code_snippet(Src, Start, End) ->
     end,
     gleam@result:unwrap(_pipe, <<""/utf8>>).
 
--file("src/gleeunit/internal/reporting.gleam", 202).
+-file("src/gleeunit/internal/reporting.gleam", 203).
 ?DOC(false).
 -spec yellow(binary()) -> binary().
 yellow(Text) ->
     <<<<"\x{001b}[33m"/utf8, Text/binary>>/binary, "\x{001b}[39m"/utf8>>.
 
--file("src/gleeunit/internal/reporting.gleam", 189).
+-file("src/gleeunit/internal/reporting.gleam", 190).
 ?DOC(false).
 -spec test_skipped(state(), binary(), binary()) -> state().
 test_skipped(State, Module, Function) ->
@@ -82,13 +82,13 @@ test_skipped(State, Module, Function) ->
         erlang:element(3, State),
         erlang:element(4, State) + 1}.
 
--file("src/gleeunit/internal/reporting.gleam", 206).
+-file("src/gleeunit/internal/reporting.gleam", 207).
 ?DOC(false).
 -spec green(binary()) -> binary().
 green(Text) ->
     <<<<"\x{001b}[32m"/utf8, Text/binary>>/binary, "\x{001b}[39m"/utf8>>.
 
--file("src/gleeunit/internal/reporting.gleam", 64).
+-file("src/gleeunit/internal/reporting.gleam", 65).
 ?DOC(false).
 -spec test_passed(state()) -> state().
 test_passed(State) ->
@@ -98,7 +98,7 @@ test_passed(State) ->
         erlang:element(3, State),
         erlang:element(4, State)}.
 
--file("src/gleeunit/internal/reporting.gleam", 210).
+-file("src/gleeunit/internal/reporting.gleam", 211).
 ?DOC(false).
 -spec red(binary()) -> binary().
 red(Text) ->
@@ -127,7 +127,7 @@ finished(State) ->
                     (erlang:integer_to_binary(erlang:element(3, State)))/binary>>/binary,
                 " failures"/utf8>>,
             gleam_stdlib:println(red(Message@1)),
-            0;
+            1;
 
         {state, _, 0, _} ->
             Message@2 = <<<<<<<<"\n"/utf8,
@@ -139,25 +139,26 @@ finished(State) ->
             1;
 
         {state, _, _, _} ->
-            Message@3 = <<<<<<<<<<"\n"/utf8,
-                                (erlang:integer_to_binary(
-                                    erlang:element(2, State)
-                                ))/binary>>/binary,
-                            " tests, "/utf8>>/binary,
-                        (erlang:integer_to_binary(erlang:element(3, State)))/binary>>/binary,
-                    " failures, "/utf8>>/binary,
+            Message@3 = <<<<<<<<<<<<"\n"/utf8,
+                                    (erlang:integer_to_binary(
+                                        erlang:element(2, State)
+                                    ))/binary>>/binary,
+                                " tests, "/utf8>>/binary,
+                            (erlang:integer_to_binary(erlang:element(3, State)))/binary>>/binary,
+                        " failures, "/utf8>>/binary,
+                    (erlang:integer_to_binary(erlang:element(4, State)))/binary>>/binary,
                 " skipped"/utf8>>,
             gleam_stdlib:println(red(Message@3)),
             1
     end.
 
--file("src/gleeunit/internal/reporting.gleam", 214).
+-file("src/gleeunit/internal/reporting.gleam", 215).
 ?DOC(false).
 -spec grey(binary()) -> binary().
 grey(Text) ->
     <<<<"\x{001b}[90m"/utf8, Text/binary>>/binary, "\x{001b}[39m"/utf8>>.
 
--file("src/gleeunit/internal/reporting.gleam", 87).
+-file("src/gleeunit/internal/reporting.gleam", 88).
 ?DOC(false).
 -spec format_unknown(binary(), binary(), gleam@dynamic:dynamic_()) -> binary().
 format_unknown(Module, Function, Error) ->
@@ -170,7 +171,7 @@ format_unknown(Module, Function, Error) ->
                 "\n"/utf8>>]
     ).
 
--file("src/gleeunit/internal/reporting.gleam", 170).
+-file("src/gleeunit/internal/reporting.gleam", 171).
 ?DOC(false).
 -spec inspect_value(gleeunit@internal@gleam_panic:asserted_expression()) -> binary().
 inspect_value(Value) ->
@@ -185,7 +186,7 @@ inspect_value(Value) ->
             gleam@string:inspect(Value@1)
     end.
 
--file("src/gleeunit/internal/reporting.gleam", 166).
+-file("src/gleeunit/internal/reporting.gleam", 167).
 ?DOC(false).
 -spec assert_value(
     binary(),
@@ -196,7 +197,7 @@ assert_value(Name, Value) ->
             (inspect_value(Value))/binary>>/binary,
         "\n"/utf8>>.
 
--file("src/gleeunit/internal/reporting.gleam", 147).
+-file("src/gleeunit/internal/reporting.gleam", 148).
 ?DOC(false).
 -spec assert_info(gleeunit@internal@gleam_panic:assert_kind()) -> binary().
 assert_info(Kind) ->
@@ -226,7 +227,7 @@ assert_info(Kind) ->
             <<""/utf8>>
     end.
 
--file("src/gleeunit/internal/reporting.gleam", 100).
+-file("src/gleeunit/internal/reporting.gleam", 101).
 ?DOC(false).
 -spec format_gleam_error(
     gleeunit@internal@gleam_panic:gleam_panic(),
@@ -307,7 +308,7 @@ format_gleam_error(Error, Module, Function, Src) ->
             )
     end.
 
--file("src/gleeunit/internal/reporting.gleam", 69).
+-file("src/gleeunit/internal/reporting.gleam", 70).
 ?DOC(false).
 -spec test_failed(state(), binary(), binary(), gleam@dynamic:dynamic_()) -> state().
 test_failed(State, Module, Function, Error) ->

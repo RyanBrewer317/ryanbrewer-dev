@@ -1,5 +1,5 @@
 -module(mist@internal@websocket).
--compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch]).
+-compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch, inline]).
 -define(FILEPATH, "src/mist/internal/websocket.gleam").
 -export([initialize_connection/6]).
 -export_type([valid_message/1, websocket_message/1, websocket_connection/0, handler_message/1, websocket_state/1]).
@@ -14,25 +14,25 @@
 
 ?MODULEDOC(false).
 
--type valid_message(MOQ) :: {socket_message, bitstring()} |
+-type valid_message(MSA) :: {socket_message, bitstring()} |
     socket_closed_message |
-    {user_message, MOQ}.
+    {user_message, MSA}.
 
--type websocket_message(MOR) :: {valid, valid_message(MOR)} | invalid.
+-type websocket_message(MSB) :: {valid, valid_message(MSB)} | invalid.
 
 -type websocket_connection() :: {websocket_connection,
         glisten@socket:socket(),
         glisten@transport:transport(),
         gleam@option:option(gramps@websocket@compression:context())}.
 
--type handler_message(MOS) :: {internal, gramps@websocket:frame()} | {user, MOS}.
+-type handler_message(MSC) :: {internal, gramps@websocket:frame()} | {user, MSC}.
 
--type websocket_state(MOT) :: {websocket_state,
+-type websocket_state(MSD) :: {websocket_state,
         bitstring(),
-        MOT,
+        MSD,
         gleam@option:option(gramps@websocket@compression:compression())}.
 
--file("src/mist/internal/websocket.gleam", 60).
+-file("src/mist/internal/websocket.gleam", 54).
 ?DOC(false).
 -spec message_selector() -> gleam@erlang@process:selector(websocket_message(any())).
 message_selector() ->
@@ -96,29 +96,7 @@ message_selector() ->
         fun(_) -> {valid, socket_closed_message} end
     ).
 
--file("src/mist/internal/websocket.gleam", 286).
-?DOC(false).
--spec get_messages(
-    bitstring(),
-    list(gramps@websocket:parsed_frame()),
-    gleam@option:option(gramps@websocket@compression:context())
-) -> {list(gramps@websocket:parsed_frame()), bitstring()}.
-get_messages(Data, Frames, Context) ->
-    case gramps@websocket:frame_from_message(Data, Context) of
-        {ok, {Frame, <<>>}} ->
-            {lists:reverse([Frame | Frames]), <<>>};
-
-        {ok, {Frame@1, Rest}} ->
-            get_messages(Rest, [Frame@1 | Frames], Context);
-
-        {error, {need_more_data, Rest@1}} ->
-            {lists:reverse(Frames), Rest@1};
-
-        {error, invalid_frame} ->
-            {lists:reverse(Frames), Data}
-    end.
-
--file("src/mist/internal/websocket.gleam", 378).
+-file("src/mist/internal/websocket.gleam", 362).
 ?DOC(false).
 -spec set_active(glisten@transport:transport(), glisten@socket:socket()) -> nil.
 set_active(Transport, Socket) ->
@@ -130,18 +108,18 @@ set_active(Transport, Socket) ->
                         file => <<?FILEPATH/utf8>>,
                         module => <<"mist/internal/websocket"/utf8>>,
                         function => <<"set_active"/utf8>>,
-                        line => 379,
+                        line => 363,
                         value => _assert_fail,
-                        start => 11688,
-                        'end' => 11784,
-                        pattern_start => 11699,
-                        pattern_end => 11704})
+                        start => 11155,
+                        'end' => 11251,
+                        pattern_start => 11166,
+                        pattern_end => 11171})
     end,
     nil.
 
--file("src/mist/internal/websocket.gleam", 385).
+-file("src/mist/internal/websocket.gleam", 369).
 ?DOC(false).
--spec map_user_selector(gleam@option:option(gleam@erlang@process:selector(MQF))) -> gleam@option:option(gleam@erlang@process:selector(websocket_message(MQF))).
+-spec map_user_selector(gleam@option:option(gleam@erlang@process:selector(MTJ))) -> gleam@option:option(gleam@erlang@process:selector(websocket_message(MTJ))).
 map_user_selector(Selector) ->
     gleam@option:map(
         Selector,
@@ -153,15 +131,15 @@ map_user_selector(Selector) ->
         end
     ).
 
--file("src/mist/internal/websocket.gleam", 299).
+-file("src/mist/internal/websocket.gleam", 281).
 ?DOC(false).
 -spec apply_frames(
     list(gramps@websocket:frame()),
-    fun((MPV, handler_message(MPW), websocket_connection()) -> mist@internal@next:next(MPV, MPW)),
+    fun((MSZ, handler_message(MTA), websocket_connection()) -> mist@internal@next:next(MSZ, MTA)),
     websocket_connection(),
-    mist@internal@next:next(MPV, websocket_message(MPW)),
-    fun((MPV) -> nil)
-) -> mist@internal@next:next(MPV, websocket_message(MPW)).
+    mist@internal@next:next(MSZ, websocket_message(MTA)),
+    fun((MSZ) -> nil)
+) -> mist@internal@next:next(MSZ, websocket_message(MTA)).
 apply_frames(Frames, Handler, Connection, Next, On_close) ->
     case {Frames, Next} of
         {_, {abnormal_stop, Reason}} ->
@@ -177,23 +155,20 @@ apply_frames(Frames, Handler, Connection, Next, On_close) ->
             ),
             Next@1;
 
-        {[{control, {close_frame, _, _}} = Frame | _], {continue, State, _}} ->
+        {[{control, {close_frame, Reason@1}} | _], {continue, State, _}} ->
             _ = glisten@transport:send(
                 erlang:element(3, Connection),
                 erlang:element(2, Connection),
-                gramps@websocket:frame_to_bytes_tree(Frame, none)
+                gramps@websocket:encode_close_frame(Reason@1, none)
             ),
             On_close(State),
             normal_stop;
 
-        {[{control, {ping_frame, Length, Payload}} | _], {continue, State@1, _}} ->
+        {[{control, {ping_frame, Payload}} | _], {continue, State@1, _}} ->
             _pipe = glisten@transport:send(
                 erlang:element(3, Connection),
                 erlang:element(2, Connection),
-                gramps@websocket:frame_to_bytes_tree(
-                    {control, {pong_frame, Length, Payload}},
-                    none
-                )
+                gramps@websocket:encode_pong_frame(Payload, none)
             ),
             _pipe@1 = gleam@result:map(
                 _pipe,
@@ -213,9 +188,9 @@ apply_frames(Frames, Handler, Connection, Next, On_close) ->
                 end
             );
 
-        {[Frame@1 | Rest], {continue, State@2, Prev_selector}} ->
-            case mist_ffi:rescue(
-                fun() -> Handler(State@2, {internal, Frame@1}, Connection) end
+        {[Frame | Rest], {continue, State@2, Prev_selector}} ->
+            case exception_ffi:rescue(
+                fun() -> Handler(State@2, {internal, Frame}, Connection) end
             ) of
                 {ok, {continue, State@3, Selector}} ->
                     Next_selector = begin
@@ -240,45 +215,46 @@ apply_frames(Frames, Handler, Connection, Next, On_close) ->
                         On_close
                     );
 
-                {ok, {abnormal_stop, Reason@1}} ->
+                {ok, {abnormal_stop, Reason@2}} ->
                     On_close(State@2),
-                    {abnormal_stop, Reason@1};
+                    {abnormal_stop, Reason@2};
 
                 {ok, normal_stop} ->
                     On_close(State@2),
                     normal_stop;
 
-                {error, Reason@2} ->
+                {error, Reason@3} ->
                     logging:log(
                         error,
                         <<"Caught error in websocket handler: "/utf8,
-                            (gleam@string:inspect(Reason@2))/binary>>
+                            (gleam@string:inspect(Reason@3))/binary>>
                     ),
                     On_close(State@2),
                     {abnormal_stop, <<"Crash in user websocket handler"/utf8>>}
             end
     end.
 
--file("src/mist/internal/websocket.gleam", 90).
+-file("src/mist/internal/websocket.gleam", 84).
 ?DOC(false).
 -spec initialize_connection(
-    fun((websocket_connection()) -> {MPF,
-        gleam@option:option(gleam@erlang@process:selector(MPG))}),
-    fun((MPF) -> nil),
-    fun((MPF, handler_message(MPG), websocket_connection()) -> mist@internal@next:next(MPF, MPG)),
+    fun((websocket_connection()) -> {MSM,
+        gleam@option:option(gleam@erlang@process:selector(MSN))}),
+    fun((MSM) -> nil),
+    fun((MSM, handler_message(MSN), websocket_connection()) -> mist@internal@next:next(MSM, MSN)),
     glisten@socket:socket(),
     glisten@transport:transport(),
     list(binary())
 ) -> {ok,
-        gleam@otp@actor:started(gleam@erlang@process:subject(websocket_message(MPG)))} |
+        gleam@otp@actor:started(gleam@erlang@process:subject(websocket_message(MSN)))} |
     {error, nil}.
 initialize_connection(On_init, On_close, Handler, Socket, Transport, Extensions) ->
+    Takeovers = gramps@websocket:get_context_takeovers(Extensions),
     _pipe@7 = gleam@otp@actor:new_with_initialiser(
         500,
         fun(Subject) ->
             Compression = case gramps@websocket:has_deflate(Extensions) of
                 true ->
-                    {some, gramps@websocket@compression:init()};
+                    {some, gramps@websocket@compression:init(Takeovers)};
 
                 false ->
                     none
@@ -326,15 +302,15 @@ initialize_connection(On_init, On_close, Handler, Socket, Transport, Extensions)
                 )},
             case Msg of
                 {valid, {socket_message, Data}} ->
-                    {Frames, Rest} = get_messages(
+                    {Frames, Rest} = gramps@websocket:decode_many_frames(
                         <<(erlang:element(2, State))/bitstring, Data/bitstring>>,
-                        [],
                         gleam@option:map(
                             erlang:element(4, State),
                             fun(Compression@3) ->
                                 erlang:element(2, Compression@3)
                             end
-                        )
+                        ),
+                        []
                     ),
                     _pipe@8 = Frames,
                     _pipe@9 = gramps@websocket:aggregate_frames(
@@ -355,13 +331,10 @@ initialize_connection(On_init, On_close, Handler, Socket, Transport, Extensions)
                             case Next of
                                 {continue, User_state, Selector@1} ->
                                     Next@1 = gleam@otp@actor:continue(
-                                        begin
-                                            _record = State,
-                                            {websocket_state,
-                                                Rest,
-                                                User_state,
-                                                erlang:element(4, _record)}
-                                        end
+                                        {websocket_state,
+                                            Rest,
+                                            User_state,
+                                            erlang:element(4, State)}
                                     ),
                                     case Selector@1 of
                                         {some, Selector@2} ->
@@ -378,10 +351,10 @@ initialize_connection(On_init, On_close, Handler, Socket, Transport, Extensions)
                                     _ = gleam@option:map(
                                         erlang:element(4, State),
                                         fun(Contexts) ->
-                                            zlib:close(
+                                            gramps@websocket@compression:close(
                                                 erlang:element(3, Contexts)
                                             ),
-                                            zlib:close(
+                                            gramps@websocket@compression:close(
                                                 erlang:element(2, Contexts)
                                             )
                                         end
@@ -392,10 +365,10 @@ initialize_connection(On_init, On_close, Handler, Socket, Transport, Extensions)
                                     _ = gleam@option:map(
                                         erlang:element(4, State),
                                         fun(Contexts@1) ->
-                                            zlib:close(
+                                            gramps@websocket@compression:close(
                                                 erlang:element(3, Contexts@1)
                                             ),
-                                            zlib:close(
+                                            gramps@websocket@compression:close(
                                                 erlang:element(2, Contexts@1)
                                             )
                                         end
@@ -415,8 +388,12 @@ initialize_connection(On_init, On_close, Handler, Socket, Transport, Extensions)
                             _ = gleam@option:map(
                                 erlang:element(4, State),
                                 fun(Contexts@2) ->
-                                    zlib:close(erlang:element(3, Contexts@2)),
-                                    zlib:close(erlang:element(2, Contexts@2))
+                                    gramps@websocket@compression:close(
+                                        erlang:element(3, Contexts@2)
+                                    ),
+                                    gramps@websocket@compression:close(
+                                        erlang:element(2, Contexts@2)
+                                    )
                                 end
                             ),
                             gleam@otp@actor:stop_abnormal(
@@ -426,7 +403,7 @@ initialize_connection(On_init, On_close, Handler, Socket, Transport, Extensions)
                     );
 
                 {valid, {user_message, Msg@1}} ->
-                    _pipe@11 = mist_ffi:rescue(
+                    _pipe@11 = exception_ffi:rescue(
                         fun() ->
                             Handler(
                                 erlang:element(3, State),
@@ -453,13 +430,10 @@ initialize_connection(On_init, On_close, Handler, Socket, Transport, Extensions)
                                         )
                                     end,
                                     Next@2 = gleam@otp@actor:continue(
-                                        begin
-                                            _record@1 = State,
-                                            {websocket_state,
-                                                erlang:element(2, _record@1),
-                                                User_state@1,
-                                                erlang:element(4, _record@1)}
-                                        end
+                                        {websocket_state,
+                                            erlang:element(2, State),
+                                            User_state@1,
+                                            erlang:element(4, State)}
                                     ),
                                     case Selector@4 of
                                         {some, Selector@5} ->
@@ -476,10 +450,10 @@ initialize_connection(On_init, On_close, Handler, Socket, Transport, Extensions)
                                     _ = gleam@option:map(
                                         erlang:element(4, State),
                                         fun(Contexts@3) ->
-                                            zlib:close(
+                                            gramps@websocket@compression:close(
                                                 erlang:element(3, Contexts@3)
                                             ),
-                                            zlib:close(
+                                            gramps@websocket@compression:close(
                                                 erlang:element(2, Contexts@3)
                                             )
                                         end
@@ -491,10 +465,10 @@ initialize_connection(On_init, On_close, Handler, Socket, Transport, Extensions)
                                     _ = gleam@option:map(
                                         erlang:element(4, State),
                                         fun(Contexts@4) ->
-                                            zlib:close(
+                                            gramps@websocket@compression:close(
                                                 erlang:element(3, Contexts@4)
                                             ),
-                                            zlib:close(
+                                            gramps@websocket@compression:close(
                                                 erlang:element(2, Contexts@4)
                                             )
                                         end
@@ -519,8 +493,12 @@ initialize_connection(On_init, On_close, Handler, Socket, Transport, Extensions)
                             _ = gleam@option:map(
                                 erlang:element(4, State),
                                 fun(Contexts@5) ->
-                                    zlib:close(erlang:element(3, Contexts@5)),
-                                    zlib:close(erlang:element(2, Contexts@5))
+                                    gramps@websocket@compression:close(
+                                        erlang:element(3, Contexts@5)
+                                    ),
+                                    gramps@websocket@compression:close(
+                                        erlang:element(2, Contexts@5)
+                                    )
                                 end
                             ),
                             On_close(erlang:element(3, State)),
@@ -534,8 +512,12 @@ initialize_connection(On_init, On_close, Handler, Socket, Transport, Extensions)
                     _ = gleam@option:map(
                         erlang:element(4, State),
                         fun(Contexts@6) ->
-                            zlib:close(erlang:element(3, Contexts@6)),
-                            zlib:close(erlang:element(2, Contexts@6))
+                            gramps@websocket@compression:close(
+                                erlang:element(3, Contexts@6)
+                            ),
+                            gramps@websocket@compression:close(
+                                erlang:element(2, Contexts@6)
+                            )
                         end
                     ),
                     On_close(erlang:element(3, State)),
@@ -549,8 +531,12 @@ initialize_connection(On_init, On_close, Handler, Socket, Transport, Extensions)
                     _ = gleam@option:map(
                         erlang:element(4, State),
                         fun(Contexts@7) ->
-                            zlib:close(erlang:element(3, Contexts@7)),
-                            zlib:close(erlang:element(2, Contexts@7))
+                            gramps@websocket@compression:close(
+                                erlang:element(3, Contexts@7)
+                            ),
+                            gramps@websocket@compression:close(
+                                erlang:element(2, Contexts@7)
+                            )
                         end
                     ),
                     On_close(erlang:element(3, State)),
@@ -575,12 +561,12 @@ initialize_connection(On_init, On_close, Handler, Socket, Transport, Extensions)
                                 file => <<?FILEPATH/utf8>>,
                                 module => <<"mist/internal/websocket"/utf8>>,
                                 function => <<"initialize_connection"/utf8>>,
-                                line => 277,
+                                line => 272,
                                 value => _assert_fail,
-                                start => 8631,
-                                'end' => 8694,
-                                pattern_start => 8642,
-                                pattern_end => 8659})
+                                start => 8567,
+                                'end' => 8630,
+                                pattern_start => 8578,
+                                pattern_end => 8595})
             end,
             case glisten@transport:controlling_process(
                 Transport,
@@ -594,12 +580,12 @@ initialize_connection(On_init, On_close, Handler, Socket, Transport, Extensions)
                                 file => <<?FILEPATH/utf8>>,
                                 module => <<"mist/internal/websocket"/utf8>>,
                                 function => <<"initialize_connection"/utf8>>,
-                                line => 278,
+                                line => 273,
                                 value => _assert_fail@1,
-                                start => 8699,
-                                'end' => 8787,
-                                pattern_start => 8710,
-                                pattern_end => 8715})
+                                start => 8635,
+                                'end' => 8723,
+                                pattern_start => 8646,
+                                pattern_end => 8651})
             end,
             set_active(Transport, Socket),
             Subj

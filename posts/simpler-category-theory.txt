@@ -1,0 +1,240 @@
+id: simpler-category-theory
+title: Simpler Category Theory
+date: 2025-08-20
+tags: programming,language,formal,monoid,group
+blerb: Category theory seems to be all the rage in cutting-edge programming language research and in typed functional programming. This post offers a simple entrypoint.
+
+A lot of advanced concepts in programming language research and functional programming recently has heavily referenced ideas from the field of category theory. This post hopes to offer an accessible tutorial for those who want to dig deeper into the scary mathy research papers. I have another popular [post](/posts/getting-started-category-theory) with a similar purpose, but this post is just generally better and also hopefully reflecting [Terence Tao's second stage of rigor](https://terrytao.wordpress.com/career-advice/theres-more-to-mathematics-than-rigour-and-proofs/), whereas the other post is generally stuck in the first stage. The other post is absolutely not an expected prerequisite for this one, so don't worry about that. In fact I would probably recommend reading this one first, and that one after!
+
+### A Detour Through Group Theory
+
+First I'll mention group theory; if you're comfortable with it already you can skip this section. It seems many people have heard of it, and foggy images of Rubik's cubes, clocks, and snowflakes might come to mind. A group is a system for talking about *reversibility* in a mathematical way. It can also be understood in terms of symmetry or things that cancel out. Because it's describing something that shows up almost everywhere, we're going to use a lot of letters, standing in the place of actual real-world things (more on this in a moment). The most fundamental rule of a group is this equation:
+
+@math
+a\cdot a^{-1} = e
+
+Here \\(\\cdot\\) intuitively means "and then," and \\(e\\) represents "nothing." Group theory needs this notion of nothingness, because the above equation is saying "Any \\(a\\) followed by its inverse amounts to nothing." That is, \\(a\\) and \\(a^{-1}\\) are two elements in the group that "reverse" each other or "cancel-out." To capture this formally we need a few more rules:
+
+@math
+a^{-1}\cdot a = e
+
+@math
+a\cdot e = a
+
+@math
+e\cdot a = a
+
+@math
+a\cdot(b\cdot c)=(a\cdot b)\cdot c
+
+We need the second rule because \\(a\\cdot b\\) might not be the same as \\(b\\cdot a\\). So in *general* the order of elements matters, but for cancelling-out it doesn't matter if the inverse is on the left side or the right side of the \\(\\cdot\\). The third and fourth rule just state that \\(e\\) is basically nothing. The fifth rule ("associativity") lets us write \\(a\\cdot b\\cdot c\\), by stating that the various ways to parenthesize it are equal, so we don't need parentheses. With these rules we can prove the following:
+
+@math
+a\cdot a^{-1}\cdot b = b
+
+First we replace the \\(a\\) and its inverse with \\(e\\), then we apply the fourth rule to get rid of the \\(e\\), ending up with \\(b\\). A very pleasant proof: this feels a bit like middle-school algebra!
+
+Now, what *are* these letters exactly? We have some sense of \\(e\\) (but not much) and some sense of \\(\\cdot\\) (but not much), and we don't really know what \\(a\\) and \\(b\\) are at all. Well, the classic example uses a Rubik's cube: we can say that \\(a\\) rotates the top horizontal part 90 degrees clockwise, and \\(b\\) rotates the middle horizontal part 90 degrees clockwise. \\(e\\) then would have to be rotating something 0 or 360 degrees (or some multiple of 360 degrees): "doing nothing." \\(\\cdot\\) refers to doing the motions in sequence. We would then use letters \\(c\\), \\(d\\), etc. for all the other 90-degree, 180-degree, and 270-degree clockwise rotations of Rubik's cube sections. Note that one of these (say, \\(n\\)) refers to rotating the top horizontal part 270 degrees clockwise, which perfectly undoes \\(a\\). So we can say \\(n=a^{-1}\\). If we recall the expression \\(a\\cdot a^{-1}\\cdot b\\), this refers to rotating the top horizontal part 90 degrees, then 270 degrees, then rotating the middle horizontal part 90 degrees. If you do these steps in this order, the end result is the same as just rotating the middle horizontal part 90 degrees: the whole thing indeed equals \\(b\\)!
+
+Ok, so the letters, the group elements, are Rubik's cube motions. Right? Unfortunately not. Other groups are very different. Take the integers, with addition. We'll say \\(e=0\\), \\(\\cdot=+\\), and \\(a^{-1}=-a\\). Then the letters mean integers: if \\(a=6\\) and \\(b=-32\\), then \\(a\\cdot a^{-1}\\cdot b=6+(-6)+(-32)=-32\\). This is another valid group! Group theory wants to talk about *every group at the same time.* Therefore we just use letters for the elements. We also ignore details of the particular groups: Rubik's cubes have the equation \\(a\\cdot a\\cdot a=a^{-1}\\), but our integer group does not, so we can't use this equation in pure group theory. After all, if we depended on this equation in a proof and then tried to use our proof on our integer group, it would likely go quite badly!
+
+I say all of this about letters and group theory to get us comfortable using letters and operations without even *caring* about what they represent. This can be a bump in the learning curve for a lot of people, but it's crucial for getting into category theory!
+
+### Monoid Theory
+
+Now let me introduce a concept that sounds pretty scary: "monoids." Most people who have heard of monoids might think of the term as nothing more than incomprehensible alien-speak, but it's actually a very simple idea. We just get rid of our first two rules for groups! We've still got a "do nothing" element \\(e\\), and it disappears as we expect, but besides that nothing cancels out anymore. That is to say, in *monoid* theory we can't cancel them out; individual monoids can still have their own extra equations, like the Rubik's cube example for group theory. This means that every group is a monoid: anything that satisfies our five rules of group theory clearly satisfy our last three rules of group theory! \\(a\\cdot e\\cdot b=a\\cdot b\\) is something you can prove in monoid theory, and indeed it's true in both of our group examples.
+
+The point of monoid theory is that there are many monoids that aren't groups, and therefore aren't described by group theory. For example, imagine stacks of plates. You can put a stack of three plates on top of a stack of four plates, and you may find you've constructed a stack of seven plates. Putting a stack of zero plates on a stack gives the same stack, as does putting a stack on top of a stack of zero plates. But we're just talking about adding plates, not removing them, so there's no way to undo these actions. Once you've put three plates on top of four plates, there's no amount of plates you can add to get to four plates. This isn't a group, but it is a monoid, and our \\(a\\cdot e\\cdot b=a\\cdot b\\) equation works for it.
+
+### Category Theory
+
+This is a post about category theory, right? To get to category theory we'll need to remove one last thing. So far we've been able to use \\(\\cdot\\) for *any* two elements in the group or monoid. Now let's imagine that our elements are jigsaw puzzle pieces. The left and right have a certain shape, and \\(a\\cdot b\\) is only defined when the right side of \\(a\\) has the matching shape for the left side of \\(b\\). This is a category. As you can imagine, every monoid is a category (one where all edges match) and therefore every group is a category too. 
+
+In category theory we write \\(;\\) instead of \\(\\cdot\\) for the operator, but this is just a cosmetic change. You'll often see \\(\\circ\\) used instead, pronounced "after," which is just \\(;\\) with the sides flipped: \\(a;b=b\\circ a\\). I'm not going to use \\(\\circ\\) here because it brings in unnecessary confusion. We also typically call the elements "morphisms," precisely because it's a meaningless word and therefore doesn't come with any mental connotations.
+
+We also need one more thing to form a category. For every edge-shape, one of the morphisms has to have that edge shape on both the left and the right side. Let's call the edge-shape \\(A\\), and the morphism \\(\\texttt{id}_A\\). This will serve the purpose of the "do nothing" element \\(e\\) in monoid and group theory, so we furthermore need the equations \\(\\texttt{id}_A;a=a;\\texttt{id}_B=a\\) for any morphism \\(a\\) with an \\(A\\)-shaped left edge and a \\(B\\)-shaped right edge. (For these morphisms we write \\(a:A\\to B\\).) Notice that now there isn't just one "do nothing" element, but one for every edge-shape!
+
+Even though the concept of matching edges on jigsaw puzzle pieces is very useful for thinking about category theory, I'm now going to switch to the actual term: "objects." When a category theorist says "a morphism \\(f\\) goes from object \\(A\\) to object \\(B\\)," they mean there's an element \\(f\\) with an \\(A\\)-shaped left edge and a \\(B\\)-shaped right edge, aka \\(f:A\\to B\\). We confusingly call the morphisms "arrows" between objects, with is sometimes helpful but often harmful, losing the nice (and effective!) intuition of middle-school algebra. A lot of the beginner ideas in category theory can be easily understood using "arrows" between "objects," but I've personally found that the ceiling here is surprisingly low. 
+
+### Using Category Theory
+
+In functional programming and PL theory, we often want our objects to be types, as in `int` and `void`. We then have a category of typed functions, like \\(\\texttt{len}:\\texttt{str}\\to\\texttt{int}\\). Our \\(a;b\\) operator is defined to be some function \\(c\\) such that \\(c(x)=b(a(x))\\), that is, applying \\(a\\) to the input and then applying \\(b\\) to that. As you can imagine, for \\(f:A\\to B\\) and \\(g:B\\to C\\), \\(f;g:A\\to C\\), as is the case in any category.
+
+I'm going to call our category of types and functions \\(H\\).
+
+As vaguely interesting as \\(H\\) may be, things get actually useful when we consider *categories of categories.* Let's call this \\(\\texttt{Cat}\\). What we mean when we say this is categories where the *objects* (element-edge-shapes) are categories. A morphism \\(F:C\\to D\\) from a category \\(C\\) to a category \\(D\\) is basically a function that turns every object \\(A\\) in \\(C\\) into an object in \\(D\\) which, for the sake of fewer names, I'll just call \\(F(A)\\). \\(F\\) also turns every morphism \\(a:A\\to B\\) in \\(C\\) into a morphism \\(F(a):F(A)\\to F(B)\\) in \\(D\\). We'll also require a few useful equations:
+
+@math
+F(f;g)=F(f);F(g)
+
+@math
+F(\texttt{id}_A)=\texttt{id}_{F(A)}
+
+That is, these morphisms "preserve" composition and identities. If you're quite familiar with abstract algebra (including group theory) you might expect to call these morphisms "category homomorphisms." Instead we call them "functors." It's a useless and unfortunate name. But with functors, we can form a category where the objects are categories, namely the category \\(\\texttt{Cat}\\). To avoid paradoxes, \\(\\texttt{Cat}\\) is not an object inside itself; I won't get into the details of that here.
+
+If you're familiar with Haskell, you're likely perking up at the word "functor." How can it be that these functions between categories, these morphisms in a *category of categories,* are the same as the functors you might be used to in a language like Haskell? The answer is that Haskell functors go from the category of types and functions *back to the category of types and functions,* like they form a little loop. Or in other words, they're morphisms in \\(\\texttt{Cat}\\) that have the category of types and functions on *both* the left and right. The functor \\(\\texttt{Maybe}\\) turns the type \\(\\texttt{Int}\\) into the type \\(\\texttt{Maybe Int}\\), and the morphism \\(\\texttt{plusTwo}:\\texttt{Int}\\to\\texttt{Int}\\) into the morphism \\(\\texttt{Maybe}(\\texttt{plusTwo}):\\texttt{Maybe(Int)}\\to\\texttt{Maybe(Int)}\\).
+
+So \\(\\texttt{Cat}\\) has already given us a deeper understanding of the structure of our category of types and functions, giving us a richer language of datatypes and functions. Beginners often think of functors as data structures, since lists and trees are functors too, turning a given type \\(\\texttt{T}\\) into the type of a datastructure holding values of type \\(\\texttt{T}\\). Functors are much more broad a concept than just datastructures, however, so be careful to not get trapped in a mental rut when you see a functor that looks nothing like a datastructure!
+
+### Product Categories
+
+Lets construct another useful category, called a "product category." I'll write \\(C\\times D\\), where \\(C\\) and \\(D\\) are other categories. The objects here will be *pairs* of objects, the left one being from \\(C\\) and the right one being from \\(D\\). The morphisms will be pair of morphisms \\((f,g):(A,X)\\to(B,Y)\\), where \\(f:A\\to B\\) is a morphism in \\(C\\) and \\(g:X\\to Y\\) is a morphism in \\(D\\). The reason we write \\(C\\times D\\) and call it a "product category" is because the number of morphisms from \\((A,X)\\) to \\((B,Y)\\) is equal to the number of morphisms from \\(A\\) to \\(B\\) in \\(C\\) *times* the number of morphisms from \\(X\\) to \\(Y\\) in \\(D\\). You can imagine drawing out a multiplication table for them!
+
+Composition and identity in a product category works how you'd expect. For \\((f,g):(A,X)\\to(B,Y)\\) and \\((h,k):(B,Y)\\to(Z,W)\\), \\((f,g);(h,k):(A,X)\\to(Z,W)\\) is defined as the pair \\((f;h,g;k)\\). For every object \\((A,B)\\), \\(id_{(A,B)}:(A,B)\\to(A,B)\\) is defined as the pair \\((id_A,id_B)\\).
+
+Whew! That took a bunch of math-speak to define clearly, but hopefully you can see that a product category \\(C\\times D\\) is just pairs of everything, where the left side is always from \\(C\\) and the right side is always from \\(D\\). 
+
+This is more powerful than you'd expect! Why? For any two categories in our \\(\\texttt{Cat}\\), their product category is *also* in the \\(\\texttt{Cat}\\)! This means we can start using functors to get even more value!
+
+Consider something like `Result<T, U>`, or the equivalent in Haskell, `Either a b`. This is *not* a functor from \\(H\\) to itself. This is a functor from \\(H\\times H\\) to \\(H\\)! Every object \\((A,B)\\) in \\(H\\times H\\) gets turned into the object \\(\\texttt{Result}(A,B)\\) in \\(H\\), and every morphism \\((f,g):(A,X)\\to(B,Y)\\) in \\(H\\times H\\) gets turned into the morphism \\(\\texttt{Result}(f,g):\\texttt{Result}(A,X)\\to\\texttt{Result}(B,Y)\\) in \\(H\\). We know this particular morphism either runs \\(f\\) or \\(g\\), depending on if it's a success value or failure value. One can indeed prove that this satisfies the rules functors need to follow.
+
+A functor out of a product category is called a "bifunctor," to indicate that it can be thought of as taking two arguments. Bifunctors from some product category \\(C\\times C\\) into \\(C\\) (for any category \\(C\\)) offer a nice notion of "binary operator" for the objects and morphisms in \\(C\\), living alongside the main binary operator for morphisms, namely composition. 
+
+### Coming Full Circle
+
+In fact, we can build something like a monoid! A "monoidal category" roughly copies the definition of a monoid: a monoidal category is (essentially) a category \\(C\\) with a bifunctor \\(\\otimes:C\\times C\\to C\\) that's associative (\\(A\\otimes(B\\otimes C)=(A\\otimes B)\\otimes C\\)) and has an object \\(1:C\\) such that \\(A\\otimes 1=A=1\\otimes A\\).
+
+Now what about this "roughly" and "essentially" in that last paragraph? What's up with that wishy-washy language? We'll need to talk about how category theory thinks about equivalence.
+
+Category theory generally doesn't operate with equality. It has a few other "notions of sameness" it uses. 
+
+The most important one is called isomorphism. Two objects \\(A\\) and \\(B\\) in a category \\(C\\) are "isomorphic" if there exist two morphisms \\(a:A\\to B\\) and \\(b:B\\to A\\) such that \\(a;b=id_A\\) and \\(b;a=id_B\\). That essentially means the two morphisms "cancel out" with each other, or that either of them is "reversible." These concepts should remind you of group theory! It's very meaninful that these equations look like our first equation in this post.
+
+Isomorphism is a useful notion of sameness because if you have a reversible operation, that means nothing is "lost in translation," which is only possible if the output object has all the same information you started with. Indeed, if you think in terms of composition, and you imagine an two objects \\(X,Y:C\\) and two morphisms \\(c:X\\to A\\) and \\(d: A\\to Y\\), then you can use the isomorphism to get the morphisms \\(c;a:X\\to B\\) and \\(b;d:B\\to Y\\). Expanding on that process a little and you can hopefully imagine that *all* the arrows in and out of \\(A\\) have corresponding arrows in and out of \\(B\\) and vice versa! All the more reason it's useful to think of \\(A\\) and \\(B\\) as indistinguishable.
+
+@diagram
+    & B\ar[dr,"b;d"]\ar[d,"b"] & \\
+    X\ar[ur,"c;a"]\ar[r,"c"] & A\ar[r,"d"]\ar[u,"a"] & Y
+
+Now notice that when we define isomorphism we use equations. The appropriate notion for sameness of objects is isomorphism, but the appropriate notion of sameness for morphisms is equality. Functors and categories have their own appropriate notions of sameness, called "natural isomorphism" and "equivalence of categories" respectively, but I won't really dig into these in this post.
+
+Let's return to monoidal categories, which I discussed briefly above. We've got a bifunctor \\(\\otimes\\) that acts as our monoidal operator on objects, mapping pairs of objects into other objects. It's associative "up to natural isomorphism," which basically means any two objects \\(A\\otimes(B\\otimes C)\\) and \\((A\\otimes B)\\otimes C\\) are isomorphic (instead of equal, as was the case for monoids). Similarly it has a unit object \\(1\\) up to isomorphism, meaning any object \\(A\\) is isomorphic to \\(1\\otimes A\\) and \\(A\\otimes 1\\).
+
+This flexibility is very important. For example, our `Result`/`Either` bifunctor above actually makes \\(H\\) a monoidal category, using `Void` as the unit object:
+
+@code(hs)
+assoc1 :: Either a (Either b c) -> Either (Either a b) c
+assoc1 e = case e of
+  Left a -> Left (Left a)
+  Right (Left b) -> Left (Right b)
+  Right (Right c) -> Right c\n
+assoc2 :: Either (Either a b) c -> Either a (Either b c)
+assoc2 e = case e of
+  Left (Left a) -> Left a
+  Left (Rigth b) -> Right (Left b)
+  Right c -> Right (Right c)\n
+-- assoc1 ; assoc2 = id
+-- assoc2 ; assoc1 = id\n
+unit1 :: a -> Either a Void
+unit1 = Left\n
+unit2 :: Either a Void -> a
+unit2 e = case e of
+  Left a -> a
+  Right v -> absurd v\n
+-- you get the idea...
+unit3 :: a -> Either Void a
+unit4 :: Either Void a -> a
+unit5 :: Either Void a -> Either a Void
+unit6 :: Either a Void -> Either Void a
+
+Writing all these functions obviously gets very tedious so I won't do that very much in this post, but I hope this example was illustrative of how isomorphisms tend to work. `Result<A, Result<B, C>>` is isomorphic to `Result<Result<A, B>, C>` because you're just rearranging the constructors a bit; in both cases it's just a tagged union with three cases, namely `A`, `B`, and `C`.
+
+ \\(H\\) has another useful monoidal bifunctor we should talk about, the type of pairs. For any two types `A` and `B`, `(A, B)` is the type for pairs whose first value is in `A` and whose second value is in `B`. Of course, we can define a bifunctor that maps any pair of types into their corresponding, well, pair type. This is indeed monoidal, with the unit being, well, the unit type `()`. To give a sense of why, I'll implement just one more isomorphism:
+
+@code(hs)
+unit1 :: a -> (a, ())
+unit1 a = (a, ())
+unit2 :: (a, ()) -> a
+unit2 = fst\n
+-- unit1 ; unit2 = id
+-- unit2 ; unit1 = id
+
+The unit type being "no information," putting it in a pair "adds no information" to the pair, so we get this pair of reversible functions that cancel each other out.
+
+Now, this pair type kind of seems like our earlier notion of product category. In fact, we can see \\(\\texttt{Cat}\\) as a monoidal category itself, using product categories! This requires "going a level up;" categories like \\(\\texttt{Cat}\\) that are "too big" to go in \\(\\texttt{Cat}\\) actually can be put in a category with each other, and a notion of functor between these categories can be defined, and product categories, and therefore the product \\(\\texttt{Cat}\\times\\texttt{Cat}\\), with a bifunctor mapping these pairs-of-categories into categories in \\(\\texttt{Cat}\\), including a bifunctor that maps a pair of categories \\((C, D)\\) into the product category \\(C\\times D\\). Isn't that brain-bending! We can use a category with one object and no morphisms (except the identity) as the unit to make \\(\\texttt{Cat}\\) monoidal.
+
+These monoidal categories based on pairs have a special name: "cartesian categories." This is a reference to the "cartesian plane" you may have heard of in high school and college math classes, which are built out of, well, pairs! More specifically, points \\((x, y)\\). A cartesian category is a monoidal category where the monoidal operator \\(\\otimes\\) is generally written \\(\\times\\), where there are morphisms \\(\\texttt{fst}_{X,Y}:X\\times Y\\to X\\) and \\(\\texttt{snd}: X\\times Y\\to Y\\), and one final rule: for any object \\(Z\\) with morphisms \\(a:Z\\to X\\) and \\(b:Z\\to Y\\), there's one (and exactly one!) morphism \\(h:Z\\to X\\times Y\\) such that:
+
+@math
+h;\texttt{fst}=a
+
+@math
+h;\texttt{snd}=b
+
+@diagram
+    & Z\ar[ld,"a"']\ar[rd,"b"]\ar[d,"h"] & \\
+    X & X\times Y\ar[l,"\texttt{fst}"]\ar[r,"\texttt{snd}"'] & Y
+
+In haskell we can define this unique morphism as:
+
+@code(hs)
+a :: z -> x
+b :: z -> y
+h :: z -> (x, y)
+h z = (a z, b z)
+
+It's worth chewing on this for a while, to try and convince yourself that `(h ; fst) = a` and `(h ; snd) = b` and that this implementation is the only `h` that would satisfy these equations.
+
+The monoidal bifunctor of a cartesian category is called a "product." Which is an unfortunate overloading of a term with many other meanings! 
+
+We can flip the arrows to get a "coproduct" in a "cocartesian category," where the monoidal bifunctor is generally written \\(+\\). Here we get \\(\\texttt{inl}:X\\to X+Y\\) and \\(texttt{inr}:Y\\to X+Y\\), and for any \\(Z\\) with \\(a:X\\to Z\\) and \\(b:Y\\to Z\\), exactly one \\(h:X+Y\\to Z\\) such that \\(\\texttt{inl};h=a\\) and \\(texttt{inr};h=b\\). 
+
+@diagram
+    & Z & \\
+    X\ar[ru,"a"]\ar[r,"\texttt{inl}"'] & X+Y\ar[u,"h"'] & Y\ar[l,"\texttt{inr}"] \ar[lu,"b"']
+
+If you haven't yet guessed, `Either`/`Result` is a coproduct in \\(H\\), so \\(H\\) is both a cartesian category *and* a cocartesian category! This is called a "bicartesian category."
+
+@code(hs)
+a :: x -> z
+b :: y -> z
+h :: Either x y -> z
+h e = case e of
+  Left x -> a x    -- inl
+  Right y -> b y   -- inr
+-- h is just pattern matching,
+-- modeled by category theory equations!
+
+### One Last Example
+
+That last section got extremely theoretical and technical, so let's ground ourselves with one last simpler concept worth knowing. That is the idea of an "exponential object." This is an object written \\(Y^X\\) where \\(X\\) and \\(Y\\) are other objects in the category. 
+
+I'm going to give the definition, and then we'll take time to unpack it. An exponential object is any object that satisfies these two rules: there's a morphism \\(\\texttt(eval):Y^X\\otimes X\\to Y\\), and for any object \\(Z\\) with an arrow \\(a:Z\\otimes X\\to Y\\), there's exactly one arrow \\(h:Z\\to Y^X\\) such that \\(h\\otimes\\texttt{id}_X;\\texttt{eval}=a\\).
+
+@diagram
+    Z\otimes X\ar[d,"h\otimes id_X"']\ar[dr,"a"] & \\
+    Y^X\otimes X\ar[r,"\texttt{eval}"'] & Y
+
+Alright, what the heck does that mean? 
+
+Well, we see \\(\\otimes\\), so first of all exponential objects are only in monoidal categories, which have some operation that we're calling \\(\\otimes\\). This could be \\(\\times\\), \\(+\\), or some other monoidal bifunctor.
+
+For any exponential object \\(Y^X\\), there must exist a morphism \\(\\texttt{eval}:Y^X\\otimes X\\to Y\\). This is kind of weird, because we're not requiring any morphisms go in or out of the exponential object itself, we're only talking about how the exponential object combines with other objects using \\(\\otimes\\).
+
+The requirement for \\(\\texttt{eval}\\) is that, for any other object \\(Z\\) that combines the same way as the exponential object (namely, that there's a morphism \\(a: Z\\otimes X\\to Y\\)), there has to be a certain morphism from \\(Z\\) to \\(Y^X\\). In particular, it's a morphism (which I'll call \\(h\\)) such that \\(h\\otimes\\texttt{id}_X;\\texttt{eval}=a\\). 
+
+What the heck is \\(h\\otimes\\texttt{id}_X\\)? If you remember, \\(\\otimes\\) is a functor coming in from a product category, so it not only maps pairs of objects into single objects, but also pairs of morphisms into single morphisms! For any \\(a: X\\to Y\\) and \\(b: Z\\to W\\), \\(a\\otimes b\\) is some morphism from \\(X\\otimes Z\\to Y\\otimes W\\), and it's required to preserve composition, meaning \\((a;b)\\otimes(c;d)=(a\\otimes c);(b\\otimes d)\\), for any \\(a\\), \\(b\\), \\(c\\), \\(d\\). In our case here, \\(h\\otimes\\texttt{id}_X: Z\\otimes X\\to Y^X\\otimes X\\), that is, \\(h\\) tranforms the left side of the \\(\\otimes\\), and the right side stays the same (via \\(\\texttt{id}_X\\)).
+
+Ok, so the rules are hopefully a bit more intelligible now. Does an exponential object *mean* anything? Well, in programming, we can use exponential objects for modelling first-class functions!
+
+@code(hs)
+type Exp y x = x -> y\n
+-- I'll use pairs as our monoidal product in this example
+eval :: (Exp y x, x) -> y
+eval p = (fst p)(snd p)\n
+a :: (z, x) -> y
+h :: z -> Exp y x
+-- h just curries a!
+h z = \x-> a (z, x)
+
+Here we discover that our exponential object equations model not only single-argument functions, but also the equivalence between curried functions and functions that take a pair as their argument, giving a useful understanding of multiple-argument functions! This is something that's certainly worth chewing on for a while to let it sit!
+
+Exponential objects are a nice example here because they bring in a lot of the concepts we've just learned and push us a little in using those concepts cleverly and correctly. It's a nice way to close out the blog post.
+
+### Conclusion
+
+This approach to category theory kind of kicks "what things mean" to the curb, trying to encourage and embrace a way of thinking about this stuff where symbols don't really mean anything, they simply follow equations. If you can successfully learn to think this way, your understanding of these concepts will be much more flexible and dynamic. For example, coproducts may start to "look a certain way," where you think it's always the union of two collections or something like that, but then there are a ton of important coproducts that don't match that "look" at all, but nevertheless satisfy the coproduct equations. These don't need to become big mental stumbling blocks, if we just think very equation-first. I wish I started thinking this way sooner than I did!
+
+I'm planning on writing a bit more about category theory in the future, and I've gotten tired of linking back to my (much!) older category theory explanation, since I'm now a bit dissatisfied with it. So my main motivation for writing this is having a better resource to link to in the future. That said, I do think that if you made it this far in the post, that post covers many, *many* more category theory concepts than this one, and it's an excellent next resource to continue your category theory journey. I link other such resources there as well.
+
+As always, please don't hesitate to send me your questions! I hope you enjoyed the post :)

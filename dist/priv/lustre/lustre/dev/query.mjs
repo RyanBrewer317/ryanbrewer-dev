@@ -623,8 +623,8 @@ function find_matching_in_list(
         let rest = elements.tail;
         loop$elements = $list.append(first.children, rest);
         loop$selector = selector;
-        loop$path = path;
-        loop$index = index + 1;
+        loop$path = $path.add(path, index, first.key);
+        loop$index = 0;
       } else {
         let first = $;
         let rest = elements.tail;
@@ -645,7 +645,7 @@ function find_matching_in_list(
 function find_direct_child(parent, selector, path) {
   if (parent instanceof Fragment) {
     let children = parent.children;
-    return find_matching_in_list(children, selector, path, 1);
+    return find_matching_in_list(children, selector, path, 0);
   } else if (parent instanceof Element) {
     let children = parent.children;
     return find_matching_in_list(children, selector, path, 0);
@@ -709,7 +709,7 @@ function sort_selectors(selectors) {
           "panic",
           FILEPATH,
           "lustre/dev/query",
-          764,
+          756,
           "sort_selectors",
           "`All` selectors should be flattened",
           {}
@@ -720,7 +720,7 @@ function sort_selectors(selectors) {
             "panic",
             FILEPATH,
             "lustre/dev/query",
-            764,
+            756,
             "sort_selectors",
             "`All` selectors should be flattened",
             {}
@@ -748,7 +748,7 @@ function sort_selectors(selectors) {
             "panic",
             FILEPATH,
             "lustre/dev/query",
-            764,
+            756,
             "sort_selectors",
             "`All` selectors should be flattened",
             {}
@@ -806,7 +806,7 @@ function sort_selectors(selectors) {
             "panic",
             FILEPATH,
             "lustre/dev/query",
-            764,
+            756,
             "sort_selectors",
             "`All` selectors should be flattened",
             {}
@@ -833,7 +833,7 @@ function sort_selectors(selectors) {
             "panic",
             FILEPATH,
             "lustre/dev/query",
-            764,
+            756,
             "sort_selectors",
             "`All` selectors should be flattened",
             {}
@@ -859,7 +859,7 @@ function sort_selectors(selectors) {
           "panic",
           FILEPATH,
           "lustre/dev/query",
-          764,
+          756,
           "sort_selectors",
           "`All` selectors should be flattened",
           {}
@@ -1076,27 +1076,17 @@ function find_in_list(loop$elements, loop$query, loop$path, loop$index) {
     if (elements instanceof $Empty) {
       return new Error(undefined);
     } else {
-      let $ = elements.head;
-      if ($ instanceof Fragment) {
-        let first = $;
-        let rest = elements.tail;
-        loop$elements = $list.append(first.children, rest);
+      let first = elements.head;
+      let rest = elements.tail;
+      let $ = find_path(first, query, index, path);
+      if ($ instanceof Ok) {
+        let element$1 = $[0];
+        return new Ok(element$1);
+      } else {
+        loop$elements = rest;
         loop$query = query;
         loop$path = path;
         loop$index = index + 1;
-      } else {
-        let first = $;
-        let rest = elements.tail;
-        let $1 = find_path(first, query, index, path);
-        if ($1 instanceof Ok) {
-          let element$1 = $1[0];
-          return new Ok(element$1);
-        } else {
-          loop$elements = rest;
-          loop$query = query;
-          loop$path = path;
-          loop$index = index + 1;
-        }
       }
     }
   }
@@ -1147,7 +1137,15 @@ export function find_path(root, query, index, path) {
 function find_in_children(element, query, index, path) {
   if (element instanceof Fragment) {
     let children = element.children;
-    return find_in_list(children, query, path, index + 1);
+    return find_in_list(
+      children,
+      query,
+      (() => {
+        let _pipe = path;
+        return $path.add(_pipe, index, element.key);
+      })(),
+      0,
+    );
   } else if (element instanceof Element) {
     let children = element.children;
     return find_in_list(
@@ -1229,7 +1227,7 @@ function find_descendant(parent, selector, path) {
   } else {
     if (parent instanceof Fragment) {
       let children = parent.children;
-      return find_descendant_in_list(children, selector, path, 1);
+      return find_descendant_in_list(children, selector, path, 0);
     } else if (parent instanceof Element) {
       let children = parent.children;
       return find_descendant_in_list(children, selector, path, 0);

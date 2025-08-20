@@ -1,7 +1,7 @@
 -module(lustre@vdom@vnode).
 -compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch]).
 -define(FILEPATH, "src/lustre/vdom/vnode.gleam").
--export([advance/1, fragment/5, element/9, text/3, unsafe_inner_html/6, to_snapshot/1, to_string_tree/1, to_string/1, to_json/1, to_keyed/2]).
+-export([to_keyed/2, fragment/4, element/9, text/3, unsafe_inner_html/6, to_snapshot/1, to_string_tree/1, to_string/1, to_json/1]).
 -export_type([element/1]).
 
 -if(?OTP_RELEASE >= 27).
@@ -14,22 +14,21 @@
 
 ?MODULEDOC(false).
 
--type element(NWR) :: {fragment,
+-type element(NYU) :: {fragment,
         integer(),
         binary(),
         fun((gleam@dynamic:dynamic_()) -> gleam@dynamic:dynamic_()),
-        list(element(NWR)),
-        lustre@internals@mutable_map:mutable_map(binary(), element(NWR)),
-        integer()} |
+        list(element(NYU)),
+        lustre@internals@mutable_map:mutable_map(binary(), element(NYU))} |
     {element,
         integer(),
         binary(),
         fun((gleam@dynamic:dynamic_()) -> gleam@dynamic:dynamic_()),
         binary(),
         binary(),
-        list(lustre@vdom@vattr:attribute(NWR)),
-        list(element(NWR)),
-        lustre@internals@mutable_map:mutable_map(binary(), element(NWR)),
+        list(lustre@vdom@vattr:attribute(NYU)),
+        list(element(NYU)),
+        lustre@internals@mutable_map:mutable_map(binary(), element(NYU)),
         boolean(),
         boolean()} |
     {text,
@@ -43,10 +42,10 @@
         fun((gleam@dynamic:dynamic_()) -> gleam@dynamic:dynamic_()),
         binary(),
         binary(),
-        list(lustre@vdom@vattr:attribute(NWR)),
+        list(lustre@vdom@vattr:attribute(NYU)),
         binary()}.
 
--file("src/lustre/vdom/vnode.gleam", 119).
+-file("src/lustre/vdom/vnode.gleam", 106).
 ?DOC(false).
 -spec is_void_element(binary(), binary()) -> boolean().
 is_void_element(Tag, Namespace) ->
@@ -103,19 +102,55 @@ is_void_element(Tag, Namespace) ->
             false
     end.
 
--file("src/lustre/vdom/vnode.gleam", 178).
+-file("src/lustre/vdom/vnode.gleam", 163).
 ?DOC(false).
--spec advance(element(any())) -> integer().
-advance(Node) ->
+-spec to_keyed(binary(), element(NZR)) -> element(NZR).
+to_keyed(Key, Node) ->
     case Node of
-        {fragment, _, _, _, _, _, Children_count} ->
-            1 + Children_count;
+        {element, _, _, _, _, _, _, _, _, _, _} ->
+            _record = Node,
+            {element,
+                erlang:element(2, _record),
+                Key,
+                erlang:element(4, _record),
+                erlang:element(5, _record),
+                erlang:element(6, _record),
+                erlang:element(7, _record),
+                erlang:element(8, _record),
+                erlang:element(9, _record),
+                erlang:element(10, _record),
+                erlang:element(11, _record)};
 
-        _ ->
-            1
+        {text, _, _, _, _} ->
+            _record@1 = Node,
+            {text,
+                erlang:element(2, _record@1),
+                Key,
+                erlang:element(4, _record@1),
+                erlang:element(5, _record@1)};
+
+        {unsafe_inner_html, _, _, _, _, _, _, _} ->
+            _record@2 = Node,
+            {unsafe_inner_html,
+                erlang:element(2, _record@2),
+                Key,
+                erlang:element(4, _record@2),
+                erlang:element(5, _record@2),
+                erlang:element(6, _record@2),
+                erlang:element(7, _record@2),
+                erlang:element(8, _record@2)};
+
+        {fragment, _, _, _, _, _} ->
+            _record@3 = Node,
+            {fragment,
+                erlang:element(2, _record@3),
+                Key,
+                erlang:element(4, _record@3),
+                erlang:element(5, _record@3),
+                erlang:element(6, _record@3)}
     end.
 
--file("src/lustre/vdom/vnode.gleam", 296).
+-file("src/lustre/vdom/vnode.gleam", 210).
 ?DOC(false).
 -spec text_to_json(integer(), binary(), binary()) -> gleam@json:json().
 text_to_json(Kind, Key, Content) ->
@@ -132,7 +167,7 @@ text_to_json(Kind, Key, Content) ->
     ),
     lustre@internals@json_object_builder:build(_pipe@2).
 
--file("src/lustre/vdom/vnode.gleam", 303).
+-file("src/lustre/vdom/vnode.gleam", 217).
 ?DOC(false).
 -spec unsafe_inner_html_to_json(
     integer(),
@@ -172,31 +207,30 @@ unsafe_inner_html_to_json(Kind, Key, Namespace, Tag, Attributes, Inner_html) ->
     ),
     lustre@internals@json_object_builder:build(_pipe@5).
 
--file("src/lustre/vdom/vnode.gleam", 75).
+-file("src/lustre/vdom/vnode.gleam", 70).
 ?DOC(false).
 -spec fragment(
     binary(),
     fun((gleam@dynamic:dynamic_()) -> gleam@dynamic:dynamic_()),
-    list(element(NWS)),
-    lustre@internals@mutable_map:mutable_map(binary(), element(NWS)),
-    integer()
-) -> element(NWS).
-fragment(Key, Mapper, Children, Keyed_children, Children_count) ->
-    {fragment, 0, Key, Mapper, Children, Keyed_children, Children_count}.
+    list(element(NYV)),
+    lustre@internals@mutable_map:mutable_map(binary(), element(NYV))
+) -> element(NYV).
+fragment(Key, Mapper, Children, Keyed_children) ->
+    {fragment, 0, Key, Mapper, Children, Keyed_children}.
 
--file("src/lustre/vdom/vnode.gleam", 94).
+-file("src/lustre/vdom/vnode.gleam", 81).
 ?DOC(false).
 -spec element(
     binary(),
     fun((gleam@dynamic:dynamic_()) -> gleam@dynamic:dynamic_()),
     binary(),
     binary(),
-    list(lustre@vdom@vattr:attribute(NWZ)),
-    list(element(NWZ)),
-    lustre@internals@mutable_map:mutable_map(binary(), element(NWZ)),
+    list(lustre@vdom@vattr:attribute(NZC)),
+    list(element(NZC)),
+    lustre@internals@mutable_map:mutable_map(binary(), element(NZC)),
     boolean(),
     boolean()
-) -> element(NWZ).
+) -> element(NZC).
 element(
     Key,
     Mapper,
@@ -220,7 +254,7 @@ element(
         Self_closing,
         Void orelse is_void_element(Tag, Namespace)}.
 
--file("src/lustre/vdom/vnode.gleam", 145).
+-file("src/lustre/vdom/vnode.gleam", 132).
 ?DOC(false).
 -spec text(
     binary(),
@@ -230,16 +264,16 @@ element(
 text(Key, Mapper, Content) ->
     {text, 2, Key, Mapper, Content}.
 
--file("src/lustre/vdom/vnode.gleam", 155).
+-file("src/lustre/vdom/vnode.gleam", 142).
 ?DOC(false).
 -spec unsafe_inner_html(
     binary(),
     fun((gleam@dynamic:dynamic_()) -> gleam@dynamic:dynamic_()),
     binary(),
     binary(),
-    list(lustre@vdom@vattr:attribute(NXK)),
+    list(lustre@vdom@vattr:attribute(NZN)),
     binary()
-) -> element(NXK).
+) -> element(NZN).
 unsafe_inner_html(Key, Mapper, Namespace, Tag, Attributes, Inner_html) ->
     {unsafe_inner_html,
         3,
@@ -250,7 +284,7 @@ unsafe_inner_html(Key, Mapper, Namespace, Tag, Attributes, Inner_html) ->
         lustre@vdom@vattr:prepare(Attributes),
         Inner_html}.
 
--file("src/lustre/vdom/vnode.gleam", 468).
+-file("src/lustre/vdom/vnode.gleam", 382).
 ?DOC(false).
 -spec children_to_snapshot_builder(
     gleam@string_tree:string_tree(),
@@ -273,7 +307,7 @@ children_to_snapshot_builder(Html, Children, Raw_text, Indent) ->
                 Indent
             );
 
-        [{fragment, _, _, _, _, _, _} = Child | Rest@1] ->
+        [{fragment, _, _, _, _, _} = Child | Rest@1] ->
             _pipe = Child,
             _pipe@1 = do_to_snapshot_builder(_pipe, Raw_text, Indent),
             _pipe@2 = gleam_stdlib:iodata_append(Html, _pipe@1),
@@ -290,7 +324,7 @@ children_to_snapshot_builder(Html, Children, Raw_text, Indent) ->
             Html
     end.
 
--file("src/lustre/vdom/vnode.gleam", 390).
+-file("src/lustre/vdom/vnode.gleam", 304).
 ?DOC(false).
 -spec do_to_snapshot_builder(element(any()), boolean(), integer()) -> gleam@string_tree:string_tree().
 do_to_snapshot_builder(Node, Raw_text, Indent) ->
@@ -305,10 +339,10 @@ do_to_snapshot_builder(Node, Raw_text, Indent) ->
         {text, _, _, _, Content@1} ->
             gleam_stdlib:identity([Spaces, houdini:escape(Content@1)]);
 
-        {fragment, _, _, _, [], _, _} ->
+        {fragment, _, _, _, [], _} ->
             gleam@string_tree:new();
 
-        {fragment, _, _, _, Children, _, _} ->
+        {fragment, _, _, _, Children, _} ->
             _pipe = gleam@string_tree:new(),
             children_to_snapshot_builder(_pipe, Children, Raw_text, Indent);
 
@@ -409,7 +443,7 @@ do_to_snapshot_builder(Node, Raw_text, Indent) ->
             )
     end.
 
--file("src/lustre/vdom/vnode.gleam", 384).
+-file("src/lustre/vdom/vnode.gleam", 298).
 ?DOC(false).
 -spec to_snapshot(element(any())) -> binary().
 to_snapshot(Node) ->
@@ -417,7 +451,7 @@ to_snapshot(Node) ->
     _pipe@1 = do_to_snapshot_builder(_pipe, false, 0),
     unicode:characters_to_binary(_pipe@1).
 
--file("src/lustre/vdom/vnode.gleam", 373).
+-file("src/lustre/vdom/vnode.gleam", 287).
 ?DOC(false).
 -spec children_to_string_tree(
     gleam@string_tree:string_tree(),
@@ -428,7 +462,7 @@ children_to_string_tree(Html, Children) ->
             _pipe@1 = to_string_tree(_pipe),
             gleam_stdlib:iodata_append(Html@1, _pipe@1) end).
 
--file("src/lustre/vdom/vnode.gleam", 321).
+-file("src/lustre/vdom/vnode.gleam", 235).
 ?DOC(false).
 -spec to_string_tree(element(any())) -> gleam@string_tree:string_tree().
 to_string_tree(Node) ->
@@ -439,7 +473,7 @@ to_string_tree(Node) ->
         {text, _, _, _, Content} ->
             gleam_stdlib:identity(houdini:escape(Content));
 
-        {fragment, _, _, _, Children, _, _} ->
+        {fragment, _, _, _, Children, _} ->
             children_to_string_tree(gleam@string_tree:new(), Children);
 
         {element, _, Key, _, Namespace, Tag, Attributes, _, _, Self_closing, _} when Self_closing ->
@@ -514,7 +548,7 @@ to_string_tree(Node) ->
             )
     end.
 
--file("src/lustre/vdom/vnode.gleam", 315).
+-file("src/lustre/vdom/vnode.gleam", 229).
 ?DOC(false).
 -spec to_string(element(any())) -> binary().
 to_string(Node) ->
@@ -522,10 +556,10 @@ to_string(Node) ->
     _pipe@1 = to_string_tree(_pipe),
     unicode:characters_to_binary(_pipe@1).
 
--file("src/lustre/vdom/vnode.gleam", 278).
+-file("src/lustre/vdom/vnode.gleam", 193).
 ?DOC(false).
--spec fragment_to_json(integer(), binary(), list(element(any())), integer()) -> gleam@json:json().
-fragment_to_json(Kind, Key, Children, Children_count) ->
+-spec fragment_to_json(integer(), binary(), list(element(any()))) -> gleam@json:json().
+fragment_to_json(Kind, Key, Children) ->
     _pipe = lustre@internals@json_object_builder:tagged(Kind),
     _pipe@1 = lustre@internals@json_object_builder:string(
         _pipe,
@@ -538,20 +572,15 @@ fragment_to_json(Kind, Key, Children, Children_count) ->
         Children,
         fun to_json/1
     ),
-    _pipe@3 = lustre@internals@json_object_builder:int(
-        _pipe@2,
-        <<"children_count"/utf8>>,
-        Children_count
-    ),
-    lustre@internals@json_object_builder:build(_pipe@3).
+    lustre@internals@json_object_builder:build(_pipe@2).
 
--file("src/lustre/vdom/vnode.gleam", 259).
+-file("src/lustre/vdom/vnode.gleam", 174).
 ?DOC(false).
 -spec to_json(element(any())) -> gleam@json:json().
 to_json(Node) ->
     case Node of
-        {fragment, Kind, Key, _, Children, _, Children_count} ->
-            fragment_to_json(Kind, Key, Children, Children_count);
+        {fragment, Kind, Key, _, Children, _} ->
+            fragment_to_json(Kind, Key, Children);
 
         {element,
             Kind@1,
@@ -594,15 +623,15 @@ to_json(Node) ->
             )
     end.
 
--file("src/lustre/vdom/vnode.gleam", 286).
+-file("src/lustre/vdom/vnode.gleam", 200).
 ?DOC(false).
 -spec element_to_json(
     integer(),
     binary(),
     binary(),
     binary(),
-    list(lustre@vdom@vattr:attribute(NYA)),
-    list(element(NYA))
+    list(lustre@vdom@vattr:attribute(NZU)),
+    list(element(NZU))
 ) -> gleam@json:json().
 element_to_json(Kind, Key, Namespace, Tag, Attributes, Children) ->
     _pipe = lustre@internals@json_object_builder:tagged(Kind),
@@ -634,138 +663,3 @@ element_to_json(Kind, Key, Namespace, Tag, Attributes, Children) ->
         fun to_json/1
     ),
     lustre@internals@json_object_builder:build(_pipe@5).
-
--file("src/lustre/vdom/vnode.gleam", 206).
-?DOC(false).
--spec set_fragment_key(
-    binary(),
-    list(element(NXR)),
-    integer(),
-    list(element(NXR)),
-    lustre@internals@mutable_map:mutable_map(binary(), element(NXR))
-) -> {list(element(NXR)),
-    lustre@internals@mutable_map:mutable_map(binary(), element(NXR))}.
-set_fragment_key(Key, Children, Index, New_children, Keyed_children) ->
-    case Children of
-        [] ->
-            {lists:reverse(New_children), Keyed_children};
-
-        [{fragment, _, _, _, _, _, _} = Node | Children@1] when erlang:element(
-            3,
-            Node
-        ) =:= <<""/utf8>> ->
-            Child_key = <<<<Key/binary, "::"/utf8>>/binary,
-                (erlang:integer_to_binary(Index))/binary>>,
-            {Node_children, Node_keyed_children} = set_fragment_key(
-                Child_key,
-                erlang:element(5, Node),
-                0,
-                [],
-                gleam@dict:new()
-            ),
-            New_node = begin
-                _record = Node,
-                {fragment,
-                    erlang:element(2, _record),
-                    erlang:element(3, _record),
-                    erlang:element(4, _record),
-                    Node_children,
-                    Node_keyed_children,
-                    erlang:element(7, _record)}
-            end,
-            New_children@1 = [New_node | New_children],
-            Index@1 = Index + 1,
-            set_fragment_key(
-                Key,
-                Children@1,
-                Index@1,
-                New_children@1,
-                Keyed_children
-            );
-
-        [Node@1 | Children@2] when erlang:element(3, Node@1) =/= <<""/utf8>> ->
-            Child_key@1 = <<<<Key/binary, "::"/utf8>>/binary,
-                (erlang:element(3, Node@1))/binary>>,
-            Keyed_node = to_keyed(Child_key@1, Node@1),
-            New_children@2 = [Keyed_node | New_children],
-            Keyed_children@1 = gleam@dict:insert(
-                Keyed_children,
-                Child_key@1,
-                Keyed_node
-            ),
-            Index@2 = Index + 1,
-            set_fragment_key(
-                Key,
-                Children@2,
-                Index@2,
-                New_children@2,
-                Keyed_children@1
-            );
-
-        [Node@2 | Children@3] ->
-            New_children@3 = [Node@2 | New_children],
-            Index@3 = Index + 1,
-            set_fragment_key(
-                Key,
-                Children@3,
-                Index@3,
-                New_children@3,
-                Keyed_children
-            )
-    end.
-
--file("src/lustre/vdom/vnode.gleam", 187).
-?DOC(false).
--spec to_keyed(binary(), element(NXR)) -> element(NXR).
-to_keyed(Key, Node) ->
-    case Node of
-        {element, _, _, _, _, _, _, _, _, _, _} ->
-            _record = Node,
-            {element,
-                erlang:element(2, _record),
-                Key,
-                erlang:element(4, _record),
-                erlang:element(5, _record),
-                erlang:element(6, _record),
-                erlang:element(7, _record),
-                erlang:element(8, _record),
-                erlang:element(9, _record),
-                erlang:element(10, _record),
-                erlang:element(11, _record)};
-
-        {text, _, _, _, _} ->
-            _record@1 = Node,
-            {text,
-                erlang:element(2, _record@1),
-                Key,
-                erlang:element(4, _record@1),
-                erlang:element(5, _record@1)};
-
-        {unsafe_inner_html, _, _, _, _, _, _, _} ->
-            _record@2 = Node,
-            {unsafe_inner_html,
-                erlang:element(2, _record@2),
-                Key,
-                erlang:element(4, _record@2),
-                erlang:element(5, _record@2),
-                erlang:element(6, _record@2),
-                erlang:element(7, _record@2),
-                erlang:element(8, _record@2)};
-
-        {fragment, _, _, _, Children, _, _} ->
-            {Children@1, Keyed_children} = set_fragment_key(
-                Key,
-                Children,
-                0,
-                [],
-                gleam@dict:new()
-            ),
-            _record@3 = Node,
-            {fragment,
-                erlang:element(2, _record@3),
-                Key,
-                erlang:element(4, _record@3),
-                Children@1,
-                Keyed_children,
-                erlang:element(7, _record@3)}
-    end.

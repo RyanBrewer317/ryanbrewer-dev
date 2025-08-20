@@ -10,16 +10,14 @@ import * as $vnode from "../../lustre/vdom/vnode.mjs";
 function do_extract_keyed_children(
   loop$key_children_pairs,
   loop$keyed_children,
-  loop$children,
-  loop$children_count
+  loop$children
 ) {
   while (true) {
     let key_children_pairs = loop$key_children_pairs;
     let keyed_children = loop$keyed_children;
     let children = loop$children;
-    let children_count = loop$children_count;
     if (key_children_pairs instanceof $Empty) {
-      return [keyed_children, $list.reverse(children), children_count];
+      return [keyed_children, $list.reverse(children)];
     } else {
       let rest = key_children_pairs.tail;
       let key = key_children_pairs.head[0];
@@ -33,11 +31,9 @@ function do_extract_keyed_children(
       }
       let keyed_children$1 = _block;
       let children$1 = listPrepend(keyed_element, children);
-      let children_count$1 = children_count + $vnode.advance(keyed_element);
       loop$key_children_pairs = rest;
       loop$keyed_children = keyed_children$1;
       loop$children = children$1;
-      loop$children_count = children_count$1;
     }
   }
 }
@@ -47,7 +43,6 @@ function extract_keyed_children(children) {
     children,
     $mutable_map.new$(),
     $constants.empty_list,
-    0,
   );
 }
 
@@ -89,14 +84,7 @@ export function fragment(children) {
   let $ = extract_keyed_children(children);
   let keyed_children = $[0];
   let children$1 = $[1];
-  let children_count = $[2];
-  return $vnode.fragment(
-    "",
-    $function.identity,
-    children$1,
-    keyed_children,
-    children_count,
-  );
+  return $vnode.fragment("", $function.identity, children$1, keyed_children);
 }
 
 export function ul(attributes, children) {

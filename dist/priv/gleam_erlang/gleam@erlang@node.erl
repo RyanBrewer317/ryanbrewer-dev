@@ -1,5 +1,5 @@
 -module(gleam@erlang@node).
--compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch]).
+-compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch, inline]).
 -define(FILEPATH, "src/gleam/erlang/node.gleam").
 -export([self/0, visible/0, connect/1, name/1]).
 -export_type([node_/0, connect_error/0]).

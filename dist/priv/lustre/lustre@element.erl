@@ -54,9 +54,9 @@
 ).
 -spec element(
     binary(),
-    list(lustre@vdom@vattr:attribute(OQA)),
-    list(lustre@vdom@vnode:element(OQA))
-) -> lustre@vdom@vnode:element(OQA).
+    list(lustre@vdom@vattr:attribute(OQQ)),
+    list(lustre@vdom@vnode:element(OQQ))
+) -> lustre@vdom@vnode:element(OQQ).
 element(Tag, Attributes, Children) ->
     lustre@vdom@vnode:element(
         <<""/utf8>>,
@@ -78,9 +78,9 @@ element(Tag, Attributes, Children) ->
 -spec namespaced(
     binary(),
     binary(),
-    list(lustre@vdom@vattr:attribute(OQG)),
-    list(lustre@vdom@vnode:element(OQG))
-) -> lustre@vdom@vnode:element(OQG).
+    list(lustre@vdom@vattr:attribute(OQW)),
+    list(lustre@vdom@vnode:element(OQW))
+) -> lustre@vdom@vnode:element(OQW).
 namespaced(Namespace, Tag, Attributes, Children) ->
     lustre@vdom@vnode:element(
         <<""/utf8>>,
@@ -104,11 +104,11 @@ namespaced(Namespace, Tag, Attributes, Children) ->
 -spec advanced(
     binary(),
     binary(),
-    list(lustre@vdom@vattr:attribute(OQM)),
-    list(lustre@vdom@vnode:element(OQM)),
+    list(lustre@vdom@vattr:attribute(ORC)),
+    list(lustre@vdom@vnode:element(ORC)),
     boolean(),
     boolean()
-) -> lustre@vdom@vnode:element(OQM).
+) -> lustre@vdom@vnode:element(ORC).
 advanced(Namespace, Tag, Attributes, Children, Self_closing, Void) ->
     lustre@vdom@vnode:element(
         <<""/utf8>>,
@@ -147,20 +147,6 @@ none() ->
         <<""/utf8>>
     ).
 
--file("src/lustre/element.gleam", 198).
--spec count_fragment_children(list(lustre@vdom@vnode:element(any())), integer()) -> integer().
-count_fragment_children(Children, Count) ->
-    case Children of
-        [Child | Rest] ->
-            count_fragment_children(
-                Rest,
-                Count + lustre@vdom@vnode:advance(Child)
-            );
-
-        [] ->
-            Count
-    end.
-
 -file("src/lustre/element.gleam", 188).
 ?DOC(
     " A function for constructing a wrapper element with no tag name. This is\n"
@@ -168,17 +154,16 @@ count_fragment_children(Children, Count) ->
     " `<div>` or other container element, or returning multiple elements in places\n"
     " where only one `Element` is expected.\n"
 ).
--spec fragment(list(lustre@vdom@vnode:element(OQW))) -> lustre@vdom@vnode:element(OQW).
+-spec fragment(list(lustre@vdom@vnode:element(ORM))) -> lustre@vdom@vnode:element(ORM).
 fragment(Children) ->
     lustre@vdom@vnode:fragment(
         <<""/utf8>>,
         fun gleam@function:identity/1,
         Children,
-        gleam@dict:new(),
-        count_fragment_children(Children, 0)
+        gleam@dict:new()
     ).
 
--file("src/lustre/element.gleam", 216).
+-file("src/lustre/element.gleam", 206).
 ?DOC(
     " A function for constructing a wrapper element with custom raw HTML as its\n"
     " content. Lustre will render the provided HTML verbatim, and will not touch\n"
@@ -192,9 +177,9 @@ fragment(Children) ->
 -spec unsafe_raw_html(
     binary(),
     binary(),
-    list(lustre@vdom@vattr:attribute(ORD)),
+    list(lustre@vdom@vattr:attribute(ORQ)),
     binary()
-) -> lustre@vdom@vnode:element(ORD).
+) -> lustre@vdom@vnode:element(ORQ).
 unsafe_raw_html(Namespace, Tag, Attributes, Inner_html) ->
     lustre@vdom@vnode:unsafe_inner_html(
         <<""/utf8>>,
@@ -205,7 +190,7 @@ unsafe_raw_html(Namespace, Tag, Attributes, Inner_html) ->
         Inner_html
     ).
 
--file("src/lustre/element.gleam", 241).
+-file("src/lustre/element.gleam", 231).
 ?DOC(
     " The `Element` type is parameterised by the type of messages it can produce\n"
     " from events. Sometimes you might end up with a fragment of HTML from another\n"
@@ -214,7 +199,7 @@ unsafe_raw_html(Namespace, Tag, Attributes, Inner_html) ->
     "\n"
     " Think of it like `list.map` or `result.map` but for HTML events!\n"
 ).
--spec map(lustre@vdom@vnode:element(ORH), fun((ORH) -> ORJ)) -> lustre@vdom@vnode:element(ORJ).
+-spec map(lustre@vdom@vnode:element(ORU), fun((ORU) -> ORW)) -> lustre@vdom@vnode:element(ORW).
 map(Element, F) ->
     Mapper = gleam@function:identity(
         lustre@vdom@events:compose_mapper(
@@ -223,15 +208,14 @@ map(Element, F) ->
         )
     ),
     case Element of
-        {fragment, _, _, _, Children, Keyed_children, _} ->
+        {fragment, _, _, _, Children, Keyed_children} ->
             _record = Element,
             {fragment,
                 erlang:element(2, _record),
                 erlang:element(3, _record),
                 Mapper,
                 gleam@function:identity(Children),
-                gleam@function:identity(Keyed_children),
-                erlang:element(7, _record)};
+                gleam@function:identity(Keyed_children)};
 
         {element, _, _, _, _, _, Attributes, Children@1, Keyed_children@1, _, _} ->
             _record@1 = Element,
@@ -262,7 +246,7 @@ map(Element, F) ->
             gleam@function:identity(Element)
     end.
 
--file("src/lustre/element.gleam", 281).
+-file("src/lustre/element.gleam", 271).
 ?DOC(
     " Convert a Lustre `Element` to a string. This is _not_ pretty-printed, so\n"
     " there are no newlines or indentation. If you need to pretty-print an element,\n"
@@ -274,7 +258,7 @@ map(Element, F) ->
 to_string(Element) ->
     lustre@vdom@vnode:to_string(Element).
 
--file("src/lustre/element.gleam", 292).
+-file("src/lustre/element.gleam", 282).
 ?DOC(
     " Converts an element to a string like [`to_string`](#to_string), but prepends\n"
     " a `<!doctype html>` declaration to the string. This is useful for rendering\n"
@@ -304,7 +288,7 @@ to_document_string(El) ->
         end),
     gleam@string:append(<<"<!doctype html>\n"/utf8>>, _pipe).
 
--file("src/lustre/element.gleam", 308).
+-file("src/lustre/element.gleam", 298).
 ?DOC(
     " Convert a Lustre `Element` to a `StringTree`. This is _not_ pretty-printed,\n"
     " so there are no newlines or indentation. If you need to pretty-print an element,\n"
@@ -316,7 +300,7 @@ to_document_string(El) ->
 to_string_tree(Element) ->
     lustre@vdom@vnode:to_string_tree(Element).
 
--file("src/lustre/element.gleam", 319).
+-file("src/lustre/element.gleam", 309).
 ?DOC(
     " Converts an element to a `StringTree` like [`to_string_builder`](#to_string_builder),\n"
     " but prepends a `<!doctype html>` declaration. This is useful for rendering\n"
@@ -346,7 +330,7 @@ to_document_string_tree(El) ->
         end),
     gleam@string_tree:prepend(_pipe, <<"<!doctype html>\n"/utf8>>).
 
--file("src/lustre/element.gleam", 353).
+-file("src/lustre/element.gleam", 343).
 ?DOC(
     " Converts a Lustre `Element` to a human-readable string by inserting new lines\n"
     " and indentation where appropriate. This is useful for debugging and testing,\n"

@@ -1,5 +1,5 @@
 -module(mist@internal@http).
--compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch]).
+-compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch, inline]).
 -define(FILEPATH, "src/mist/internal/http.gleam").
 -export([from_header/1, read_data/4, version_to_string/1, add_date_header/1, connection_close/1, keep_alive/1, maybe_keep_alive/1, add_content_length/2, add_default_headers/2, handle_continue/1, parse_headers/4, crypto_hash/2, base64_encode/1, parse_chunk/1, parse_request/2, read_body/1, upgrade_socket/2, upgrade/4]).
 -export_type([response_data/0, connection/0, packet_type/0, http_uri/0, http_packet/0, decoded_packet/0, decode_error/0, chunk/0, http_version/0, parsed_request/0, body/0, sha_hash/0]).
@@ -192,7 +192,7 @@ decode_http_method(Value) ->
 
 -file("src/mist/internal/http.gleam", 538).
 ?DOC(false).
--spec add_date_header(gleam@http@response:response(KQN)) -> gleam@http@response:response(KQN).
+-spec add_date_header(gleam@http@response:response(KUB)) -> gleam@http@response:response(KUB).
 add_date_header(Resp) ->
     case gleam@http@response:get_header(Resp, <<"date"/utf8>>) of
         {error, _} ->
@@ -208,7 +208,7 @@ add_date_header(Resp) ->
 
 -file("src/mist/internal/http.gleam", 545).
 ?DOC(false).
--spec connection_close(gleam@http@response:response(KQQ)) -> gleam@http@response:response(KQQ).
+-spec connection_close(gleam@http@response:response(KUE)) -> gleam@http@response:response(KUE).
 connection_close(Resp) ->
     gleam@http@response:set_header(
         Resp,
@@ -218,7 +218,7 @@ connection_close(Resp) ->
 
 -file("src/mist/internal/http.gleam", 549).
 ?DOC(false).
--spec keep_alive(gleam@http@response:response(KQT)) -> gleam@http@response:response(KQT).
+-spec keep_alive(gleam@http@response:response(KUH)) -> gleam@http@response:response(KUH).
 keep_alive(Resp) ->
     gleam@http@response:set_header(
         Resp,
@@ -228,7 +228,7 @@ keep_alive(Resp) ->
 
 -file("src/mist/internal/http.gleam", 553).
 ?DOC(false).
--spec maybe_keep_alive(gleam@http@response:response(KQW)) -> gleam@http@response:response(KQW).
+-spec maybe_keep_alive(gleam@http@response:response(KUK)) -> gleam@http@response:response(KUK).
 maybe_keep_alive(Resp) ->
     case gleam@http@response:get_header(Resp, <<"connection"/utf8>>) of
         {ok, _} ->
@@ -259,7 +259,7 @@ maybe_drop_body(Resp, Is_head_request) ->
 
 -file("src/mist/internal/http.gleam", 570).
 ?DOC(false).
--spec add_content_length(boolean(), integer()) -> fun((gleam@http@response:response(KRB)) -> gleam@http@response:response(KRB)).
+-spec add_content_length(boolean(), integer()) -> fun((gleam@http@response:response(KUP)) -> gleam@http@response:response(KUP)).
 add_content_length(When, Length) ->
     fun(Resp) -> case When of
             true ->
@@ -274,13 +274,10 @@ add_content_length(When, Length) ->
                         fun() -> {<<""/utf8>>, erlang:element(3, Resp)} end
                     )
                 end,
-                _pipe@2 = begin
-                    _record = Resp,
-                    {response,
-                        erlang:element(2, _record),
-                        Headers,
-                        erlang:element(4, _record)}
-                end,
+                _pipe@2 = {response,
+                    erlang:element(2, Resp),
+                    Headers,
+                    erlang:element(4, Resp)},
                 gleam@http@response:set_header(
                     _pipe@2,
                     <<"content-length"/utf8>>,
@@ -309,18 +306,16 @@ add_default_headers(Resp, Is_head_response) ->
     end,
     Resp@1 = case {erlang:element(2, Resp), Body_size} of
         {N, _} when (N >= 100) andalso (N =< 199) ->
-            _record = Resp,
             {response,
-                erlang:element(2, _record),
+                erlang:element(2, Resp),
                 Headers,
-                erlang:element(4, _record)};
+                erlang:element(4, Resp)};
 
         {N@1, _} when N@1 =:= 204 ->
-            _record@1 = Resp,
             {response,
-                erlang:element(2, _record@1),
+                erlang:element(2, Resp),
                 Headers,
-                erlang:element(4, _record@1)};
+                erlang:element(4, Resp)};
 
         {N@2, 0} when N@2 =:= 304 ->
             Resp;
@@ -598,20 +593,16 @@ parse_request(Bs, Conn) ->
                                                     Req = {request,
                                                         Method,
                                                         maps:to_list(Headers),
-                                                        begin
-                                                            _record = Conn,
-                                                            {connection,
-                                                                {initial,
-                                                                    Rest@1},
-                                                                erlang:element(
-                                                                    3,
-                                                                    _record
-                                                                ),
-                                                                erlang:element(
-                                                                    4,
-                                                                    _record
-                                                                )}
-                                                        end,
+                                                        {connection,
+                                                            {initial, Rest@1},
+                                                            erlang:element(
+                                                                3,
+                                                                Conn
+                                                            ),
+                                                            erlang:element(
+                                                                4,
+                                                                Conn
+                                                            )},
                                                         Scheme,
                                                         Hostname,
                                                         {some, Port@1},

@@ -9,7 +9,7 @@ import lustre/element/html
 pub fn tail() -> Element(a) {
   html.div([], [
     html.p([attribute.id("copyright-notice"), attribute.class("subtle-text")], [
-      text("© 2024 Ryan Brewer."),
+      text("© 2025 Ryan Brewer."),
     ]),
     html.script([attribute.src("/__/firebase/8.10.1/firebase-app.js")], ""),
     html.script(

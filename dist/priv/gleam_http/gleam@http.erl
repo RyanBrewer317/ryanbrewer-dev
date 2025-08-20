@@ -1,5 +1,5 @@
 -module(gleam@http).
--compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch]).
+-compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch, inline]).
 -define(FILEPATH, "src/gleam/http.gleam").
 -export([parse_method/1, method_to_string/1, scheme_to_string/1, scheme_from_string/1, parse_content_disposition/1, parse_multipart_body/2, parse_multipart_headers/2]).
 -export_type([method/0, scheme/0, multipart_headers/0, multipart_body/0, content_disposition/0]).

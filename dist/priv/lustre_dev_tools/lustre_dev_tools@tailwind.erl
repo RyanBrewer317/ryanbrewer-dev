@@ -113,7 +113,7 @@ generate_config() ->
                             lustre_dev_tools@cli:return(nil);
 
                         false ->
-                            Entry_css@1 = <<"@import \"tailwindcss\"\n"/utf8,
+                            Entry_css@1 = <<"@import \"tailwindcss\";\n"/utf8,
                                 Entry_css/binary>>,
                             lustre_dev_tools@cli:log(
                                 <<"Adding Tailwind integration to "/utf8,
@@ -158,7 +158,7 @@ generate_config() ->
                                 begin
                                     _pipe@1 = simplifile:write(
                                         Entry_css_path,
-                                        <<"@import \"tailwindcss\"\n"/utf8>>
+                                        <<"@import \"tailwindcss\";\n"/utf8>>
                                     ),
                                     gleam@result:map_error(
                                         _pipe@1,

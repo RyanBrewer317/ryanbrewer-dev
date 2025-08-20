@@ -1,5 +1,5 @@
 -module(mist@internal@telemetry).
--compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch]).
+-compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch, inline]).
 -define(FILEPATH, "src/mist/internal/telemetry.gleam").
 -export([log/4, span/3, attach_many/3, attach/4, configure_logger/0]).
 -export_type([event/0, time_unit/0]).
@@ -82,8 +82,8 @@ log(Path, Measurements, _, _) ->
 -spec span(
     list(event()),
     gleam@dict:dict(binary(), gleam@dynamic:dynamic_()),
-    fun(() -> OBY)
-) -> OBY.
+    fun(() -> OEJ)
+) -> OEJ.
 span(Path, Metadata, Wrapping) ->
     telemetry:span(
         Path,

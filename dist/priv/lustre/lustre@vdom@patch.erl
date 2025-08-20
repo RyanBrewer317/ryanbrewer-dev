@@ -1,7 +1,7 @@
 -module(lustre@vdom@patch).
 -compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch]).
 -define(FILEPATH, "src/lustre/vdom/patch.gleam").
--export([new/4, is_empty/1, add_child/2, to_json/1, replace_text/1, replace_inner_html/1, update/2, move/3, remove_key/2, replace/3, insert/2, remove/2]).
+-export([new/4, is_empty/1, add_child/2, to_json/1, replace_text/1, replace_inner_html/1, update/2, move/2, remove/1, replace/2, insert/2]).
 -export_type([diff/1, patch/1, change/1]).
 
 -if(?OTP_RELEASE >= 27).
@@ -14,33 +14,32 @@
 
 ?MODULEDOC(false).
 
--type diff(QBQ) :: {diff, patch(QBQ), lustre@vdom@events:events(QBQ)}.
+-type diff(QBZ) :: {diff, patch(QBZ), lustre@vdom@events:events(QBZ)}.
 
--type patch(QBR) :: {patch,
+-type patch(QCA) :: {patch,
         integer(),
         integer(),
-        list(change(QBR)),
-        list(patch(QBR))}.
+        list(change(QCA)),
+        list(patch(QCA))}.
 
--type change(QBS) :: {replace_text, integer(), binary()} |
+-type change(QCB) :: {replace_text, integer(), binary()} |
     {replace_inner_html, integer(), binary()} |
     {update,
         integer(),
-        list(lustre@vdom@vattr:attribute(QBS)),
-        list(lustre@vdom@vattr:attribute(QBS))} |
-    {move, integer(), binary(), integer(), integer()} |
-    {remove_key, integer(), binary(), integer()} |
-    {replace, integer(), integer(), integer(), lustre@vdom@vnode:element(QBS)} |
-    {insert, integer(), list(lustre@vdom@vnode:element(QBS)), integer()} |
-    {remove, integer(), integer(), integer()}.
+        list(lustre@vdom@vattr:attribute(QCB)),
+        list(lustre@vdom@vattr:attribute(QCB))} |
+    {move, integer(), binary(), integer()} |
+    {replace, integer(), integer(), lustre@vdom@vnode:element(QCB)} |
+    {remove, integer(), integer()} |
+    {insert, integer(), list(lustre@vdom@vnode:element(QCB)), integer()}.
 
--file("src/lustre/vdom/patch.gleam", 86).
+-file("src/lustre/vdom/patch.gleam", 73).
 ?DOC(false).
--spec new(integer(), integer(), list(change(QBT)), list(patch(QBT))) -> patch(QBT).
+-spec new(integer(), integer(), list(change(QCC)), list(patch(QCC))) -> patch(QCC).
 new(Index, Removed, Changes, Children) ->
     {patch, Index, Removed, Changes, Children}.
 
--file("src/lustre/vdom/patch.gleam", 159).
+-file("src/lustre/vdom/patch.gleam", 132).
 ?DOC(false).
 -spec is_empty(patch(any())) -> boolean().
 is_empty(Patch) ->
@@ -52,9 +51,9 @@ is_empty(Patch) ->
             false
     end.
 
--file("src/lustre/vdom/patch.gleam", 168).
+-file("src/lustre/vdom/patch.gleam", 141).
 ?DOC(false).
--spec add_child(patch(QCY), patch(QCY)) -> patch(QCY).
+-spec add_child(patch(QDF), patch(QDF)) -> patch(QDF).
 add_child(Parent, Child) ->
     case is_empty(Child) of
         true ->
@@ -69,7 +68,7 @@ add_child(Parent, Child) ->
                 [Child | erlang:element(5, Parent)]}
     end.
 
--file("src/lustre/vdom/patch.gleam", 200).
+-file("src/lustre/vdom/patch.gleam", 172).
 ?DOC(false).
 -spec replace_text_to_json(integer(), binary()) -> gleam@json:json().
 replace_text_to_json(Kind, Content) ->
@@ -81,7 +80,7 @@ replace_text_to_json(Kind, Content) ->
     ),
     lustre@internals@json_object_builder:build(_pipe@1).
 
--file("src/lustre/vdom/patch.gleam", 206).
+-file("src/lustre/vdom/patch.gleam", 178).
 ?DOC(false).
 -spec replace_inner_html_to_json(integer(), binary()) -> gleam@json:json().
 replace_inner_html_to_json(Kind, Inner_html) ->
@@ -93,7 +92,7 @@ replace_inner_html_to_json(Kind, Inner_html) ->
     ),
     lustre@internals@json_object_builder:build(_pipe@1).
 
--file("src/lustre/vdom/patch.gleam", 212).
+-file("src/lustre/vdom/patch.gleam", 184).
 ?DOC(false).
 -spec update_to_json(
     integer(),
@@ -116,44 +115,53 @@ update_to_json(Kind, Added, Removed) ->
     ),
     lustre@internals@json_object_builder:build(_pipe@2).
 
--file("src/lustre/vdom/patch.gleam", 219).
+-file("src/lustre/vdom/patch.gleam", 191).
 ?DOC(false).
--spec move_to_json(integer(), binary(), integer(), integer()) -> gleam@json:json().
-move_to_json(Kind, Key, Before, Count) ->
-    gleam@json:object(
-        [{<<"kind"/utf8>>, gleam@json:int(Kind)},
-            {<<"key"/utf8>>, gleam@json:string(Key)},
-            {<<"before"/utf8>>, gleam@json:int(Before)},
-            {<<"count"/utf8>>, gleam@json:int(Count)}]
-    ).
+-spec move_to_json(integer(), binary(), integer()) -> gleam@json:json().
+move_to_json(Kind, Key, Before) ->
+    _pipe = lustre@internals@json_object_builder:tagged(Kind),
+    _pipe@1 = lustre@internals@json_object_builder:string(
+        _pipe,
+        <<"key"/utf8>>,
+        Key
+    ),
+    _pipe@2 = lustre@internals@json_object_builder:int(
+        _pipe@1,
+        <<"before"/utf8>>,
+        Before
+    ),
+    lustre@internals@json_object_builder:build(_pipe@2).
 
--file("src/lustre/vdom/patch.gleam", 228).
+-file("src/lustre/vdom/patch.gleam", 198).
 ?DOC(false).
--spec remove_key_to_json(integer(), binary(), integer()) -> gleam@json:json().
-remove_key_to_json(Kind, Key, Count) ->
-    gleam@json:object(
-        [{<<"kind"/utf8>>, gleam@json:int(Kind)},
-            {<<"key"/utf8>>, gleam@json:string(Key)},
-            {<<"count"/utf8>>, gleam@json:int(Count)}]
-    ).
+-spec remove_to_json(integer(), integer()) -> gleam@json:json().
+remove_to_json(Kind, Index) ->
+    _pipe = lustre@internals@json_object_builder:tagged(Kind),
+    _pipe@1 = lustre@internals@json_object_builder:int(
+        _pipe,
+        <<"index"/utf8>>,
+        Index
+    ),
+    lustre@internals@json_object_builder:build(_pipe@1).
 
--file("src/lustre/vdom/patch.gleam", 236).
+-file("src/lustre/vdom/patch.gleam", 204).
 ?DOC(false).
--spec replace_to_json(
-    integer(),
-    integer(),
-    integer(),
-    lustre@vdom@vnode:element(any())
-) -> gleam@json:json().
-replace_to_json(Kind, From, Count, With) ->
-    gleam@json:object(
-        [{<<"kind"/utf8>>, gleam@json:int(Kind)},
-            {<<"from"/utf8>>, gleam@json:int(From)},
-            {<<"count"/utf8>>, gleam@json:int(Count)},
-            {<<"with"/utf8>>, lustre@vdom@vnode:to_json(With)}]
-    ).
+-spec replace_to_json(integer(), integer(), lustre@vdom@vnode:element(any())) -> gleam@json:json().
+replace_to_json(Kind, Index, With) ->
+    _pipe = lustre@internals@json_object_builder:tagged(Kind),
+    _pipe@1 = lustre@internals@json_object_builder:int(
+        _pipe,
+        <<"index"/utf8>>,
+        Index
+    ),
+    _pipe@2 = lustre@internals@json_object_builder:json(
+        _pipe@1,
+        <<"with"/utf8>>,
+        lustre@vdom@vnode:to_json(With)
+    ),
+    lustre@internals@json_object_builder:build(_pipe@2).
 
--file("src/lustre/vdom/patch.gleam", 245).
+-file("src/lustre/vdom/patch.gleam", 211).
 ?DOC(false).
 -spec insert_to_json(
     integer(),
@@ -161,24 +169,21 @@ replace_to_json(Kind, From, Count, With) ->
     integer()
 ) -> gleam@json:json().
 insert_to_json(Kind, Children, Before) ->
-    gleam@json:object(
-        [{<<"kind"/utf8>>, gleam@json:int(Kind)},
-            {<<"children"/utf8>>,
-                gleam@json:array(Children, fun lustre@vdom@vnode:to_json/1)},
-            {<<"before"/utf8>>, gleam@json:int(Before)}]
-    ).
+    _pipe = lustre@internals@json_object_builder:tagged(Kind),
+    _pipe@1 = lustre@internals@json_object_builder:int(
+        _pipe,
+        <<"before"/utf8>>,
+        Before
+    ),
+    _pipe@2 = lustre@internals@json_object_builder:list(
+        _pipe@1,
+        <<"children"/utf8>>,
+        Children,
+        fun lustre@vdom@vnode:to_json/1
+    ),
+    lustre@internals@json_object_builder:build(_pipe@2).
 
--file("src/lustre/vdom/patch.gleam", 253).
-?DOC(false).
--spec remove_to_json(integer(), integer(), integer()) -> gleam@json:json().
-remove_to_json(Kind, From, Count) ->
-    gleam@json:object(
-        [{<<"kind"/utf8>>, gleam@json:int(Kind)},
-            {<<"from"/utf8>>, gleam@json:int(From)},
-            {<<"count"/utf8>>, gleam@json:int(Count)}]
-    ).
-
--file("src/lustre/vdom/patch.gleam", 186).
+-file("src/lustre/vdom/patch.gleam", 159).
 ?DOC(false).
 -spec change_to_json(change(any())) -> gleam@json:json().
 change_to_json(Change) ->
@@ -192,23 +197,20 @@ change_to_json(Change) ->
         {update, Kind@2, Added, Removed} ->
             update_to_json(Kind@2, Added, Removed);
 
-        {move, Kind@3, Key, Before, Count} ->
-            move_to_json(Kind@3, Key, Before, Count);
+        {move, Kind@3, Key, Before} ->
+            move_to_json(Kind@3, Key, Before);
 
-        {remove_key, Kind@4, Key@1, Count@1} ->
-            remove_key_to_json(Kind@4, Key@1, Count@1);
+        {remove, Kind@4, Index} ->
+            remove_to_json(Kind@4, Index);
 
-        {replace, Kind@5, From, Count@2, With} ->
-            replace_to_json(Kind@5, From, Count@2, With);
+        {replace, Kind@5, Index@1, With} ->
+            replace_to_json(Kind@5, Index@1, With);
 
         {insert, Kind@6, Children, Before@1} ->
-            insert_to_json(Kind@6, Children, Before@1);
-
-        {remove, Kind@7, From@1, Count@3} ->
-            remove_to_json(Kind@7, From@1, Count@3)
+            insert_to_json(Kind@6, Children, Before@1)
     end.
 
--file("src/lustre/vdom/patch.gleam", 177).
+-file("src/lustre/vdom/patch.gleam", 150).
 ?DOC(false).
 -spec to_json(patch(any())) -> gleam@json:json().
 to_json(Patch) ->
@@ -237,53 +239,47 @@ to_json(Patch) ->
     ),
     lustre@internals@json_object_builder:build(_pipe@4).
 
--file("src/lustre/vdom/patch.gleam", 97).
+-file("src/lustre/vdom/patch.gleam", 84).
 ?DOC(false).
 -spec replace_text(binary()) -> change(any()).
 replace_text(Content) ->
     {replace_text, 0, Content}.
 
--file("src/lustre/vdom/patch.gleam", 103).
+-file("src/lustre/vdom/patch.gleam", 90).
 ?DOC(false).
 -spec replace_inner_html(binary()) -> change(any()).
 replace_inner_html(Inner_html) ->
     {replace_inner_html, 1, Inner_html}.
 
--file("src/lustre/vdom/patch.gleam", 109).
+-file("src/lustre/vdom/patch.gleam", 96).
 ?DOC(false).
 -spec update(
-    list(lustre@vdom@vattr:attribute(QCD)),
-    list(lustre@vdom@vattr:attribute(QCD))
-) -> change(QCD).
+    list(lustre@vdom@vattr:attribute(QCM)),
+    list(lustre@vdom@vattr:attribute(QCM))
+) -> change(QCM).
 update(Added, Removed) ->
     {update, 2, Added, Removed}.
 
--file("src/lustre/vdom/patch.gleam", 118).
+-file("src/lustre/vdom/patch.gleam", 105).
 ?DOC(false).
--spec move(binary(), integer(), integer()) -> change(any()).
-move(Key, Before, Count) ->
-    {move, 3, Key, Before, Count}.
+-spec move(binary(), integer()) -> change(any()).
+move(Key, Before) ->
+    {move, 3, Key, Before}.
 
--file("src/lustre/vdom/patch.gleam", 128).
+-file("src/lustre/vdom/patch.gleam", 111).
 ?DOC(false).
--spec remove_key(binary(), integer()) -> change(any()).
-remove_key(Key, Count) ->
-    {remove_key, 4, Key, Count}.
+-spec remove(integer()) -> change(any()).
+remove(Index) ->
+    {remove, 4, Index}.
 
--file("src/lustre/vdom/patch.gleam", 134).
+-file("src/lustre/vdom/patch.gleam", 117).
 ?DOC(false).
--spec replace(integer(), integer(), lustre@vdom@vnode:element(QCN)) -> change(QCN).
-replace(From, Count, With) ->
-    {replace, 5, From, Count, With}.
+-spec replace(integer(), lustre@vdom@vnode:element(QCW)) -> change(QCW).
+replace(Index, With) ->
+    {replace, 5, Index, With}.
 
--file("src/lustre/vdom/patch.gleam", 144).
+-file("src/lustre/vdom/patch.gleam", 123).
 ?DOC(false).
--spec insert(list(lustre@vdom@vnode:element(QCQ)), integer()) -> change(QCQ).
+-spec insert(list(lustre@vdom@vnode:element(QCZ)), integer()) -> change(QCZ).
 insert(Children, Before) ->
     {insert, 6, Children, Before}.
-
--file("src/lustre/vdom/patch.gleam", 153).
-?DOC(false).
--spec remove(integer(), integer()) -> change(any()).
-remove(From, Count) ->
-    {remove, 7, From, Count}.

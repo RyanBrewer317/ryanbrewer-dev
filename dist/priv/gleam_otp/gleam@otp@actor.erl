@@ -1,5 +1,5 @@
 -module(gleam@otp@actor).
--compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch]).
+-compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch, inline]).
 -define(FILEPATH, "src/gleam/otp/actor.gleam").
 -export([continue/1, stop/0, stop_abnormal/1, with_selector/2, initialised/1, selecting/2, returning/2, new/1, new_with_initialiser/2, on_message/2, named/2, start/1, send/2, call/3]).
 -export_type([message/1, next/2, self/2, started/1, initialised/3, builder/3, start_error/0, start_init_message/1]).
@@ -106,11 +106,11 @@
     " \n"
     " // The last part is to implement the `handle_message` callback function.\n"
     " //\n"
-    " // This function is called by the Actor each for each message it receives.\n"
-    " // Actors are single threaded only does one thing at a time, so they handle\n"
-    " // messages sequentially and one at a time, in the order they are received.\n"
+    " // This function is called by the Actor for each message it receives.\n"
+    " // Actors are single threaded only doing one thing at a time, so they handle\n"
+    " // messages sequentially one at a time, in the order they are received.\n"
     " //\n"
-    " // The function takes the message and the current state, and returns a data\n"
+    " // The function takes the current state and a message, and returns a data\n"
     " // structure that indicates what to do next, along with the new state.\n"
     " fn handle_message(\n"
     "   stack: List(e),\n"
@@ -258,11 +258,10 @@ initialised(State) ->
     gleam@erlang@process:selector(EHD)
 ) -> initialised(EGX, EHD, EGZ).
 selecting(Initialised, Selector) ->
-    _record = Initialised,
     {initialised,
-        erlang:element(2, _record),
+        erlang:element(2, Initialised),
         {some, Selector},
-        erlang:element(4, _record)}.
+        erlang:element(4, Initialised)}.
 
 -file("src/gleam/otp/actor.gleam", 287).
 ?DOC(
@@ -271,10 +270,9 @@ selecting(Initialised, Selector) ->
 ).
 -spec returning(initialised(EHI, EHJ, any()), EHO) -> initialised(EHI, EHJ, EHO).
 returning(Initialised, Return) ->
-    _record = Initialised,
     {initialised,
-        erlang:element(2, _record),
-        erlang:element(3, _record),
+        erlang:element(2, Initialised),
+        erlang:element(3, Initialised),
         Return}.
 
 -file("src/gleam/otp/actor.gleam", 329).
@@ -333,12 +331,11 @@ new_with_initialiser(Timeout, Initialise) ->
 ).
 -spec on_message(builder(EIK, EIL, EIM), fun((EIK, EIL) -> next(EIK, EIL))) -> builder(EIK, EIL, EIM).
 on_message(Builder, Handler) ->
-    _record = Builder,
     {builder,
-        erlang:element(2, _record),
-        erlang:element(3, _record),
+        erlang:element(2, Builder),
+        erlang:element(3, Builder),
         Handler,
-        erlang:element(5, _record)}.
+        erlang:element(5, Builder)}.
 
 -file("src/gleam/otp/actor.gleam", 395).
 ?DOC(
@@ -356,11 +353,10 @@ on_message(Builder, Handler) ->
 ).
 -spec named(builder(EIV, EIW, EIX), gleam@erlang@process:name(EIW)) -> builder(EIV, EIW, EIX).
 named(Builder, Name) ->
-    _record = Builder,
     {builder,
-        erlang:element(2, _record),
-        erlang:element(3, _record),
-        erlang:element(4, _record),
+        erlang:element(2, Builder),
+        erlang:element(3, Builder),
+        erlang:element(4, Builder),
         {some, Name}}.
 
 -file("src/gleam/otp/actor.gleam", 402).
@@ -436,31 +432,25 @@ loop(Self) ->
                 {resume, Callback@1} ->
                     Callback@1(),
                     loop(
-                        begin
-                            _record = Self,
-                            {self,
-                                running,
-                                erlang:element(3, _record),
-                                erlang:element(4, _record),
-                                erlang:element(5, _record),
-                                erlang:element(6, _record),
-                                erlang:element(7, _record)}
-                        end
+                        {self,
+                            running,
+                            erlang:element(3, Self),
+                            erlang:element(4, Self),
+                            erlang:element(5, Self),
+                            erlang:element(6, Self),
+                            erlang:element(7, Self)}
                     );
 
                 {suspend, Callback@2} ->
                     Callback@2(),
                     loop(
-                        begin
-                            _record@1 = Self,
-                            {self,
-                                suspended,
-                                erlang:element(3, _record@1),
-                                erlang:element(4, _record@1),
-                                erlang:element(5, _record@1),
-                                erlang:element(6, _record@1),
-                                erlang:element(7, _record@1)}
-                        end
+                        {self,
+                            suspended,
+                            erlang:element(3, Self),
+                            erlang:element(4, Self),
+                            erlang:element(5, Self),
+                            erlang:element(6, Self),
+                            erlang:element(7, Self)}
                     );
 
                 {get_status, Callback@3} ->
@@ -494,16 +484,13 @@ loop(Self) ->
                             )
                     end,
                     loop(
-                        begin
-                            _record@2 = Self,
-                            {self,
-                                erlang:element(2, _record@2),
-                                erlang:element(3, _record@2),
-                                State,
-                                Selector,
-                                erlang:element(6, _record@2),
-                                erlang:element(7, _record@2)}
-                        end
+                        {self,
+                            erlang:element(2, Self),
+                            erlang:element(3, Self),
+                            State,
+                            Selector,
+                            erlang:element(6, Self),
+                            erlang:element(7, Self)}
                     )
             end
     end.
@@ -641,14 +628,13 @@ start(Builder) ->
 send(Subject, Msg) ->
     gleam@erlang@process:send(Subject, Msg).
 
--file("src/gleam/otp/actor.gleam", 661).
+-file("src/gleam/otp/actor.gleam", 660).
 ?DOC(
     " Send a synchronous message and wait for a response from the receiving\n"
     " process.\n"
     "\n"
     " If a reply is not received within the given timeout then the sender process\n"
-    " crashes. If you wish to receive a `Result` rather than crashing see the\n"
-    " `process.try_call` function.\n"
+    " crashes rather than leaving the processes in an invalid state. \n"
     "\n"
     " This is a re-export of `process.call`, for the sake of convenience.\n"
 ).

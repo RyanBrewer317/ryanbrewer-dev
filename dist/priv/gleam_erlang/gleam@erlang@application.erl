@@ -1,5 +1,5 @@
 -module(gleam@erlang@application).
--compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch]).
+-compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch, inline]).
 -define(FILEPATH, "src/gleam/erlang/application.gleam").
 -export([priv_directory/1]).
 -export_type([start_type/0]).

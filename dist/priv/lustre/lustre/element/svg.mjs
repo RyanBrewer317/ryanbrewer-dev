@@ -4,7 +4,7 @@ import * as $element from "../../lustre/element.mjs";
 import { namespaced, text as inline_text } from "../../lustre/element.mjs";
 import * as $constants from "../../lustre/internals/constants.mjs";
 
-const namespace = "http://www.w3.org/2000/svg";
+export const namespace = "http://www.w3.org/2000/svg";
 
 export function animate(attrs) {
   return namespaced(namespace, "animate", attrs, $constants.empty_list);
@@ -90,6 +90,10 @@ export function symbol(attrs, children) {
   return namespaced(namespace, "symbol", attrs, children);
 }
 
+export function view(attrs, children) {
+  return namespaced(namespace, "view", attrs, children);
+}
+
 export function desc(attrs, children) {
   return namespaced(namespace, "desc", attrs, children);
 }
@@ -100,6 +104,10 @@ export function metadata(attrs, children) {
 
 export function title(attrs, children) {
   return namespaced(namespace, "title", attrs, children);
+}
+
+export function filter(attrs, children) {
+  return namespaced(namespace, "filter", attrs, children);
 }
 
 export function fe_blend(attrs) {

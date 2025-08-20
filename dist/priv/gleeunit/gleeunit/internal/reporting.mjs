@@ -95,7 +95,7 @@ export function finished(state) {
         state.failed,
       )) + " failures";
       $io.println(red(message));
-      return 0;
+      return 1;
     }
   } else {
     let $1 = state.failed;
@@ -106,9 +106,9 @@ export function finished(state) {
       $io.println(yellow(message));
       return 1;
     } else {
-      let message = (((("\n" + $int.to_string(state.passed)) + " tests, ") + $int.to_string(
+      let message = ((((("\n" + $int.to_string(state.passed)) + " tests, ") + $int.to_string(
         state.failed,
-      )) + " failures, ") + " skipped";
+      )) + " failures, ") + $int.to_string(state.skipped)) + " skipped";
       $io.println(red(message));
       return 1;
     }

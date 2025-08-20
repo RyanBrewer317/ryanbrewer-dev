@@ -1,5 +1,5 @@
 -module(mist@internal@next).
--compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch]).
+-compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch, inline]).
 -define(FILEPATH, "src/mist/internal/next.gleam").
 -export_type([next/2]).
 
@@ -13,9 +13,9 @@
 
 ?MODULEDOC(false).
 
--type next(MOL, MOM) :: {continue,
-        MOL,
-        gleam@option:option(gleam@erlang@process:selector(MOM))} |
+-type next(MRV, MRW) :: {continue,
+        MRV,
+        gleam@option:option(gleam@erlang@process:selector(MRW))} |
     normal_stop |
     {abnormal_stop, binary()}.
 

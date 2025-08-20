@@ -176,7 +176,7 @@ function do_remove_children(
       let _pipe$1 = do_remove_child(_pipe, path, child_index, child);
       loop$handlers = _pipe$1;
       loop$path = path;
-      loop$child_index = child_index + $vnode.advance(child);
+      loop$child_index = child_index + 1;
       loop$children = rest;
     }
   }
@@ -185,7 +185,8 @@ function do_remove_children(
 function do_remove_child(handlers, parent, child_index, child) {
   if (child instanceof Fragment) {
     let children = child.children;
-    return do_remove_children(handlers, parent, child_index + 1, children);
+    let path = $path.add(parent, child_index, child.key);
+    return do_remove_children(handlers, path, 0, children);
   } else if (child instanceof Element) {
     let attributes = child.attributes;
     let children = child.children;
@@ -235,7 +236,7 @@ function do_add_children(
       loop$handlers = _pipe$1;
       loop$mapper = mapper;
       loop$path = path;
-      loop$child_index = child_index + $vnode.advance(child);
+      loop$child_index = child_index + 1;
       loop$children = rest;
     }
   }
@@ -244,15 +245,9 @@ function do_add_children(
 function do_add_child(handlers, mapper, parent, child_index, child) {
   if (child instanceof Fragment) {
     let children = child.children;
+    let path = $path.add(parent, child_index, child.key);
     let composed_mapper = compose_mapper(mapper, child.mapper);
-    let child_index$1 = child_index + 1;
-    return do_add_children(
-      handlers,
-      composed_mapper,
-      parent,
-      child_index$1,
-      children,
-    );
+    return do_add_children(handlers, composed_mapper, path, 0, children);
   } else if (child instanceof Element) {
     let attributes = child.attributes;
     let children = child.children;

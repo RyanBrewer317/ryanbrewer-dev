@@ -1,5 +1,5 @@
 -module(gleeunit@internal@gleam_panic).
--compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch]).
+-compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch, inline]).
 -define(FILEPATH, "src/gleeunit/internal/gleam_panic.gleam").
 -export([from_dynamic/1]).
 -export_type([gleam_panic/0, panic_kind/0, assert_kind/0, asserted_expression/0, expression_kind/0]).

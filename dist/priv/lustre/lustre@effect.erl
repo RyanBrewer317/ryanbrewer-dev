@@ -1,7 +1,7 @@
 -module(lustre@effect).
 -compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch]).
 -define(FILEPATH, "src/lustre/effect.gleam").
--export([map/2, perform/5, none/0, from/1, before_paint/1, after_paint/1, event/2, select/1, batch/1]).
+-export([map/2, perform/6, none/0, from/1, before_paint/1, after_paint/1, event/2, select/1, provide/2, batch/1]).
 -export_type([effect/1, actions/1]).
 
 -if(?OTP_RELEASE >= 27).
@@ -76,37 +76,39 @@
     "\n"
 ).
 
--opaque effect(NOO) :: {effect,
-        list(fun((actions(NOO)) -> nil)),
-        list(fun((actions(NOO)) -> nil)),
-        list(fun((actions(NOO)) -> nil))}.
+-opaque effect(NQB) :: {effect,
+        list(fun((actions(NQB)) -> nil)),
+        list(fun((actions(NQB)) -> nil)),
+        list(fun((actions(NQB)) -> nil))}.
 
--type actions(NOP) :: {actions,
-        fun((NOP) -> nil),
+-type actions(NQC) :: {actions,
+        fun((NQC) -> nil),
         fun((binary(), gleam@json:json()) -> nil),
-        fun((gleam@erlang@process:selector(NOP)) -> nil),
-        fun(() -> gleam@dynamic:dynamic_())}.
+        fun((gleam@erlang@process:selector(NQC)) -> nil),
+        fun(() -> gleam@dynamic:dynamic_()),
+        fun((binary(), gleam@json:json()) -> nil)}.
 
--file("src/lustre/effect.gleam", 299).
+-file("src/lustre/effect.gleam", 307).
 -spec do_comap_select(
-    actions(NPX),
-    gleam@erlang@process:selector(NPZ),
-    fun((NPZ) -> NPX)
+    actions(NRM),
+    gleam@erlang@process:selector(NRO),
+    fun((NRO) -> NRM)
 ) -> nil.
 do_comap_select(Actions, Selector, F) ->
     (erlang:element(4, Actions))(gleam_erlang_ffi:map_selector(Selector, F)).
 
--file("src/lustre/effect.gleam", 289).
--spec do_comap_actions(actions(NPT), fun((NPV) -> NPT)) -> actions(NPV).
+-file("src/lustre/effect.gleam", 296).
+-spec do_comap_actions(actions(NRI), fun((NRK) -> NRI)) -> actions(NRK).
 do_comap_actions(Actions, F) ->
     {actions,
         fun(Msg) -> (erlang:element(2, Actions))(F(Msg)) end,
         erlang:element(3, Actions),
         fun(Selector) -> do_comap_select(Actions, Selector, F) end,
-        erlang:element(5, Actions)}.
+        erlang:element(5, Actions),
+        erlang:element(6, Actions)}.
 
--file("src/lustre/effect.gleam", 280).
--spec do_map(list(fun((actions(NPN)) -> nil)), fun((NPN) -> NPQ)) -> list(fun((actions(NPQ)) -> nil)).
+-file("src/lustre/effect.gleam", 287).
+-spec do_map(list(fun((actions(NRC)) -> nil)), fun((NRC) -> NRF)) -> list(fun((actions(NRF)) -> nil)).
 do_map(Effects, F) ->
     gleam@list:map(
         Effects,
@@ -115,7 +117,7 @@ do_map(Effects, F) ->
         end
     ).
 
--file("src/lustre/effect.gleam", 272).
+-file("src/lustre/effect.gleam", 279).
 ?DOC(
     " Transform the result of an effect. This is useful for mapping over effects\n"
     " produced by other libraries or modules.\n"
@@ -123,27 +125,28 @@ do_map(Effects, F) ->
     " > **Note**: Remember that effects are not _required_ to dispatch any messages.\n"
     " > Your mapping function may never be called!\n"
 ).
--spec map(effect(NPJ), fun((NPJ) -> NPL)) -> effect(NPL).
+-spec map(effect(NQY), fun((NQY) -> NRA)) -> effect(NRA).
 map(Effect, F) ->
     {effect,
         do_map(erlang:element(2, Effect), F),
         do_map(erlang:element(3, Effect), F),
         do_map(erlang:element(4, Effect), F)}.
 
--file("src/lustre/effect.gleam", 327).
+-file("src/lustre/effect.gleam", 335).
 ?DOC(false).
 -spec perform(
-    effect(NQB),
-    fun((NQB) -> nil),
+    effect(NRQ),
+    fun((NRQ) -> nil),
     fun((binary(), gleam@json:json()) -> nil),
-    fun((gleam@erlang@process:selector(NQB)) -> nil),
-    fun(() -> gleam@dynamic:dynamic_())
+    fun((gleam@erlang@process:selector(NRQ)) -> nil),
+    fun(() -> gleam@dynamic:dynamic_()),
+    fun((binary(), gleam@json:json()) -> nil)
 ) -> nil.
-perform(Effect, Dispatch, Emit, Select, Root) ->
-    Actions = {actions, Dispatch, Emit, Select, Root},
+perform(Effect, Dispatch, Emit, Select, Root, Provide) ->
+    Actions = {actions, Dispatch, Emit, Select, Root, Provide},
     gleam@list:each(erlang:element(2, Effect), fun(Run) -> Run(Actions) end).
 
--file("src/lustre/effect.gleam", 113).
+-file("src/lustre/effect.gleam", 114).
 ?DOC(
     " Most Lustre applications need to return a tuple of `#(model, Effect(msg))`\n"
     " from their `init` and `update` functions. If you don't want to perform any\n"
@@ -153,7 +156,7 @@ perform(Effect, Dispatch, Emit, Select, Root) ->
 none() ->
     {effect, [], [], []}.
 
--file("src/lustre/effect.gleam", 148).
+-file("src/lustre/effect.gleam", 149).
 ?DOC(
     " Construct your own reusable effect from a custom callback. This callback is\n"
     " called with a `dispatch` function you can use to send messages back to your\n"
@@ -186,7 +189,7 @@ none() ->
     " }\n"
     " ```\n"
 ).
--spec from(fun((fun((NOS) -> nil)) -> nil)) -> effect(NOS).
+-spec from(fun((fun((NQF) -> nil)) -> nil)) -> effect(NQF).
 from(Effect) ->
     Task = fun(Actions) ->
         Dispatch = erlang:element(2, Actions),
@@ -195,7 +198,7 @@ from(Effect) ->
     _record = {effect, [], [], []},
     {effect, [Task], erlang:element(3, _record), erlang:element(4, _record)}.
 
--file("src/lustre/effect.gleam", 179).
+-file("src/lustre/effect.gleam", 180).
 ?DOC(
     " Schedule a side effect that is guaranteed to run after your `view` function\n"
     " is called and the DOM has been updated, but **before** the browser has\n"
@@ -218,7 +221,7 @@ from(Effect) ->
     " > **Note**: There is no concept of a \"paint\" for server components. These\n"
     " > effects will be ignored in those contexts and never run.\n"
 ).
--spec before_paint(fun((fun((NOU) -> nil), gleam@dynamic:dynamic_()) -> nil)) -> effect(NOU).
+-spec before_paint(fun((fun((NQH) -> nil), gleam@dynamic:dynamic_()) -> nil)) -> effect(NQH).
 before_paint(Effect) ->
     Task = fun(Actions) ->
         Root = (erlang:element(5, Actions))(),
@@ -228,7 +231,7 @@ before_paint(Effect) ->
     _record = {effect, [], [], []},
     {effect, erlang:element(2, _record), [Task], erlang:element(4, _record)}.
 
--file("src/lustre/effect.gleam", 200).
+-file("src/lustre/effect.gleam", 201).
 ?DOC(
     " Schedule a side effect that is guaranteed to run after the browser has painted\n"
     " the screen.\n"
@@ -240,7 +243,7 @@ before_paint(Effect) ->
     " > **Note**: There is no concept of a \"paint\" for server components. These\n"
     " > effects will be ignored in those contexts and never run.\n"
 ).
--spec after_paint(fun((fun((NOW) -> nil), gleam@dynamic:dynamic_()) -> nil)) -> effect(NOW).
+-spec after_paint(fun((fun((NQJ) -> nil), gleam@dynamic:dynamic_()) -> nil)) -> effect(NQJ).
 after_paint(Effect) ->
     Task = fun(Actions) ->
         Root = (erlang:element(5, Actions))(),
@@ -250,7 +253,7 @@ after_paint(Effect) ->
     _record = {effect, [], [], []},
     {effect, erlang:element(2, _record), erlang:element(3, _record), [Task]}.
 
--file("src/lustre/effect.gleam", 217).
+-file("src/lustre/effect.gleam", 218).
 ?DOC(false).
 -spec event(binary(), gleam@json:json()) -> effect(any()).
 event(Name, Data) ->
@@ -258,11 +261,11 @@ event(Name, Data) ->
     _record = {effect, [], [], []},
     {effect, [Task], erlang:element(3, _record), erlang:element(4, _record)}.
 
--file("src/lustre/effect.gleam", 225).
+-file("src/lustre/effect.gleam", 226).
 ?DOC(false).
 -spec select(
-    fun((fun((NPA) -> nil), gleam@erlang@process:subject(any())) -> gleam@erlang@process:selector(NPA))
-) -> effect(NPA).
+    fun((fun((NQN) -> nil), gleam@erlang@process:subject(any())) -> gleam@erlang@process:selector(NQN))
+) -> effect(NQN).
 select(Sel) ->
     Task = fun(Actions) ->
         Self = gleam@erlang@process:new_subject(),
@@ -272,7 +275,14 @@ select(Sel) ->
     _record = {effect, [], [], []},
     {effect, [Task], erlang:element(3, _record), erlang:element(4, _record)}.
 
--file("src/lustre/effect.gleam", 257).
+-file("src/lustre/effect.gleam", 244).
+-spec provide(binary(), gleam@json:json()) -> effect(any()).
+provide(Key, Value) ->
+    Task = fun(Actions) -> (erlang:element(6, Actions))(Key, Value) end,
+    _record = {effect, [], [], []},
+    {effect, [Task], erlang:element(3, _record), erlang:element(4, _record)}.
+
+-file("src/lustre/effect.gleam", 264).
 ?DOC(
     " Batch multiple effects to be performed at the same time.\n"
     "\n"
@@ -286,7 +296,7 @@ select(Sel) ->
     " > 2. If you're defining effects yourself, consider whether or not you can handle\n"
     " >    the sequencing inside the effect itself.\n"
 ).
--spec batch(list(effect(NPF))) -> effect(NPF).
+-spec batch(list(effect(NQU))) -> effect(NQU).
 batch(Effects) ->
     gleam@list:fold(
         Effects,

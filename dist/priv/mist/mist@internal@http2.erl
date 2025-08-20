@@ -1,5 +1,5 @@
 -module(mist@internal@http2).
--compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch]).
+-compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch, inline]).
 -define(FILEPATH, "src/mist/internal/http2.gleam").
 -export([default_settings/0, update_settings/2, send_frame/3, hpack_new_context/1, hpack_max_table_size/2, hpack_decode/2, hpack_encode/2, send_bytes_tree/4]).
 -export_type([http2_settings/0, hpack_context/0, hpack_error/0]).
@@ -44,63 +44,57 @@ update_settings(Current, Settings) ->
         Current,
         fun(Settings@1, Setting) -> case Setting of
                 {header_table_size, Size} ->
-                    _record = Settings@1,
                     {http2_settings,
                         Size,
-                        erlang:element(3, _record),
-                        erlang:element(4, _record),
-                        erlang:element(5, _record),
-                        erlang:element(6, _record),
-                        erlang:element(7, _record)};
+                        erlang:element(3, Settings@1),
+                        erlang:element(4, Settings@1),
+                        erlang:element(5, Settings@1),
+                        erlang:element(6, Settings@1),
+                        erlang:element(7, Settings@1)};
 
                 {server_push, Push} ->
-                    _record@1 = Settings@1,
                     {http2_settings,
-                        erlang:element(2, _record@1),
+                        erlang:element(2, Settings@1),
                         Push,
-                        erlang:element(4, _record@1),
-                        erlang:element(5, _record@1),
-                        erlang:element(6, _record@1),
-                        erlang:element(7, _record@1)};
+                        erlang:element(4, Settings@1),
+                        erlang:element(5, Settings@1),
+                        erlang:element(6, Settings@1),
+                        erlang:element(7, Settings@1)};
 
                 {max_concurrent_streams, Max} ->
-                    _record@2 = Settings@1,
                     {http2_settings,
-                        erlang:element(2, _record@2),
-                        erlang:element(3, _record@2),
+                        erlang:element(2, Settings@1),
+                        erlang:element(3, Settings@1),
                         Max,
-                        erlang:element(5, _record@2),
-                        erlang:element(6, _record@2),
-                        erlang:element(7, _record@2)};
+                        erlang:element(5, Settings@1),
+                        erlang:element(6, Settings@1),
+                        erlang:element(7, Settings@1)};
 
                 {initial_window_size, Size@1} ->
-                    _record@3 = Settings@1,
                     {http2_settings,
-                        erlang:element(2, _record@3),
-                        erlang:element(3, _record@3),
-                        erlang:element(4, _record@3),
+                        erlang:element(2, Settings@1),
+                        erlang:element(3, Settings@1),
+                        erlang:element(4, Settings@1),
                         Size@1,
-                        erlang:element(6, _record@3),
-                        erlang:element(7, _record@3)};
+                        erlang:element(6, Settings@1),
+                        erlang:element(7, Settings@1)};
 
                 {max_frame_size, Size@2} ->
-                    _record@4 = Settings@1,
                     {http2_settings,
-                        erlang:element(2, _record@4),
-                        erlang:element(3, _record@4),
-                        erlang:element(4, _record@4),
-                        erlang:element(5, _record@4),
+                        erlang:element(2, Settings@1),
+                        erlang:element(3, Settings@1),
+                        erlang:element(4, Settings@1),
+                        erlang:element(5, Settings@1),
                         Size@2,
-                        erlang:element(7, _record@4)};
+                        erlang:element(7, Settings@1)};
 
                 {max_header_list_size, Size@3} ->
-                    _record@5 = Settings@1,
                     {http2_settings,
-                        erlang:element(2, _record@5),
-                        erlang:element(3, _record@5),
-                        erlang:element(4, _record@5),
-                        erlang:element(5, _record@5),
-                        erlang:element(6, _record@5),
+                        erlang:element(2, Settings@1),
+                        erlang:element(3, Settings@1),
+                        erlang:element(4, Settings@1),
+                        erlang:element(5, Settings@1),
+                        erlang:element(6, Settings@1),
                         {some, Size@3}}
             end end
     ).

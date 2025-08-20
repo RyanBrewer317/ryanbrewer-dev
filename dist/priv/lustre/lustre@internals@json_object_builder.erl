@@ -82,8 +82,8 @@ bool(Entries, Key, Value) ->
 -spec list(
     list({binary(), gleam@json:json()}),
     binary(),
-    list(MQB),
-    fun((MQB) -> gleam@json:json())
+    list(MRO),
+    fun((MRO) -> gleam@json:json())
 ) -> list({binary(), gleam@json:json()}).
 list(Entries, Key, Values, To_json) ->
     case Values of

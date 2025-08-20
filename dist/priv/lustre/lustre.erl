@@ -171,11 +171,11 @@
     "\n"
 ).
 
--opaque app(SHI, SHJ, SHK) :: {app,
-        fun((SHI) -> {SHJ, lustre@effect:effect(SHK)}),
-        fun((SHJ, SHK) -> {SHJ, lustre@effect:effect(SHK)}),
-        fun((SHJ) -> lustre@vdom@vnode:element(SHK)),
-        lustre@component:config(SHK)}.
+-opaque app(SPE, SPF, SPG) :: {app,
+        fun((SPE) -> {SPF, lustre@effect:effect(SPG)}),
+        fun((SPF, SPG) -> {SPF, lustre@effect:effect(SPG)}),
+        fun((SPF) -> lustre@vdom@vnode:element(SPG)),
+        lustre@component:config(SPG)}.
 
 -type error() :: {actor_error, gleam@otp@actor:start_error()} |
     {bad_component_name, binary()} |
@@ -183,7 +183,7 @@
     {element_not_found, binary()} |
     not_a_browser.
 
--type runtime(SHL) :: any() | {gleam_phantom, SHL}.
+-type runtime(SPH) :: any() | {gleam_phantom, SPH}.
 
 -file("src/lustre.gleam", 307).
 ?DOC(
@@ -206,11 +206,11 @@
     " > loop.\n"
 ).
 -spec component(
-    fun((SIK) -> {SIL, lustre@effect:effect(SIM)}),
-    fun((SIL, SIM) -> {SIL, lustre@effect:effect(SIM)}),
-    fun((SIL) -> lustre@vdom@vnode:element(SIM)),
-    list(lustre@component:option(SIM))
-) -> app(SIK, SIL, SIM).
+    fun((SQG) -> {SQH, lustre@effect:effect(SQI)}),
+    fun((SQH, SQI) -> {SQH, lustre@effect:effect(SQI)}),
+    fun((SQH) -> lustre@vdom@vnode:element(SQI)),
+    list(lustre@component:option(SQI))
+) -> app(SQG, SQH, SQI).
 component(Init, Update, View, Options) ->
     {app, Init, Update, View, lustre@component:new(Options)}.
 
@@ -225,10 +225,10 @@ component(Init, Update, View, Options) ->
     " [HTTP requests example](https://github.com/lustre-labs/lustre/tree/main/examples/05-http-requests).\n"
 ).
 -spec application(
-    fun((SIB) -> {SIC, lustre@effect:effect(SID)}),
-    fun((SIC, SID) -> {SIC, lustre@effect:effect(SID)}),
-    fun((SIC) -> lustre@vdom@vnode:element(SID))
-) -> app(SIB, SIC, SID).
+    fun((SPX) -> {SPY, lustre@effect:effect(SPZ)}),
+    fun((SPY, SPZ) -> {SPY, lustre@effect:effect(SPZ)}),
+    fun((SPY) -> lustre@vdom@vnode:element(SPZ))
+) -> app(SPX, SPY, SPZ).
 application(Init, Update, View) ->
     {app, Init, Update, View, lustre@component:new([])}.
 
@@ -238,7 +238,7 @@ application(Init, Update, View) ->
     " primarily used for demonstration purposes. It renders a static Lustre `Element`\n"
     " on the page and does not have any state or update logic.\n"
 ).
--spec element(lustre@vdom@vnode:element(SHO)) -> app(any(), nil, SHO).
+-spec element(lustre@vdom@vnode:element(SPK)) -> app(any(), nil, SPK).
 element(View) ->
     application(
         fun(_) -> {nil, lustre@effect:none()} end,
@@ -257,17 +257,17 @@ element(View) ->
     " you'll want to use the [`application`](#application) constructor instead.\n"
 ).
 -spec simple(
-    fun((SHU) -> SHV),
-    fun((SHV, SHW) -> SHV),
-    fun((SHV) -> lustre@vdom@vnode:element(SHW))
-) -> app(SHU, SHV, SHW).
+    fun((SPQ) -> SPR),
+    fun((SPR, SPS) -> SPR),
+    fun((SPR) -> lustre@vdom@vnode:element(SPS))
+) -> app(SPQ, SPR, SPS).
 simple(Init, Update, View) ->
     Init@1 = fun(Start_args) -> {Init(Start_args), lustre@effect:none()} end,
     Update@1 = fun(Model, Msg) -> {Update(Model, Msg), lustre@effect:none()} end,
     application(Init@1, Update@1, View).
 
 -file("src/lustre.gleam", 341).
--spec do_start(app(SJE, any(), SJG), binary(), SJE) -> {ok, runtime(SJG)} |
+-spec do_start(app(SRA, any(), SRC), binary(), SRA) -> {ok, runtime(SRC)} |
     {error, error()}.
 do_start(_, _, _) ->
     {error, not_a_browser}.
@@ -305,7 +305,7 @@ register(_, _) ->
     " primarily used for sending decoded client messages to a server component's\n"
     " runtime.\n"
 ).
--spec send(runtime(SKD), lustre@runtime@server@runtime:message(SKD)) -> nil.
+-spec send(runtime(SRZ), lustre@runtime@server@runtime:message(SRZ)) -> nil.
 send(Runtime, Message) ->
     gleam@erlang@process:send(Runtime, Message).
 
@@ -315,7 +315,7 @@ send(Runtime, Message) ->
     " used as a way for the outside world to communicate with a Lustre app without\n"
     " the app needing to initiate things with an effect.\n"
 ).
--spec dispatch(SKG) -> lustre@runtime@server@runtime:message(SKG).
+-spec dispatch(SSC) -> lustre@runtime@server@runtime:message(SSC).
 dispatch(Msg) ->
     {effect_dispatched_message, Msg}.
 
@@ -358,7 +358,7 @@ is_browser() ->
     " The third argument is the starting data for the application. This is passed\n"
     " to the application's `init` function.\n"
 ).
--spec start(app(SIV, any(), SIX), binary(), SIV) -> {ok, runtime(SIX)} |
+-spec start(app(SQR, any(), SQT), binary(), SQR) -> {ok, runtime(SQT)} |
     {error, error()}.
 start(App, Selector, Start_args) ->
     gleam@bool:guard(
@@ -389,7 +389,7 @@ is_registered(_) ->
     " A server component will keep running until the program is terminated or the\n"
     " [`shutdown`](#shutdown) action is sent to it.\n"
 ).
--spec start_server_component(app(SJN, any(), SJP), SJN) -> {ok, runtime(SJP)} |
+-spec start_server_component(app(SRJ, any(), SRL), SRJ) -> {ok, runtime(SRL)} |
     {error, error()}.
 start_server_component(App, Start_args) ->
     _pipe = (erlang:element(2, App))(Start_args),

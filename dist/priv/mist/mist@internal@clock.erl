@@ -1,5 +1,5 @@
 -module(mist@internal@clock).
--compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch]).
+-compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch, inline]).
 -define(FILEPATH, "src/mist/internal/clock.gleam").
 -export([stop/1, start/2, get_date/0]).
 -export_type([clock_message/0, clock_table/0, table_key/0, ets_opts/0]).

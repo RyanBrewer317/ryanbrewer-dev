@@ -1,16 +1,13 @@
 import * as $json from "../../../gleam_json/gleam/json.mjs";
 import * as $function from "../../../gleam_stdlib/gleam/function.mjs";
-import * as $list from "../../../gleam_stdlib/gleam/list.mjs";
 import * as $order from "../../../gleam_stdlib/gleam/order.mjs";
 import { Eq, Gt, Lt } from "../../../gleam_stdlib/gleam/order.mjs";
-import * as $set from "../../../gleam_stdlib/gleam/set.mjs";
 import {
   Ok,
   toList,
   Empty as $Empty,
   prepend as listPrepend,
   CustomType as $CustomType,
-  isEqual,
 } from "../../gleam.mjs";
 import * as $constants from "../../lustre/internals/constants.mjs";
 import * as $mutable_map from "../../lustre/internals/mutable_map.mjs";
@@ -302,10 +299,7 @@ function diff_attributes(
         } else if (prev instanceof Event) {
           let name = next.name;
           let handler = next.handler;
-          let has_changes = ((((!isEqual(
-            prev.prevent_default,
-            next.prevent_default
-          )) || (!isEqual(prev.stop_propagation, next.stop_propagation))) || (prev.immediate !== next.immediate)) || (prev.debounce !== next.debounce)) || (prev.throttle !== next.throttle);
+          let has_changes = ((((prev.prevent_default.kind !== next.prevent_default.kind) || (prev.stop_propagation.kind !== next.stop_propagation.kind)) || (prev.immediate !== next.immediate)) || (prev.debounce !== next.debounce)) || (prev.throttle !== next.throttle);
           let _block;
           if (has_changes) {
             _block = listPrepend(next, added);
@@ -406,9 +400,9 @@ function do_diff(
         let prev = old.head;
         let old$1 = old.tail;
         let _block;
-        let $ = (prev.key === "") || !$set.contains(moved, prev.key);
+        let $ = (prev.key === "") || !$mutable_map.has_key(moved, prev.key);
         if ($) {
-          _block = removed + $vnode.advance(prev);
+          _block = removed + 1;
         } else {
           _block = removed;
         }
@@ -450,17 +444,18 @@ function do_diff(
         let new_remaining = new$.tail;
         let old_remaining = old.tail;
         let next_did_exist = $mutable_map.get(old_keyed, next.key);
-        let prev_does_exist = $mutable_map.get(new_keyed, prev.key);
-        let prev_has_moved = $set.contains(moved, prev.key);
+        let prev_does_exist = $mutable_map.has_key(new_keyed, prev.key);
         if (next_did_exist instanceof Ok) {
-          if (prev_does_exist instanceof Ok) {
-            if (prev_has_moved) {
+          if (prev_does_exist) {
+            let match = next_did_exist[0];
+            let $ = $mutable_map.has_key(moved, prev.key);
+            if ($) {
               loop$old = old_remaining;
               loop$old_keyed = old_keyed;
               loop$new = new$;
               loop$new_keyed = new_keyed;
               loop$moved = moved;
-              loop$moved_offset = moved_offset - $vnode.advance(prev);
+              loop$moved_offset = moved_offset - 1;
               loop$removed = removed;
               loop$node_index = node_index;
               loop$patch_index = patch_index;
@@ -470,13 +465,13 @@ function do_diff(
               loop$mapper = mapper;
               loop$events = events;
             } else {
-              let match = next_did_exist[0];
-              let count = $vnode.advance(next);
               let before = node_index - moved_offset;
-              let move = $patch.move(next.key, before, count);
-              let changes$1 = listPrepend(move, changes);
-              let moved$1 = $set.insert(moved, next.key);
-              let moved_offset$1 = moved_offset + count;
+              let changes$1 = listPrepend(
+                $patch.move(next.key, before),
+                changes,
+              );
+              let moved$1 = $mutable_map.insert(moved, next.key, undefined);
+              let moved_offset$1 = moved_offset + 1;
               loop$old = listPrepend(match, old);
               loop$old_keyed = old_keyed;
               loop$new = new$;
@@ -493,11 +488,10 @@ function do_diff(
               loop$events = events;
             }
           } else {
-            let count = $vnode.advance(prev);
-            let moved_offset$1 = moved_offset - count;
+            let index = node_index - moved_offset;
+            let changes$1 = listPrepend($patch.remove(index), changes);
             let events$1 = $events.remove_child(events, path, node_index, prev);
-            let remove = $patch.remove_key(prev.key, count);
-            let changes$1 = listPrepend(remove, changes);
+            let moved_offset$1 = moved_offset - 1;
             loop$old = old_remaining;
             loop$old_keyed = old_keyed;
             loop$new = new$;
@@ -513,9 +507,8 @@ function do_diff(
             loop$mapper = mapper;
             loop$events = events$1;
           }
-        } else if (prev_does_exist instanceof Ok) {
+        } else if (prev_does_exist) {
           let before = node_index - moved_offset;
-          let count = $vnode.advance(next);
           let events$1 = $events.add_child(
             events,
             mapper,
@@ -530,9 +523,9 @@ function do_diff(
           loop$new = new_remaining;
           loop$new_keyed = new_keyed;
           loop$moved = moved;
-          loop$moved_offset = moved_offset + count;
+          loop$moved_offset = moved_offset + 1;
           loop$removed = removed;
-          loop$node_index = node_index + count;
+          loop$node_index = node_index + 1;
           loop$patch_index = patch_index;
           loop$path = path;
           loop$changes = changes$1;
@@ -540,13 +533,7 @@ function do_diff(
           loop$mapper = mapper;
           loop$events = events$1;
         } else {
-          let prev_count = $vnode.advance(prev);
-          let next_count = $vnode.advance(next);
-          let change = $patch.replace(
-            node_index - moved_offset,
-            prev_count,
-            next,
-          );
+          let change = $patch.replace(node_index - moved_offset, next);
           let _block;
           let _pipe = events;
           let _pipe$1 = $events.remove_child(_pipe, path, node_index, prev);
@@ -557,9 +544,9 @@ function do_diff(
           loop$new = new_remaining;
           loop$new_keyed = new_keyed;
           loop$moved = moved;
-          loop$moved_offset = (moved_offset - prev_count) + next_count;
+          loop$moved_offset = moved_offset;
           loop$removed = removed;
-          loop$node_index = node_index + next_count;
+          loop$node_index = node_index + 1;
           loop$patch_index = patch_index;
           loop$path = path;
           loop$changes = listPrepend(change, changes);
@@ -576,51 +563,55 @@ function do_diff(
             let new$1 = new$.tail;
             let prev$1 = $;
             let old$1 = old.tail;
-            let node_index$1 = node_index + 1;
-            let prev_count = prev$1.children_count;
-            let next_count = next$1.children_count;
             let composed_mapper = $events.compose_mapper(mapper, next$1.mapper);
+            let child_path = $path.add(path, node_index, next$1.key);
             let child = do_diff(
               prev$1.children,
               prev$1.keyed_children,
               next$1.children,
               next$1.keyed_children,
-              $constants.empty_set(),
-              moved_offset,
+              $mutable_map.new$(),
               0,
-              node_index$1,
-              -1,
-              path,
+              0,
+              0,
+              node_index,
+              child_path,
               $constants.empty_list,
-              children,
+              $constants.empty_list,
               composed_mapper,
               events,
             );
             let _block;
-            let $2 = child.patch.removed > 0;
-            if ($2) {
-              let remove_from = (node_index$1 + next_count) - moved_offset;
-              let patch = $patch.remove(remove_from, child.patch.removed);
-              _block = $list.append(
-                child.patch.changes,
-                listPrepend(patch, changes),
-              );
+            let $2 = child.patch;
+            let $3 = $2.children;
+            if ($3 instanceof $Empty) {
+              let $4 = $2.changes;
+              if ($4 instanceof $Empty) {
+                let $5 = $2.removed;
+                if ($5 === 0) {
+                  _block = children;
+                } else {
+                  _block = listPrepend(child.patch, children);
+                }
+              } else {
+                _block = listPrepend(child.patch, children);
+              }
             } else {
-              _block = $list.append(child.patch.changes, changes);
+              _block = listPrepend(child.patch, children);
             }
-            let changes$1 = _block;
+            let children$1 = _block;
             loop$old = old$1;
             loop$old_keyed = old_keyed;
             loop$new = new$1;
             loop$new_keyed = new_keyed;
             loop$moved = moved;
-            loop$moved_offset = (moved_offset + next_count) - prev_count;
+            loop$moved_offset = moved_offset;
             loop$removed = removed;
-            loop$node_index = node_index$1 + next_count;
+            loop$node_index = node_index + 1;
             loop$patch_index = patch_index;
             loop$path = path;
-            loop$changes = changes$1;
-            loop$children = child.patch.children;
+            loop$changes = changes;
+            loop$children = children$1;
             loop$mapper = mapper;
             loop$events = child.events;
           } else {
@@ -628,13 +619,7 @@ function do_diff(
             let new_remaining = new$.tail;
             let prev$1 = $;
             let old_remaining = old.tail;
-            let prev_count = $vnode.advance(prev$1);
-            let next_count = $vnode.advance(next$1);
-            let change = $patch.replace(
-              node_index - moved_offset,
-              prev_count,
-              next$1,
-            );
+            let change = $patch.replace(node_index - moved_offset, next$1);
             let _block;
             let _pipe = events;
             let _pipe$1 = $events.remove_child(_pipe, path, node_index, prev$1);
@@ -651,9 +636,9 @@ function do_diff(
             loop$new = new_remaining;
             loop$new_keyed = new_keyed;
             loop$moved = moved;
-            loop$moved_offset = (moved_offset - prev_count) + next_count;
+            loop$moved_offset = moved_offset;
             loop$removed = removed;
-            loop$node_index = node_index + next_count;
+            loop$node_index = node_index + 1;
             loop$patch_index = patch_index;
             loop$path = path;
             loop$changes = listPrepend(change, changes);
@@ -709,7 +694,7 @@ function do_diff(
                 prev$1.keyed_children,
                 next$1.children,
                 next$1.keyed_children,
-                $constants.empty_set(),
+                $mutable_map.new$(),
                 0,
                 0,
                 0,
@@ -758,13 +743,7 @@ function do_diff(
               let new_remaining = new$.tail;
               let prev$2 = $;
               let old_remaining = old.tail;
-              let prev_count = $vnode.advance(prev$2);
-              let next_count = $vnode.advance(next$2);
-              let change = $patch.replace(
-                node_index - moved_offset,
-                prev_count,
-                next$2,
-              );
+              let change = $patch.replace(node_index - moved_offset, next$2);
               let _block;
               let _pipe = events;
               let _pipe$1 = $events.remove_child(
@@ -786,9 +765,9 @@ function do_diff(
               loop$new = new_remaining;
               loop$new_keyed = new_keyed;
               loop$moved = moved;
-              loop$moved_offset = (moved_offset - prev_count) + next_count;
+              loop$moved_offset = moved_offset;
               loop$removed = removed;
-              loop$node_index = node_index + next_count;
+              loop$node_index = node_index + 1;
               loop$patch_index = patch_index;
               loop$path = path;
               loop$changes = listPrepend(change, changes);
@@ -801,13 +780,7 @@ function do_diff(
             let new_remaining = new$.tail;
             let prev$1 = $;
             let old_remaining = old.tail;
-            let prev_count = $vnode.advance(prev$1);
-            let next_count = $vnode.advance(next$1);
-            let change = $patch.replace(
-              node_index - moved_offset,
-              prev_count,
-              next$1,
-            );
+            let change = $patch.replace(node_index - moved_offset, next$1);
             let _block;
             let _pipe = events;
             let _pipe$1 = $events.remove_child(_pipe, path, node_index, prev$1);
@@ -824,9 +797,9 @@ function do_diff(
             loop$new = new_remaining;
             loop$new_keyed = new_keyed;
             loop$moved = moved;
-            loop$moved_offset = (moved_offset - prev_count) + next_count;
+            loop$moved_offset = moved_offset;
             loop$removed = removed;
-            loop$node_index = node_index + next_count;
+            loop$node_index = node_index + 1;
             loop$patch_index = patch_index;
             loop$path = path;
             loop$changes = listPrepend(change, changes);
@@ -886,13 +859,7 @@ function do_diff(
             let new_remaining = new$.tail;
             let prev$1 = $;
             let old_remaining = old.tail;
-            let prev_count = $vnode.advance(prev$1);
-            let next_count = $vnode.advance(next$1);
-            let change = $patch.replace(
-              node_index - moved_offset,
-              prev_count,
-              next$1,
-            );
+            let change = $patch.replace(node_index - moved_offset, next$1);
             let _block;
             let _pipe = events;
             let _pipe$1 = $events.remove_child(_pipe, path, node_index, prev$1);
@@ -909,9 +876,9 @@ function do_diff(
             loop$new = new_remaining;
             loop$new_keyed = new_keyed;
             loop$moved = moved;
-            loop$moved_offset = (moved_offset - prev_count) + next_count;
+            loop$moved_offset = moved_offset;
             loop$removed = removed;
-            loop$node_index = node_index + next_count;
+            loop$node_index = node_index + 1;
             loop$patch_index = patch_index;
             loop$path = path;
             loop$changes = listPrepend(change, changes);
@@ -992,13 +959,7 @@ function do_diff(
             let new_remaining = new$.tail;
             let prev$1 = $;
             let old_remaining = old.tail;
-            let prev_count = $vnode.advance(prev$1);
-            let next_count = $vnode.advance(next$1);
-            let change = $patch.replace(
-              node_index - moved_offset,
-              prev_count,
-              next$1,
-            );
+            let change = $patch.replace(node_index - moved_offset, next$1);
             let _block;
             let _pipe = events;
             let _pipe$1 = $events.remove_child(_pipe, path, node_index, prev$1);
@@ -1015,9 +976,9 @@ function do_diff(
             loop$new = new_remaining;
             loop$new_keyed = new_keyed;
             loop$moved = moved;
-            loop$moved_offset = (moved_offset - prev_count) + next_count;
+            loop$moved_offset = moved_offset;
             loop$removed = removed;
-            loop$node_index = node_index + next_count;
+            loop$node_index = node_index + 1;
             loop$patch_index = patch_index;
             loop$path = path;
             loop$changes = listPrepend(change, changes);
@@ -1037,7 +998,7 @@ export function diff(events, old, new$) {
     $mutable_map.new$(),
     toList([new$]),
     $mutable_map.new$(),
-    $constants.empty_set(),
+    $mutable_map.new$(),
     0,
     0,
     0,

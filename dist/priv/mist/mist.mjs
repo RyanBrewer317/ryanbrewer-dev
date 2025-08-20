@@ -1,3 +1,4 @@
+import * as $exception from "../exception/exception.mjs";
 import * as $process from "../gleam_erlang/gleam/erlang/process.mjs";
 import * as $gleam_http from "../gleam_http/gleam/http.mjs";
 import { Http, Https } from "../gleam_http/gleam/http.mjs";

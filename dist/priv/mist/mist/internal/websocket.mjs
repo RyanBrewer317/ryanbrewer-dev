@@ -1,8 +1,8 @@
+import * as $exception from "../../../exception/exception.mjs";
 import * as $atom from "../../../gleam_erlang/gleam/erlang/atom.mjs";
 import * as $process from "../../../gleam_erlang/gleam/erlang/process.mjs";
 import * as $actor from "../../../gleam_otp/gleam/otp/actor.mjs";
 import * as $decode from "../../../gleam_stdlib/gleam/dynamic/decode.mjs";
-import * as $list from "../../../gleam_stdlib/gleam/list.mjs";
 import * as $option from "../../../gleam_stdlib/gleam/option.mjs";
 import { None, Some } from "../../../gleam_stdlib/gleam/option.mjs";
 import * as $result from "../../../gleam_stdlib/gleam/result.mjs";
@@ -11,7 +11,7 @@ import * as $glisten from "../../../glisten/glisten.mjs";
 import * as $options from "../../../glisten/glisten/socket/options.mjs";
 import * as $transport from "../../../glisten/glisten/transport.mjs";
 import * as $websocket from "../../../gramps/gramps/websocket.mjs";
-import { CloseFrame, Control, InvalidFrame, NeedMoreData, PingFrame, PongFrame } from "../../../gramps/gramps/websocket.mjs";
+import { CloseFrame, Control, PingFrame } from "../../../gramps/gramps/websocket.mjs";
 import * as $compression from "../../../gramps/gramps/websocket/compression.mjs";
 import * as $logging from "../../../logging/logging.mjs";
 import { CustomType as $CustomType } from "../../gleam.mjs";

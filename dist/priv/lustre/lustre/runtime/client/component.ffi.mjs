@@ -10,7 +10,11 @@ import {
   NotABrowser,
   is_browser,
 } from "../../../lustre.mjs";
-import { Runtime, adoptStylesheets } from "./runtime.ffi.mjs";
+import {
+  Runtime,
+  ContextRequestEvent,
+  adoptStylesheets,
+} from "./runtime.ffi.mjs";
 import {
   EffectDispatchedMessage,
   EffectEmitEvent,
@@ -26,8 +30,17 @@ export const make_component = ({ init, update, view, config }, name) => {
     return new Error(new ComponentAlreadyRegistered(name));
   }
 
+  const attributes = new Map();
+  const observedAttributes = [];
+  for (let attr = config.attributes; attr.tail; attr = attr.tail) {
+    const [name, decoder] = attr.head;
+    if (attributes.has(name)) continue;
+
+    attributes.set(name, decoder);
+    observedAttributes.push(name);
+  }
+
   const [model, effects] = init(undefined);
-  const observedAttributes = config.attributes.entries().map(([name]) => name);
 
   const component = class Component extends HTMLElement {
     static get observedAttributes() {
@@ -39,6 +52,7 @@ export const make_component = ({ init, update, view, config }, name) => {
     #runtime;
     #adoptedStyleNodes = [];
     #shadowRoot;
+    #contextSubscriptions = new Map();
 
     constructor() {
       super();
@@ -48,6 +62,7 @@ export const make_component = ({ init, update, view, config }, name) => {
       if (!this.internals.shadowRoot) {
         this.#shadowRoot = this.attachShadow({
           mode: config.open_shadow_root ? "open" : "closed",
+          delegatesFocus: config.delegates_focus,
         });
       } else {
         this.#shadowRoot = this.internals.shadowRoot;
@@ -65,6 +80,50 @@ export const make_component = ({ init, update, view, config }, name) => {
       );
     }
 
+    // CUSTOM ELEMENT LIFECYCLE METHODS ----------------------------------------
+
+    connectedCallback() {
+      // Keep track of the requested contexts so we don't request the same one
+      // twice.
+      const requested = new Set();
+
+      for (let ctx = config.contexts; ctx.tail; ctx = ctx.tail) {
+        const [key, decoder] = ctx.head;
+
+        // An empty key is not valid so we skip over any of those.
+        if (!key) continue;
+        // Likewise if we've requested a context for this key already then we
+        // don't want to dispatch a second event, even if the user provided a
+        // different decoder.
+        if (requested.has(key)) continue;
+
+        this.dispatchEvent(
+          new ContextRequestEvent(
+            key,
+            (value, unsubscribe) => {
+              const previousUnsubscribe = this.#contextSubscriptions.get(key);
+
+              // Call the old unsubscribe callback if it has changed. This probably
+              // means we have a new provider.
+              if (previousUnsubscribe !== unsubscribe) {
+                previousUnsubscribe?.();
+              }
+
+              const decoded = decode(value, decoder);
+              this.#contextSubscriptions.set(key, unsubscribe);
+
+              if (decoded.isOk()) {
+                this.dispatch(decoded[0]);
+              }
+            },
+            true,
+          ),
+        );
+
+        requested.add(key);
+      }
+    }
+
     adoptedCallback() {
       if (config.adopt_styles) {
         this.#adoptStyleSheets();
@@ -72,9 +131,9 @@ export const make_component = ({ init, update, view, config }, name) => {
     }
 
     attributeChangedCallback(name, _, value) {
-      const decoded = config.attributes.get(name)(value);
+      const decoded = attributes.get(name)(value ?? "");
 
-      if (decoded.constructor === Ok) {
+      if (decoded.isOk()) {
         this.dispatch(decoded[0]);
       }
     }
@@ -100,6 +159,16 @@ export const make_component = ({ init, update, view, config }, name) => {
           break;
       }
     }
+
+    disconnectedCallback() {
+      for (const [_, unsubscribe] of this.#contextSubscriptions) {
+        unsubscribe?.();
+      }
+
+      this.#contextSubscriptions.clear();
+    }
+
+    // LUSTRE RUNTIME METHODS --------------------------------------------------
 
     send(message) {
       switch (message.constructor) {
@@ -127,6 +196,10 @@ export const make_component = ({ init, update, view, config }, name) => {
       this.#runtime.emit(event, data);
     }
 
+    provide(key, value) {
+      this.#runtime.provide(key, value);
+    }
+
     async #adoptStyleSheets() {
       while (this.#adoptedStyleNodes.length) {
         this.#adoptedStyleNodes.pop().remove();
@@ -134,11 +207,15 @@ export const make_component = ({ init, update, view, config }, name) => {
       }
 
       this.#adoptedStyleNodes = await adoptStylesheets(this.#shadowRoot);
-      this.#runtime.offset = this.#adoptedStyleNodes.length;
     }
   };
 
-  config.properties.forEach((decoder, name) => {
+  for (let prop = config.properties; prop.tail; prop = prop.tail) {
+    const [name, decoder] = prop.head;
+    if (Object.hasOwn(component.prototype, name)) {
+      continue;
+    }
+
     Object.defineProperty(component.prototype, name, {
       get() {
         return this[`_${name}`];
@@ -153,7 +230,7 @@ export const make_component = ({ init, update, view, config }, name) => {
         }
       },
     });
-  });
+  }
 
   customElements.define(name, component);
 

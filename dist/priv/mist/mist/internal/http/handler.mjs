@@ -1,9 +1,9 @@
+import * as $exception from "../../../../exception/exception.mjs";
 import * as $process from "../../../../gleam_erlang/gleam/erlang/process.mjs";
 import * as $ghttp from "../../../../gleam_http/gleam/http.mjs";
 import * as $request from "../../../../gleam_http/gleam/http/request.mjs";
 import * as $response from "../../../../gleam_http/gleam/http/response.mjs";
 import * as $bytes_tree from "../../../../gleam_stdlib/gleam/bytes_tree.mjs";
-import * as $dynamic from "../../../../gleam_stdlib/gleam/dynamic.mjs";
 import * as $int from "../../../../gleam_stdlib/gleam/int.mjs";
 import * as $option from "../../../../gleam_stdlib/gleam/option.mjs";
 import { None, Some } from "../../../../gleam_stdlib/gleam/option.mjs";

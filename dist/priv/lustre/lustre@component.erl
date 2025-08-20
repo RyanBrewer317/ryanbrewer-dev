@@ -1,7 +1,7 @@
 -module(lustre@component).
 -compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch]).
 -define(FILEPATH, "src/lustre/component.gleam").
--export([new/1, on_attribute_change/2, on_property_change/2, form_associated/0, on_form_autofill/1, on_form_reset/1, on_form_restore/1, open_shadow_root/1, adopt_styles/1, to_server_component_config/1, default_slot/2, named_slot/3, part/1, exportparts/1, slot/1, set_form_value/1, clear_form_value/0, set_pseudo_state/1, remove_pseudo_state/1]).
+-export([new/1, on_attribute_change/2, on_property_change/2, on_context_change/2, form_associated/0, on_form_autofill/1, on_form_reset/1, on_form_restore/1, open_shadow_root/1, adopt_styles/1, delegates_focus/1, to_server_component_config/1, default_slot/2, named_slot/3, part/1, parts/1, exportparts/1, slot/1, set_form_value/1, clear_form_value/0, set_pseudo_state/1, remove_pseudo_state/1]).
 -export_type([config/1, option/1]).
 
 -if(?OTP_RELEASE >= 27).
@@ -49,38 +49,32 @@
     "\n"
 ).
 
--opaque config(RZR) :: {config,
+-opaque config(SFD) :: {config,
         boolean(),
         boolean(),
-        gleam@dict:dict(binary(), fun((binary()) -> {ok, RZR} | {error, nil})),
-        gleam@dict:dict(binary(), gleam@dynamic@decode:decoder(RZR)),
         boolean(),
-        gleam@option:option(fun((binary()) -> RZR)),
-        gleam@option:option(RZR),
-        gleam@option:option(fun((binary()) -> RZR))}.
+        list({binary(), fun((binary()) -> {ok, SFD} | {error, nil})}),
+        list({binary(), gleam@dynamic@decode:decoder(SFD)}),
+        list({binary(), gleam@dynamic@decode:decoder(SFD)}),
+        boolean(),
+        gleam@option:option(fun((binary()) -> SFD)),
+        gleam@option:option(SFD),
+        gleam@option:option(fun((binary()) -> SFD))}.
 
--opaque option(RZS) :: {option, fun((config(RZS)) -> config(RZS))}.
+-opaque option(SFE) :: {option, fun((config(SFE)) -> config(SFE))}.
 
--file("src/lustre/component.gleam", 131).
+-file("src/lustre/component.gleam", 133).
 ?DOC(false).
--spec new(list(option(RZT))) -> config(RZT).
+-spec new(list(option(SFF))) -> config(SFF).
 new(Options) ->
-    Init = {config,
-        false,
-        true,
-        gleam@dict:new(),
-        gleam@dict:new(),
-        false,
-        none,
-        none,
-        none},
+    Init = {config, true, true, false, [], [], [], false, none, none, none},
     gleam@list:fold(
         Options,
         Init,
         fun(Config, Option) -> (erlang:element(2, Option))(Config) end
     ).
 
--file("src/lustre/component.gleam", 163).
+-file("src/lustre/component.gleam", 167).
 ?DOC(
     " Register a decoder to run whenever the named attribute changes. Attributes\n"
     " can be set in Lustre using the [`attribute`](./attribute.html#attribute)\n"
@@ -91,28 +85,26 @@ new(Options) ->
     " Attributes are always strings, but your decoder is responsible for decoding\n"
     " the string into a message that your component can understand.\n"
 ).
--spec on_attribute_change(binary(), fun((binary()) -> {ok, RZX} | {error, nil})) -> option(RZX).
+-spec on_attribute_change(binary(), fun((binary()) -> {ok, SFJ} | {error, nil})) -> option(SFJ).
 on_attribute_change(Name, Decoder) ->
     {option,
         fun(Config) ->
-            Attributes = gleam@dict:insert(
-                erlang:element(4, Config),
-                Name,
-                Decoder
-            ),
+            Attributes = [{Name, Decoder} | erlang:element(5, Config)],
             _record = Config,
             {config,
                 erlang:element(2, _record),
                 erlang:element(3, _record),
+                erlang:element(4, _record),
                 Attributes,
-                erlang:element(5, _record),
                 erlang:element(6, _record),
                 erlang:element(7, _record),
                 erlang:element(8, _record),
-                erlang:element(9, _record)}
+                erlang:element(9, _record),
+                erlang:element(10, _record),
+                erlang:element(11, _record)}
         end}.
 
--file("src/lustre/component.gleam", 181).
+-file("src/lustre/component.gleam", 185).
 ?DOC(
     " Register decoder to run whenever the given property is set on the component.\n"
     " Properties can be set in Lustre using the [`property`](./attribute.html#property)\n"
@@ -122,28 +114,56 @@ on_attribute_change(Name, Decoder) ->
     " Properties can be any JavaScript object. For server components, properties\n"
     " will be any _JSON-serialisable_ value.\n"
 ).
--spec on_property_change(binary(), gleam@dynamic@decode:decoder(SAB)) -> option(SAB).
+-spec on_property_change(binary(), gleam@dynamic@decode:decoder(SFN)) -> option(SFN).
 on_property_change(Name, Decoder) ->
     {option,
         fun(Config) ->
-            Properties = gleam@dict:insert(
-                erlang:element(5, Config),
-                Name,
-                Decoder
-            ),
+            Properties = [{Name, Decoder} | erlang:element(6, Config)],
             _record = Config,
             {config,
                 erlang:element(2, _record),
                 erlang:element(3, _record),
                 erlang:element(4, _record),
+                erlang:element(5, _record),
                 Properties,
-                erlang:element(6, _record),
                 erlang:element(7, _record),
                 erlang:element(8, _record),
-                erlang:element(9, _record)}
+                erlang:element(9, _record),
+                erlang:element(10, _record),
+                erlang:element(11, _record)}
         end}.
 
--file("src/lustre/component.gleam", 196).
+-file("src/lustre/component.gleam", 201).
+?DOC(
+    " Register a decoder to run whenever a parent component or application\n"
+    " [provides](./effect.html#provide) a new context value for the given `key`.\n"
+    " Contexts are a powerful feature that allow parents to inject data into\n"
+    " child components without knowledge of the DOM structurre, making them great\n"
+    " for advanced use-cases like design systems and flexible component hierarchies.\n"
+    "\n"
+    " Contexts can be any JavaScript object. For server components, contexts will\n"
+    " be any _JSON-serialisable_ value.\n"
+).
+-spec on_context_change(binary(), gleam@dynamic@decode:decoder(SFQ)) -> option(SFQ).
+on_context_change(Key, Decoder) ->
+    {option,
+        fun(Config) ->
+            Contexts = [{Key, Decoder} | erlang:element(7, Config)],
+            _record = Config,
+            {config,
+                erlang:element(2, _record),
+                erlang:element(3, _record),
+                erlang:element(4, _record),
+                erlang:element(5, _record),
+                erlang:element(6, _record),
+                Contexts,
+                erlang:element(8, _record),
+                erlang:element(9, _record),
+                erlang:element(10, _record),
+                erlang:element(11, _record)}
+        end}.
+
+-file("src/lustre/component.gleam", 216).
 ?DOC(
     " Mark a component as \"form-associated\". This lets your component participate\n"
     " in form submission and respond to additional form-specific events such as\n"
@@ -161,12 +181,14 @@ form_associated() ->
                 erlang:element(3, _record),
                 erlang:element(4, _record),
                 erlang:element(5, _record),
-                true,
+                erlang:element(6, _record),
                 erlang:element(7, _record),
-                erlang:element(8, _record),
-                erlang:element(9, _record)} end}.
+                true,
+                erlang:element(9, _record),
+                erlang:element(10, _record),
+                erlang:element(11, _record)} end}.
 
--file("src/lustre/component.gleam", 210).
+-file("src/lustre/component.gleam", 230).
 ?DOC(
     " Register a callback that runs when the browser autofills this\n"
     " [form-associated](#form_associated) component's `\"value\"` attribute. The\n"
@@ -176,7 +198,7 @@ form_associated() ->
     " > **Note**: server components cannot participate in form submission and configuring\n"
     " > this option will do nothing.\n"
 ).
--spec on_form_autofill(fun((binary()) -> SAG)) -> option(SAG).
+-spec on_form_autofill(fun((binary()) -> SFV)) -> option(SFV).
 on_form_autofill(Handler) ->
     {option, fun(Config) -> _record = Config,
             {config,
@@ -184,12 +206,14 @@ on_form_autofill(Handler) ->
                 erlang:element(3, _record),
                 erlang:element(4, _record),
                 erlang:element(5, _record),
+                erlang:element(6, _record),
+                erlang:element(7, _record),
                 true,
                 {some, Handler},
-                erlang:element(8, _record),
-                erlang:element(9, _record)} end}.
+                erlang:element(10, _record),
+                erlang:element(11, _record)} end}.
 
--file("src/lustre/component.gleam", 222).
+-file("src/lustre/component.gleam", 242).
 ?DOC(
     " Set a message to be dispatched whenever a form containing this\n"
     " [form-associated](#form_associated) component is reset.\n"
@@ -197,7 +221,7 @@ on_form_autofill(Handler) ->
     " > **Note**: server components cannot participate in form submission and configuring\n"
     " > this option will do nothing.\n"
 ).
--spec on_form_reset(SAI) -> option(SAI).
+-spec on_form_reset(SFX) -> option(SFX).
 on_form_reset(Msg) ->
     {option, fun(Config) -> _record = Config,
             {config,
@@ -205,12 +229,14 @@ on_form_reset(Msg) ->
                 erlang:element(3, _record),
                 erlang:element(4, _record),
                 erlang:element(5, _record),
-                true,
+                erlang:element(6, _record),
                 erlang:element(7, _record),
+                true,
+                erlang:element(9, _record),
                 {some, Msg},
-                erlang:element(9, _record)} end}.
+                erlang:element(11, _record)} end}.
 
--file("src/lustre/component.gleam", 235).
+-file("src/lustre/component.gleam", 255).
 ?DOC(
     " Set a callback that runs when the browser restores this\n"
     " [form-associated](#form_associated) component's `\"value\"` attribute. This is\n"
@@ -219,7 +245,7 @@ on_form_reset(Msg) ->
     " > **Note**: server components cannot participate in form submission and configuring\n"
     " > this option will do nothing.\n"
 ).
--spec on_form_restore(fun((binary()) -> SAK)) -> option(SAK).
+-spec on_form_restore(fun((binary()) -> SFZ)) -> option(SFZ).
 on_form_restore(Handler) ->
     {option, fun(Config) -> _record = Config,
             {config,
@@ -227,12 +253,14 @@ on_form_restore(Handler) ->
                 erlang:element(3, _record),
                 erlang:element(4, _record),
                 erlang:element(5, _record),
-                true,
+                erlang:element(6, _record),
                 erlang:element(7, _record),
-                erlang:element(8, _record),
+                true,
+                erlang:element(9, _record),
+                erlang:element(10, _record),
                 {some, Handler}} end}.
 
--file("src/lustre/component.gleam", 249).
+-file("src/lustre/component.gleam", 269).
 ?DOC(
     " Configure whether a component's [Shadow Root](https://developer.mozilla.org/en-US/docs/Web/API/ShadowRoot)\n"
     " is open or closed. A closed shadow root means the elements rendered inside\n"
@@ -253,9 +281,11 @@ open_shadow_root(Open) ->
                 erlang:element(6, _record),
                 erlang:element(7, _record),
                 erlang:element(8, _record),
-                erlang:element(9, _record)} end}.
+                erlang:element(9, _record),
+                erlang:element(10, _record),
+                erlang:element(11, _record)} end}.
 
--file("src/lustre/component.gleam", 269).
+-file("src/lustre/component.gleam", 289).
 ?DOC(
     " Configure whether a component should attempt to adopt stylesheets from\n"
     " its parent document. Components in Lustre use the shadow DOM to unlock native\n"
@@ -282,19 +312,55 @@ adopt_styles(Adopt) ->
                 erlang:element(6, _record),
                 erlang:element(7, _record),
                 erlang:element(8, _record),
-                erlang:element(9, _record)} end}.
+                erlang:element(9, _record),
+                erlang:element(10, _record),
+                erlang:element(11, _record)} end}.
 
--file("src/lustre/component.gleam", 288).
+-file("src/lustre/component.gleam", 311).
+?DOC(
+    " Indicates whether or not this component should delegate focus to its children.\n"
+    " When set to `True`, a number of focus-related features are enabled:\n"
+    "\n"
+    " - Clicking on any non-interactive part of the component will automatically\n"
+    "   focus the first focusable child element.\n"
+    "\n"
+    " - The component can receive focus through the `.focus()` method or the\n"
+    "   `autofocus` attribute, and it will automatically focus the first\n"
+    "   focusable child element.\n"
+    "\n"
+    " - The component receives the `:focus` CSS pseudo-class when any of its\n"
+    "   focusable children have focus.\n"
+    "\n"
+    " By default this option is **disabled**. You may want to enable this option\n"
+    " when creating complex interactive widgets.\n"
+).
+-spec delegates_focus(boolean()) -> option(any()).
+delegates_focus(Delegates) ->
+    {option, fun(Config) -> _record = Config,
+            {config,
+                erlang:element(2, _record),
+                erlang:element(3, _record),
+                Delegates,
+                erlang:element(5, _record),
+                erlang:element(6, _record),
+                erlang:element(7, _record),
+                erlang:element(8, _record),
+                erlang:element(9, _record),
+                erlang:element(10, _record),
+                erlang:element(11, _record)} end}.
+
+-file("src/lustre/component.gleam", 330).
 ?DOC(false).
--spec to_server_component_config(config(SAQ)) -> lustre@runtime@server@runtime:config(SAQ).
+-spec to_server_component_config(config(SGH)) -> lustre@runtime@server@runtime:config(SGH).
 to_server_component_config(Config) ->
     {config,
         erlang:element(2, Config),
         erlang:element(3, Config),
-        erlang:element(4, Config),
-        erlang:element(5, Config)}.
+        maps:from_list(lists:reverse(erlang:element(5, Config))),
+        maps:from_list(lists:reverse(erlang:element(6, Config))),
+        maps:from_list(lists:reverse(erlang:element(7, Config)))}.
 
--file("src/lustre/component.gleam", 311).
+-file("src/lustre/component.gleam", 354).
 ?DOC(
     " Create a default slot for a component. Any elements rendered as children of\n"
     " the component will be placed inside the default slot unless explicitly\n"
@@ -308,13 +374,13 @@ to_server_component_config(Config) ->
     "   https://javascript.info/slots-composition\n"
 ).
 -spec default_slot(
-    list(lustre@vdom@vattr:attribute(SAT)),
-    list(lustre@vdom@vnode:element(SAT))
-) -> lustre@vdom@vnode:element(SAT).
+    list(lustre@vdom@vattr:attribute(SGK)),
+    list(lustre@vdom@vnode:element(SGK))
+) -> lustre@vdom@vnode:element(SGK).
 default_slot(Attributes, Fallback) ->
     lustre@element@html:slot(Attributes, Fallback).
 
--file("src/lustre/component.gleam", 329).
+-file("src/lustre/component.gleam", 372).
 ?DOC(
     " Create a named slot for a component. Any elements rendered as children of\n"
     " the component with a [`slot`](#slot) attribute matching the `name` will be\n"
@@ -329,16 +395,16 @@ default_slot(Attributes, Fallback) ->
 ).
 -spec named_slot(
     binary(),
-    list(lustre@vdom@vattr:attribute(SAZ)),
-    list(lustre@vdom@vnode:element(SAZ))
-) -> lustre@vdom@vnode:element(SAZ).
+    list(lustre@vdom@vattr:attribute(SGQ)),
+    list(lustre@vdom@vnode:element(SGQ))
+) -> lustre@vdom@vnode:element(SGQ).
 named_slot(Name, Attributes, Fallback) ->
     lustre@element@html:slot(
         [lustre@attribute:attribute(<<"name"/utf8>>, Name) | Attributes],
         Fallback
     ).
 
--file("src/lustre/component.gleam", 380).
+-file("src/lustre/component.gleam", 423).
 ?DOC(
     " Lustre's component system is built on top the Custom Elements API and the\n"
     " Shadow DOM API. A component's `view` function is rendered inside a shadow\n"
@@ -385,7 +451,49 @@ named_slot(Name, Attributes, Fallback) ->
 part(Name) ->
     lustre@attribute:attribute(<<"part"/utf8>>, Name).
 
--file("src/lustre/component.gleam", 441).
+-file("src/lustre/component.gleam", 452).
+-spec do_parts(list({binary(), boolean()}), binary()) -> binary().
+do_parts(Names, Part) ->
+    case Names of
+        [] ->
+            Part;
+
+        [{Name, true} | Rest] ->
+            <<<<<<Part/binary, Name/binary>>/binary, " "/utf8>>/binary,
+                (do_parts(Rest, Part))/binary>>;
+
+        [{_, false} | Rest@1] ->
+            do_parts(Rest@1, Part)
+    end.
+
+-file("src/lustre/component.gleam", 448).
+?DOC(
+    " A convenience function that makes it possible to toggle different parts on or\n"
+    " off in a single call. This is useful for example when you have a menu item\n"
+    " that may be active and you want to conditionally assign the `\"active\"` part:\n"
+    "\n"
+    " ```gleam\n"
+    " import lustre/component\n"
+    " import lustre/element/html\n"
+    "\n"
+    " fn view(item) {\n"
+    "   html.li(\n"
+    "     [\n"
+    "       component.parts([\n"
+    "         #(\"item\", True)\n"
+    "         #(\"active\", item.is_active)\n"
+    "       ]),\n"
+    "     ],\n"
+    "     [html.text(item.label)],\n"
+    "   ])\n"
+    " }\n"
+    " ```\n"
+).
+-spec parts(list({binary(), boolean()})) -> lustre@vdom@vattr:attribute(any()).
+parts(Names) ->
+    part(do_parts(Names, <<""/utf8>>)).
+
+-file("src/lustre/component.gleam", 517).
 ?DOC(
     " While the [`part`](#part) attribute can be used to expose parts of a component\n"
     " to its parent, these parts will not automatically become available to the\n"
@@ -451,7 +559,7 @@ exportparts(Names) ->
         gleam@string:join(Names, <<", "/utf8>>)
     ).
 
--file("src/lustre/component.gleam", 454).
+-file("src/lustre/component.gleam", 530).
 ?DOC(
     " Associate an element with a [named slot](#named_slot) in a component. Multiple\n"
     " elements can be associated with the same slot name.\n"
@@ -466,12 +574,12 @@ exportparts(Names) ->
 slot(Name) ->
     lustre@attribute:attribute(<<"slot"/utf8>>, Name).
 
--file("src/lustre/component.gleam", 471).
+-file("src/lustre/component.gleam", 547).
 -spec do_set_form_value(gleam@dynamic:dynamic_(), binary()) -> nil.
 do_set_form_value(_, _) ->
     nil.
 
--file("src/lustre/component.gleam", 465).
+-file("src/lustre/component.gleam", 541).
 ?DOC(
     " Set the value of a [form-associated component](#form_associated). If the\n"
     " component is rendered inside a `<form>` element, the value will be\n"
@@ -484,12 +592,12 @@ set_form_value(Value) ->
         fun(_, Root) -> do_set_form_value(Root, Value) end
     ).
 
--file("src/lustre/component.gleam", 485).
+-file("src/lustre/component.gleam", 561).
 -spec do_clear_form_value(gleam@dynamic:dynamic_()) -> nil.
 do_clear_form_value(_) ->
     nil.
 
--file("src/lustre/component.gleam", 479).
+-file("src/lustre/component.gleam", 555).
 ?DOC(
     " Clear a form value previously set with [`set_form_value`](#set_form_value).\n"
     " When the form is submitted, this component's value will not be included in\n"
@@ -499,12 +607,12 @@ do_clear_form_value(_) ->
 clear_form_value() ->
     lustre@effect:before_paint(fun(_, Root) -> do_clear_form_value(Root) end).
 
--file("src/lustre/component.gleam", 515).
+-file("src/lustre/component.gleam", 591).
 -spec do_set_pseudo_state(gleam@dynamic:dynamic_(), binary()) -> nil.
 do_set_pseudo_state(_, _) ->
     nil.
 
--file("src/lustre/component.gleam", 509).
+-file("src/lustre/component.gleam", 585).
 ?DOC(
     " Set a custom state on the component. This state is not reflected in the DOM\n"
     " but can be selected in CSS using the `:state` pseudo-class. For example,\n"
@@ -532,12 +640,12 @@ set_pseudo_state(Value) ->
         fun(_, Root) -> do_set_pseudo_state(Root, Value) end
     ).
 
--file("src/lustre/component.gleam", 527).
+-file("src/lustre/component.gleam", 603).
 -spec do_remove_pseudo_state(gleam@dynamic:dynamic_(), binary()) -> nil.
 do_remove_pseudo_state(_, _) ->
     nil.
 
--file("src/lustre/component.gleam", 521).
+-file("src/lustre/component.gleam", 597).
 ?DOC(" Remove a custom state set by [`set_pseudo_state`](#set_pseudo_state).\n").
 -spec remove_pseudo_state(binary()) -> lustre@effect:effect(any()).
 remove_pseudo_state(Value) ->

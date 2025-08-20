@@ -28,7 +28,7 @@ emit(Event, Data) ->
     " Construct a [`Handler`](#Handler) that can be used with [`advanced`](#advanced)\n"
     " to conditionally stop propagation or prevent the default behaviour of an event.\n"
 ).
--spec handler(UEJ, boolean(), boolean()) -> lustre@vdom@vattr:handler(UEJ).
+-spec handler(UMK, boolean(), boolean()) -> lustre@vdom@vattr:handler(UMK).
 handler(Message, Prevent_default, Stop_propagation) ->
     {handler, Prevent_default, Stop_propagation, Message}.
 
@@ -75,7 +75,7 @@ is_immediate_event(Name) ->
     " > use [`server_component.include`](./server_component.html#include) to state\n"
     " > which properties of the event you need to be sent to the server.\n"
 ).
--spec on(binary(), gleam@dynamic@decode:decoder(UEC)) -> lustre@vdom@vattr:attribute(UEC).
+-spec on(binary(), gleam@dynamic@decode:decoder(UMD)) -> lustre@vdom@vattr:attribute(UMD).
 on(Name, Handler) ->
     lustre@vdom@vattr:event(
         Name,
@@ -109,8 +109,8 @@ on(Name, Handler) ->
 ).
 -spec advanced(
     binary(),
-    gleam@dynamic@decode:decoder(lustre@vdom@vattr:handler(UEF))
-) -> lustre@vdom@vattr:attribute(UEF).
+    gleam@dynamic@decode:decoder(lustre@vdom@vattr:handler(UMG))
+) -> lustre@vdom@vattr:attribute(UMG).
 advanced(Name, Handler) ->
     lustre@vdom@vattr:event(
         Name,
@@ -131,7 +131,7 @@ advanced(Name, Handler) ->
     " > **Note**: this will override the conditional behaviour of an event handler\n"
     " > created with [`advanced`](#advanced).\n"
 ).
--spec prevent_default(lustre@vdom@vattr:attribute(UEL)) -> lustre@vdom@vattr:attribute(UEL).
+-spec prevent_default(lustre@vdom@vattr:attribute(UMM)) -> lustre@vdom@vattr:attribute(UMM).
 prevent_default(Event) ->
     case Event of
         {event, _, _, _, _, _, _, _, _, _} ->
@@ -159,7 +159,7 @@ prevent_default(Event) ->
     " > **Note**: this will override the conditional behaviour of an event handler\n"
     " > created with [`advanced`](#advanced).\n"
 ).
--spec stop_propagation(lustre@vdom@vattr:attribute(UEO)) -> lustre@vdom@vattr:attribute(UEO).
+-spec stop_propagation(lustre@vdom@vattr:attribute(UMP)) -> lustre@vdom@vattr:attribute(UMP).
 stop_propagation(Event) ->
     case Event of
         {event, _, _, _, _, _, _, _, _, _} ->
@@ -197,7 +197,7 @@ stop_propagation(Event) ->
     " > typical interaction patterns and experiment with different delays to balance\n"
     " > responsiveness and update frequency.\n"
 ).
--spec debounce(lustre@vdom@vattr:attribute(UER), integer()) -> lustre@vdom@vattr:attribute(UER).
+-spec debounce(lustre@vdom@vattr:attribute(UMS), integer()) -> lustre@vdom@vattr:attribute(UMS).
 debounce(Event, Delay) ->
     case Event of
         {event, _, _, _, _, _, _, _, _, _} ->
@@ -235,7 +235,7 @@ debounce(Event, Delay) ->
     " > typical interaction patterns and experiment with different delays to balance\n"
     " > responsiveness and update frequency.\n"
 ).
--spec throttle(lustre@vdom@vattr:attribute(UEU), integer()) -> lustre@vdom@vattr:attribute(UEU).
+-spec throttle(lustre@vdom@vattr:attribute(UMV), integer()) -> lustre@vdom@vattr:attribute(UMV).
 throttle(Event, Delay) ->
     case Event of
         {event, _, _, _, _, _, _, _, _, _} ->
@@ -257,43 +257,43 @@ throttle(Event, Delay) ->
 
 -file("src/lustre/event.gleam", 185).
 ?DOC("\n").
--spec on_click(UEX) -> lustre@vdom@vattr:attribute(UEX).
+-spec on_click(UMY) -> lustre@vdom@vattr:attribute(UMY).
 on_click(Msg) ->
     on(<<"click"/utf8>>, gleam@dynamic@decode:success(Msg)).
 
 -file("src/lustre/event.gleam", 190).
 ?DOC("\n").
--spec on_mouse_down(UEZ) -> lustre@vdom@vattr:attribute(UEZ).
+-spec on_mouse_down(UNA) -> lustre@vdom@vattr:attribute(UNA).
 on_mouse_down(Msg) ->
     on(<<"mousedown"/utf8>>, gleam@dynamic@decode:success(Msg)).
 
 -file("src/lustre/event.gleam", 195).
 ?DOC("\n").
--spec on_mouse_up(UFB) -> lustre@vdom@vattr:attribute(UFB).
+-spec on_mouse_up(UNC) -> lustre@vdom@vattr:attribute(UNC).
 on_mouse_up(Msg) ->
     on(<<"mouseup"/utf8>>, gleam@dynamic@decode:success(Msg)).
 
 -file("src/lustre/event.gleam", 200).
 ?DOC("\n").
--spec on_mouse_enter(UFD) -> lustre@vdom@vattr:attribute(UFD).
+-spec on_mouse_enter(UNE) -> lustre@vdom@vattr:attribute(UNE).
 on_mouse_enter(Msg) ->
     on(<<"mouseenter"/utf8>>, gleam@dynamic@decode:success(Msg)).
 
 -file("src/lustre/event.gleam", 205).
 ?DOC("\n").
--spec on_mouse_leave(UFF) -> lustre@vdom@vattr:attribute(UFF).
+-spec on_mouse_leave(UNG) -> lustre@vdom@vattr:attribute(UNG).
 on_mouse_leave(Msg) ->
     on(<<"mouseleave"/utf8>>, gleam@dynamic@decode:success(Msg)).
 
 -file("src/lustre/event.gleam", 210).
 ?DOC("\n").
--spec on_mouse_over(UFH) -> lustre@vdom@vattr:attribute(UFH).
+-spec on_mouse_over(UNI) -> lustre@vdom@vattr:attribute(UNI).
 on_mouse_over(Msg) ->
     on(<<"mouseover"/utf8>>, gleam@dynamic@decode:success(Msg)).
 
 -file("src/lustre/event.gleam", 215).
 ?DOC("\n").
--spec on_mouse_out(UFJ) -> lustre@vdom@vattr:attribute(UFJ).
+-spec on_mouse_out(UNK) -> lustre@vdom@vattr:attribute(UNK).
 on_mouse_out(Msg) ->
     on(<<"mouseout"/utf8>>, gleam@dynamic@decode:success(Msg)).
 
@@ -302,7 +302,7 @@ on_mouse_out(Msg) ->
     " Listens for key presses on an element, and dispatches a message with the\n"
     " current key being pressed.\n"
 ).
--spec on_keypress(fun((binary()) -> UFL)) -> lustre@vdom@vattr:attribute(UFL).
+-spec on_keypress(fun((binary()) -> UNM)) -> lustre@vdom@vattr:attribute(UNM).
 on_keypress(Msg) ->
     on(
         <<"keypress"/utf8>>,
@@ -322,7 +322,7 @@ on_keypress(Msg) ->
     " Listens for key down events on an element, and dispatches a message with the\n"
     " current key being pressed.\n"
 ).
--spec on_keydown(fun((binary()) -> UFN)) -> lustre@vdom@vattr:attribute(UFN).
+-spec on_keydown(fun((binary()) -> UNO)) -> lustre@vdom@vattr:attribute(UNO).
 on_keydown(Msg) ->
     on(
         <<"keydown"/utf8>>,
@@ -342,7 +342,7 @@ on_keydown(Msg) ->
     " Listens for key up events on an element, and dispatches a message with the\n"
     " current key being released.\n"
 ).
--spec on_keyup(fun((binary()) -> UFP)) -> lustre@vdom@vattr:attribute(UFP).
+-spec on_keyup(fun((binary()) -> UNQ)) -> lustre@vdom@vattr:attribute(UNQ).
 on_keyup(Msg) ->
     on(
         <<"keyup"/utf8>>,
@@ -364,7 +364,7 @@ on_keyup(Msg) ->
     " and passes it to the given message function. This is commonly used to\n"
     " implement [controlled inputs](https://github.com/lustre-labs/lustre/blob/main/pages/hints/controlled-vs-uncontrolled-inputs.md).\n"
 ).
--spec on_input(fun((binary()) -> UFR)) -> lustre@vdom@vattr:attribute(UFR).
+-spec on_input(fun((binary()) -> UNS)) -> lustre@vdom@vattr:attribute(UNS).
 on_input(Msg) ->
     on(
         <<"input"/utf8>>,
@@ -384,7 +384,7 @@ on_input(Msg) ->
     " and passes it to the given message function. This is commonly used to\n"
     " implement [controlled inputs](https://github.com/lustre-labs/lustre/blob/main/pages/hints/controlled-vs-uncontrolled-inputs.md).\n"
 ).
--spec on_change(fun((binary()) -> UFT)) -> lustre@vdom@vattr:attribute(UFT).
+-spec on_change(fun((binary()) -> UNU)) -> lustre@vdom@vattr:attribute(UNU).
 on_change(Msg) ->
     on(
         <<"change"/utf8>>,
@@ -404,7 +404,7 @@ on_change(Msg) ->
     " the given message function. This is commonly used to implement\n"
     " [controlled inputs](https://github.com/lustre-labs/lustre/blob/main/pages/hints/controlled-vs-uncontrolled-inputs.md).\n"
 ).
--spec on_check(fun((boolean()) -> UFV)) -> lustre@vdom@vattr:attribute(UFV).
+-spec on_check(fun((boolean()) -> UNW)) -> lustre@vdom@vattr:attribute(UNW).
 on_check(Msg) ->
     on(
         <<"change"/utf8>>,
@@ -463,7 +463,7 @@ formdata_decoder() ->
     " the browser's native form submission. In a Lustre app you'll want to handle\n"
     " that yourself as an [`Effect`](./effect.html#Effect).\n"
 ).
--spec on_submit(fun((list({binary(), binary()})) -> UFY)) -> lustre@vdom@vattr:attribute(UFY).
+-spec on_submit(fun((list({binary(), binary()})) -> UNZ)) -> lustre@vdom@vattr:attribute(UNZ).
 on_submit(Msg) ->
     _pipe@2 = on(
         <<"submit"/utf8>>,
@@ -480,11 +480,11 @@ on_submit(Msg) ->
     prevent_default(_pipe@2).
 
 -file("src/lustre/event.gleam", 342).
--spec on_focus(UGC) -> lustre@vdom@vattr:attribute(UGC).
+-spec on_focus(UOD) -> lustre@vdom@vattr:attribute(UOD).
 on_focus(Msg) ->
     on(<<"focus"/utf8>>, gleam@dynamic@decode:success(Msg)).
 
 -file("src/lustre/event.gleam", 346).
--spec on_blur(UGE) -> lustre@vdom@vattr:attribute(UGE).
+-spec on_blur(UOF) -> lustre@vdom@vattr:attribute(UOF).
 on_blur(Msg) ->
     on(<<"blur"/utf8>>, gleam@dynamic@decode:success(Msg)).

@@ -82,7 +82,7 @@ function generate_config() {
         if ($1) {
           return $cli.return$(undefined);
         } else {
-          let entry_css$1 = "@import \"tailwindcss\"\n" + entry_css;
+          let entry_css$1 = "@import \"tailwindcss\";\n" + entry_css;
           return $cli.log(
             "Adding Tailwind integration to " + entry_css_path,
             () => {
@@ -114,7 +114,7 @@ function generate_config() {
               (() => {
                 let _pipe = $simplifile.write(
                   entry_css_path,
-                  "@import \"tailwindcss\"\n",
+                  "@import \"tailwindcss\";\n",
                 );
                 return $result.map_error(
                   _pipe,

@@ -1,5 +1,5 @@
 -module(mist@internal@http2@handler).
--compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch]).
+-compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch, inline]).
 -define(FILEPATH, "src/mist/internal/http2/handler.gleam").
 -export([send_hpack_context/2, receive_hpack_context/2, append_data/2, upgrade/3, call/3]).
 -export_type([pending_send/0, state/0]).
@@ -32,52 +32,49 @@
 ?DOC(false).
 -spec send_hpack_context(state(), mist@internal@http2:hpack_context()) -> state().
 send_hpack_context(State, Context) ->
-    _record = State,
     {state,
-        erlang:element(2, _record),
-        erlang:element(3, _record),
-        erlang:element(4, _record),
-        erlang:element(5, _record),
-        erlang:element(6, _record),
+        erlang:element(2, State),
+        erlang:element(3, State),
+        erlang:element(4, State),
+        erlang:element(5, State),
+        erlang:element(6, State),
         Context,
-        erlang:element(8, _record),
-        erlang:element(9, _record),
-        erlang:element(10, _record),
-        erlang:element(11, _record)}.
+        erlang:element(8, State),
+        erlang:element(9, State),
+        erlang:element(10, State),
+        erlang:element(11, State)}.
 
 -file("src/mist/internal/http2/handler.gleam", 42).
 ?DOC(false).
 -spec receive_hpack_context(state(), mist@internal@http2:hpack_context()) -> state().
 receive_hpack_context(State, Context) ->
-    _record = State,
     {state,
-        erlang:element(2, _record),
-        erlang:element(3, _record),
-        erlang:element(4, _record),
+        erlang:element(2, State),
+        erlang:element(3, State),
+        erlang:element(4, State),
         Context,
-        erlang:element(6, _record),
-        erlang:element(7, _record),
-        erlang:element(8, _record),
-        erlang:element(9, _record),
-        erlang:element(10, _record),
-        erlang:element(11, _record)}.
+        erlang:element(6, State),
+        erlang:element(7, State),
+        erlang:element(8, State),
+        erlang:element(9, State),
+        erlang:element(10, State),
+        erlang:element(11, State)}.
 
 -file("src/mist/internal/http2/handler.gleam", 46).
 ?DOC(false).
 -spec append_data(state(), bitstring()) -> state().
 append_data(State, Data) ->
-    _record = State,
     {state,
-        erlang:element(2, _record),
+        erlang:element(2, State),
         mist@internal@buffer:append(erlang:element(3, State), Data),
-        erlang:element(4, _record),
-        erlang:element(5, _record),
-        erlang:element(6, _record),
-        erlang:element(7, _record),
-        erlang:element(8, _record),
-        erlang:element(9, _record),
-        erlang:element(10, _record),
-        erlang:element(11, _record)}.
+        erlang:element(4, State),
+        erlang:element(5, State),
+        erlang:element(6, State),
+        erlang:element(7, State),
+        erlang:element(8, State),
+        erlang:element(9, State),
+        erlang:element(10, State),
+        erlang:element(11, State)}.
 
 -file("src/mist/internal/http2/handler.gleam", 50).
 ?DOC(false).
@@ -136,20 +133,17 @@ handle_frame(Frame, State, Conn, Handler) ->
                 Priority},
             handle_frame(
                 Complete_frame,
-                begin
-                    _record = State,
-                    {state,
-                        none,
-                        erlang:element(3, _record),
-                        erlang:element(4, _record),
-                        erlang:element(5, _record),
-                        erlang:element(6, _record),
-                        erlang:element(7, _record),
-                        erlang:element(8, _record),
-                        erlang:element(9, _record),
-                        erlang:element(10, _record),
-                        erlang:element(11, _record)}
-                end,
+                {state,
+                    none,
+                    erlang:element(3, State),
+                    erlang:element(4, State),
+                    erlang:element(5, State),
+                    erlang:element(6, State),
+                    erlang:element(7, State),
+                    erlang:element(8, State),
+                    erlang:element(9, State),
+                    erlang:element(10, State),
+                    erlang:element(11, State)},
                 Conn,
                 Handler
             );
@@ -167,48 +161,42 @@ handle_frame(Frame, State, Conn, Handler) ->
                 Id1@1,
                 Priority@1},
             {ok,
-                begin
-                    _record@1 = State,
-                    {state,
-                        {some, Next},
-                        erlang:element(3, _record@1),
-                        erlang:element(4, _record@1),
-                        erlang:element(5, _record@1),
-                        erlang:element(6, _record@1),
-                        erlang:element(7, _record@1),
-                        erlang:element(8, _record@1),
-                        erlang:element(9, _record@1),
-                        erlang:element(10, _record@1),
-                        erlang:element(11, _record@1)}
-                end};
+                {state,
+                    {some, Next},
+                    erlang:element(3, State),
+                    erlang:element(4, State),
+                    erlang:element(5, State),
+                    erlang:element(6, State),
+                    erlang:element(7, State),
+                    erlang:element(8, State),
+                    erlang:element(9, State),
+                    erlang:element(10, State),
+                    erlang:element(11, State)}};
 
         {none, {window_update, Amount, Identifier}} ->
             case mist@internal@http2@frame:get_stream_identifier(Identifier) of
                 0 ->
                     {ok,
-                        begin
-                            _record@2 = State,
-                            {state,
-                                erlang:element(2, _record@2),
-                                erlang:element(3, _record@2),
-                                erlang:element(4, _record@2),
-                                erlang:element(5, _record@2),
-                                erlang:element(6, _record@2),
-                                erlang:element(7, _record@2),
-                                erlang:element(8, _record@2),
-                                erlang:element(9, _record@2),
-                                begin
-                                    _record@3 = erlang:element(10, State),
-                                    {http2_settings,
-                                        erlang:element(2, _record@3),
-                                        erlang:element(3, _record@3),
-                                        erlang:element(4, _record@3),
-                                        Amount,
-                                        erlang:element(6, _record@3),
-                                        erlang:element(7, _record@3)}
-                                end,
-                                erlang:element(11, _record@2)}
-                        end};
+                        {state,
+                            erlang:element(2, State),
+                            erlang:element(3, State),
+                            erlang:element(4, State),
+                            erlang:element(5, State),
+                            erlang:element(6, State),
+                            erlang:element(7, State),
+                            erlang:element(8, State),
+                            erlang:element(9, State),
+                            begin
+                                _record = erlang:element(10, State),
+                                {http2_settings,
+                                    erlang:element(2, _record),
+                                    erlang:element(3, _record),
+                                    erlang:element(4, _record),
+                                    Amount,
+                                    erlang:element(6, _record),
+                                    erlang:element(7, _record)}
+                            end,
+                            erlang:element(11, State)}};
 
                 _ ->
                     _pipe = erlang:element(11, State),
@@ -225,35 +213,29 @@ handle_frame(Frame, State, Conn, Handler) ->
                                 Amount
                             ) of
                                 {ok, Update} ->
-                                    New_stream = begin
-                                        _record@4 = Stream,
-                                        {state,
-                                            erlang:element(2, _record@4),
-                                            erlang:element(3, _record@4),
-                                            erlang:element(4, _record@4),
-                                            erlang:element(5, _record@4),
-                                            Update,
-                                            erlang:element(7, _record@4)}
-                                    end,
+                                    New_stream = {state,
+                                        erlang:element(2, Stream),
+                                        erlang:element(3, Stream),
+                                        erlang:element(4, Stream),
+                                        erlang:element(5, Stream),
+                                        Update,
+                                        erlang:element(7, Stream)},
                                     {ok,
-                                        begin
-                                            _record@5 = State,
-                                            {state,
-                                                erlang:element(2, _record@5),
-                                                erlang:element(3, _record@5),
-                                                erlang:element(4, _record@5),
-                                                erlang:element(5, _record@5),
-                                                erlang:element(6, _record@5),
-                                                erlang:element(7, _record@5),
-                                                erlang:element(8, _record@5),
-                                                erlang:element(9, _record@5),
-                                                erlang:element(10, _record@5),
-                                                gleam@dict:insert(
-                                                    erlang:element(11, State),
-                                                    Identifier,
-                                                    New_stream
-                                                )}
-                                        end};
+                                        {state,
+                                            erlang:element(2, State),
+                                            erlang:element(3, State),
+                                            erlang:element(4, State),
+                                            erlang:element(5, State),
+                                            erlang:element(6, State),
+                                            erlang:element(7, State),
+                                            erlang:element(8, State),
+                                            erlang:element(9, State),
+                                            erlang:element(10, State),
+                                            gleam@dict:insert(
+                                                erlang:element(11, State),
+                                                Identifier,
+                                                New_stream
+                                            )}};
 
                                 _ ->
                                     {error,
@@ -334,20 +316,17 @@ handle_frame(Frame, State, Conn, Handler) ->
                 Stream_state
             ),
             {ok,
-                begin
-                    _record@6 = State,
-                    {state,
-                        erlang:element(2, _record@6),
-                        erlang:element(3, _record@6),
-                        erlang:element(4, _record@6),
-                        Context@1,
-                        erlang:element(6, _record@6),
-                        erlang:element(7, _record@6),
-                        erlang:element(8, _record@6),
-                        erlang:element(9, _record@6),
-                        erlang:element(10, _record@6),
-                        Streams}
-                end};
+                {state,
+                    erlang:element(2, State),
+                    erlang:element(3, State),
+                    erlang:element(4, State),
+                    Context@1,
+                    erlang:element(6, State),
+                    erlang:element(7, State),
+                    erlang:element(8, State),
+                    erlang:element(9, State),
+                    erlang:element(10, State),
+                    Streams}};
 
         {none, {data, Data@3, End_stream@3, Identifier@2}} ->
             Data_size = erlang:byte_size(Data@3),
@@ -401,17 +380,16 @@ handle_frame(Frame, State, Conn, Handler) ->
                         erlang:element(4, New_stream@3),
                         {data, Data@3, End_stream@3}
                     ),
-                    _record@7 = State,
                     {state,
-                        erlang:element(2, _record@7),
-                        erlang:element(3, _record@7),
-                        erlang:element(4, _record@7),
-                        erlang:element(5, _record@7),
-                        erlang:element(6, _record@7),
-                        erlang:element(7, _record@7),
-                        erlang:element(8, _record@7),
+                        erlang:element(2, State),
+                        erlang:element(3, State),
+                        erlang:element(4, State),
+                        erlang:element(5, State),
+                        erlang:element(6, State),
+                        erlang:element(7, State),
+                        erlang:element(8, State),
                         Conn_receive_window_size,
-                        erlang:element(10, _record@7),
+                        erlang:element(10, State),
                         gleam@dict:insert(
                             erlang:element(11, State),
                             Identifier@2,
@@ -463,20 +441,17 @@ call(State, Conn, Handler) ->
         erlang:element(3, erlang:element(3, State))
     ) of
         {ok, {Frame, Rest}} ->
-            New_state = begin
-                _record = State,
-                {state,
-                    erlang:element(2, _record),
-                    mist@internal@buffer:new(Rest),
-                    erlang:element(4, _record),
-                    erlang:element(5, _record),
-                    erlang:element(6, _record),
-                    erlang:element(7, _record),
-                    erlang:element(8, _record),
-                    erlang:element(9, _record),
-                    erlang:element(10, _record),
-                    erlang:element(11, _record)}
-            end,
+            New_state = {state,
+                erlang:element(2, State),
+                mist@internal@buffer:new(Rest),
+                erlang:element(4, State),
+                erlang:element(5, State),
+                erlang:element(6, State),
+                erlang:element(7, State),
+                erlang:element(8, State),
+                erlang:element(9, State),
+                erlang:element(10, State),
+                erlang:element(11, State)},
             case handle_frame(Frame, New_state, Conn, Handler) of
                 {ok, Updated} ->
                     call(Updated, Conn, Handler);

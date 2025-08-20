@@ -14,16 +14,16 @@
 
 ?MODULEDOC(false).
 
--type diff(QKR) :: {diff,
-        lustre@vdom@patch:patch(QKR),
-        lustre@vdom@events:events(QKR)}.
+-type diff(QLR) :: {diff,
+        lustre@vdom@patch:patch(QLR),
+        lustre@vdom@events:events(QLR)}.
 
--type attribute_change(QKS) :: {attribute_change,
-        list(lustre@vdom@vattr:attribute(QKS)),
-        list(lustre@vdom@vattr:attribute(QKS)),
-        lustre@vdom@events:events(QKS)}.
+-type attribute_change(QLS) :: {attribute_change,
+        list(lustre@vdom@vattr:attribute(QLS)),
+        list(lustre@vdom@vattr:attribute(QLS)),
+        lustre@vdom@events:events(QLS)}.
 
--file("src/lustre/vdom/diff.gleam", 587).
+-file("src/lustre/vdom/diff.gleam", 557).
 ?DOC(false).
 -spec is_controlled(
     lustre@vdom@events:events(any()),
@@ -46,24 +46,24 @@ is_controlled(Events, Namespace, Tag, Path) ->
             false
     end.
 
--file("src/lustre/vdom/diff.gleam", 872).
+-file("src/lustre/vdom/diff.gleam", 842).
 ?DOC(false).
 -spec property_value_equal(gleam@json:json(), gleam@json:json()) -> boolean().
 property_value_equal(A, B) ->
     A =:= B.
 
--file("src/lustre/vdom/diff.gleam", 608).
+-file("src/lustre/vdom/diff.gleam", 578).
 ?DOC(false).
 -spec diff_attributes(
     boolean(),
     lustre@vdom@path:path(),
     fun((gleam@dynamic:dynamic_()) -> gleam@dynamic:dynamic_()),
-    lustre@vdom@events:events(QLT),
-    list(lustre@vdom@vattr:attribute(QLT)),
-    list(lustre@vdom@vattr:attribute(QLT)),
-    list(lustre@vdom@vattr:attribute(QLT)),
-    list(lustre@vdom@vattr:attribute(QLT))
-) -> attribute_change(QLT).
+    lustre@vdom@events:events(QMU),
+    list(lustre@vdom@vattr:attribute(QMU)),
+    list(lustre@vdom@vattr:attribute(QMU)),
+    list(lustre@vdom@vattr:attribute(QMU)),
+    list(lustre@vdom@vattr:attribute(QMU))
+) -> attribute_change(QMU).
 diff_attributes(Controlled, Path, Mapper, Events, Old, New, Added, Removed) ->
     case {Old, New} of
         {[], []} ->
@@ -228,13 +228,14 @@ diff_attributes(Controlled, Path, Mapper, Events, Old, New, Added, Removed) ->
                 {{event, _, _, _, _, _, _, _, _, _},
                     eq,
                     {event, _, Name@2, Handler@1, _, _, _, _, _, _}} ->
-                    Has_changes@2 = ((((erlang:element(6, Prev@2) /= erlang:element(
-                        6,
-                        Next@2
-                    ))
-                    orelse (erlang:element(7, Prev@2) /= erlang:element(
-                        7,
-                        Next@2
+                    Has_changes@2 = ((((erlang:element(
+                        2,
+                        erlang:element(6, Prev@2)
+                    )
+                    /= erlang:element(2, erlang:element(6, Next@2)))
+                    orelse (erlang:element(2, erlang:element(7, Prev@2)) /= erlang:element(
+                        2,
+                        erlang:element(7, Next@2)
                     )))
                     orelse (erlang:element(8, Prev@2) /= erlang:element(
                         8,
@@ -393,24 +394,24 @@ diff_attributes(Controlled, Path, Mapper, Events, Old, New, Added, Removed) ->
             end
     end.
 
--file("src/lustre/vdom/diff.gleam", 51).
+-file("src/lustre/vdom/diff.gleam", 49).
 ?DOC(false).
 -spec do_diff(
-    list(lustre@vdom@vnode:element(QKY)),
-    lustre@internals@mutable_map:mutable_map(binary(), lustre@vdom@vnode:element(QKY)),
-    list(lustre@vdom@vnode:element(QKY)),
-    lustre@internals@mutable_map:mutable_map(binary(), lustre@vdom@vnode:element(QKY)),
-    gleam@set:set(binary()),
+    list(lustre@vdom@vnode:element(QLY)),
+    lustre@internals@mutable_map:mutable_map(binary(), lustre@vdom@vnode:element(QLY)),
+    list(lustre@vdom@vnode:element(QLY)),
+    lustre@internals@mutable_map:mutable_map(binary(), lustre@vdom@vnode:element(QLY)),
+    lustre@internals@mutable_map:mutable_map(binary(), nil),
     integer(),
     integer(),
     integer(),
     integer(),
     lustre@vdom@path:path(),
-    list(lustre@vdom@patch:change(QKY)),
-    list(lustre@vdom@patch:patch(QKY)),
+    list(lustre@vdom@patch:change(QLY)),
+    list(lustre@vdom@patch:patch(QLY)),
     fun((gleam@dynamic:dynamic_()) -> gleam@dynamic:dynamic_()),
-    lustre@vdom@events:events(QKY)
-) -> diff(QKY).
+    lustre@vdom@events:events(QLY)
+) -> diff(QLY).
 do_diff(
     Old,
     Old_keyed,
@@ -432,12 +433,12 @@ do_diff(
             {diff, {patch, Patch_index, Removed, Changes, Children}, Events};
 
         {[Prev | Old@1], []} ->
-            Removed@1 = case (erlang:element(3, Prev) =:= <<""/utf8>>) orelse not gleam@set:contains(
+            Removed@1 = case (erlang:element(3, Prev) =:= <<""/utf8>>) orelse not gleam@dict:has_key(
                 Moved,
                 erlang:element(3, Prev)
             ) of
                 true ->
-                    Removed + lustre@vdom@vnode:advance(Prev);
+                    Removed + 1;
 
                 false ->
                     Removed
@@ -482,75 +483,72 @@ do_diff(
             Prev@1
         ) =/= erlang:element(3, Next) ->
             Next_did_exist = gleam@dict:get(Old_keyed, erlang:element(3, Next)),
-            Prev_does_exist = gleam@dict:get(
+            Prev_does_exist = gleam@dict:has_key(
                 New_keyed,
                 erlang:element(3, Prev@1)
             ),
-            Prev_has_moved = gleam@set:contains(
-                Moved,
-                erlang:element(3, Prev@1)
-            ),
             case {Prev_does_exist, Next_did_exist} of
-                {{ok, _}, {ok, _}} when Prev_has_moved ->
-                    do_diff(
-                        Old_remaining,
-                        Old_keyed,
-                        New,
-                        New_keyed,
-                        Moved,
-                        Moved_offset - lustre@vdom@vnode:advance(Prev@1),
-                        Removed,
-                        Node_index,
-                        Patch_index,
-                        Path,
-                        Changes,
-                        Children,
-                        Mapper,
-                        Events
-                    );
+                {true, {ok, Match}} ->
+                    case gleam@dict:has_key(Moved, erlang:element(3, Prev@1)) of
+                        true ->
+                            do_diff(
+                                Old_remaining,
+                                Old_keyed,
+                                New,
+                                New_keyed,
+                                Moved,
+                                Moved_offset - 1,
+                                Removed,
+                                Node_index,
+                                Patch_index,
+                                Path,
+                                Changes,
+                                Children,
+                                Mapper,
+                                Events
+                            );
 
-                {{ok, _}, {ok, Match}} ->
-                    Count = lustre@vdom@vnode:advance(Next),
-                    Before = Node_index - Moved_offset,
-                    Move = lustre@vdom@patch:move(
-                        erlang:element(3, Next),
-                        Before,
-                        Count
-                    ),
-                    Changes@2 = [Move | Changes],
-                    Moved@1 = gleam@set:insert(Moved, erlang:element(3, Next)),
-                    Moved_offset@1 = Moved_offset + Count,
-                    do_diff(
-                        [Match | Old],
-                        Old_keyed,
-                        New,
-                        New_keyed,
-                        Moved@1,
-                        Moved_offset@1,
-                        Removed,
-                        Node_index,
-                        Patch_index,
-                        Path,
-                        Changes@2,
-                        Children,
-                        Mapper,
-                        Events
-                    );
+                        false ->
+                            Before = Node_index - Moved_offset,
+                            Changes@2 = [lustre@vdom@patch:move(
+                                    erlang:element(3, Next),
+                                    Before
+                                ) |
+                                Changes],
+                            Moved@1 = gleam@dict:insert(
+                                Moved,
+                                erlang:element(3, Next),
+                                nil
+                            ),
+                            Moved_offset@1 = Moved_offset + 1,
+                            do_diff(
+                                [Match | Old],
+                                Old_keyed,
+                                New,
+                                New_keyed,
+                                Moved@1,
+                                Moved_offset@1,
+                                Removed,
+                                Node_index,
+                                Patch_index,
+                                Path,
+                                Changes@2,
+                                Children,
+                                Mapper,
+                                Events
+                            )
+                    end;
 
-                {{error, _}, {ok, _}} ->
-                    Count@1 = lustre@vdom@vnode:advance(Prev@1),
-                    Moved_offset@2 = Moved_offset - Count@1,
+                {false, {ok, _}} ->
+                    Index = Node_index - Moved_offset,
+                    Changes@3 = [lustre@vdom@patch:remove(Index) | Changes],
                     Events@3 = lustre@vdom@events:remove_child(
                         Events,
                         Path,
                         Node_index,
                         Prev@1
                     ),
-                    Remove = lustre@vdom@patch:remove_key(
-                        erlang:element(3, Prev@1),
-                        Count@1
-                    ),
-                    Changes@3 = [Remove | Changes],
+                    Moved_offset@2 = Moved_offset - 1,
                     do_diff(
                         Old_remaining,
                         Old_keyed,
@@ -568,9 +566,8 @@ do_diff(
                         Events@3
                     );
 
-                {{ok, _}, {error, _}} ->
+                {true, {error, _}} ->
                     Before@1 = Node_index - Moved_offset,
-                    Count@2 = lustre@vdom@vnode:advance(Next),
                     Events@4 = lustre@vdom@events:add_child(
                         Events,
                         Mapper,
@@ -586,9 +583,9 @@ do_diff(
                         New_remaining,
                         New_keyed,
                         Moved,
-                        Moved_offset + Count@2,
+                        Moved_offset + 1,
                         Removed,
-                        Node_index + Count@2,
+                        Node_index + 1,
                         Patch_index,
                         Path,
                         Changes@4,
@@ -597,12 +594,9 @@ do_diff(
                         Events@4
                     );
 
-                {{error, _}, {error, _}} ->
-                    Prev_count = lustre@vdom@vnode:advance(Prev@1),
-                    Next_count = lustre@vdom@vnode:advance(Next),
+                {false, {error, _}} ->
                     Change = lustre@vdom@patch:replace(
                         Node_index - Moved_offset,
-                        Prev_count,
                         Next
                     ),
                     Events@5 = begin
@@ -627,9 +621,9 @@ do_diff(
                         New_remaining,
                         New_keyed,
                         Moved,
-                        (Moved_offset - Prev_count) + Next_count,
+                        Moved_offset,
                         Removed,
-                        Node_index + Next_count,
+                        Node_index + 1,
                         Patch_index,
                         Path,
                         [Change | Changes],
@@ -639,48 +633,39 @@ do_diff(
                     )
             end;
 
-        {[{fragment, _, _, _, _, _, _} = Prev@2 | Old@2],
-            [{fragment, _, _, _, _, _, _} = Next@1 | New@1]} ->
-            Node_index@1 = Node_index + 1,
-            Prev_count@1 = erlang:element(7, Prev@2),
-            Next_count@1 = erlang:element(7, Next@1),
+        {[{fragment, _, _, _, _, _} = Prev@2 | Old@2],
+            [{fragment, _, _, _, _, _} = Next@1 | New@1]} ->
             Composed_mapper = lustre@vdom@events:compose_mapper(
                 Mapper,
                 erlang:element(4, Next@1)
+            ),
+            Child_path = lustre@vdom@path:add(
+                Path,
+                Node_index,
+                erlang:element(3, Next@1)
             ),
             Child = do_diff(
                 erlang:element(5, Prev@2),
                 erlang:element(6, Prev@2),
                 erlang:element(5, Next@1),
                 erlang:element(6, Next@1),
-                gleam@set:new(),
-                Moved_offset,
+                gleam@dict:new(),
                 0,
-                Node_index@1,
-                -1,
-                Path,
+                0,
+                0,
+                Node_index,
+                Child_path,
                 [],
-                Children,
+                [],
                 Composed_mapper,
                 Events
             ),
-            Changes@5 = case erlang:element(3, erlang:element(2, Child)) > 0 of
-                true ->
-                    Remove_from = (Node_index@1 + Next_count@1) - Moved_offset,
-                    Patch = lustre@vdom@patch:remove(
-                        Remove_from,
-                        erlang:element(3, erlang:element(2, Child))
-                    ),
-                    lists:append(
-                        erlang:element(4, erlang:element(2, Child)),
-                        [Patch | Changes]
-                    );
+            Children@1 = case erlang:element(2, Child) of
+                {patch, _, 0, [], []} ->
+                    Children;
 
-                false ->
-                    lists:append(
-                        erlang:element(4, erlang:element(2, Child)),
-                        Changes
-                    )
+                _ ->
+                    [erlang:element(2, Child) | Children]
             end,
             do_diff(
                 Old@2,
@@ -688,13 +673,13 @@ do_diff(
                 New@1,
                 New_keyed,
                 Moved,
-                (Moved_offset + Next_count@1) - Prev_count@1,
+                Moved_offset,
                 Removed,
-                Node_index@1 + Next_count@1,
+                Node_index + 1,
                 Patch_index,
                 Path,
-                Changes@5,
-                erlang:element(5, erlang:element(2, Child)),
+                Changes,
+                Children@1,
                 Mapper,
                 erlang:element(3, Child)
             );
@@ -711,7 +696,7 @@ do_diff(
                 Mapper,
                 erlang:element(4, Next@2)
             ),
-            Child_path = lustre@vdom@path:add(
+            Child_path@1 = lustre@vdom@path:add(
                 Path,
                 Node_index,
                 erlang:element(3, Next@2)
@@ -720,11 +705,11 @@ do_diff(
                 Events,
                 erlang:element(5, Next@2),
                 erlang:element(6, Next@2),
-                Child_path
+                Child_path@1
             ),
             {attribute_change, Added_attrs, Removed_attrs, Events@6} = diff_attributes(
                 Controlled,
-                Child_path,
+                Child_path@1,
                 Composed_mapper@1,
                 Events,
                 erlang:element(7, Prev@3),
@@ -744,18 +729,18 @@ do_diff(
                 erlang:element(9, Prev@3),
                 erlang:element(8, Next@2),
                 erlang:element(9, Next@2),
-                gleam@set:new(),
+                gleam@dict:new(),
                 0,
                 0,
                 0,
                 Node_index,
-                Child_path,
+                Child_path@1,
                 Initial_child_changes,
                 [],
                 Composed_mapper@1,
                 Events@6
             ),
-            Children@1 = case erlang:element(2, Child@1) of
+            Children@2 = case erlang:element(2, Child@1) of
                 {patch, _, 0, [], []} ->
                     Children;
 
@@ -774,7 +759,7 @@ do_diff(
                 Patch_index,
                 Path,
                 Changes,
-                Children@1,
+                Children@2,
                 Mapper,
                 erlang:element(3, Child@1)
             );
@@ -831,14 +816,14 @@ do_diff(
                 Mapper,
                 erlang:element(4, Next@5)
             ),
-            Child_path@1 = lustre@vdom@path:add(
+            Child_path@2 = lustre@vdom@path:add(
                 Path,
                 Node_index,
                 erlang:element(3, Next@5)
             ),
             {attribute_change, Added_attrs@1, Removed_attrs@1, Events@7} = diff_attributes(
                 false,
-                Child_path@1,
+                Child_path@2,
                 Composed_mapper@2,
                 Events,
                 erlang:element(7, Prev@5),
@@ -866,7 +851,7 @@ do_diff(
                         ) |
                         Child_changes]
             end,
-            Children@2 = case Child_changes@1 of
+            Children@3 = case Child_changes@1 of
                 [] ->
                     Children;
 
@@ -886,17 +871,14 @@ do_diff(
                 Patch_index,
                 Path,
                 Changes,
-                Children@2,
+                Children@3,
                 Mapper,
                 Events@7
             );
 
         {[Prev@6 | Old_remaining@1], [Next@6 | New_remaining@1]} ->
-            Prev_count@2 = lustre@vdom@vnode:advance(Prev@6),
-            Next_count@2 = lustre@vdom@vnode:advance(Next@6),
             Change@1 = lustre@vdom@patch:replace(
                 Node_index - Moved_offset,
-                Prev_count@2,
                 Next@6
             ),
             Events@8 = begin
@@ -921,9 +903,9 @@ do_diff(
                 New_remaining@1,
                 New_keyed,
                 Moved,
-                (Moved_offset - Prev_count@2) + Next_count@2,
+                Moved_offset,
                 Removed,
-                Node_index + Next_count@2,
+                Node_index + 1,
                 Patch_index,
                 Path,
                 [Change@1 | Changes],
@@ -933,20 +915,20 @@ do_diff(
             )
     end.
 
--file("src/lustre/vdom/diff.gleam", 26).
+-file("src/lustre/vdom/diff.gleam", 24).
 ?DOC(false).
 -spec diff(
-    lustre@vdom@events:events(QKT),
-    lustre@vdom@vnode:element(QKT),
-    lustre@vdom@vnode:element(QKT)
-) -> diff(QKT).
+    lustre@vdom@events:events(QLT),
+    lustre@vdom@vnode:element(QLT),
+    lustre@vdom@vnode:element(QLT)
+) -> diff(QLT).
 diff(Events, Old, New) ->
     do_diff(
         [Old],
         gleam@dict:new(),
         [New],
         gleam@dict:new(),
-        gleam@set:new(),
+        gleam@dict:new(),
         0,
         0,
         0,

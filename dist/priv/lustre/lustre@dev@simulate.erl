@@ -12,19 +12,19 @@
 -define(DOC(Str), -compile([])).
 -endif.
 
--opaque app(TCD, TCE, TCF) :: {app,
-        fun((TCD) -> {TCE, lustre@effect:effect(TCF)}),
-        fun((TCE, TCF) -> {TCE, lustre@effect:effect(TCF)}),
-        fun((TCE) -> lustre@vdom@vnode:element(TCF))}.
+-opaque app(TJR, TJS, TJT) :: {app,
+        fun((TJR) -> {TJS, lustre@effect:effect(TJT)}),
+        fun((TJS, TJT) -> {TJS, lustre@effect:effect(TJT)}),
+        fun((TJS) -> lustre@vdom@vnode:element(TJT))}.
 
--opaque simulation(TCG, TCH) :: {simulation,
-        fun((TCG, TCH) -> {TCG, lustre@effect:effect(TCH)}),
-        fun((TCG) -> lustre@vdom@vnode:element(TCH)),
-        list(event(TCH)),
-        TCG,
-        lustre@vdom@vnode:element(TCH)}.
+-opaque simulation(TJU, TJV) :: {simulation,
+        fun((TJU, TJV) -> {TJU, lustre@effect:effect(TJV)}),
+        fun((TJU) -> lustre@vdom@vnode:element(TJV)),
+        list(event(TJV)),
+        TJU,
+        lustre@vdom@vnode:element(TJV)}.
 
--type event(TCI) :: {dispatch, TCI} |
+-type event(TJW) :: {dispatch, TJW} |
     {event, lustre@dev@query:'query'(), binary(), gleam@json:json()} |
     {problem, binary(), binary()}.
 
@@ -38,10 +38,10 @@
     " [`event`](#event) and [`messgae`](#message) functions.\n"
 ).
 -spec simple(
-    fun((TCJ) -> TCK),
-    fun((TCK, TCL) -> TCK),
-    fun((TCK) -> lustre@vdom@vnode:element(TCL))
-) -> app(TCJ, TCK, TCL).
+    fun((TJX) -> TJY),
+    fun((TJY, TJZ) -> TJY),
+    fun((TJY) -> lustre@vdom@vnode:element(TJZ))
+) -> app(TJX, TJY, TJZ).
 simple(Init, Update, View) ->
     {app,
         fun(Args) -> {Init(Args), lustre@effect:none()} end,
@@ -62,10 +62,10 @@ simple(Init, Update, View) ->
     " > effects you should test your application in a real environment.\n"
 ).
 -spec application(
-    fun((TCQ) -> {TCR, lustre@effect:effect(TCS)}),
-    fun((TCR, TCS) -> {TCR, lustre@effect:effect(TCS)}),
-    fun((TCR) -> lustre@vdom@vnode:element(TCS))
-) -> app(TCQ, TCR, TCS).
+    fun((TKE) -> {TKF, lustre@effect:effect(TKG)}),
+    fun((TKF, TKG) -> {TKF, lustre@effect:effect(TKG)}),
+    fun((TKF) -> lustre@vdom@vnode:element(TKG))
+) -> app(TKE, TKF, TKG).
 application(Init, Update, View) ->
     {app, Init, Update, View}.
 
@@ -75,7 +75,7 @@ application(Init, Update, View) ->
     " use the [`message`](#message) and [`event`](#event) functions to simulate\n"
     " events\n"
 ).
--spec start(app(TCZ, TDA, TDB), TCZ) -> simulation(TDA, TDB).
+-spec start(app(TKN, TKO, TKP), TKN) -> simulation(TKO, TKP).
 start(App, Args) ->
     {Model, _} = (erlang:element(2, App))(Args),
     Html = (erlang:element(4, App))(Model),
@@ -120,7 +120,7 @@ start(App, Args) ->
     " > this with the [`query`](./query.html) module to only snapshot parts of the\n"
     " > page that are relevant to the test.\n"
 ).
--spec message(simulation(TDH, TDI), TDI) -> simulation(TDH, TDI).
+-spec message(simulation(TKV, TKW), TKW) -> simulation(TKV, TKW).
 message(Simulation, Msg) ->
     {Model, _} = (erlang:element(2, Simulation))(
         erlang:element(5, Simulation),
@@ -147,7 +147,7 @@ message(Simulation, Msg) ->
     " > **Note**: logging a problem will not stop the simulation from running, just\n"
     " > like a real application!\n"
 ).
--spec problem(simulation(TEN, TEO), binary(), binary()) -> simulation(TEN, TEO).
+-spec problem(simulation(TMB, TMC), binary(), binary()) -> simulation(TMB, TMC).
 problem(Simulation, Name, Message) ->
     History = [{problem, Name, Message} | erlang:element(4, Simulation)],
     _record = Simulation,
@@ -163,7 +163,7 @@ problem(Simulation, Name, Message) ->
     " Introspect the current `model` of a running simulation. This can be useful\n"
     " to debug why a simulation is not producing the view you expect.\n"
 ).
--spec model(simulation(TET, any())) -> TET.
+-spec model(simulation(TMH, any())) -> TMH.
 model(Simulation) ->
     erlang:element(5, Simulation).
 
@@ -174,7 +174,7 @@ model(Simulation) ->
     " and/or with the [`query`](./query.html) api to make assertions about the state\n"
     " of the page.\n"
 ).
--spec view(simulation(any(), TEY)) -> lustre@vdom@vnode:element(TEY).
+-spec view(simulation(any(), TMM)) -> lustre@vdom@vnode:element(TMM).
 view(Simulation) ->
     erlang:element(6, Simulation).
 
@@ -188,7 +188,7 @@ view(Simulation) ->
     " also include entries for when the queried event target could not be found in\n"
     " the view and cases where an event was fired but not handled by your application.\n"
 ).
--spec history(simulation(any(), TFD)) -> list(event(TFD)).
+-spec history(simulation(any(), TMR)) -> list(event(TMR)).
 history(Simulation) ->
     _pipe = erlang:element(4, Simulation),
     lists:reverse(_pipe).
@@ -209,11 +209,11 @@ history(Simulation) ->
     " > to parent elements.\n"
 ).
 -spec event(
-    simulation(TDN, TDO),
+    simulation(TLB, TLC),
     lustre@dev@query:'query'(),
     binary(),
     list({binary(), gleam@json:json()})
-) -> simulation(TDN, TDO).
+) -> simulation(TLB, TLC).
 event(Simulation, Query, Event, Payload) ->
     gleam@result:unwrap_both(
         begin
@@ -300,7 +300,7 @@ event(Simulation, Query, Event, Payload) ->
     " appropriate for event handlers that use Lustre's `on_click` handler or custom\n"
     " handlers that do not decode the event payload.\n"
 ).
--spec click(simulation(TDU, TDV), lustre@dev@query:'query'()) -> simulation(TDU, TDV).
+-spec click(simulation(TLI, TLJ), lustre@dev@query:'query'()) -> simulation(TLI, TLJ).
 click(Simulation, Query) ->
     event(Simulation, Query, <<"click"/utf8>>, []).
 
@@ -320,7 +320,7 @@ click(Simulation, Query) ->
     " and is appropriate for event handlers that use Lustre's `on_input` handler\n"
     " or custom handlers that only decode the event target value.\n"
 ).
--spec input(simulation(TEA, TEB), lustre@dev@query:'query'(), binary()) -> simulation(TEA, TEB).
+-spec input(simulation(TLO, TLP), lustre@dev@query:'query'(), binary()) -> simulation(TLO, TLP).
 input(Simulation, Query, Value) ->
     event(
         Simulation,
@@ -352,10 +352,10 @@ input(Simulation, Query, Value) ->
     " property.\n"
 ).
 -spec submit(
-    simulation(TEG, TEH),
+    simulation(TLU, TLV),
     lustre@dev@query:'query'(),
     list({binary(), binary()})
-) -> simulation(TEG, TEH).
+) -> simulation(TLU, TLV).
 submit(Simulation, Query, Form_data) ->
     event(
         Simulation,

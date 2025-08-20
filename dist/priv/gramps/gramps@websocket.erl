@@ -1,15 +1,26 @@
 -module(gramps@websocket).
--compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch]).
+-compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch, inline]).
 -define(FILEPATH, "src/gramps/websocket.gleam").
--export([frame_to_bytes_tree/2, compressed_frame_to_bytes_tree/3, to_text_frame/3, to_binary_frame/3, aggregate_frames/3, frame_from_message/2, get_messages/3, has_deflate/1, parse_websocket_key/1]).
--export_type([data_frame/0, control_frame/0, frame/0, frame_parse_error/0, parsed_frame/0, sha_hash/0]).
+-export([apply_mask/2, encode_close_frame/2, encode_continuation_frame/3, apply_deflate/2, apply_inflate/2, encode_text_frame/3, encode_binary_frame/3, encode_ping_frame/2, encode_pong_frame/2, aggregate_frames/3, make_client_key/0, decode_frame/2, decode_many_frames/3, has_deflate/1, get_context_takeovers/1, parse_websocket_key/1]).
+-export_type([data_frame/0, close_reason/0, control_frame/0, frame/0, frame_parse_error/0, parsed_frame/0, compression/0, sha_hash/0]).
 
--type data_frame() :: {text_frame, integer(), bitstring()} |
-    {binary_frame, integer(), bitstring()}.
+-type data_frame() :: {text_frame, bitstring()} | {binary_frame, bitstring()}.
 
--type control_frame() :: {close_frame, integer(), bitstring()} |
-    {ping_frame, integer(), bitstring()} |
-    {pong_frame, integer(), bitstring()}.
+-type close_reason() :: not_provided |
+    {normal, bitstring()} |
+    {going_away, bitstring()} |
+    {protocol_error, bitstring()} |
+    {unexpected_data_type, bitstring()} |
+    {inconsistent_data_type, bitstring()} |
+    {policy_violation, bitstring()} |
+    {message_too_big, bitstring()} |
+    {missing_extensions, bitstring()} |
+    {unexpected_condition, bitstring()} |
+    {custom_close_reason, integer(), bitstring()}.
+
+-type control_frame() :: {close_frame, close_reason()} |
+    {ping_frame, bitstring()} |
+    {pong_frame, bitstring()}.
 
 -type frame() :: {data, data_frame()} |
     {control, control_frame()} |
@@ -19,9 +30,11 @@
 
 -type parsed_frame() :: {complete, frame()} | {incomplete, frame()}.
 
+-type compression() :: compressed | uncompressed.
+
 -type sha_hash() :: sha.
 
--file("src/gramps/websocket.gleam", 30).
+-file("src/gramps/websocket.gleam", 52).
 -spec mask_data(bitstring(), list(bitstring()), integer(), bitstring()) -> bitstring().
 mask_data(Data, Masks, Index, Resp) ->
     case Data of
@@ -34,12 +47,12 @@ mask_data(Data, Masks, Index, Resp) ->
                                 file => <<?FILEPATH/utf8>>,
                                 module => <<"gramps/websocket"/utf8>>,
                                 function => <<"mask_data"/utf8>>,
-                                line => 38,
+                                line => 60,
                                 value => _assert_fail,
-                                start => 924,
-                                'end' => 966,
-                                pattern_start => 935,
-                                pattern_end => 958})
+                                start => 1398,
+                                'end' => 1440,
+                                pattern_start => 1409,
+                                pattern_end => 1432})
             end,
             Mask_value = case Index rem 4 of
                 0 ->
@@ -60,7 +73,7 @@ mask_data(Data, Masks, Index, Resp) ->
                             file => <<?FILEPATH/utf8>>,
                             module => <<"gramps/websocket"/utf8>>,
                             function => <<"mask_data"/utf8>>,
-                            line => 44})
+                            line => 66})
             end,
             Unmasked = crypto:exor(Mask_value, Masked),
             mask_data(
@@ -74,7 +87,7 @@ mask_data(Data, Masks, Index, Resp) ->
             Resp
     end.
 
--file("src/gramps/websocket.gleam", 201).
+-file("src/gramps/websocket.gleam", 329).
 -spec make_length(integer()) -> bitstring().
 make_length(Length) ->
     case Length of
@@ -88,43 +101,15 @@ make_length(Length) ->
             <<Length:7>>
     end.
 
--file("src/gramps/websocket.gleam", 209).
--spec make_compressed_frame(
-    integer(),
-    bitstring(),
-    gramps@websocket@compression:context(),
-    gleam@option:option(bitstring())
-) -> gleam@bytes_tree:bytes_tree().
-make_compressed_frame(Opcode, Payload, Context, Mask) ->
-    Data = gramps@websocket@compression:deflate(Context, Payload),
-    Length = erlang:byte_size(Data),
-    Length_section = make_length(Length),
-    Masked = case gleam@option:is_some(Mask) of
-        true ->
-            1;
-
-        false ->
-            0
-    end,
-    Mask_key = gleam@option:unwrap(Mask, <<>>),
-    _pipe = <<1:1,
-        1:1,
-        0:2,
-        Opcode:4,
-        Masked:1,
-        Length_section/bitstring,
-        Mask_key/bitstring,
-        Data/bitstring>>,
-    gleam@bytes_tree:from_bit_array(_pipe).
-
--file("src/gramps/websocket.gleam", 239).
+-file("src/gramps/websocket.gleam", 342).
 -spec make_frame(
     integer(),
     integer(),
     bitstring(),
+    compression(),
     gleam@option:option(bitstring())
 ) -> gleam@bytes_tree:bytes_tree().
-make_frame(Opcode, Length, Payload, Mask) ->
+make_frame(Opcode, Length, Payload, Compressed, Mask) ->
     Length_section = make_length(Length),
     Masked = case gleam@option:is_some(Mask) of
         true ->
@@ -134,8 +119,16 @@ make_frame(Opcode, Length, Payload, Mask) ->
             0
     end,
     Mask_key = gleam@option:unwrap(Mask, <<>>),
+    Compressed@1 = case Compressed of
+        compressed ->
+            1;
+
+        uncompressed ->
+            0
+    end,
     _pipe = <<1:1,
-        0:3,
+        Compressed@1:1,
+        0:2,
         Opcode:4,
         Masked:1,
         Length_section/bitstring,
@@ -143,170 +136,263 @@ make_frame(Opcode, Length, Payload, Mask) ->
         Payload/bitstring>>,
     gleam@bytes_tree:from_bit_array(_pipe).
 
--file("src/gramps/websocket.gleam", 165).
--spec frame_to_bytes_tree(frame(), gleam@option:option(bitstring())) -> gleam@bytes_tree:bytes_tree().
-frame_to_bytes_tree(Frame, Mask) ->
-    case Frame of
-        {data, {text_frame, Payload_length, Payload}} ->
-            make_frame(1, Payload_length, Payload, Mask);
+-file("src/gramps/websocket.gleam", 376).
+-spec apply_mask(bitstring(), gleam@option:option(bitstring())) -> bitstring().
+apply_mask(Data, Mask) ->
+    case Mask of
+        {some, Mask@1} ->
+            {Mask1@1, Mask2@1, Mask3@1, Mask4@1} = case Mask@1 of
+                <<Mask1:1/binary,
+                    Mask2:1/binary,
+                    Mask3:1/binary,
+                    Mask4:1/binary>> -> {Mask1, Mask2, Mask3, Mask4};
+                _assert_fail ->
+                    erlang:error(#{gleam_error => let_assert,
+                                message => <<"Pattern match failed, no pattern matched the value."/utf8>>,
+                                file => <<?FILEPATH/utf8>>,
+                                module => <<"gramps/websocket"/utf8>>,
+                                function => <<"apply_mask"/utf8>>,
+                                line => 379,
+                                value => _assert_fail,
+                                start => 10538,
+                                'end' => 10683,
+                                pattern_start => 10549,
+                                pattern_end => 10676})
+            end,
+            mask_data(Data, [Mask1@1, Mask2@1, Mask3@1, Mask4@1], 0, <<>>);
 
-        {control, {close_frame, Payload_length@1, Payload@1}} ->
-            make_frame(8, Payload_length@1, Payload@1, Mask);
-
-        {data, {binary_frame, Payload_length@2, Payload@2}} ->
-            make_frame(2, Payload_length@2, Payload@2, Mask);
-
-        {control, {pong_frame, Payload_length@3, Payload@3}} ->
-            make_frame(10, Payload_length@3, Payload@3, Mask);
-
-        {control, {ping_frame, Payload_length@4, Payload@4}} ->
-            make_frame(9, Payload_length@4, Payload@4, Mask);
-
-        {continuation, Length, Payload@5} ->
-            make_frame(0, Length, Payload@5, Mask)
+        none ->
+            Data
     end.
 
--file("src/gramps/websocket.gleam", 181).
--spec compressed_frame_to_bytes_tree(
-    frame(),
-    gramps@websocket@compression:context(),
+-file("src/gramps/websocket.gleam", 251).
+-spec encode_frame(frame(), compression(), gleam@option:option(bitstring())) -> gleam@bytes_tree:bytes_tree().
+encode_frame(Frame, Compressed, Mask) ->
+    case Frame of
+        {data, {text_frame, Payload}} ->
+            Payload_length = erlang:byte_size(Payload),
+            make_frame(1, Payload_length, Payload, Compressed, Mask);
+
+        {control, {close_frame, Reason}} ->
+            {Payload_length@1, Payload@1} = case Reason of
+                not_provided ->
+                    {0, <<>>};
+
+                {going_away, Body} ->
+                    Payload_size = erlang:byte_size(Body) + 2,
+                    {Payload_size, <<1001:16, Body/bitstring>>};
+
+                {inconsistent_data_type, Body@1} ->
+                    Payload_size@1 = erlang:byte_size(Body@1) + 2,
+                    {Payload_size@1, <<1007:16, Body@1/bitstring>>};
+
+                {message_too_big, Body@2} ->
+                    Payload_size@2 = erlang:byte_size(Body@2) + 2,
+                    {Payload_size@2, <<1009:16, Body@2/bitstring>>};
+
+                {missing_extensions, Body@3} ->
+                    Payload_size@3 = erlang:byte_size(Body@3) + 2,
+                    {Payload_size@3, <<1010:16, Body@3/bitstring>>};
+
+                {normal, Body@4} ->
+                    Payload_size@4 = erlang:byte_size(Body@4) + 2,
+                    {Payload_size@4, <<1000:16, Body@4/bitstring>>};
+
+                {policy_violation, Body@5} ->
+                    Payload_size@5 = erlang:byte_size(Body@5) + 2,
+                    {Payload_size@5, <<1008:16, Body@5/bitstring>>};
+
+                {protocol_error, Body@6} ->
+                    Payload_size@6 = erlang:byte_size(Body@6) + 2,
+                    {Payload_size@6, <<1002:16, Body@6/bitstring>>};
+
+                {unexpected_condition, Body@7} ->
+                    Payload_size@7 = erlang:byte_size(Body@7) + 2,
+                    {Payload_size@7, <<1011:16, Body@7/bitstring>>};
+
+                {unexpected_data_type, Body@8} ->
+                    Payload_size@8 = erlang:byte_size(Body@8) + 2,
+                    {Payload_size@8, <<1003:16, Body@8/bitstring>>};
+
+                {custom_close_reason, Code, Body@9} ->
+                    Payload_size@9 = erlang:byte_size(Body@9) + 2,
+                    Code@1 = case Code < 5000 of
+                        true ->
+                            Code;
+
+                        false ->
+                            1000
+                    end,
+                    {Payload_size@9, <<Code@1:16, Body@9/bitstring>>}
+            end,
+            make_frame(
+                8,
+                Payload_length@1,
+                apply_mask(Payload@1, Mask),
+                Compressed,
+                Mask
+            );
+
+        {data, {binary_frame, Payload@2}} ->
+            Payload_length@2 = erlang:byte_size(Payload@2),
+            make_frame(2, Payload_length@2, Payload@2, Compressed, Mask);
+
+        {control, {pong_frame, Payload@3}} ->
+            Payload_length@3 = erlang:byte_size(Payload@3),
+            make_frame(10, Payload_length@3, Payload@3, Compressed, Mask);
+
+        {control, {ping_frame, Payload@4}} ->
+            Payload_length@4 = erlang:byte_size(Payload@4),
+            make_frame(9, Payload_length@4, Payload@4, Compressed, Mask);
+
+        {continuation, Length, Payload@5} ->
+            make_frame(0, Length, Payload@5, Compressed, Mask)
+    end.
+
+-file("src/gramps/websocket.gleam", 227).
+-spec encode_close_frame(close_reason(), gleam@option:option(bitstring())) -> gleam@bytes_tree:bytes_tree().
+encode_close_frame(Reason, Mask) ->
+    encode_frame({control, {close_frame, Reason}}, uncompressed, Mask).
+
+-file("src/gramps/websocket.gleam", 242).
+-spec encode_continuation_frame(
+    bitstring(),
+    integer(),
     gleam@option:option(bitstring())
 ) -> gleam@bytes_tree:bytes_tree().
-compressed_frame_to_bytes_tree(Frame, Context, Mask) ->
-    case Frame of
-        {data, {text_frame, _, Payload}} ->
-            make_compressed_frame(1, Payload, Context, Mask);
+encode_continuation_frame(Data, Total_size, Mask) ->
+    Payload = apply_mask(Data, Mask),
+    encode_frame({continuation, Total_size, Payload}, uncompressed, Mask).
 
-        {data, {binary_frame, _, Payload@1}} ->
-            make_compressed_frame(2, Payload@1, Context, Mask);
+-file("src/gramps/websocket.gleam", 391).
+-spec apply_deflate(
+    bitstring(),
+    gleam@option:option(gramps@websocket@compression:context())
+) -> bitstring().
+apply_deflate(Data, Context) ->
+    case Context of
+        {some, Context@1} ->
+            gramps@websocket@compression:deflate(Context@1, Data);
 
-        {control, {close_frame, Payload_length, Payload@2}} ->
-            make_frame(8, Payload_length, Payload@2, Mask);
-
-        {control, {pong_frame, Payload_length@1, Payload@3}} ->
-            make_frame(10, Payload_length@1, Payload@3, Mask);
-
-        {control, {ping_frame, Payload_length@2, Payload@4}} ->
-            make_frame(9, Payload_length@2, Payload@4, Mask);
-
-        {continuation, Length, Payload@5} ->
-            make_frame(0, Length, Payload@5, Mask)
+        _ ->
+            Data
     end.
 
--file("src/gramps/websocket.gleam", 266).
--spec apply_mask(bitstring(), bitstring()) -> bitstring().
-apply_mask(Data, Mask) ->
-    {Mask1@1, Mask2@1, Mask3@1, Mask4@1} = case Mask of
-        <<Mask1:1/binary, Mask2:1/binary, Mask3:1/binary, Mask4:1/binary>> -> {
-        Mask1,
-            Mask2,
-            Mask3,
-            Mask4};
-        _assert_fail ->
-            erlang:error(#{gleam_error => let_assert,
-                        message => <<"Pattern match failed, no pattern matched the value."/utf8>>,
-                        file => <<?FILEPATH/utf8>>,
-                        module => <<"gramps/websocket"/utf8>>,
-                        function => <<"apply_mask"/utf8>>,
-                        line => 267,
-                        value => _assert_fail,
-                        start => 6884,
-                        'end' => 7009,
-                        pattern_start => 6895,
-                        pattern_end => 7002})
-    end,
-    mask_data(Data, [Mask1@1, Mask2@1, Mask3@1, Mask4@1], 0, <<>>).
+-file("src/gramps/websocket.gleam", 398).
+-spec apply_inflate(
+    bitstring(),
+    gleam@option:option(gramps@websocket@compression:context())
+) -> bitstring().
+apply_inflate(Data, Context) ->
+    case Context of
+        {some, Context@1} ->
+            gramps@websocket@compression:deflate(Context@1, Data);
 
--file("src/gramps/websocket.gleam", 276).
--spec to_text_frame(
+        _ ->
+            Data
+    end.
+
+-file("src/gramps/websocket.gleam", 405).
+-spec to_frame(
+    bitstring(),
+    gleam@option:option(gramps@websocket@compression:context()),
+    gleam@option:option(bitstring()),
+    fun((bitstring()) -> FUC),
+    fun((FUC) -> frame())
+) -> gleam@bytes_tree:bytes_tree().
+to_frame(Data, Context, Mask, Create_inner_frame, Create_frame) ->
+    Frame = begin
+        _pipe = Data,
+        _pipe@1 = apply_deflate(_pipe, Context),
+        _pipe@2 = apply_mask(_pipe@1, Mask),
+        _pipe@3 = Create_inner_frame(_pipe@2),
+        Create_frame(_pipe@3)
+    end,
+    Compress = case Context of
+        {some, _} ->
+            compressed;
+
+        _ ->
+            uncompressed
+    end,
+    encode_frame(Frame, Compress, Mask).
+
+-file("src/gramps/websocket.gleam", 211).
+-spec encode_text_frame(
     binary(),
     gleam@option:option(gramps@websocket@compression:context()),
     gleam@option:option(bitstring())
 ) -> gleam@bytes_tree:bytes_tree().
-to_text_frame(Data, Context, Mask) ->
-    Data@1 = gleam_stdlib:identity(Data),
-    Data@2 = begin
-        _pipe = Mask,
-        _pipe@1 = gleam@option:map(
-            _pipe,
-            fun(_capture) -> apply_mask(Data@1, _capture) end
-        ),
-        gleam@option:unwrap(_pipe@1, Data@1)
-    end,
-    Size = erlang:byte_size(Data@2),
-    Frame = {data, {text_frame, Size, Data@2}},
-    case Context of
-        {some, Context@1} ->
-            compressed_frame_to_bytes_tree(Frame, Context@1, Mask);
+encode_text_frame(Data, Context, Mask) ->
+    to_frame(
+        gleam_stdlib:identity(Data),
+        Context,
+        Mask,
+        fun(Field@0) -> {text_frame, Field@0} end,
+        fun(Field@0) -> {data, Field@0} end
+    ).
 
-        _ ->
-            frame_to_bytes_tree(Frame, Mask)
-    end.
-
--file("src/gramps/websocket.gleam", 294).
--spec to_binary_frame(
+-file("src/gramps/websocket.gleam", 219).
+-spec encode_binary_frame(
     bitstring(),
     gleam@option:option(gramps@websocket@compression:context()),
     gleam@option:option(bitstring())
 ) -> gleam@bytes_tree:bytes_tree().
-to_binary_frame(Data, Context, Mask) ->
-    Data@1 = begin
-        _pipe = Mask,
-        _pipe@1 = gleam@option:map(
-            _pipe,
-            fun(_capture) -> apply_mask(Data, _capture) end
-        ),
-        gleam@option:unwrap(_pipe@1, Data)
-    end,
-    Size = erlang:byte_size(Data@1),
-    Frame = {data, {binary_frame, Size, Data@1}},
-    case Context of
-        {some, Context@1} ->
-            compressed_frame_to_bytes_tree(Frame, Context@1, Mask);
+encode_binary_frame(Data, Context, Mask) ->
+    to_frame(
+        Data,
+        Context,
+        Mask,
+        fun(Field@0) -> {binary_frame, Field@0} end,
+        fun(Field@0) -> {data, Field@0} end
+    ).
 
-        _ ->
-            frame_to_bytes_tree(Frame, Mask)
-    end.
+-file("src/gramps/websocket.gleam", 234).
+-spec encode_ping_frame(bitstring(), gleam@option:option(bitstring())) -> gleam@bytes_tree:bytes_tree().
+encode_ping_frame(Data, Mask) ->
+    to_frame(
+        Data,
+        none,
+        Mask,
+        fun(Field@0) -> {ping_frame, Field@0} end,
+        fun(Field@0) -> {control, Field@0} end
+    ).
 
--file("src/gramps/websocket.gleam", 324).
--spec append_frame(frame(), integer(), bitstring()) -> frame().
-append_frame(Left, Length, Data) ->
+-file("src/gramps/websocket.gleam", 238).
+-spec encode_pong_frame(bitstring(), gleam@option:option(bitstring())) -> gleam@bytes_tree:bytes_tree().
+encode_pong_frame(Data, Mask) ->
+    to_frame(
+        Data,
+        none,
+        Mask,
+        fun(Field@0) -> {pong_frame, Field@0} end,
+        fun(Field@0) -> {control, Field@0} end
+    ).
+
+-file("src/gramps/websocket.gleam", 438).
+-spec append_frame(frame(), bitstring()) -> frame().
+append_frame(Left, Data) ->
     case Left of
-        {data, {text_frame, Len, Payload}} ->
-            {data,
-                {text_frame,
-                    Len + Length,
-                    <<Payload/bitstring, Data/bitstring>>}};
+        {data, {text_frame, Payload}} ->
+            {data, {text_frame, <<Payload/bitstring, Data/bitstring>>}};
 
-        {data, {binary_frame, Len@1, Payload@1}} ->
-            {data,
-                {binary_frame,
-                    Len@1 + Length,
-                    <<Payload@1/bitstring, Data/bitstring>>}};
+        {data, {binary_frame, Payload@1}} ->
+            {data, {binary_frame, <<Payload@1/bitstring, Data/bitstring>>}};
 
-        {control, {close_frame, Len@2, Payload@2}} ->
-            {control,
-                {close_frame,
-                    Len@2 + Length,
-                    <<Payload@2/bitstring, Data/bitstring>>}};
+        {control, {close_frame, _}} ->
+            Left;
 
-        {control, {ping_frame, Len@3, Payload@3}} ->
-            {control,
-                {ping_frame,
-                    Len@3 + Length,
-                    <<Payload@3/bitstring, Data/bitstring>>}};
+        {control, {ping_frame, Payload@2}} ->
+            {control, {ping_frame, <<Payload@2/bitstring, Data/bitstring>>}};
 
-        {control, {pong_frame, Len@4, Payload@4}} ->
-            {control,
-                {pong_frame,
-                    Len@4 + Length,
-                    <<Payload@4/bitstring, Data/bitstring>>}};
+        {control, {pong_frame, Payload@3}} ->
+            {control, {pong_frame, <<Payload@3/bitstring, Data/bitstring>>}};
 
         {continuation, _, _} ->
             Left
     end.
 
--file("src/gramps/websocket.gleam", 340).
+-file("src/gramps/websocket.gleam", 451).
 -spec aggregate_frames(
     list(parsed_frame()),
     gleam@option:option(frame()),
@@ -317,13 +403,12 @@ aggregate_frames(Frames, Previous, Joined) ->
         {[], _} ->
             {ok, lists:reverse(Joined)};
 
-        {[{complete, {continuation, Length, Data}} | Rest], {some, Prev}} ->
-            Next = append_frame(Prev, Length, Data),
+        {[{complete, {continuation, _, Data}} | Rest], {some, Prev}} ->
+            Next = append_frame(Prev, Data),
             aggregate_frames(Rest, none, [Next | Joined]);
 
-        {[{incomplete, {continuation, Length@1, Data@1}} | Rest@1],
-            {some, Prev@1}} ->
-            Next@1 = append_frame(Prev@1, Length@1, Data@1),
+        {[{incomplete, {continuation, _, Data@1}} | Rest@1], {some, Prev@1}} ->
+            Next@1 = append_frame(Prev@1, Data@1),
             aggregate_frames(Rest@1, {some, Next@1}, Joined);
 
         {[{incomplete, Frame} | Rest@2], none} ->
@@ -336,32 +421,36 @@ aggregate_frames(Frames, Previous, Joined) ->
             {error, nil}
     end.
 
--file("src/gramps/websocket.gleam", 386).
+-file("src/gramps/websocket.gleam", 478).
+-spec make_client_key() -> binary().
+make_client_key() ->
+    Bytes = crypto:strong_rand_bytes(16),
+    gleam_stdlib:bit_array_base64_encode(Bytes, true).
+
+-file("src/gramps/websocket.gleam", 500).
 -spec inflate(
     boolean(),
     gleam@option:option(gramps@websocket@compression:context()),
     bitstring()
-) -> {ok, {integer(), bitstring()}} | {error, frame_parse_error()}.
+) -> {ok, bitstring()} | {error, frame_parse_error()}.
 inflate(Compressed, Context, Data) ->
     case {Compressed, Context} of
         {true, {some, Context@1}} ->
-            Data@1 = gramps@websocket@compression:inflate(Context@1, Data),
-            Length = erlang:byte_size(Data@1),
-            {ok, {Length, Data@1}};
+            {ok, gramps@websocket@compression:inflate(Context@1, Data)};
 
         {true, none} ->
             {error, invalid_frame};
 
         {_, _} ->
-            {ok, {erlang:byte_size(Data), Data}}
+            {ok, Data}
     end.
 
--file("src/gramps/websocket.gleam", 63).
--spec frame_from_message(
+-file("src/gramps/websocket.gleam", 85).
+-spec decode_frame(
     bitstring(),
     gleam@option:option(gramps@websocket@compression:context())
 ) -> {ok, {parsed_frame(), bitstring()}} | {error, frame_parse_error()}.
-frame_from_message(Message, Context) ->
+decode_frame(Message, Context) ->
     case Message of
         <<Complete:1,
             Compressed:1,
@@ -451,10 +540,10 @@ frame_from_message(Message, Context) ->
                                     ),
                                     gleam@result:map(
                                         _pipe@1,
-                                        fun(P) ->
+                                        fun(Decompressed) ->
                                             {continuation,
-                                                erlang:element(1, P),
-                                                erlang:element(2, P)}
+                                                Payload_size,
+                                                Decompressed}
                                         end
                                     );
 
@@ -467,11 +556,8 @@ frame_from_message(Message, Context) ->
                                     ),
                                     gleam@result:map(
                                         _pipe@3,
-                                        fun(P@1) ->
-                                            {data,
-                                                {text_frame,
-                                                    erlang:element(1, P@1),
-                                                    erlang:element(2, P@1)}}
+                                        fun(Decompressed@1) ->
+                                            {data, {text_frame, Decompressed@1}}
                                         end
                                     );
 
@@ -484,30 +570,93 @@ frame_from_message(Message, Context) ->
                                     ),
                                     gleam@result:map(
                                         _pipe@5,
-                                        fun(P@2) ->
+                                        fun(Decompressed@2) ->
                                             {data,
-                                                {binary_frame,
-                                                    erlang:element(1, P@2),
-                                                    erlang:element(2, P@2)}}
+                                                {binary_frame, Decompressed@2}}
                                         end
                                     );
 
                                 8 ->
-                                    {ok,
-                                        {control,
-                                            {close_frame,
-                                                Payload_length,
-                                                Data@1}}};
+                                    case Data@1 of
+                                        <<1000:16, Rest@6/bitstring>> ->
+                                            {ok,
+                                                {control,
+                                                    {close_frame,
+                                                        {normal, Rest@6}}}};
+
+                                        <<1001:16, Rest@7/bitstring>> ->
+                                            {ok,
+                                                {control,
+                                                    {close_frame,
+                                                        {going_away, Rest@7}}}};
+
+                                        <<1002:16, Rest@8/bitstring>> ->
+                                            {ok,
+                                                {control,
+                                                    {close_frame,
+                                                        {protocol_error, Rest@8}}}};
+
+                                        <<1003:16, Rest@9/bitstring>> ->
+                                            {ok,
+                                                {control,
+                                                    {close_frame,
+                                                        {unexpected_data_type,
+                                                            Rest@9}}}};
+
+                                        <<1007:16, Rest@10/bitstring>> ->
+                                            {ok,
+                                                {control,
+                                                    {close_frame,
+                                                        {inconsistent_data_type,
+                                                            Rest@10}}}};
+
+                                        <<1008:16, Rest@11/bitstring>> ->
+                                            {ok,
+                                                {control,
+                                                    {close_frame,
+                                                        {policy_violation,
+                                                            Rest@11}}}};
+
+                                        <<1009:16, Rest@12/bitstring>> ->
+                                            {ok,
+                                                {control,
+                                                    {close_frame,
+                                                        {message_too_big,
+                                                            Rest@12}}}};
+
+                                        <<1010:16, Rest@13/bitstring>> ->
+                                            {ok,
+                                                {control,
+                                                    {close_frame,
+                                                        {missing_extensions,
+                                                            Rest@13}}}};
+
+                                        <<1011:16, Rest@14/bitstring>> ->
+                                            {ok,
+                                                {control,
+                                                    {close_frame,
+                                                        {unexpected_condition,
+                                                            Rest@14}}}};
+
+                                        <<Code:16, Rest@15/bitstring>> ->
+                                            {ok,
+                                                {control,
+                                                    {close_frame,
+                                                        {custom_close_reason,
+                                                            Code,
+                                                            Rest@15}}}};
+
+                                        _ ->
+                                            {ok,
+                                                {control,
+                                                    {close_frame, not_provided}}}
+                                    end;
 
                                 9 ->
-                                    {ok,
-                                        {control,
-                                            {ping_frame, Payload_length, Data@1}}};
+                                    {ok, {control, {ping_frame, Data@1}}};
 
                                 10 ->
-                                    {ok,
-                                        {control,
-                                            {pong_frame, Payload_length, Data@1}}};
+                                    {ok, {control, {pong_frame, Data@1}}};
 
                                 _ ->
                                     {error, invalid_frame}
@@ -534,19 +683,19 @@ frame_from_message(Message, Context) ->
             {error, invalid_frame}
     end.
 
--file("src/gramps/websocket.gleam", 311).
--spec get_messages(
+-file("src/gramps/websocket.gleam", 425).
+-spec decode_many_frames(
     bitstring(),
-    list(parsed_frame()),
-    gleam@option:option(gramps@websocket@compression:context())
+    gleam@option:option(gramps@websocket@compression:context()),
+    list(parsed_frame())
 ) -> {list(parsed_frame()), bitstring()}.
-get_messages(Data, Frames, Context) ->
-    case frame_from_message(Data, Context) of
+decode_many_frames(Data, Context, Frames) ->
+    case decode_frame(Data, Context) of
         {ok, {Frame, <<>>}} ->
             {lists:reverse([Frame | Frames]), <<>>};
 
         {ok, {Frame@1, Rest}} ->
-            get_messages(Rest, [Frame@1 | Frames], Context);
+            decode_many_frames(Rest, Context, [Frame@1 | Frames]);
 
         {error, {need_more_data, Rest@1}} ->
             {lists:reverse(Frames), Rest@1};
@@ -555,7 +704,7 @@ get_messages(Data, Frames, Context) ->
             {lists:reverse(Frames), Data}
     end.
 
--file("src/gramps/websocket.gleam", 402).
+-file("src/gramps/websocket.gleam", 514).
 -spec has_deflate(list(binary())) -> boolean().
 has_deflate(Extensions) ->
     gleam@list:any(
@@ -563,7 +712,20 @@ has_deflate(Extensions) ->
         fun(Str) -> Str =:= <<"permessage-deflate"/utf8>> end
     ).
 
--file("src/gramps/websocket.gleam", 373).
+-file("src/gramps/websocket.gleam", 518).
+-spec get_context_takeovers(list(binary())) -> gramps@websocket@compression:context_takeover().
+get_context_takeovers(Extensions) ->
+    No_client_context_takeover = gleam@list:any(
+        Extensions,
+        fun(Str) -> Str =:= <<"client_no_context_takeover"/utf8>> end
+    ),
+    No_server_context_takeover = gleam@list:any(
+        Extensions,
+        fun(Str@1) -> Str@1 =:= <<"server_no_context_takeover"/utf8>> end
+    ),
+    {context_takeover, No_client_context_takeover, No_server_context_takeover}.
+
+-file("src/gramps/websocket.gleam", 487).
 -spec parse_websocket_key(binary()) -> binary().
 parse_websocket_key(Key) ->
     _pipe = Key,

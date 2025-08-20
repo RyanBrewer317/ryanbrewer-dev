@@ -1,5 +1,5 @@
 -module(mist@internal@http@handler).
--compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch]).
+-compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch, inline]).
 -define(FILEPATH, "src/mist/internal/http/handler.gleam").
 -export([initial_state/0, call/5]).
 -export_type([state/0]).
@@ -16,16 +16,16 @@
 
 -type state() :: {state, gleam@option:option(gleam@erlang@process:timer())}.
 
--file("src/mist/internal/http/handler.gleam", 30).
+-file("src/mist/internal/http/handler.gleam", 27).
 ?DOC(false).
 -spec initial_state() -> state().
 initial_state() ->
     {state, none}.
 
--file("src/mist/internal/http/handler.gleam", 70).
+-file("src/mist/internal/http/handler.gleam", 67).
 ?DOC(false).
 -spec log_and_error(
-    gleam@dynamic:dynamic_(),
+    exception:exception(),
     glisten@socket:socket(),
     glisten@transport:transport(),
     gleam@http@request:request(mist@internal@http:connection()),
@@ -67,7 +67,7 @@ log_and_error(Error, Socket, Transport, Req, Version) ->
     _ = glisten@transport:close(Transport, Socket),
     {error, gleam@string:inspect(Error)}.
 
--file("src/mist/internal/http/handler.gleam", 100).
+-file("src/mist/internal/http/handler.gleam", 97).
 ?DOC(false).
 -spec close_or_set_timer(
     gleam@http@response:response(gleam@bytes_tree:bytes_tree()),
@@ -92,7 +92,7 @@ close_or_set_timer(Resp, Conn, Sender) ->
             {ok, {state, {some, Timer}}}
     end.
 
--file("src/mist/internal/http/handler.gleam", 158).
+-file("src/mist/internal/http/handler.gleam", 155).
 ?DOC(false).
 -spec handle_file_body(
     gleam@http@response:response(mist@internal@http:response_data()),
@@ -113,12 +113,12 @@ handle_file_body(Resp, Body, Conn, Http_version) ->
                         file => <<?FILEPATH/utf8>>,
                         module => <<"mist/internal/http/handler"/utf8>>,
                         function => <<"handle_file_body"/utf8>>,
-                        line => 164,
+                        line => 161,
                         value => _assert_fail,
-                        start => 4696,
-                        'end' => 4751,
-                        pattern_start => 4707,
-                        pattern_end => 4744})
+                        start => 4605,
+                        'end' => 4660,
+                        pattern_start => 4616,
+                        pattern_end => 4653})
     end,
     Resp@1 = begin
         _pipe = Resp,
@@ -190,7 +190,7 @@ handle_file_body(Resp, Body, Conn, Http_version) ->
     end,
     Return.
 
--file("src/mist/internal/http/handler.gleam", 218).
+-file("src/mist/internal/http/handler.gleam", 215).
 ?DOC(false).
 -spec handle_bytes_tree_body(
     gleam@http@response:response(mist@internal@http:response_data()),
@@ -228,13 +228,13 @@ handle_bytes_tree_body(Resp, Body, Conn, Req, Version) ->
     ),
     gleam@result:replace(_pipe@4, Resp@2).
 
--file("src/mist/internal/http/handler.gleam", 245).
+-file("src/mist/internal/http/handler.gleam", 242).
 ?DOC(false).
 -spec int_to_hex(integer()) -> binary().
 int_to_hex(Int) ->
     erlang:integer_to_list(Int, 16).
 
--file("src/mist/internal/http/handler.gleam", 120).
+-file("src/mist/internal/http/handler.gleam", 117).
 ?DOC(false).
 -spec handle_chunked_body(
     gleam@http@response:response(mist@internal@http:response_data()),
@@ -297,7 +297,7 @@ handle_chunked_body(Resp, Body, Conn, Version) ->
         end
     ).
 
--file("src/mist/internal/http/handler.gleam", 34).
+-file("src/mist/internal/http/handler.gleam", 31).
 ?DOC(false).
 -spec call(
     gleam@http@request:request(mist@internal@http:connection()),
@@ -307,7 +307,7 @@ handle_chunked_body(Resp, Body, Conn, Version) ->
     mist@internal@http:http_version()
 ) -> {ok, state()} | {error, {ok, nil} | {error, binary()}}.
 call(Req, Handler, Conn, Sender, Version) ->
-    _pipe = mist_ffi:rescue(fun() -> Handler(Req) end),
+    _pipe = exception_ffi:rescue(fun() -> Handler(Req) end),
     _pipe@1 = gleam@result:map_error(
         _pipe,
         fun(_capture) ->
@@ -352,7 +352,7 @@ call(Req, Handler, Conn, Sender, Version) ->
                                     file => <<?FILEPATH/utf8>>,
                                     module => <<"mist/internal/http/handler"/utf8>>,
                                     function => <<"call"/utf8>>,
-                                    line => 61})
+                                    line => 58})
                     end,
                     _pipe@3 = gleam@result:replace_error(_pipe@2, {ok, nil}),
                     gleam@result:'try'(

@@ -1,13 +1,13 @@
 -module(gleam@http@service).
--compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch]).
+-compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch, inline]).
 -define(FILEPATH, "src/gleam/http/service.gleam").
 -export([map_response_body/2, prepend_response_header/3, method_override/1]).
 
 -file("src/gleam/http/service.gleam", 17).
 -spec map_response_body(
-    fun((EUY) -> gleam@http@response:response(EUK)),
-    fun((EUK) -> EUL)
-) -> fun((EUY) -> gleam@http@response:response(EUL)).
+    fun((EXW) -> gleam@http@response:response(EXI)),
+    fun((EXI) -> EXJ)
+) -> fun((EXW) -> gleam@http@response:response(EXJ)).
 map_response_body(Service, Mapper) ->
     fun(Req) -> _pipe = Req,
         _pipe@1 = Service(_pipe),
@@ -15,18 +15,18 @@ map_response_body(Service, Mapper) ->
 
 -file("src/gleam/http/service.gleam", 26).
 -spec prepend_response_header(
-    fun((EVC) -> gleam@http@response:response(EVE)),
+    fun((EYA) -> gleam@http@response:response(EYC)),
     binary(),
     binary()
-) -> fun((EVC) -> gleam@http@response:response(EVE)).
+) -> fun((EYA) -> gleam@http@response:response(EYC)).
 prepend_response_header(Service, Key, Value) ->
     fun(Req) -> _pipe = Req,
         _pipe@1 = Service(_pipe),
         gleam@http@response:prepend_header(_pipe@1, Key, Value) end.
 
 -file("src/gleam/http/service.gleam", 34).
--spec ensure_post(gleam@http@request:request(EUP)) -> {ok,
-        gleam@http@request:request(EUP)} |
+-spec ensure_post(gleam@http@request:request(EXN)) -> {ok,
+        gleam@http@request:request(EXN)} |
     {error, nil}.
 ensure_post(Req) ->
     case erlang:element(2, Req) of
@@ -70,7 +70,7 @@ get_override_method(Request) ->
     ).
 
 -file("src/gleam/http/service.gleam", 52).
--spec method_override(fun((gleam@http@request:request(EWL)) -> EWT)) -> fun((gleam@http@request:request(EWL)) -> EWT).
+-spec method_override(fun((gleam@http@request:request(EZJ)) -> EZR)) -> fun((gleam@http@request:request(EZJ)) -> EZR).
 method_override(Service) ->
     fun(Request) -> _pipe = Request,
         _pipe@1 = ensure_post(_pipe),

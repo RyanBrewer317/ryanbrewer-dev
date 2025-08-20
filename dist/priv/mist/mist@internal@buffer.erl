@@ -1,5 +1,5 @@
 -module(mist@internal@buffer).
--compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch]).
+-compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch, inline]).
 -define(FILEPATH, "src/mist/internal/buffer.gleam").
 -export([empty/0, new/1, append/2, slice/2, with_capacity/2, size/1]).
 -export_type([buffer/0]).
@@ -55,8 +55,7 @@ slice(Buffer, Bits) ->
 ?DOC(false).
 -spec with_capacity(buffer(), integer()) -> buffer().
 with_capacity(Buffer, Size) ->
-    _record = Buffer,
-    {buffer, Size, erlang:element(3, _record)}.
+    {buffer, Size, erlang:element(3, Buffer)}.
 
 -file("src/mist/internal/buffer.gleam", 34).
 ?DOC(false).

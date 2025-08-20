@@ -13,7 +13,7 @@ export function tail() {
           $attribute.id("copyright-notice"),
           $attribute.class$("subtle-text"),
         ]),
-        toList([text("© 2024 Ryan Brewer.")]),
+        toList([text("© 2025 Ryan Brewer.")]),
       ),
       $html.script(
         toList([$attribute.src("/__/firebase/8.10.1/firebase-app.js")]),

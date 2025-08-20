@@ -1,10 +1,5 @@
 import * as $json from "../../../gleam_json/gleam/json.mjs";
-import {
-  toList,
-  Empty as $Empty,
-  prepend as listPrepend,
-  CustomType as $CustomType,
-} from "../../gleam.mjs";
+import { Empty as $Empty, prepend as listPrepend, CustomType as $CustomType } from "../../gleam.mjs";
 import * as $json_object_builder from "../../lustre/internals/json_object_builder.mjs";
 import * as $events from "../../lustre/vdom/events.mjs";
 import * as $vattr from "../../lustre/vdom/vattr.mjs";
@@ -54,31 +49,28 @@ export class Update extends $CustomType {
 }
 
 export class Move extends $CustomType {
-  constructor(kind, key, before, count) {
+  constructor(kind, key, before) {
     super();
     this.kind = kind;
     this.key = key;
     this.before = before;
-    this.count = count;
-  }
-}
-
-export class RemoveKey extends $CustomType {
-  constructor(kind, key, count) {
-    super();
-    this.kind = kind;
-    this.key = key;
-    this.count = count;
   }
 }
 
 export class Replace extends $CustomType {
-  constructor(kind, from, count, with$) {
+  constructor(kind, index, with$) {
     super();
     this.kind = kind;
-    this.from = from;
-    this.count = count;
+    this.index = index;
     this.with = with$;
+  }
+}
+
+export class Remove extends $CustomType {
+  constructor(kind, index) {
+    super();
+    this.kind = kind;
+    this.index = index;
   }
 }
 
@@ -88,15 +80,6 @@ export class Insert extends $CustomType {
     this.kind = kind;
     this.children = children;
     this.before = before;
-  }
-}
-
-export class Remove extends $CustomType {
-  constructor(kind, from, count) {
-    super();
-    this.kind = kind;
-    this.from = from;
-    this.count = count;
   }
 }
 
@@ -162,56 +145,40 @@ function update_to_json(kind, added, removed) {
   return $json_object_builder.build(_pipe$2);
 }
 
-function move_to_json(kind, key, before, count) {
-  return $json.object(
-    toList([
-      ["kind", $json.int(kind)],
-      ["key", $json.string(key)],
-      ["before", $json.int(before)],
-      ["count", $json.int(count)],
-    ]),
-  );
+function move_to_json(kind, key, before) {
+  let _pipe = $json_object_builder.tagged(kind);
+  let _pipe$1 = $json_object_builder.string(_pipe, "key", key);
+  let _pipe$2 = $json_object_builder.int(_pipe$1, "before", before);
+  return $json_object_builder.build(_pipe$2);
 }
 
-function remove_key_to_json(kind, key, count) {
-  return $json.object(
-    toList([
-      ["kind", $json.int(kind)],
-      ["key", $json.string(key)],
-      ["count", $json.int(count)],
-    ]),
-  );
+function remove_to_json(kind, index) {
+  let _pipe = $json_object_builder.tagged(kind);
+  let _pipe$1 = $json_object_builder.int(_pipe, "index", index);
+  return $json_object_builder.build(_pipe$1);
 }
 
-function replace_to_json(kind, from, count, with$) {
-  return $json.object(
-    toList([
-      ["kind", $json.int(kind)],
-      ["from", $json.int(from)],
-      ["count", $json.int(count)],
-      ["with", $vnode.to_json(with$)],
-    ]),
+function replace_to_json(kind, index, with$) {
+  let _pipe = $json_object_builder.tagged(kind);
+  let _pipe$1 = $json_object_builder.int(_pipe, "index", index);
+  let _pipe$2 = $json_object_builder.json(
+    _pipe$1,
+    "with",
+    $vnode.to_json(with$),
   );
+  return $json_object_builder.build(_pipe$2);
 }
 
 function insert_to_json(kind, children, before) {
-  return $json.object(
-    toList([
-      ["kind", $json.int(kind)],
-      ["children", $json.array(children, $vnode.to_json)],
-      ["before", $json.int(before)],
-    ]),
+  let _pipe = $json_object_builder.tagged(kind);
+  let _pipe$1 = $json_object_builder.int(_pipe, "before", before);
+  let _pipe$2 = $json_object_builder.list(
+    _pipe$1,
+    "children",
+    children,
+    $vnode.to_json,
   );
-}
-
-function remove_to_json(kind, from, count) {
-  return $json.object(
-    toList([
-      ["kind", $json.int(kind)],
-      ["from", $json.int(from)],
-      ["count", $json.int(count)],
-    ]),
-  );
+  return $json_object_builder.build(_pipe$2);
 }
 
 function change_to_json(change) {
@@ -232,29 +199,21 @@ function change_to_json(change) {
     let kind = change.kind;
     let key = change.key;
     let before = change.before;
-    let count = change.count;
-    return move_to_json(kind, key, before, count);
-  } else if (change instanceof RemoveKey) {
-    let kind = change.kind;
-    let key = change.key;
-    let count = change.count;
-    return remove_key_to_json(kind, key, count);
+    return move_to_json(kind, key, before);
   } else if (change instanceof Replace) {
     let kind = change.kind;
-    let from = change.from;
-    let count = change.count;
+    let index = change.index;
     let with$ = change.with;
-    return replace_to_json(kind, from, count, with$);
-  } else if (change instanceof Insert) {
+    return replace_to_json(kind, index, with$);
+  } else if (change instanceof Remove) {
+    let kind = change.kind;
+    let index = change.index;
+    return remove_to_json(kind, index);
+  } else {
     let kind = change.kind;
     let children = change.children;
     let before = change.before;
     return insert_to_json(kind, children, before);
-  } else {
-    let kind = change.kind;
-    let from = change.from;
-    let count = change.count;
-    return remove_to_json(kind, from, count);
   }
 }
 
@@ -297,30 +256,24 @@ export function update(added, removed) {
 
 export const move_kind = 3;
 
-export function move(key, before, count) {
-  return new Move(move_kind, key, before, count);
+export function move(key, before) {
+  return new Move(move_kind, key, before);
 }
 
-export const remove_key_kind = 4;
+export const remove_kind = 4;
 
-export function remove_key(key, count) {
-  return new RemoveKey(remove_key_kind, key, count);
+export function remove(index) {
+  return new Remove(remove_kind, index);
 }
 
 export const replace_kind = 5;
 
-export function replace(from, count, with$) {
-  return new Replace(replace_kind, from, count, with$);
+export function replace(index, with$) {
+  return new Replace(replace_kind, index, with$);
 }
 
 export const insert_kind = 6;
 
 export function insert(children, before) {
   return new Insert(insert_kind, children, before);
-}
-
-export const remove_kind = 7;
-
-export function remove(from, count) {
-  return new Remove(remove_kind, from, count);
 }

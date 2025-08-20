@@ -3,7 +3,7 @@
 window.dataLayer = window.dataLayer || [];
 function gtag(){dataLayer.push(arguments);}
 gtag('js', new Date());
-        </script><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><link rel="icon" type="image/x-icon" href="/favicon.ico"><link rel="alternate" type="application/rss+xml" title="Ryan Brewer&#39;s Blog" href="https://ryanbrewer.dev/feed.rss"><script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css"><script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script><link rel="stylesheet" href="/style.css"></head><body><div><script>
+        </script><meta charset="UTF-8"><meta content="width=device-width, initial-scale=1.0" name="viewport"><link href="/favicon.ico" rel="icon" type="image/x-icon"><link href="https://ryanbrewer.dev/feed.rss" rel="alternate" title="Ryan Brewer&#39;s Blog" type="application/rss+xml"><script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" rel="stylesheet"><script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script><link href="/style.css" rel="stylesheet"></head><body><div><script>
 var _ARCTIC_C;
 if (typeof HTMLDocument === 'undefined') HTMLDocument = Document;
 let arctic_dom_content_loaded_listeners = [];
@@ -14,7 +14,7 @@ HTMLDocument.prototype.addEventListener = function(type, listener, options) {
     document.arctic_addEventListener(type, listener, options);
   } else document.arctic_addEventListener(type, listener, options);
 }
-       </script><div id="arctic-app"><div><div><link rel="preload" as="image" href="/ryan-silly.jpg"><link rel="prefetch" href="/ryan-silly-2.png"><title>The Type of Sprintf - Ryan Brewer</title><meta name="description" content="Most static type systems wouldn&#39;t let you make something like sprintf, whose type is determined by a format string. Dependent types can save the day!"><script type="text/javascript" async="true" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script><script>
+       </script><div id="arctic-app"><div><div><link as="image" href="/ryan-ferry.jpg" rel="preload"><link href="/ryan-silly-2.png" rel="prefetch"><title>The Type of Sprintf - Ryan Brewer</title><meta content="Most static type systems wouldn&#39;t let you make something like sprintf, whose type is determined by a format string. Dependent types can save the day!" name="description"><script async="true" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js" type="text/javascript"></script><script>
 window.MathJax = {
   loader: {load: ['[tex]/unicode','[tex]/bussproofs']},
   tex: {packages: {'[+]': ['unicode','bussproofs']}},
@@ -93,7 +93,7 @@ sprintf_helper tokens out_str = case tokens of
 </span></p><p><span>Obviously this code doesn&#39;t meet a full specification of <code><span>sprintf</span></code>, and is implemented in a pretty unoptimized way (something like \(O(N)\) time complexity in the size of the format string). I hope, however, that you can start to see that dependent types can be extremely powerful and expressive while staying completely at compile-time. In fact, if you don&#39;t mind writing a proof or two, our <code><span>sprintf</span></code> function can be called on format strings that aren&#39;t fully known at compile-time! You only need to be able to prove that the string will have certain format specifiers, and then calling <code><span>sprintf</span></code> can typecheck.
 </span></p><p><span>Maybe this is just a toy example, and languages without dependent types get by with special-cased <code><span>sprintf</span></code> functions just fine. But I think that this example is quite a nice demonstration of what&#39;s <i><span>possible</span></i> with dependent types that wouldn&#39;t be possible with other systems, including even refinement types. Personally, I find large eliminations very useful for writing proofs, such as when I want to prove that certain ADT constructors are impossible at a certain point. But that&#39;s a story for another time :)
 </span></p><p><span>discussion <a href="https://news.ycombinator.com/item?id=40361197"><span>here</span></a>.
-</span></p></div><div><p id="copyright-notice" class="subtle-text">© 2024 Ryan Brewer.</p><script src="/__/firebase/8.10.1/firebase-app.js"></script><script src="/__/firebase/8.10.1/firebase-analytics.js"></script><script src="/__/firebase/init.js"></script><script>firebase.analytics();</script></div></div></div><script>
+</span></p></div><div><p class="subtle-text" id="copyright-notice">© 2025 Ryan Brewer.</p><script src="/__/firebase/8.10.1/firebase-app.js"></script><script src="/__/firebase/8.10.1/firebase-analytics.js"></script><script src="/__/firebase/init.js"></script><script>firebase.analytics();</script></div></div></div><script>
 // SPA algorithm partially inspired by Hayleigh Thompson's wonderful Modem library
 async function go_to(url, loader, back) {
   if (!back && url.pathname === window.location.pathname) {

@@ -14,12 +14,12 @@
 
 ?MODULEDOC(false).
 
--type attribute(MQS) :: {attribute, integer(), binary(), binary()} |
+-type attribute(MSF) :: {attribute, integer(), binary(), binary()} |
     {property, integer(), binary(), gleam@json:json()} |
     {event,
         integer(),
         binary(),
-        gleam@dynamic@decode:decoder(handler(MQS)),
+        gleam@dynamic@decode:decoder(handler(MSF)),
         list(binary()),
         event_behaviour(),
         event_behaviour(),
@@ -27,7 +27,7 @@
         integer(),
         integer()}.
 
--type handler(MQT) :: {handler, boolean(), boolean(), MQT}.
+-type handler(MSG) :: {handler, boolean(), boolean(), MSG}.
 
 -type event_behaviour() :: {never, integer()} |
     {possible, integer()} |
@@ -35,7 +35,7 @@
 
 -file("src/lustre/vdom/vattr.gleam", 108).
 ?DOC(false).
--spec merge(list(attribute(MRI)), list(attribute(MRI))) -> list(attribute(MRI)).
+-spec merge(list(attribute(MSV)), list(attribute(MSV))) -> list(attribute(MSV)).
 merge(Attributes, Merged) ->
     case Attributes of
         [] ->
@@ -70,13 +70,13 @@ merge(Attributes, Merged) ->
 
 -file("src/lustre/vdom/vattr.gleam", 147).
 ?DOC(false).
--spec compare(attribute(MRP), attribute(MRP)) -> gleam@order:order().
+-spec compare(attribute(MTC), attribute(MTC)) -> gleam@order:order().
 compare(A, B) ->
     gleam@string:compare(erlang:element(3, A), erlang:element(3, B)).
 
 -file("src/lustre/vdom/vattr.gleam", 94).
 ?DOC(false).
--spec prepare(list(attribute(MRD))) -> list(attribute(MRD)).
+-spec prepare(list(attribute(MSQ))) -> list(attribute(MSQ)).
 prepare(Attributes) ->
     case Attributes of
         [] ->
@@ -189,14 +189,14 @@ property(Name, Value) ->
 ?DOC(false).
 -spec event(
     binary(),
-    gleam@dynamic@decode:decoder(handler(MQY)),
+    gleam@dynamic@decode:decoder(handler(MSL)),
     list(binary()),
     event_behaviour(),
     event_behaviour(),
     boolean(),
     integer(),
     integer()
-) -> attribute(MQY).
+) -> attribute(MSL).
 event(
     Name,
     Handler,

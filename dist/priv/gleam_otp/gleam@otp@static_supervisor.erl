@@ -1,5 +1,5 @@
 -module(gleam@otp@static_supervisor).
--compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch]).
+-compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch, inline]).
 -define(FILEPATH, "src/gleam/otp/static_supervisor.gleam").
 -export([new/1, restart_tolerance/3, auto_shutdown/2, add/2, start/1, supervised/1, init/1, start_child_callback/1]).
 -export_type([supervisor/0, strategy/0, auto_shutdown/0, builder/0, erlang_start_flags/0, erlang_start_flag/1, erlang_child_spec/0, erlang_child_spec_property/1, timeout_/0]).
@@ -21,12 +21,12 @@
     " # Example\n"
     "\n"
     " ```gleam\n"
-    " import gleam/erlang/actor\n"
+    " import gleam/otp/actor\n"
     " import gleam/otp/static_supervisor.{type Supervisor} as supervisor\n"
     " import app/database_pool\n"
     " import app/http_server\n"
     " \n"
-    " pub fn start_supervisor() ->  {\n"
+    " pub fn start_supervisor() -> actor.StartResult(Supervisor) {\n"
     "   supervisor.new(supervisor.OneForOne)\n"
     "   |> supervisor.add(database_pool.supervised())\n"
     "   |> supervisor.add(http_server.supervised())\n"
@@ -92,13 +92,12 @@ new(Strategy) ->
 ).
 -spec restart_tolerance(builder(), integer(), integer()) -> builder().
 restart_tolerance(Builder, Intensity, Period) ->
-    _record = Builder,
     {builder,
-        erlang:element(2, _record),
+        erlang:element(2, Builder),
         Intensity,
         Period,
-        erlang:element(5, _record),
-        erlang:element(6, _record)}.
+        erlang:element(5, Builder),
+        erlang:element(6, Builder)}.
 
 -file("src/gleam/otp/static_supervisor.gleam", 140).
 ?DOC(
@@ -107,24 +106,22 @@ restart_tolerance(Builder, Intensity, Period) ->
 ).
 -spec auto_shutdown(builder(), auto_shutdown()) -> builder().
 auto_shutdown(Builder, Value) ->
-    _record = Builder,
     {builder,
-        erlang:element(2, _record),
-        erlang:element(3, _record),
-        erlang:element(4, _record),
+        erlang:element(2, Builder),
+        erlang:element(3, Builder),
+        erlang:element(4, Builder),
         Value,
-        erlang:element(6, _record)}.
+        erlang:element(6, Builder)}.
 
 -file("src/gleam/otp/static_supervisor.gleam", 200).
 ?DOC(" Add a child to the supervisor.\n").
 -spec add(builder(), gleam@otp@supervision:child_specification(any())) -> builder().
 add(Builder, Child) ->
-    _record = Builder,
     {builder,
-        erlang:element(2, _record),
-        erlang:element(3, _record),
-        erlang:element(4, _record),
-        erlang:element(5, _record),
+        erlang:element(2, Builder),
+        erlang:element(3, Builder),
+        erlang:element(4, Builder),
+        erlang:element(5, Builder),
         [gleam@otp@supervision:map_data(Child, fun(_) -> nil end) |
             erlang:element(6, Builder)]}.
 

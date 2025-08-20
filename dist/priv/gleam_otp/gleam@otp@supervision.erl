@@ -1,5 +1,5 @@
 -module(gleam@otp@supervision).
--compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch]).
+-compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch, inline]).
 -define(FILEPATH, "src/gleam/otp/supervision.gleam").
 -export([worker/1, supervisor/1, significant/2, timeout/2, restart/2, map_data/2]).
 -export_type([restart/0, child_type/0, child_specification/1]).
@@ -59,12 +59,11 @@ supervisor(Start) ->
 ).
 -spec significant(child_specification(EYY), boolean()) -> child_specification(EYY).
 significant(Child, Significant) ->
-    _record = Child,
     {child_specification,
-        erlang:element(2, _record),
-        erlang:element(3, _record),
+        erlang:element(2, Child),
+        erlang:element(3, Child),
         Significant,
-        erlang:element(5, _record)}.
+        erlang:element(5, Child)}.
 
 -file("src/gleam/otp/supervision.gleam", 105).
 ?DOC(
@@ -79,11 +78,10 @@ significant(Child, Significant) ->
 timeout(Child, Ms) ->
     case erlang:element(5, Child) of
         {worker, _} ->
-            _record = Child,
             {child_specification,
-                erlang:element(2, _record),
-                erlang:element(3, _record),
-                erlang:element(4, _record),
+                erlang:element(2, Child),
+                erlang:element(3, Child),
+                erlang:element(4, Child),
                 {worker, Ms}};
 
         _ ->
@@ -99,31 +97,26 @@ timeout(Child, Ms) ->
 ).
 -spec restart(child_specification(EZE), restart()) -> child_specification(EZE).
 restart(Child, Restart) ->
-    _record = Child,
     {child_specification,
-        erlang:element(2, _record),
+        erlang:element(2, Child),
         Restart,
-        erlang:element(4, _record),
-        erlang:element(5, _record)}.
+        erlang:element(4, Child),
+        erlang:element(5, Child)}.
 
 -file("src/gleam/otp/supervision.gleam", 128).
 ?DOC(" Transform the data of the started child process.\n").
 -spec map_data(child_specification(EZH), fun((EZH) -> EZJ)) -> child_specification(EZJ).
 map_data(Child, Transform) ->
-    _record = Child,
     {child_specification, fun() -> case (erlang:element(2, Child))() of
                 {ok, Started} ->
                     {ok,
-                        begin
-                            _record@1 = Started,
-                            {started,
-                                erlang:element(2, _record@1),
-                                Transform(erlang:element(3, Started))}
-                        end};
+                        {started,
+                            erlang:element(2, Started),
+                            Transform(erlang:element(3, Started))}};
 
                 {error, E} ->
                     {error, E}
-            end end, erlang:element(3, _record), erlang:element(4, _record), erlang:element(
+            end end, erlang:element(3, Child), erlang:element(4, Child), erlang:element(
             5,
-            _record
+            Child
         )}.

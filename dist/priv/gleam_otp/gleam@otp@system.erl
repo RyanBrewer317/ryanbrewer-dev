@@ -1,5 +1,5 @@
 -module(gleam@otp@system).
--compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch]).
+-compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch, inline]).
 -define(FILEPATH, "src/gleam/otp/system.gleam").
 -export([debug_state/1, get_state/1, suspend/1, resume/1]).
 -export_type([mode/0, debug_option/0, debug_state/0, status_info/0, system_message/0, do_not_leak/0]).

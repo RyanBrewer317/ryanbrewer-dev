@@ -73,6 +73,10 @@ export class Cancelled extends $CustomType {
 
 class Kill extends $CustomType {}
 
+export function unsafely_create_subject(owner, tag) {
+  return new Subject(owner, tag);
+}
+
 export function named_subject(name) {
   return new NamedSubject(name);
 }

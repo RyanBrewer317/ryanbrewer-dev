@@ -65,24 +65,17 @@
     "\n"
 ).
 
--file("src/lustre/element/keyed.gleam", 196).
+-file("src/lustre/element/keyed.gleam", 184).
 -spec do_extract_keyed_children(
-    list({binary(), lustre@vdom@vnode:element(TNB)}),
-    lustre@internals@mutable_map:mutable_map(binary(), lustre@vdom@vnode:element(TNB)),
-    list(lustre@vdom@vnode:element(TNB)),
-    integer()
-) -> {lustre@internals@mutable_map:mutable_map(binary(), lustre@vdom@vnode:element(TNB)),
-    list(lustre@vdom@vnode:element(TNB)),
-    integer()}.
-do_extract_keyed_children(
-    Key_children_pairs,
-    Keyed_children,
-    Children,
-    Children_count
-) ->
+    list({binary(), lustre@vdom@vnode:element(TUP)}),
+    lustre@internals@mutable_map:mutable_map(binary(), lustre@vdom@vnode:element(TUP)),
+    list(lustre@vdom@vnode:element(TUP))
+) -> {lustre@internals@mutable_map:mutable_map(binary(), lustre@vdom@vnode:element(TUP)),
+    list(lustre@vdom@vnode:element(TUP))}.
+do_extract_keyed_children(Key_children_pairs, Keyed_children, Children) ->
     case Key_children_pairs of
         [] ->
-            {Keyed_children, lists:reverse(Children), Children_count};
+            {Keyed_children, lists:reverse(Children)};
 
         [{Key, Element} | Rest] ->
             Keyed_element = lustre@vdom@vnode:to_keyed(Key, Element),
@@ -94,23 +87,14 @@ do_extract_keyed_children(
                     gleam@dict:insert(Keyed_children, Key, Keyed_element)
             end,
             Children@1 = [Keyed_element | Children],
-            Children_count@1 = Children_count + lustre@vdom@vnode:advance(
-                Keyed_element
-            ),
-            do_extract_keyed_children(
-                Rest,
-                Keyed_children@1,
-                Children@1,
-                Children_count@1
-            )
+            do_extract_keyed_children(Rest, Keyed_children@1, Children@1)
     end.
 
--file("src/lustre/element/keyed.gleam", 185).
--spec extract_keyed_children(list({binary(), lustre@vdom@vnode:element(TMT)})) -> {lustre@internals@mutable_map:mutable_map(binary(), lustre@vdom@vnode:element(TMT)),
-    list(lustre@vdom@vnode:element(TMT)),
-    integer()}.
+-file("src/lustre/element/keyed.gleam", 178).
+-spec extract_keyed_children(list({binary(), lustre@vdom@vnode:element(TUH)})) -> {lustre@internals@mutable_map:mutable_map(binary(), lustre@vdom@vnode:element(TUH)),
+    list(lustre@vdom@vnode:element(TUH))}.
 extract_keyed_children(Children) ->
-    do_extract_keyed_children(Children, gleam@dict:new(), [], 0).
+    do_extract_keyed_children(Children, gleam@dict:new(), []).
 
 -file("src/lustre/element/keyed.gleam", 74).
 ?DOC(
@@ -125,11 +109,11 @@ extract_keyed_children(Children) ->
 ).
 -spec element(
     binary(),
-    list(lustre@vdom@vattr:attribute(TKZ)),
-    list({binary(), lustre@vdom@vnode:element(TKZ)})
-) -> lustre@vdom@vnode:element(TKZ).
+    list(lustre@vdom@vattr:attribute(TSN)),
+    list({binary(), lustre@vdom@vnode:element(TSN)})
+) -> lustre@vdom@vnode:element(TSN).
 element(Tag, Attributes, Children) ->
-    {Keyed_children, Children@1, _} = extract_keyed_children(Children),
+    {Keyed_children, Children@1} = extract_keyed_children(Children),
     lustre@vdom@vnode:element(
         <<""/utf8>>,
         fun gleam@function:identity/1,
@@ -156,11 +140,11 @@ element(Tag, Attributes, Children) ->
 -spec namespaced(
     binary(),
     binary(),
-    list(lustre@vdom@vattr:attribute(TLF)),
-    list({binary(), lustre@vdom@vnode:element(TLF)})
-) -> lustre@vdom@vnode:element(TLF).
+    list(lustre@vdom@vattr:attribute(TST)),
+    list({binary(), lustre@vdom@vnode:element(TST)})
+) -> lustre@vdom@vnode:element(TST).
 namespaced(Namespace, Tag, Attributes, Children) ->
-    {Keyed_children, Children@1, _} = extract_keyed_children(Children),
+    {Keyed_children, Children@1} = extract_keyed_children(Children),
     lustre@vdom@vnode:element(
         <<""/utf8>>,
         fun gleam@function:identity/1,
@@ -184,55 +168,52 @@ namespaced(Namespace, Tag, Attributes, Children) ->
     " > but it doesn't have to be unique across the whole application. It's fine to\n"
     " > use the same key in different lists.\n"
 ).
--spec fragment(list({binary(), lustre@vdom@vnode:element(TLL)})) -> lustre@vdom@vnode:element(TLL).
+-spec fragment(list({binary(), lustre@vdom@vnode:element(TSZ)})) -> lustre@vdom@vnode:element(TSZ).
 fragment(Children) ->
-    {Keyed_children, Children@1, Children_count} = extract_keyed_children(
-        Children
-    ),
+    {Keyed_children, Children@1} = extract_keyed_children(Children),
     lustre@vdom@vnode:fragment(
         <<""/utf8>>,
         fun gleam@function:identity/1,
         Children@1,
-        Keyed_children,
-        Children_count
+        Keyed_children
     ).
 
--file("src/lustre/element/keyed.gleam", 148).
+-file("src/lustre/element/keyed.gleam", 141).
 -spec ul(
-    list(lustre@vdom@vattr:attribute(TLP)),
-    list({binary(), lustre@vdom@vnode:element(TLP)})
-) -> lustre@vdom@vnode:element(TLP).
+    list(lustre@vdom@vattr:attribute(TTD)),
+    list({binary(), lustre@vdom@vnode:element(TTD)})
+) -> lustre@vdom@vnode:element(TTD).
 ul(Attributes, Children) ->
     element(<<"ul"/utf8>>, Attributes, Children).
 
--file("src/lustre/element/keyed.gleam", 155).
+-file("src/lustre/element/keyed.gleam", 148).
 -spec ol(
-    list(lustre@vdom@vattr:attribute(TLV)),
-    list({binary(), lustre@vdom@vnode:element(TLV)})
-) -> lustre@vdom@vnode:element(TLV).
+    list(lustre@vdom@vattr:attribute(TTJ)),
+    list({binary(), lustre@vdom@vnode:element(TTJ)})
+) -> lustre@vdom@vnode:element(TTJ).
 ol(Attributes, Children) ->
     element(<<"ol"/utf8>>, Attributes, Children).
 
--file("src/lustre/element/keyed.gleam", 162).
+-file("src/lustre/element/keyed.gleam", 155).
 -spec 'div'(
-    list(lustre@vdom@vattr:attribute(TMB)),
-    list({binary(), lustre@vdom@vnode:element(TMB)})
-) -> lustre@vdom@vnode:element(TMB).
+    list(lustre@vdom@vattr:attribute(TTP)),
+    list({binary(), lustre@vdom@vnode:element(TTP)})
+) -> lustre@vdom@vnode:element(TTP).
 'div'(Attributes, Children) ->
     element(<<"div"/utf8>>, Attributes, Children).
 
--file("src/lustre/element/keyed.gleam", 169).
+-file("src/lustre/element/keyed.gleam", 162).
 -spec tbody(
-    list(lustre@vdom@vattr:attribute(TMH)),
-    list({binary(), lustre@vdom@vnode:element(TMH)})
-) -> lustre@vdom@vnode:element(TMH).
+    list(lustre@vdom@vattr:attribute(TTV)),
+    list({binary(), lustre@vdom@vnode:element(TTV)})
+) -> lustre@vdom@vnode:element(TTV).
 tbody(Attributes, Children) ->
     element(<<"tbody"/utf8>>, Attributes, Children).
 
--file("src/lustre/element/keyed.gleam", 176).
+-file("src/lustre/element/keyed.gleam", 169).
 -spec dl(
-    list(lustre@vdom@vattr:attribute(TMN)),
-    list({binary(), lustre@vdom@vnode:element(TMN)})
-) -> lustre@vdom@vnode:element(TMN).
+    list(lustre@vdom@vattr:attribute(TUB)),
+    list({binary(), lustre@vdom@vnode:element(TUB)})
+) -> lustre@vdom@vnode:element(TUB).
 dl(Attributes, Children) ->
     element(<<"dl"/utf8>>, Attributes, Children).

@@ -1,7 +1,7 @@
 -module(lustre@runtime@transport).
 -compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch]).
 -define(FILEPATH, "src/lustre/runtime/transport.gleam").
--export([client_message_to_json/1, mount/5, reconcile/1, emit/2, attribute_changed/2, event_fired/3, property_changed/2, batch/1, server_message_decoder/0]).
+-export([client_message_to_json/1, mount/7, reconcile/1, emit/2, provide/2, attribute_changed/2, event_fired/3, property_changed/2, batch/1, context_provided/2, context_provided_decoder/0, server_message_decoder/0]).
 -export_type([client_message/1, server_message/0]).
 
 -if(?OTP_RELEASE >= 27).
@@ -14,22 +14,26 @@
 
 ?MODULEDOC(false).
 
--type client_message(QHE) :: {mount,
+-type client_message(QHB) :: {mount,
         integer(),
         boolean(),
         boolean(),
         list(binary()),
         list(binary()),
-        lustre@vdom@vnode:element(QHE)} |
-    {reconcile, integer(), lustre@vdom@patch:patch(QHE)} |
-    {emit, integer(), binary(), gleam@json:json()}.
+        list(binary()),
+        gleam@dict:dict(binary(), gleam@json:json()),
+        lustre@vdom@vnode:element(QHB)} |
+    {reconcile, integer(), lustre@vdom@patch:patch(QHB)} |
+    {emit, integer(), binary(), gleam@json:json()} |
+    {provide, integer(), binary(), gleam@json:json()}.
 
 -type server_message() :: {batch, integer(), list(server_message())} |
     {attribute_changed, integer(), binary(), binary()} |
     {property_changed, integer(), binary(), gleam@dynamic:dynamic_()} |
-    {event_fired, integer(), binary(), binary(), gleam@dynamic:dynamic_()}.
+    {event_fired, integer(), binary(), binary(), gleam@dynamic:dynamic_()} |
+    {context_provided, integer(), binary(), gleam@dynamic:dynamic_()}.
 
--file("src/lustre/runtime/transport.gleam", 123).
+-file("src/lustre/runtime/transport.gleam", 150).
 ?DOC(false).
 -spec mount_to_json(
     integer(),
@@ -37,6 +41,8 @@
     boolean(),
     list(binary()),
     list(binary()),
+    list(binary()),
+    gleam@dict:dict(binary(), gleam@json:json()),
     lustre@vdom@vnode:element(any())
 ) -> gleam@json:json().
 mount_to_json(
@@ -45,6 +51,8 @@ mount_to_json(
     Will_adopt_styles,
     Observed_attributes,
     Observed_properties,
+    Requested_contexts,
+    Provided_contexts,
     Vdom
 ) ->
     gleam@json:object(
@@ -55,10 +63,18 @@ mount_to_json(
                 gleam@json:array(Observed_attributes, fun gleam@json:string/1)},
             {<<"observed_properties"/utf8>>,
                 gleam@json:array(Observed_properties, fun gleam@json:string/1)},
+            {<<"requested_contexts"/utf8>>,
+                gleam@json:array(Requested_contexts, fun gleam@json:string/1)},
+            {<<"provided_contexts"/utf8>>,
+                gleam@json:dict(
+                    Provided_contexts,
+                    fun gleam@function:identity/1,
+                    fun gleam@function:identity/1
+                )},
             {<<"vdom"/utf8>>, lustre@vdom@vnode:to_json(Vdom)}]
     ).
 
--file("src/lustre/runtime/transport.gleam", 141).
+-file("src/lustre/runtime/transport.gleam", 175).
 ?DOC(false).
 -spec reconcile_to_json(integer(), lustre@vdom@patch:patch(any())) -> gleam@json:json().
 reconcile_to_json(Kind, Patch) ->
@@ -67,7 +83,7 @@ reconcile_to_json(Kind, Patch) ->
             {<<"patch"/utf8>>, lustre@vdom@patch:to_json(Patch)}]
     ).
 
--file("src/lustre/runtime/transport.gleam", 145).
+-file("src/lustre/runtime/transport.gleam", 179).
 ?DOC(false).
 -spec emit_to_json(integer(), binary(), gleam@json:json()) -> gleam@json:json().
 emit_to_json(Kind, Name, Data) ->
@@ -77,7 +93,17 @@ emit_to_json(Kind, Name, Data) ->
             {<<"data"/utf8>>, Data}]
     ).
 
--file("src/lustre/runtime/transport.gleam", 100).
+-file("src/lustre/runtime/transport.gleam", 187).
+?DOC(false).
+-spec provide_to_json(integer(), binary(), gleam@json:json()) -> gleam@json:json().
+provide_to_json(Kind, Key, Value) ->
+    gleam@json:object(
+        [{<<"kind"/utf8>>, gleam@json:int(Kind)},
+            {<<"key"/utf8>>, gleam@json:string(Key)},
+            {<<"value"/utf8>>, Value}]
+    ).
+
+-file("src/lustre/runtime/transport.gleam", 122).
 ?DOC(false).
 -spec client_message_to_json(client_message(any())) -> gleam@json:json().
 client_message_to_json(Message) ->
@@ -88,6 +114,8 @@ client_message_to_json(Message) ->
             Will_adopt_styles,
             Observed_attributes,
             Observed_properties,
+            Requested_contexts,
+            Provided_contexts,
             Vdom} ->
             mount_to_json(
                 Kind,
@@ -95,6 +123,8 @@ client_message_to_json(Message) ->
                 Will_adopt_styles,
                 Observed_attributes,
                 Observed_properties,
+                Requested_contexts,
+                Provided_contexts,
                 Vdom
             );
 
@@ -102,16 +132,21 @@ client_message_to_json(Message) ->
             reconcile_to_json(Kind@1, Patch);
 
         {emit, Kind@2, Name, Data} ->
-            emit_to_json(Kind@2, Name, Data)
+            emit_to_json(Kind@2, Name, Data);
+
+        {provide, Kind@3, Key, Value} ->
+            provide_to_json(Kind@3, Key, Value)
     end.
 
--file("src/lustre/runtime/transport.gleam", 35).
+-file("src/lustre/runtime/transport.gleam", 41).
 ?DOC(false).
 -spec mount(
     boolean(),
     boolean(),
     list(binary()),
     list(binary()),
+    list(binary()),
+    gleam@dict:dict(binary(), gleam@json:json()),
     lustre@vdom@vnode:element(QHH)
 ) -> client_message(QHH).
 mount(
@@ -119,6 +154,8 @@ mount(
     Will_adopt_styles,
     Observed_attributes,
     Observed_properties,
+    Requested_contexts,
+    Provided_contexts,
     Vdom
 ) ->
     {mount,
@@ -127,27 +164,35 @@ mount(
         Will_adopt_styles,
         Observed_attributes,
         Observed_properties,
+        Requested_contexts,
+        Provided_contexts,
         Vdom}.
 
--file("src/lustre/runtime/transport.gleam", 54).
+-file("src/lustre/runtime/transport.gleam", 64).
 ?DOC(false).
 -spec reconcile(lustre@vdom@patch:patch(QHK)) -> client_message(QHK).
 reconcile(Patch) ->
     {reconcile, 1, Patch}.
 
--file("src/lustre/runtime/transport.gleam", 60).
+-file("src/lustre/runtime/transport.gleam", 70).
 ?DOC(false).
 -spec emit(binary(), gleam@json:json()) -> client_message(any()).
 emit(Name, Data) ->
     {emit, 2, Name, Data}.
 
--file("src/lustre/runtime/transport.gleam", 66).
+-file("src/lustre/runtime/transport.gleam", 76).
+?DOC(false).
+-spec provide(binary(), gleam@json:json()) -> client_message(any()).
+provide(Key, Value) ->
+    {provide, 3, Key, Value}.
+
+-file("src/lustre/runtime/transport.gleam", 82).
 ?DOC(false).
 -spec attribute_changed(binary(), binary()) -> server_message().
 attribute_changed(Name, Value) ->
     {attribute_changed, 0, Name, Value}.
 
--file("src/lustre/runtime/transport.gleam", 167).
+-file("src/lustre/runtime/transport.gleam", 209).
 ?DOC(false).
 -spec attribute_changed_decoder() -> gleam@dynamic@decode:decoder(server_message()).
 attribute_changed_decoder() ->
@@ -165,13 +210,13 @@ attribute_changed_decoder() ->
         end
     ).
 
--file("src/lustre/runtime/transport.gleam", 75).
+-file("src/lustre/runtime/transport.gleam", 91).
 ?DOC(false).
 -spec event_fired(binary(), binary(), gleam@dynamic:dynamic_()) -> server_message().
 event_fired(Path, Name, Event) ->
     {event_fired, 1, Path, Name, Event}.
 
--file("src/lustre/runtime/transport.gleam", 181).
+-file("src/lustre/runtime/transport.gleam", 223).
 ?DOC(false).
 -spec event_fired_decoder() -> gleam@dynamic@decode:decoder(server_message()).
 event_fired_decoder() ->
@@ -197,13 +242,13 @@ event_fired_decoder() ->
         end
     ).
 
--file("src/lustre/runtime/transport.gleam", 85).
+-file("src/lustre/runtime/transport.gleam", 101).
 ?DOC(false).
 -spec property_changed(binary(), gleam@dynamic:dynamic_()) -> server_message().
 property_changed(Name, Value) ->
     {property_changed, 2, Name, Value}.
 
--file("src/lustre/runtime/transport.gleam", 174).
+-file("src/lustre/runtime/transport.gleam", 216).
 ?DOC(false).
 -spec property_changed_decoder() -> gleam@dynamic@decode:decoder(server_message()).
 property_changed_decoder() ->
@@ -221,13 +266,37 @@ property_changed_decoder() ->
         end
     ).
 
--file("src/lustre/runtime/transport.gleam", 94).
+-file("src/lustre/runtime/transport.gleam", 110).
 ?DOC(false).
 -spec batch(list(server_message())) -> server_message().
 batch(Messages) ->
     {batch, 3, Messages}.
 
--file("src/lustre/runtime/transport.gleam", 189).
+-file("src/lustre/runtime/transport.gleam", 116).
+?DOC(false).
+-spec context_provided(binary(), gleam@dynamic:dynamic_()) -> server_message().
+context_provided(Key, Value) ->
+    {context_provided, 4, Key, Value}.
+
+-file("src/lustre/runtime/transport.gleam", 240).
+?DOC(false).
+-spec context_provided_decoder() -> gleam@dynamic@decode:decoder(server_message()).
+context_provided_decoder() ->
+    gleam@dynamic@decode:field(
+        <<"key"/utf8>>,
+        {decoder, fun gleam@dynamic@decode:decode_string/1},
+        fun(Key) ->
+            gleam@dynamic@decode:field(
+                <<"value"/utf8>>,
+                {decoder, fun gleam@dynamic@decode:decode_dynamic/1},
+                fun(Value) ->
+                    gleam@dynamic@decode:success(context_provided(Key, Value))
+                end
+            )
+        end
+    ).
+
+-file("src/lustre/runtime/transport.gleam", 231).
 ?DOC(false).
 -spec batch_decoder() -> gleam@dynamic@decode:decoder(server_message()).
 batch_decoder() ->
@@ -237,7 +306,7 @@ batch_decoder() ->
         fun(Messages) -> gleam@dynamic@decode:success(batch(Messages)) end
     ).
 
--file("src/lustre/runtime/transport.gleam", 155).
+-file("src/lustre/runtime/transport.gleam", 197).
 ?DOC(false).
 -spec server_message_decoder() -> gleam@dynamic@decode:decoder(server_message()).
 server_message_decoder() ->

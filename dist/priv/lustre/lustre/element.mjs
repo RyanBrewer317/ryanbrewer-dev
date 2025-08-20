@@ -2,7 +2,7 @@ import * as $function from "../../gleam_stdlib/gleam/function.mjs";
 import { identity as coerce } from "../../gleam_stdlib/gleam/function.mjs";
 import * as $string from "../../gleam_stdlib/gleam/string.mjs";
 import * as $string_tree from "../../gleam_stdlib/gleam/string_tree.mjs";
-import { toList, Empty as $Empty } from "../gleam.mjs";
+import { toList } from "../gleam.mjs";
 import * as $attribute from "../lustre/attribute.mjs";
 import * as $mutable_map from "../lustre/internals/mutable_map.mjs";
 import * as $events from "../lustre/vdom/events.mjs";
@@ -66,29 +66,8 @@ export function none() {
   return $vnode.text("", $function.identity, "");
 }
 
-function count_fragment_children(loop$children, loop$count) {
-  while (true) {
-    let children = loop$children;
-    let count = loop$count;
-    if (children instanceof $Empty) {
-      return count;
-    } else {
-      let child = children.head;
-      let rest = children.tail;
-      loop$children = rest;
-      loop$count = count + $vnode.advance(child);
-    }
-  }
-}
-
 export function fragment(children) {
-  return $vnode.fragment(
-    "",
-    $function.identity,
-    children,
-    $mutable_map.new$(),
-    count_fragment_children(children, 0),
-  );
+  return $vnode.fragment("", $function.identity, children, $mutable_map.new$());
 }
 
 export function unsafe_raw_html(namespace, tag, attributes, inner_html) {
@@ -114,7 +93,6 @@ export function map(element, f) {
       mapper,
       coerce(children),
       coerce(keyed_children),
-      _record.children_count,
     );
   } else if (element instanceof Element) {
     let attributes = element.attributes;

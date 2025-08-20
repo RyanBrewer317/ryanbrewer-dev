@@ -1,5 +1,5 @@
 -module(gleam@erlang@charlist).
--compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch]).
+-compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch, inline]).
 -define(FILEPATH, "src/gleam/erlang/charlist.gleam").
 -export([to_string/1, from_string/1]).
 -export_type([charlist/0]).

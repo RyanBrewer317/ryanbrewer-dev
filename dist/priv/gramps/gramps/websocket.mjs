@@ -1,3 +1,4 @@
+import * as $crypto from "../../gleam_crypto/gleam/crypto.mjs";
 import * as $bit_array from "../../gleam_stdlib/gleam/bit_array.mjs";
 import * as $bool from "../../gleam_stdlib/gleam/bool.mjs";
 import * as $bytes_tree from "../../gleam_stdlib/gleam/bytes_tree.mjs";
@@ -16,43 +17,112 @@ import {
   sizedInt,
 } from "../gleam.mjs";
 import * as $compression from "../gramps/websocket/compression.mjs";
+import { ContextTakeover } from "../gramps/websocket/compression.mjs";
 
 export class TextFrame extends $CustomType {
-  constructor(payload_length, payload) {
+  constructor(payload) {
     super();
-    this.payload_length = payload_length;
     this.payload = payload;
   }
 }
 
 export class BinaryFrame extends $CustomType {
-  constructor(payload_length, payload) {
+  constructor(payload) {
     super();
-    this.payload_length = payload_length;
     this.payload = payload;
+  }
+}
+
+export class NotProvided extends $CustomType {}
+
+export class Normal extends $CustomType {
+  constructor(body) {
+    super();
+    this.body = body;
+  }
+}
+
+export class GoingAway extends $CustomType {
+  constructor(body) {
+    super();
+    this.body = body;
+  }
+}
+
+export class ProtocolError extends $CustomType {
+  constructor(body) {
+    super();
+    this.body = body;
+  }
+}
+
+export class UnexpectedDataType extends $CustomType {
+  constructor(body) {
+    super();
+    this.body = body;
+  }
+}
+
+export class InconsistentDataType extends $CustomType {
+  constructor(body) {
+    super();
+    this.body = body;
+  }
+}
+
+export class PolicyViolation extends $CustomType {
+  constructor(body) {
+    super();
+    this.body = body;
+  }
+}
+
+export class MessageTooBig extends $CustomType {
+  constructor(body) {
+    super();
+    this.body = body;
+  }
+}
+
+export class MissingExtensions extends $CustomType {
+  constructor(body) {
+    super();
+    this.body = body;
+  }
+}
+
+export class UnexpectedCondition extends $CustomType {
+  constructor(body) {
+    super();
+    this.body = body;
+  }
+}
+
+export class CustomCloseReason extends $CustomType {
+  constructor(code, body) {
+    super();
+    this.code = code;
+    this.body = body;
   }
 }
 
 export class CloseFrame extends $CustomType {
-  constructor(payload_length, payload) {
+  constructor(reason) {
     super();
-    this.payload_length = payload_length;
-    this.payload = payload;
+    this.reason = reason;
   }
 }
 
 export class PingFrame extends $CustomType {
-  constructor(payload_length, payload) {
+  constructor(payload) {
     super();
-    this.payload_length = payload_length;
     this.payload = payload;
   }
 }
 
 export class PongFrame extends $CustomType {
-  constructor(payload_length, payload) {
+  constructor(payload) {
     super();
-    this.payload_length = payload_length;
     this.payload = payload;
   }
 }
@@ -102,6 +172,10 @@ export class Incomplete extends $CustomType {
   }
 }
 
+class Compressed extends $CustomType {}
+
+class Uncompressed extends $CustomType {}
+
 class Sha extends $CustomType {}
 
 function make_length(length) {
@@ -118,7 +192,7 @@ function make_length(length) {
   }
 }
 
-function make_frame(opcode, length, payload, mask) {
+function make_frame(opcode, length, payload, compressed, mask) {
   let length_section = make_length(length);
   let _block;
   let $ = $option.is_some(mask);
@@ -129,9 +203,17 @@ function make_frame(opcode, length, payload, mask) {
   }
   let masked = _block;
   let mask_key = $option.unwrap(mask, toBitArray([]));
+  let _block$1;
+  if (compressed instanceof Compressed) {
+    _block$1 = 1;
+  } else {
+    _block$1 = 0;
+  }
+  let compressed$1 = _block$1;
   let _pipe = toBitArray([
     sizedInt(1, 1, true),
-    sizedInt(0, 3, true),
+    sizedInt(compressed$1, 1, true),
+    sizedInt(0, 2, true),
     sizedInt(opcode, 4, true),
     sizedInt(masked, 1, true),
     length_section,
@@ -141,74 +223,26 @@ function make_frame(opcode, length, payload, mask) {
   return $bytes_tree.from_bit_array(_pipe);
 }
 
-export function frame_to_bytes_tree(frame, mask) {
-  if (frame instanceof Data) {
-    let $ = frame[0];
-    if ($ instanceof TextFrame) {
-      let payload_length = $.payload_length;
-      let payload = $.payload;
-      return make_frame(1, payload_length, payload, mask);
-    } else {
-      let payload_length = $.payload_length;
-      let payload = $.payload;
-      return make_frame(2, payload_length, payload, mask);
-    }
-  } else if (frame instanceof Control) {
-    let $ = frame[0];
-    if ($ instanceof CloseFrame) {
-      let payload_length = $.payload_length;
-      let payload = $.payload;
-      return make_frame(8, payload_length, payload, mask);
-    } else if ($ instanceof PingFrame) {
-      let payload_length = $.payload_length;
-      let payload = $.payload;
-      return make_frame(9, payload_length, payload, mask);
-    } else {
-      let payload_length = $.payload_length;
-      let payload = $.payload;
-      return make_frame(10, payload_length, payload, mask);
-    }
-  } else {
-    let length = frame.length;
-    let payload = frame.payload;
-    return make_frame(0, length, payload, mask);
-  }
-}
-
-function append_frame(left, length, data) {
+function append_frame(left, data) {
   if (left instanceof Data) {
     let $ = left[0];
     if ($ instanceof TextFrame) {
-      let len = $.payload_length;
       let payload = $.payload;
-      return new Data(new TextFrame(len + length, toBitArray([payload, data])));
+      return new Data(new TextFrame(toBitArray([payload, data])));
     } else {
-      let len = $.payload_length;
       let payload = $.payload;
-      return new Data(
-        new BinaryFrame(len + length, toBitArray([payload, data])),
-      );
+      return new Data(new BinaryFrame(toBitArray([payload, data])));
     }
   } else if (left instanceof Control) {
     let $ = left[0];
     if ($ instanceof CloseFrame) {
-      let len = $.payload_length;
-      let payload = $.payload;
-      return new Control(
-        new CloseFrame(len + length, toBitArray([payload, data])),
-      );
+      return left;
     } else if ($ instanceof PingFrame) {
-      let len = $.payload_length;
       let payload = $.payload;
-      return new Control(
-        new PingFrame(len + length, toBitArray([payload, data])),
-      );
+      return new Control(new PingFrame(toBitArray([payload, data])));
     } else {
-      let len = $.payload_length;
       let payload = $.payload;
-      return new Control(
-        new PongFrame(len + length, toBitArray([payload, data])),
-      );
+      return new Control(new PongFrame(toBitArray([payload, data])));
     }
   } else {
     return left;
@@ -230,9 +264,8 @@ export function aggregate_frames(loop$frames, loop$previous, loop$joined) {
           if ($1 instanceof Continuation) {
             let rest = frames.tail;
             let prev = previous[0];
-            let length = $1.length;
             let data = $1.payload;
-            let next = append_frame(prev, length, data);
+            let next = append_frame(prev, data);
             loop$frames = rest;
             loop$previous = new None();
             loop$joined = listPrepend(next, joined);
@@ -251,9 +284,8 @@ export function aggregate_frames(loop$frames, loop$previous, loop$joined) {
         if ($1 instanceof Continuation) {
           let rest = frames.tail;
           let prev = previous[0];
-          let length = $1.length;
           let data = $1.payload;
-          let next = append_frame(prev, length, data);
+          let next = append_frame(prev, data);
           loop$frames = rest;
           loop$previous = new Some(next);
           loop$joined = joined;
@@ -271,6 +303,11 @@ export function aggregate_frames(loop$frames, loop$previous, loop$joined) {
   }
 }
 
+export function make_client_key() {
+  let bytes = $crypto.strong_random_bytes(16);
+  return $bit_array.base64_encode(bytes, true);
+}
+
 export function has_deflate(extensions) {
   return $list.any(
     extensions,
@@ -278,6 +315,19 @@ export function has_deflate(extensions) {
   );
 }
 
-const websocket_key = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
+export function get_context_takeovers(extensions) {
+  let no_client_context_takeover = $list.any(
+    extensions,
+    (str) => { return str === "client_no_context_takeover"; },
+  );
+  let no_server_context_takeover = $list.any(
+    extensions,
+    (str) => { return str === "server_no_context_takeover"; },
+  );
+  return new ContextTakeover(
+    no_client_context_takeover,
+    no_server_context_takeover,
+  );
+}
 
-export const client_key = "dGhlIHNhbXBsZSBub25jZQ==";
+const websocket_key = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";

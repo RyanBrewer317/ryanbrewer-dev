@@ -1,5 +1,5 @@
 -module(gleam@http@cookie).
--compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch]).
+-compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch, inline]).
 -define(FILEPATH, "src/gleam/http/cookie.gleam").
 -export([defaults/1, parse/1, set_header/3]).
 -export_type([same_site_policy/0, attributes/0]).

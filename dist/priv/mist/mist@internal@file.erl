@@ -1,5 +1,5 @@
 -module(mist@internal@file).
--compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch]).
+-compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch, inline]).
 -define(FILEPATH, "src/mist/internal/file.gleam").
 -export([sendfile/6, open/1, stat/1, close/1]).
 -export_type([file_descriptor/0, file_error/0, send_error/0, file/0]).

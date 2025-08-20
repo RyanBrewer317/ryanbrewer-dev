@@ -14,12 +14,13 @@ class Effect extends $CustomType {
 }
 
 class Actions extends $CustomType {
-  constructor(dispatch, emit, select, root) {
+  constructor(dispatch, emit, select, root, provide) {
     super();
     this.dispatch = dispatch;
     this.emit = emit;
     this.select = select;
     this.root = root;
+    this.provide = provide;
   }
 }
 
@@ -33,6 +34,7 @@ function do_comap_actions(actions, f) {
     actions.emit,
     (selector) => { return do_comap_select(actions, selector, f); },
     actions.root,
+    actions.provide,
   );
 }
 
@@ -53,8 +55,8 @@ export function map(effect, f) {
   );
 }
 
-export function perform(effect, dispatch, emit, select, root) {
-  let actions = new Actions(dispatch, emit, select, root);
+export function perform(effect, dispatch, emit, select, root, provide) {
+  let actions = new Actions(dispatch, emit, select, root, provide);
   return $list.each(effect.synchronous, (run) => { return run(actions); });
 }
 
@@ -105,6 +107,12 @@ export function event(name, data) {
 
 export function select(_) {
   return empty;
+}
+
+export function provide(key, value) {
+  let task = (actions) => { return actions.provide(key, value); };
+  let _record = empty;
+  return new Effect(toList([task]), _record.before_paint, _record.after_paint);
 }
 
 export function batch(effects) {

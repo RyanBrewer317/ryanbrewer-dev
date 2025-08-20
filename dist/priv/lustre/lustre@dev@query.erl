@@ -271,11 +271,11 @@ aria(Name, Value) ->
 text(Content) ->
     {contains, Content}.
 
--file("src/lustre/dev/query.gleam", 618).
+-file("src/lustre/dev/query.gleam", 610).
 -spec text_content(lustre@vdom@vnode:element(any()), boolean(), binary()) -> binary().
 text_content(Element, Inline, Content) ->
     case Element of
-        {fragment, _, _, _, _, _, _} ->
+        {fragment, _, _, _, _, _} ->
             gleam@list:fold(
                 erlang:element(5, Element),
                 Content,
@@ -626,7 +626,7 @@ text_content(Element, Inline, Content) ->
             Content
     end.
 
--file("src/lustre/dev/query.gleam", 544).
+-file("src/lustre/dev/query.gleam", 536).
 ?DOC(" Check if the given target element matches the given [`Selector`](#Selector).\n").
 -spec matches(lustre@vdom@vnode:element(any()), selector()) -> boolean().
 matches(Element, Selector) ->
@@ -794,25 +794,25 @@ matches(Element, Selector) ->
             false
     end.
 
--file("src/lustre/dev/query.gleam", 355).
+-file("src/lustre/dev/query.gleam", 349).
 -spec find_matching_in_list(
-    list(lustre@vdom@vnode:element(SOI)),
+    list(lustre@vdom@vnode:element(SWE)),
     selector(),
     lustre@vdom@path:path(),
     integer()
-) -> {ok, {lustre@vdom@vnode:element(SOI), lustre@vdom@path:path()}} |
+) -> {ok, {lustre@vdom@vnode:element(SWE), lustre@vdom@path:path()}} |
     {error, nil}.
 find_matching_in_list(Elements, Selector, Path, Index) ->
     case Elements of
         [] ->
             {error, nil};
 
-        [{fragment, _, _, _, _, _, _} = First | Rest] ->
+        [{fragment, _, _, _, _, _} = First | Rest] ->
             find_matching_in_list(
                 lists:append(erlang:element(5, First), Rest),
                 Selector,
-                Path,
-                Index + 1
+                lustre@vdom@path:add(Path, Index, erlang:element(3, First)),
+                0
             );
 
         [First@1 | Rest@1] ->
@@ -831,20 +831,20 @@ find_matching_in_list(Elements, Selector, Path, Index) ->
             end
     end.
 
--file("src/lustre/dev/query.gleam", 340).
+-file("src/lustre/dev/query.gleam", 336).
 -spec find_direct_child(
-    lustre@vdom@vnode:element(SOD),
+    lustre@vdom@vnode:element(SVZ),
     selector(),
     lustre@vdom@path:path()
-) -> {ok, {lustre@vdom@vnode:element(SOD), lustre@vdom@path:path()}} |
+) -> {ok, {lustre@vdom@vnode:element(SVZ), lustre@vdom@path:path()}} |
     {error, nil}.
 find_direct_child(Parent, Selector, Path) ->
     case Parent of
         {element, _, _, _, _, _, _, Children, _, _, _} ->
             find_matching_in_list(Children, Selector, Path, 0);
 
-        {fragment, _, _, _, Children@1, _, _} ->
-            find_matching_in_list(Children@1, Selector, Path, 1);
+        {fragment, _, _, _, Children, _} ->
+            find_matching_in_list(Children, Selector, Path, 0);
 
         {unsafe_inner_html, _, _, _, _, _, _, _} ->
             {error, nil};
@@ -853,11 +853,11 @@ find_direct_child(Parent, Selector, Path) ->
             {error, nil}
     end.
 
--file("src/lustre/dev/query.gleam", 488).
+-file("src/lustre/dev/query.gleam", 479).
 -spec find_all_matching_in_list(
-    list(lustre@vdom@vnode:element(SPQ)),
+    list(lustre@vdom@vnode:element(SXM)),
     selector()
-) -> list(lustre@vdom@vnode:element(SPQ)).
+) -> list(lustre@vdom@vnode:element(SXM)).
 find_all_matching_in_list(Elements, Selector) ->
     case Elements of
         [] ->
@@ -873,15 +873,15 @@ find_all_matching_in_list(Elements, Selector) ->
             end
     end.
 
--file("src/lustre/dev/query.gleam", 477).
--spec find_all_direct_children(lustre@vdom@vnode:element(SPM), selector()) -> list(lustre@vdom@vnode:element(SPM)).
+-file("src/lustre/dev/query.gleam", 468).
+-spec find_all_direct_children(lustre@vdom@vnode:element(SXI), selector()) -> list(lustre@vdom@vnode:element(SXI)).
 find_all_direct_children(Parent, Selector) ->
     case Parent of
         {element, _, _, _, _, _, _, Children, _, _, _} ->
             find_all_matching_in_list(Children, Selector);
 
-        {fragment, _, _, _, Children@1, _, _} ->
-            find_all_matching_in_list(Children@1, Selector);
+        {fragment, _, _, _, Children, _} ->
+            find_all_matching_in_list(Children, Selector);
 
         {unsafe_inner_html, _, _, _, _, _, _, _} ->
             [];
@@ -890,7 +890,7 @@ find_all_direct_children(Parent, Selector) ->
             []
     end.
 
--file("src/lustre/dev/query.gleam", 753).
+-file("src/lustre/dev/query.gleam", 745).
 -spec sort_selectors(list(selector())) -> list(selector()).
 sort_selectors(Selectors) ->
     gleam@list:sort(
@@ -910,7 +910,7 @@ sort_selectors(Selectors) ->
                             file => <<?FILEPATH/utf8>>,
                             module => <<"lustre/dev/query"/utf8>>,
                             function => <<"sort_selectors"/utf8>>,
-                            line => 764});
+                            line => 756});
 
                 {_, {all, _}} ->
                     erlang:error(#{gleam_error => panic,
@@ -918,7 +918,7 @@ sort_selectors(Selectors) ->
                             file => <<?FILEPATH/utf8>>,
                             module => <<"lustre/dev/query"/utf8>>,
                             function => <<"sort_selectors"/utf8>>,
-                            line => 764});
+                            line => 756});
 
                 {{type, _, _}, {type, _, _}} ->
                     case gleam@string:compare(
@@ -1007,7 +1007,7 @@ sort_selectors(Selectors) ->
             end end
     ).
 
--file("src/lustre/dev/query.gleam", 726).
+-file("src/lustre/dev/query.gleam", 718).
 -spec selector_to_readable_string(selector()) -> binary().
 selector_to_readable_string(Selector) ->
     case Selector of
@@ -1067,7 +1067,7 @@ selector_to_readable_string(Selector) ->
             <<<<":contains(\""/utf8, Content/binary>>/binary, "\")"/utf8>>
     end.
 
--file("src/lustre/dev/query.gleam", 712).
+-file("src/lustre/dev/query.gleam", 704).
 ?DOC(
     " Print a `Query` as a human-readable string similar to a CSS selector. This\n"
     " function is primarily intended for debugging and testing purposes: for example,\n"
@@ -1094,8 +1094,8 @@ to_readable_string(Query) ->
                 (selector_to_readable_string(Selector@2))/binary>>
     end.
 
--file("src/lustre/dev/query.gleam", 462).
--spec find_all_in_list(list(lustre@vdom@vnode:element(SPH)), 'query'()) -> list(lustre@vdom@vnode:element(SPH)).
+-file("src/lustre/dev/query.gleam", 453).
+-spec find_all_in_list(list(lustre@vdom@vnode:element(SXD)), 'query'()) -> list(lustre@vdom@vnode:element(SXD)).
 find_all_in_list(Elements, Query) ->
     case Elements of
         [] ->
@@ -1107,12 +1107,12 @@ find_all_in_list(Elements, Query) ->
             lists:append(First_matches, Rest_matches)
     end.
 
--file("src/lustre/dev/query.gleam", 427).
+-file("src/lustre/dev/query.gleam", 418).
 ?DOC(
     " Like [`find`](#find) but returns every element in the view that matches the\n"
     " given query.\n"
 ).
--spec find_all(lustre@vdom@vnode:element(SOZ), 'query'()) -> list(lustre@vdom@vnode:element(SOZ)).
+-spec find_all(lustre@vdom@vnode:element(SWV), 'query'()) -> list(lustre@vdom@vnode:element(SWV)).
 find_all(Root, Query) ->
     case Query of
         {find_element, Selector} ->
@@ -1145,15 +1145,15 @@ find_all(Root, Query) ->
             )
     end.
 
--file("src/lustre/dev/query.gleam", 450).
--spec find_all_in_children(lustre@vdom@vnode:element(SPD), 'query'()) -> list(lustre@vdom@vnode:element(SPD)).
+-file("src/lustre/dev/query.gleam", 441).
+-spec find_all_in_children(lustre@vdom@vnode:element(SWZ), 'query'()) -> list(lustre@vdom@vnode:element(SWZ)).
 find_all_in_children(Element, Query) ->
     case Element of
         {element, _, _, _, _, _, _, Children, _, _, _} ->
             find_all_in_list(Children, Query);
 
-        {fragment, _, _, _, Children@1, _, _} ->
-            find_all_in_list(Children@1, Query);
+        {fragment, _, _, _, Children, _} ->
+            find_all_in_list(Children, Query);
 
         {unsafe_inner_html, _, _, _, _, _, _, _} ->
             [];
@@ -1162,11 +1162,11 @@ find_all_in_children(Element, Query) ->
             []
     end.
 
--file("src/lustre/dev/query.gleam", 517).
+-file("src/lustre/dev/query.gleam", 509).
 -spec find_all_descendants_in_list(
-    list(lustre@vdom@vnode:element(SPZ)),
+    list(lustre@vdom@vnode:element(SXV)),
     selector()
-) -> list(lustre@vdom@vnode:element(SPZ)).
+) -> list(lustre@vdom@vnode:element(SXV)).
 find_all_descendants_in_list(Elements, Selector) ->
     case Elements of
         [] ->
@@ -1178,16 +1178,16 @@ find_all_descendants_in_list(Elements, Selector) ->
             lists:append(First_matches, Rest_matches)
     end.
 
--file("src/lustre/dev/query.gleam", 502).
--spec find_all_descendants(lustre@vdom@vnode:element(SPV), selector()) -> list(lustre@vdom@vnode:element(SPV)).
+-file("src/lustre/dev/query.gleam", 493).
+-spec find_all_descendants(lustre@vdom@vnode:element(SXR), selector()) -> list(lustre@vdom@vnode:element(SXR)).
 find_all_descendants(Parent, Selector) ->
     Direct_matches = find_all_direct_children(Parent, Selector),
     Descendant_matches = case Parent of
         {element, _, _, _, _, _, _, Children, _, _, _} ->
             find_all_descendants_in_list(Children, Selector);
 
-        {fragment, _, _, _, Children@1, _, _} ->
-            find_all_descendants_in_list(Children@1, Selector);
+        {fragment, _, _, _, Children, _} ->
+            find_all_descendants_in_list(Children, Selector);
 
         {unsafe_inner_html, _, _, _, _, _, _, _} ->
             [];
@@ -1197,45 +1197,37 @@ find_all_descendants(Parent, Selector) ->
     end,
     lists:append(Direct_matches, Descendant_matches).
 
--file("src/lustre/dev/query.gleam", 319).
+-file("src/lustre/dev/query.gleam", 318).
 -spec find_in_list(
-    list(lustre@vdom@vnode:element(SNX)),
+    list(lustre@vdom@vnode:element(SVT)),
     'query'(),
     lustre@vdom@path:path(),
     integer()
-) -> {ok, {lustre@vdom@vnode:element(SNX), lustre@vdom@path:path()}} |
+) -> {ok, {lustre@vdom@vnode:element(SVT), lustre@vdom@path:path()}} |
     {error, nil}.
 find_in_list(Elements, Query, Path, Index) ->
     case Elements of
         [] ->
             {error, nil};
 
-        [{fragment, _, _, _, _, _, _} = First | Rest] ->
-            find_in_list(
-                lists:append(erlang:element(5, First), Rest),
-                Query,
-                Path,
-                Index + 1
-            );
-
-        [First@1 | Rest@1] ->
-            case find_path(First@1, Query, Index, Path) of
+        [First | Rest] ->
+            case find_path(First, Query, Index, Path) of
                 {ok, Element} ->
                     {ok, Element};
 
                 {error, _} ->
-                    find_in_list(Rest@1, Query, Path, Index + 1)
+                    find_in_list(Rest, Query, Path, Index + 1)
             end
     end.
 
 -file("src/lustre/dev/query.gleam", 277).
 ?DOC(false).
 -spec find_path(
-    lustre@vdom@vnode:element(SNN),
+    lustre@vdom@vnode:element(SVJ),
     'query'(),
     integer(),
     lustre@vdom@path:path()
-) -> {ok, {lustre@vdom@vnode:element(SNN), lustre@vdom@path:path()}} |
+) -> {ok, {lustre@vdom@vnode:element(SVJ), lustre@vdom@path:path()}} |
     {error, nil}.
 find_path(Root, Query, Index, Path) ->
     case Query of
@@ -1278,11 +1270,11 @@ find_path(Root, Query, Index, Path) ->
 
 -file("src/lustre/dev/query.gleam", 304).
 -spec find_in_children(
-    lustre@vdom@vnode:element(SNS),
+    lustre@vdom@vnode:element(SVO),
     'query'(),
     integer(),
     lustre@vdom@path:path()
-) -> {ok, {lustre@vdom@vnode:element(SNS), lustre@vdom@path:path()}} |
+) -> {ok, {lustre@vdom@vnode:element(SVO), lustre@vdom@path:path()}} |
     {error, nil}.
 find_in_children(Element, Query, Index, Path) ->
     case Element of
@@ -1301,8 +1293,20 @@ find_in_children(Element, Query, Index, Path) ->
                 0
             );
 
-        {fragment, _, _, _, Children@1, _, _} ->
-            find_in_list(Children@1, Query, Path, Index + 1);
+        {fragment, _, _, _, Children, _} ->
+            find_in_list(
+                Children,
+                Query,
+                begin
+                    _pipe = Path,
+                    lustre@vdom@path:add(
+                        _pipe,
+                        Index,
+                        erlang:element(3, Element)
+                    )
+                end,
+                0
+            );
 
         {unsafe_inner_html, _, _, _, _, _, _, _} ->
             {error, nil};
@@ -1317,8 +1321,8 @@ find_in_children(Element, Query, Index, Path) ->
     " This is useful for tests when combined with [`element.to_readable_string`](../element.html#to_readable_string),\n"
     " allowing you to render large views but take more precise snapshots.\n"
 ).
--spec find(lustre@vdom@vnode:element(SNI), 'query'()) -> {ok,
-        lustre@vdom@vnode:element(SNI)} |
+-spec find(lustre@vdom@vnode:element(SVE), 'query'()) -> {ok,
+        lustre@vdom@vnode:element(SVE)} |
     {error, nil}.
 find(Root, Query) ->
     case find_path(Root, Query, 0, root) of
@@ -1329,7 +1333,7 @@ find(Root, Query) ->
             {error, nil}
     end.
 
--file("src/lustre/dev/query.gleam", 535).
+-file("src/lustre/dev/query.gleam", 527).
 ?DOC(
     " Check if an element or any of its descendants match the given\n"
     " [`Selector`](#Selector).\n"
@@ -1344,13 +1348,13 @@ has(Element, Selector) ->
             false
     end.
 
--file("src/lustre/dev/query.gleam", 400).
+-file("src/lustre/dev/query.gleam", 391).
 -spec find_descendant_in_list(
-    list(lustre@vdom@vnode:element(SOT)),
+    list(lustre@vdom@vnode:element(SWP)),
     selector(),
     lustre@vdom@path:path(),
     integer()
-) -> {ok, {lustre@vdom@vnode:element(SOT), lustre@vdom@path:path()}} |
+) -> {ok, {lustre@vdom@vnode:element(SWP), lustre@vdom@path:path()}} |
     {error, nil}.
 find_descendant_in_list(Elements, Selector, Path, Index) ->
     case Elements of
@@ -1389,12 +1393,12 @@ find_descendant_in_list(Elements, Selector, Path, Index) ->
             end
     end.
 
--file("src/lustre/dev/query.gleam", 380).
+-file("src/lustre/dev/query.gleam", 374).
 -spec find_descendant(
-    lustre@vdom@vnode:element(SOO),
+    lustre@vdom@vnode:element(SWK),
     selector(),
     lustre@vdom@path:path()
-) -> {ok, {lustre@vdom@vnode:element(SOO), lustre@vdom@path:path()}} |
+) -> {ok, {lustre@vdom@vnode:element(SWK), lustre@vdom@path:path()}} |
     {error, nil}.
 find_descendant(Parent, Selector, Path) ->
     case find_direct_child(Parent, Selector, Path) of
@@ -1406,8 +1410,8 @@ find_descendant(Parent, Selector, Path) ->
                 {element, _, _, _, _, _, _, Children, _, _, _} ->
                     find_descendant_in_list(Children, Selector, Path, 0);
 
-                {fragment, _, _, _, Children@1, _, _} ->
-                    find_descendant_in_list(Children@1, Selector, Path, 1);
+                {fragment, _, _, _, Children, _} ->
+                    find_descendant_in_list(Children, Selector, Path, 0);
 
                 {unsafe_inner_html, _, _, _, _, _, _, _} ->
                     {error, nil};

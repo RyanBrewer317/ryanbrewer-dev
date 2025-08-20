@@ -246,27 +246,34 @@ export function set_path(req, path) {
 }
 
 export function set_cookie(req, name, value) {
-  let new_cookie_string = $string.join(toList([name, value]), "=");
   let _block;
-  let $1 = $list.key_pop(req.headers, "cookie");
-  if ($1 instanceof Ok) {
-    let cookies_string = $1[0][0];
-    let headers = $1[0][1];
-    let cookies_string$1 = $string.join(
-      toList([cookies_string, new_cookie_string]),
-      "; ",
-    );
-    _block = [cookies_string$1, headers];
-  } else {
-    _block = [new_cookie_string, req.headers];
-  }
+  let _pipe = $list.key_pop(req.headers, "cookie");
+  _block = $result.unwrap(_pipe, ["", req.headers]);
   let $ = _block;
-  let cookies_string = $[0];
+  let cookies = $[0];
   let headers = $[1];
+  let _block$1;
+  let _pipe$1 = $string.split(cookies, ";");
+  _block$1 = $list.filter_map(
+    _pipe$1,
+    (c) => {
+      let _pipe$2 = $string.trim_start(c);
+      return $string.split_once(_pipe$2, "=");
+    },
+  );
+  let cookies$1 = _block$1;
+  let _block$2;
+  let _pipe$2 = $list.key_set(cookies$1, name, value);
+  let _pipe$3 = $list.map(
+    _pipe$2,
+    (pair) => { return (pair[0] + "=") + pair[1]; },
+  );
+  _block$2 = $string.join(_pipe$3, "; ");
+  let cookies$2 = _block$2;
   let _record = req;
   return new Request(
     _record.method,
-    listPrepend(["cookie", cookies_string], headers),
+    listPrepend(["cookie", cookies$2], headers),
     _record.body,
     _record.scheme,
     _record.host,
