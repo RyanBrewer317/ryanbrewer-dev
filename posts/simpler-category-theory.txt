@@ -27,12 +27,18 @@ e\cdot a = a
 @math
 a\cdot(b\cdot c)=(a\cdot b)\cdot c
 
-We need the second rule because \\(a\\cdot b\\) might not be the same as \\(b\\cdot a\\). So in *general* the order of elements matters, but for cancelling-out it doesn't matter if the inverse is on the left side or the right side of the \\(\\cdot\\). The third and fourth rule just state that \\(e\\) is basically nothing. The fifth rule ("associativity") lets us write \\(a\\cdot b\\cdot c\\), by stating that the various ways to parenthesize it are equal, so we don't need parentheses. With these rules we can prove the following:
+We need the second rule because \\(a\\cdot b\\) might not be the same as \\(b\\cdot a\\). So in *general* the order of elements matters, but for cancelling-out it doesn't matter if the inverse is on the left side or the right side of the \\(\\cdot\\). The third and fourth rule just state that \\(e\\) is basically nothing. The fifth rule ("associativity") lets us write \\(a\\cdot b\\cdot c\\), by stating that the various ways to parenthesize it are equal, so we don't need parentheses. 
+
+What if something breaks these rules? Perfectly fine, it just means that that thing isn't a group. Many things aren't groups, and unfortunately the equations we can derive in group theory generally won't apply to those things. Unfortunate, but no harm done. So saying that groups "require" certain rules just means that now we get to assume that those rules are always true, ruling out any counterexamples as off-topic, and knowing that the conclusions we prove simply don't say anything about those counterexamples.
+
+With these rules we can prove the following:
 
 @math
 a\cdot a^{-1}\cdot b = b
 
 First we replace the \\(a\\) and its inverse with \\(e\\), then we apply the fourth rule to get rid of the \\(e\\), ending up with \\(b\\). A very pleasant proof: this feels a bit like middle-school algebra!
+
+Here's a common question I see at this point: is \\(a^{-1}\\) the *name* of an element? Or is the \\(-1\\) exponent an operation being performed on \\(a\\)? The answer is that it's an operation, but the confusing thing is that we're going to keep referring to \\(a^{-1}\\) as if that's the name of one of our elements, because the alternative is doing something like \\(c=a^{-1}\\) and referring to \\(c\\), which doesn't really seem like it helps us at all. This practice of referring to things by expressions that compute to them, instead of naming them directly, is a big theme in category theory as well, so it's important to try to grasp it.
 
 Now, what *are* these letters exactly? We have some sense of \\(e\\) (but not much) and some sense of \\(\\cdot\\) (but not much), and we don't really know what \\(a\\) and \\(b\\) are at all. Well, the classic example uses a Rubik's cube: we can say that \\(a\\) rotates the top horizontal part 90 degrees clockwise, and \\(b\\) rotates the middle horizontal part 90 degrees clockwise. \\(e\\) then would have to be rotating something 0 or 360 degrees (or some multiple of 360 degrees): "doing nothing." \\(\\cdot\\) refers to doing the motions in sequence. We would then use letters \\(c\\), \\(d\\), etc. for all the other 90-degree, 180-degree, and 270-degree clockwise rotations of Rubik's cube sections. Note that one of these (say, \\(n\\)) refers to rotating the top horizontal part 270 degrees clockwise, which perfectly undoes \\(a\\). So we can say \\(n=a^{-1}\\). If we recall the expression \\(a\\cdot a^{-1}\\cdot b\\), this refers to rotating the top horizontal part 90 degrees, then 270 degrees, then rotating the middle horizontal part 90 degrees. If you do these steps in this order, the end result is the same as just rotating the middle horizontal part 90 degrees: the whole thing indeed equals \\(b\\)!
 
@@ -52,9 +58,25 @@ This is a post about category theory, right? To get to category theory we'll nee
 
 In category theory we write \\(;\\) instead of \\(\\cdot\\) for the operator, but this is just a cosmetic change. You'll often see \\(\\circ\\) used instead, pronounced "after," which is just \\(;\\) with the sides flipped: \\(a;b=b\\circ a\\). I'm not going to use \\(\\circ\\) here because it brings in unnecessary confusion. We also typically call the elements "morphisms," precisely because it's a meaningless word and therefore doesn't come with any mental connotations. So that equation from monoid theory becomes \\(a;e;b=a;b\\), and here (because it's a monoid) we require that all the left and right edges of the morphisms \\(a\\), \\(e\\), and \\(b\\) match each other, so this equation is well-formed.
 
-We also need one more thing to form a category. For every edge-shape, one of the morphisms has to have that edge shape on both the left and the right side. Let's call the edge-shape \\(A\\), and the morphism \\(\\texttt{id}_A\\). This will serve the purpose of the "do nothing" element \\(e\\) in monoid and group theory, so we furthermore need the equations \\(\\texttt{id}_A;a=a;\\texttt{id}_B=a\\) for any morphism \\(a\\) with an \\(A\\)-shaped left edge and a \\(B\\)-shaped right edge. (For these morphisms we write \\(a:A\\to B\\).) Notice that now there isn't just one "do nothing" element, but one for every edge-shape! That equation from monoid theory is now \\(a;\\texttt{id}_Y;b=a;b\\) for morphisms \\(a:X\\to Y\\) and \\(b:Y\\to Z\\).
+We also need one more thing to form a category. For every edge-shape, one of the morphisms has to have that edge shape on both the left and the right side. Let's call the edge-shape \\(A\\), and the morphism \\(\\texttt{id}_A\\). This will serve the purpose of the "do nothing" element \\(e\\) in monoid and group theory, so we furthermore need the equations \\(\\texttt{id}_A;a=a;\\texttt{id}_B=a\\) for any morphism \\(a\\) with an \\(A\\)-shaped left edge and a \\(B\\)-shaped right edge. (For these morphisms we write \\(a:A\\to B\\).) We call the "do nothing" morphisms "identity morphisms." Notice that now there isn't just one "do nothing" element, but one for every edge-shape! That equation from monoid theory is now \\(a;\\texttt{id}_Y;b=a;b\\) for morphisms \\(a:X\\to Y\\) and \\(b:Y\\to Z\\).
+
+If all of these identity morphisms "do nothing," can't we just say that, for example, \\(\\texttt{id}_A=\\texttt{id}_B\\)? Not quite. Imagine the "do nothing" function in set theory \\(f(x)=x\\). We need to specify the domain and range, so lets say it takes real numbers in \\(\\mathbb{R}\\) and returns them. But of course there are other domains we could choose, such as the natural numbers \\(\\mathbb{N}\\). There's an important sense in which it's the same function either way, but in set theory one of them is a set of pairs \\((x, x)\\) for every real number \\(x\\), and the other is a set of pairs \\((x, x)\\) for every natural number \\(x\\), so the sets are quite different and therefore the two functions are not equal. Category theory sees the identity morphisms kind of like this, where "doing nothing" is somehow dependent on the shape of the left and right edges of the morphism, and therefore \\(\\texttt{id}_A\\neq\\texttt{id}_B\\) if \\(A\\) and \\(B\\) are different.
 
 Even though the concept of matching edges on jigsaw puzzle pieces is very useful for thinking about category theory, I'm now going to switch to the actual term: "objects." When a category theorist says "a morphism \\(f\\) goes from object \\(A\\) to object \\(B\\)," they mean there's an element \\(f\\) with an \\(A\\)-shaped left edge and a \\(B\\)-shaped right edge, aka \\(f:A\\to B\\). We confusingly call the morphisms "arrows" between objects, with is sometimes helpful but often harmful, losing the nice sense of middle-school algebra that we could successfully use in monoid and group theory. A lot of the beginner ideas in category theory can be easily understood using "arrows" between "objects," but I've personally found that the ceiling here is surprisingly low. For any concept more challenging, it's best to see the objects as morphism-descriptors, instead of the morphisms as object-descriptors.
+
+Regardless, here are some example categories written in a "arrows between objects" notation. This notation is called "commutative diagrams," and it's the most common notation in category theory, though "string diagrams" are closer to the "objects between morphisms" philosophy driving this post. Hopefully a picture is worth a thousand words, and you can see the sorts of things categories might be, and how people draw categories in practice. Note that identity morphisms are ommitted, as well as morphisms that are equal to the composition of other morphisms in the diagram.
+
+no morphisms, three objects:
+
+@diagram
+    X &   & Y \\
+    &   Z   &
+
+three morphisms, four objects
+
+@diagram
+    X\ar[d, bend left=30, "a"]\ar[d, bend right=30, "b"] & Y
+    Z & W\ar[u, "c"]
 
 ### Using Category Theory
 
@@ -62,7 +84,7 @@ In functional programming and PL theory, we often want our objects to be types, 
 
 I'm going to call our category of types and functions \\(H\\).
 
-As vaguely interesting as \\(H\\) may be, things get actually useful when we consider *categories of categories.* Let's call this \\(\\texttt{Cat}\\). What we mean when we say this is categories where the *objects* (element-edge-shapes) are categories. A morphism \\(F:C\\to D\\) from a category \\(C\\) to a category \\(D\\) is basically a function that turns every object \\(A\\) in \\(C\\) into an object in \\(D\\) which, for the sake of fewer names, I'll just call \\(F(A)\\). \\(F\\) also turns every morphism \\(a:A\\to B\\) in \\(C\\) into a morphism \\(F(a):F(A)\\to F(B)\\) in \\(D\\). We'll also require a few useful equations:
+As vaguely interesting as \\(H\\) may be, things get actually useful when we consider *categories of categories.* Let's call this \\(\\texttt{Cat}\\). What we mean when we say this is categories where the *objects* (element-edge-shapes) are categories. A morphism \\(F:C\\to D\\) from a category \\(C\\) to a category \\(D\\) is basically a function that turns every object \\(A\\) in \\(C\\) into an object in \\(D\\) which, for the sake of fewer names, I'll just call \\(F(A)\\). Remember that \\(F(A)\\) computes to some particular object in \\(D\\), but we don't know or care which one, so we'll just keep it as the expression \\(F(A)\\) as if that were the name of the object. \\(F\\) also turns every morphism \\(a:A\\to B\\) in \\(C\\) into a morphism \\(F(a):F(A)\\to F(B)\\) in \\(D\\). We'll also require a few useful equations:
 
 @math
 F(f;g)=F(f);F(g)
