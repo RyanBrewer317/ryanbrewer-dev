@@ -1,6 +1,6 @@
 -module(houdini).
--compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch]).
-
+-compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch, inline]).
+-define(FILEPATH, "src/houdini.gleam").
 -export([escape/1]).
 
 -if(?OTP_RELEASE >= 27).

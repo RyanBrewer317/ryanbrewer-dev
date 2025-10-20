@@ -54,6 +54,21 @@ export function guitar() {
             ]),
           ),
           thumbnail(
+            "Kathy's Song",
+            "Simon and Garfunkel",
+            "https://cdn.ryanbrewer.dev/kathys-song.mp4",
+          ),
+          thumbnail(
+            "Drifter's Wife",
+            "JJ Cale",
+            "https://cdn.ryanbrewer.dev/drifters-wife.mp4",
+          ),
+          thumbnail(
+            "The Boxer",
+            "Simon and Garfunkel",
+            "https://cdn.ryanbrewer.dev/the-boxer.mp4",
+          ),
+          thumbnail(
             "Blues Run the Game",
             "Jackson C Frank",
             "https://cdn.ryanbrewer.dev/blues-run-the-game.mp4",

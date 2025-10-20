@@ -1,6 +1,6 @@
 -module(houdini@internal@escape_erl).
--compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch]).
-
+-compile([no_auto_import, nowarn_unused_vars, nowarn_unused_function, nowarn_nomatch, inline]).
+-define(FILEPATH, "src/houdini/internal/escape_erl.gleam").
 -export([escape/1]).
 
 -if(?OTP_RELEASE >= 27).
@@ -13,7 +13,7 @@
 
 ?MODULEDOC(false).
 
--file("src/houdini/internal/escape_erl.gleam", 74).
+-file("src/houdini/internal/escape_erl.gleam", 75).
 ?DOC(false).
 -spec do_escape_normal(
     bitstring(),
@@ -54,8 +54,11 @@ do_escape_normal(Bin, Skip, Original, Acc, Len) ->
                 "&#39;"/utf8>>,
             do_escape(Rest@4, (Skip + Len) + 1, Original, Acc@5);
 
-        <<_, Rest@5/bitstring>> ->
-            do_escape_normal(Rest@5, Skip, Original, Acc, Len + 1);
+        <<_, B, C, D, E, F, G, H, Rest@5/bitstring>> when ((((((((((((((((((((((((((((((((((B =/= 34) andalso (B =/= 38)) andalso (B =/= 39)) andalso (B =/= 60)) andalso (B =/= 62)) andalso (C =/= 34)) andalso (C =/= 38)) andalso (C =/= 39)) andalso (C =/= 60)) andalso (C =/= 62)) andalso (D =/= 34)) andalso (D =/= 38)) andalso (D =/= 39)) andalso (D =/= 60)) andalso (D =/= 62)) andalso (E =/= 34)) andalso (E =/= 38)) andalso (E =/= 39)) andalso (E =/= 60)) andalso (E =/= 62)) andalso (F =/= 34)) andalso (F =/= 38)) andalso (F =/= 39)) andalso (F =/= 60)) andalso (F =/= 62)) andalso (G =/= 34)) andalso (G =/= 38)) andalso (G =/= 39)) andalso (G =/= 60)) andalso (G =/= 62)) andalso (H =/= 34)) andalso (H =/= 38)) andalso (H =/= 39)) andalso (H =/= 60)) andalso (H =/= 62) ->
+            do_escape_normal(Rest@5, Skip, Original, Acc, Len + 8);
+
+        <<_, Rest@6/bitstring>> ->
+            do_escape_normal(Rest@6, Skip, Original, Acc, Len + 1);
 
         <<>> ->
             case Skip of
@@ -69,10 +72,11 @@ do_escape_normal(Bin, Skip, Original, Acc, Len) ->
 
         _ ->
             erlang:error(#{gleam_error => panic,
-                    message => <<"non byte aligned string, all strings should be byte aligned"/utf8>>,
+                    message => <<"do_escape_normal: non byte aligned string, all strings should be byte aligned"/utf8>>,
+                    file => <<?FILEPATH/utf8>>,
                     module => <<"houdini/internal/escape_erl"/utf8>>,
                     function => <<"do_escape_normal"/utf8>>,
-                    line => 142})
+                    line => 195})
     end.
 
 -file("src/houdini/internal/escape_erl.gleam", 28).
@@ -108,10 +112,11 @@ do_escape(Bin, Skip, Original, Acc) ->
 
         _ ->
             erlang:error(#{gleam_error => panic,
-                    message => <<"non byte aligned string, all strings should be byte aligned"/utf8>>,
+                    message => <<"do_escape: non byte aligned string, all strings should be byte aligned"/utf8>>,
+                    file => <<?FILEPATH/utf8>>,
                     module => <<"houdini/internal/escape_erl"/utf8>>,
                     function => <<"do_escape"/utf8>>,
-                    line => 69})
+                    line => 70})
     end.
 
 -file("src/houdini/internal/escape_erl.gleam", 2).

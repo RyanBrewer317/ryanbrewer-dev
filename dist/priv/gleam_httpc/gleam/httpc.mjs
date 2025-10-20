@@ -20,6 +20,8 @@ export class FailedToConnect extends $CustomType {
   }
 }
 
+export class ResponseTimeout extends $CustomType {}
+
 export class Posix extends $CustomType {
   constructor(code) {
     super();
@@ -43,6 +45,13 @@ class Ssl extends $CustomType {
 }
 
 class Autoredirect extends $CustomType {
+  constructor($0) {
+    super();
+    this[0] = $0;
+  }
+}
+
+class Timeout extends $CustomType {
   constructor($0) {
     super();
     this[0] = $0;
@@ -84,23 +93,29 @@ class Verify extends $CustomType {
 class VerifyNone extends $CustomType {}
 
 class Builder extends $CustomType {
-  constructor(verify_tls, follow_redirects) {
+  constructor(verify_tls, follow_redirects, timeout) {
     super();
     this.verify_tls = verify_tls;
     this.follow_redirects = follow_redirects;
+    this.timeout = timeout;
   }
 }
 
 export function configure() {
-  return new Builder(true, false);
+  return new Builder(true, false, 30_000);
 }
 
 export function verify_tls(config, which) {
   let _record = config;
-  return new Builder(which, _record.follow_redirects);
+  return new Builder(which, _record.follow_redirects, _record.timeout);
 }
 
 export function follow_redirects(config, which) {
   let _record = config;
-  return new Builder(_record.verify_tls, which);
+  return new Builder(_record.verify_tls, which, _record.timeout);
+}
+
+export function timeout(config, timeout) {
+  let _record = config;
+  return new Builder(_record.verify_tls, _record.follow_redirects, timeout);
 }
